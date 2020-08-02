@@ -65,6 +65,16 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 void android_main(android_app* state)
 {
+
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+	if (!InitVulkan())
+	{
+		LOG("Vulkan is unavailable, install vulkan and re-start");
+		assert(false);
+	}
+	LOG("Vulkan Ready");
+#endif
+
 	vulkanExample = new VulkanExample();
 
 	androidApp = state;

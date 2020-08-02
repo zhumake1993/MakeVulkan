@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include "VulkanCommon.h"
 
 class Application

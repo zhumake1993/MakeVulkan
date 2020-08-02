@@ -1,4 +1,6 @@
 #include "VulkanDevice.h"
+#include "VulkanInstance.h"
+#include "VulkanSurface.h"
 #include "Tools.h"
 
 VulkanDevice::VulkanDevice(VulkanInstance* vulkanInstance, VulkanSurface* vulkanSurface):
@@ -108,76 +110,6 @@ uint32_t VulkanDevice::GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFla
 	LOG("Could not find a matching memory type");
 	assert(false);
 	return 0;
-}
-
-VulkanCommandPool* VulkanDevice::CreateCommandPool(VkCommandPoolCreateFlags flags, uint32_t queueFamilyIndex)
-{
-	VkCommandPoolCreateInfo cmdPoolInfo = {};
-	cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	cmdPoolInfo.pNext = nullptr;
-	cmdPoolInfo.flags = flags;
-	cmdPoolInfo.queueFamilyIndex = queueFamilyIndex;
-
-	VulkanCommandPool* vulkanCommandPool = new VulkanCommandPool(this);
-	VK_CHECK_RESULT(vkCreateCommandPool(m_LogicalDevice, &cmdPoolInfo, nullptr, &vulkanCommandPool->m_CommandPool));
-	return vulkanCommandPool;
-}
-
-VulkanCommandBuffer VulkanDevice::AllocateCommandBuffers(VulkanCommandPool & pool, VkCommandBufferLevel level)
-{
-	VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
-	cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	cmdBufferAllocInfo.pNext = nullptr;
-	cmdBufferAllocInfo.commandPool = pool.m_CommandPool;
-	cmdBufferAllocInfo.level = level;
-	cmdBufferAllocInfo.commandBufferCount = 1;
-
-	VulkanCommandBuffer vulkanCommandBuffer;
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(m_LogicalDevice, &cmdBufferAllocInfo, &vulkanCommandBuffer.m_CommandBuffer));
-	return vulkanCommandBuffer;
-}
-
-VkSemaphore VulkanDevice::CreateSemaphore()
-{
-	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
-	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	semaphoreCreateInfo.pNext = nullptr;
-	semaphoreCreateInfo.flags = 0;
-
-	VkSemaphore semaphore;
-	VK_CHECK_RESULT(vkCreateSemaphore(m_LogicalDevice, &semaphoreCreateInfo, nullptr, &semaphore));
-	return semaphore;
-}
-
-VkFence VulkanDevice::CreateFence(VkFenceCreateFlags flags)
-{
-	VkFenceCreateInfo fenceCreateInfo = {};
-	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	fenceCreateInfo.pNext = nullptr;
-	fenceCreateInfo.flags = flags;
-
-	VkFence fence;
-	VK_CHECK_RESULT(vkCreateFence(m_LogicalDevice, &fenceCreateInfo, nullptr, &fence));
-	return fence;
-}
-
-VulkanShaderModule VulkanDevice::CreateShaderModule(std::string const &filename)
-{
-	const std::vector<char> code = GetBinaryFileContents(filename);
-	if (code.size() == 0) {
-		assert(false);
-	}
-
-	VkShaderModuleCreateInfo moduleCreateInfo = {};
-	moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	moduleCreateInfo.pNext = nullptr;
-	moduleCreateInfo.flags = 0;
-	moduleCreateInfo.codeSize = code.size();
-	moduleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-
-	VulkanShaderModule vulkanShaderModule(this);
-	VK_CHECK_RESULT(vkCreateShaderModule(m_LogicalDevice, &moduleCreateInfo, nullptr, &vulkanShaderModule.m_ShaderModule));
-	return vulkanShaderModule;
 }
 
 void VulkanDevice::ConfigExtensions()

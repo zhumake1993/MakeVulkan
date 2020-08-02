@@ -1,4 +1,6 @@
 #include "VulkanSwapChain.h"
+#include "VulkanSurface.h"
+#include "VulkanDevice.h"
 #include "Tools.h"
 
 VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, VulkanSurface* surface):

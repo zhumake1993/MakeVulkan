@@ -1,7 +1,12 @@
 #include "VulkanPipeline.h"
 #include "VulkanDevice.h"
+#include "VulkanShaderModule.h"
 
 VulkanShaderModule::VulkanShaderModule(VulkanDevice* vulkanDevice) :m_VulkanDevice(vulkanDevice)
+{
+}
+
+VulkanShaderModule::VulkanShaderModule(VulkanDevice * vulkanDevice, std::string const & filename)
 {
 }
 

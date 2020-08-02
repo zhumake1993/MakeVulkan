@@ -1,15 +1,20 @@
 #pragma once
 
 #include "Application.h"
-#include "VulkanInstance.h"
-#include "VulkanSurface.h"
-#include "VulkanDevice.h"
-#include "VulkanSwapChain.h"
-#include "VulkanCommandPool.h"
-#include "VulkanCommandBuffer.h"
-#include "VulkanPipeline.h"
-#include <string>
-#include <iostream>
+
+
+
+
+//#include "VulkanPipeline.h"
+
+class VulkanInstance;
+class VulkanSurface;
+class VulkanDevice;
+class VulkanSwapChain;
+class VulkanCommandPool;
+class VulkanCommandBuffer;
+class VulkanSemaphore;
+class VulkanFence;
 
 struct VertexData {
 	float   x, y, z, w;
@@ -18,17 +23,17 @@ struct VertexData {
 
 struct FrameResource {
 	VkFramebuffer framebuffer;
-	VulkanCommandBuffer vulkanCommandBuffer;
-	VkSemaphore imageAvailableSemaphore;
-	VkSemaphore finishedRenderingSemaphore;
-	VkFence fence;
+	VulkanCommandBuffer* commandBuffer;
+	VulkanSemaphore* imageAvailableSemaphore;
+	VulkanSemaphore* finishedRenderingSemaphore;
+	VulkanFence* fence;
 
 	FrameResource() :
-		framebuffer(VK_NULL_HANDLE),
-		vulkanCommandBuffer(),
-		imageAvailableSemaphore(VK_NULL_HANDLE),
-		finishedRenderingSemaphore(VK_NULL_HANDLE),
-		fence(VK_NULL_HANDLE) {
+		framebuffer(nullptr),
+		commandBuffer(nullptr),
+		imageAvailableSemaphore(nullptr),
+		finishedRenderingSemaphore(nullptr),
+		fence(nullptr) {
 	}
 };
 

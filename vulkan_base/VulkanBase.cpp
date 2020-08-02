@@ -1,4 +1,12 @@
 #include "VulkanBase.h"
+#include "VulkanInstance.h"
+#include "VulkanSurface.h"
+#include "VulkanDevice.h"
+#include "VulkanSwapChain.h"
+#include "VulkanCommandPool.h"
+#include "VulkanCommandBuffer.h"
+#include "VulkanSemaphore.h"
+#include "VulkanFence.h"
 #include "Tools.h"
 
 VulkanBase::VulkanBase()
@@ -13,10 +21,16 @@ void VulkanBase::CleanUp()
 {
 	m_VulkanDevice->WaitIdle();
 
+	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
+		//m_FrameResources[i].framebuffer
+
+		m_FrameResources[i].commandBuffer->CleanUp();
+		m_FrameResources[i].imageAvailableSemaphore->CleanUp();
+		m_FrameResources[i].finishedRenderingSemaphore->CleanUp();
+		m_FrameResources[i].fence->CleanUp();
+	}
 
 	m_VulkanCommandPool->CleanUp();
-
-
 	m_VulkanSwapChain->CleanUp();
 	m_VulkanDevice->CleanUp();
 	m_VulkanSurface->CleanUp();
@@ -25,15 +39,6 @@ void VulkanBase::CleanUp()
 
 void VulkanBase::Init()
 {
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-	if (!InitVulkan())
-	{
-		LOG("Vulkan is unavailable, install vulkan and re-start");
-		assert(false);
-	}
-	LOG("Vulkan Ready");
-#endif
-
 	m_VulkanInstance = new VulkanInstance();
 
 #if defined(_WIN32)
@@ -44,17 +49,15 @@ void VulkanBase::Init()
 
 	m_VulkanDevice = new VulkanDevice(m_VulkanInstance, m_VulkanSurface);
 	m_VulkanSwapChain = new VulkanSwapChain(m_VulkanDevice, m_VulkanSurface);
+	m_VulkanCommandPool = new VulkanCommandPool(m_VulkanDevice, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, m_VulkanDevice->m_SelectedQueueFamilyIndex);
 
-
-
-	m_VulkanCommandPool = m_VulkanDevice.CreateCommandPool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, m_VulkanDevice.m_SelectedQueueFamilyIndex);
 
 	m_FrameResources.resize(global::frameResourcesCount);
 	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
-		m_FrameResources[i].vulkanCommandBuffer = m_VulkanDevice.AllocateCommandBuffers(m_VulkanCommandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-		m_FrameResources[i].imageAvailableSemaphore = m_VulkanDevice.CreateSemaphore();
-		m_FrameResources[i].finishedRenderingSemaphore = m_VulkanDevice.CreateSemaphore();
-		m_FrameResources[i].fence = m_VulkanDevice.CreateFence(VK_FENCE_CREATE_SIGNALED_BIT);
+		m_FrameResources[i].commandBuffer = m_VulkanCommandPool->AllocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+		m_FrameResources[i].imageAvailableSemaphore = new VulkanSemaphore(m_VulkanDevice);
+		m_FrameResources[i].finishedRenderingSemaphore = new VulkanSemaphore(m_VulkanDevice);
+		m_FrameResources[i].fence = new VulkanFence(m_VulkanDevice, true);
 	}
 
 	SetupRenderPass();
@@ -92,7 +95,7 @@ void VulkanBase::SetupRenderPass()
 
 	// Color attachment
 	attachmentDescriptions[0].flags = 0;
-	attachmentDescriptions[0].format = m_VulkanSwapChain.m_Format.format;                                  // Use the color format selected by the swapchain
+	attachmentDescriptions[0].format = m_VulkanSwapChain->m_Format.format;                                  // Use the color format selected by the swapchain
 	attachmentDescriptions[0].samples = VK_SAMPLE_COUNT_1_BIT;                                 // We don't use multi sampling in this example
 	attachmentDescriptions[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;                            // Clear this attachment at the start of the render pass
 	attachmentDescriptions[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;                          // Keep its contents after the render pass is finished (for displaying it)

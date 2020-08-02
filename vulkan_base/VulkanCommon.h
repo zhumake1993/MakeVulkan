@@ -20,6 +20,7 @@ extern android_app* androidApp;
 
 #include <string>
 #include <vector>
+#include <assert.h>
 
 // 全局设置
 

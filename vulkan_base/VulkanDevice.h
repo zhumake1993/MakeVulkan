@@ -1,11 +1,9 @@
 #pragma once
 
-#include <vector>
-#include "VulkanInstance.h"
-#include "VulkanSurface.h"
-#include "VulkanCommandPool.h"
-#include "VulkanCommandBuffer.h"
-#include "VulkanPipeline.h"
+#include "VulkanCommon.h"
+
+class VulkanInstance;
+class VulkanSurface;
 
 class VulkanDevice
 {
@@ -19,11 +17,6 @@ public:
 	void WaitIdle();
 
 	uint32_t GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties);
-	VulkanCommandPool* CreateCommandPool(VkCommandPoolCreateFlags flags, uint32_t queueFamilyIndex);
-	VulkanCommandBuffer AllocateCommandBuffers(VulkanCommandPool& pool, VkCommandBufferLevel level);
-	VkSemaphore CreateSemaphore();
-	VkFence CreateFence(VkFenceCreateFlags flags);
-	VulkanShaderModule CreateShaderModule(std::string const &filename);
 
 private:
 
