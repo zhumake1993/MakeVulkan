@@ -1,0 +1,5 @@
+//include ':test'
+//rootProject.name='MakeVulkan/examples'
+
+include ":test"
+project(":test").projectDir = new File("examples/test")
