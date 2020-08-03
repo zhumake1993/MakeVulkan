@@ -4,6 +4,7 @@
 
 class VulkanSurface;
 class VulkanDevice;
+class VulkanSemaphore;
 
 class VulkanSwapChain
 {
@@ -14,8 +15,8 @@ public:
 	~VulkanSwapChain();
 
 	void							CleanUp();
-	uint32_t						AcquireNextImage(VkSemaphore imageAvailableSemaphores);
-	void							QueuePresent(uint32_t imageIndex, VkSemaphore finishedRenderingSemaphores);
+	uint32_t						AcquireNextImage(VulkanSemaphore* imageAvailableSemaphore);
+	void							QueuePresent(uint32_t imageIndex, VulkanSemaphore* finishedRenderingSemaphore);
 
 private:
 

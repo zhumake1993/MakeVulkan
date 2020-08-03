@@ -2,11 +2,6 @@
 
 #include "Application.h"
 
-
-
-
-//#include "VulkanPipeline.h"
-
 class VulkanInstance;
 class VulkanSurface;
 class VulkanDevice;
@@ -15,6 +10,10 @@ class VulkanCommandPool;
 class VulkanCommandBuffer;
 class VulkanSemaphore;
 class VulkanFence;
+class VulkanFramebuffer;
+class VulkanRenderPass;
+class VulkanPipelineLayout;
+class VulkanPipeline;
 
 struct VertexData {
 	float   x, y, z, w;
@@ -22,7 +21,7 @@ struct VertexData {
 };
 
 struct FrameResource {
-	VkFramebuffer framebuffer;
+	VulkanFramebuffer* framebuffer;
 	VulkanCommandBuffer* commandBuffer;
 	VulkanSemaphore* imageAvailableSemaphore;
 	VulkanSemaphore* finishedRenderingSemaphore;
@@ -54,13 +53,12 @@ protected:
 
 private:
 
-	virtual void SetupRenderPass();
-	virtual void CreatePipeline();
+	virtual void CreatePipeline(std::shared_ptr<VulkanPipelineLayout> vulkanPipelineLayout);
 	virtual void PrepareVertices();
 
 	virtual void Draw() override;
-	void RecordCommandBuffer(VulkanCommandBuffer& vulkanCommandBuffer, VkFramebuffer& framebuffer);
-	void CreateFramebuffer(VkFramebuffer& framebuffer, VkImageView& imageView);
+	void RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer, VulkanFramebuffer* vulkanFramebuffer);
+	void CreateFramebuffer(VulkanFramebuffer* vulkanFramebuffer, VkImageView& imageView);
 
 protected:
 
@@ -74,11 +72,8 @@ protected:
 	size_t m_CurrFrameIndex = 0;
 	std::vector<FrameResource> m_FrameResources;
 
-	VkRenderPass m_RenderPass;
-	std::vector<VkFramebuffer> m_FrameBuffers;
-	VkPipelineLayout m_PipelineLayout;
-	VkPipelineCache m_PipelineCache = VK_NULL_HANDLE;
-	VkPipeline m_Pipeline;
+	VulkanRenderPass* m_VulkanRenderPass;
+	VulkanPipeline* m_VulkanPipeline;
 
 	VkBuffer m_VertexBuffer;
 	VkDeviceMemory m_VertexBufferMemory;

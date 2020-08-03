@@ -1,6 +1,7 @@
 #include "VulkanSwapChain.h"
 #include "VulkanSurface.h"
 #include "VulkanDevice.h"
+#include "VulkanSemaphore.h"
 #include "Tools.h"
 
 VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, VulkanSurface* surface):
@@ -36,11 +37,11 @@ void VulkanSwapChain::CleanUp()
 	}
 }
 
-uint32_t VulkanSwapChain::AcquireNextImage(VkSemaphore imageAvailableSemaphores)
+uint32_t VulkanSwapChain::AcquireNextImage(VulkanSemaphore* imageAvailableSemaphore)
 {
 	uint32_t imageIndex;
 
-	VkResult result = vkAcquireNextImageKHR(m_VulkanDevice->m_LogicalDevice, m_SwapChain, UINT64_MAX, imageAvailableSemaphores, VK_NULL_HANDLE, &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(m_VulkanDevice->m_LogicalDevice, m_SwapChain, UINT64_MAX, imageAvailableSemaphore->m_Semaphore, VK_NULL_HANDLE, &imageIndex);
 
 	switch (result) {
 	case VK_SUCCESS:
@@ -59,13 +60,13 @@ uint32_t VulkanSwapChain::AcquireNextImage(VkSemaphore imageAvailableSemaphores)
 	}
 }
 
-void VulkanSwapChain::QueuePresent(uint32_t imageIndex, VkSemaphore finishedRenderingSemaphores)
+void VulkanSwapChain::QueuePresent(uint32_t imageIndex, VulkanSemaphore* finishedRenderingSemaphore)
 {
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfo.pNext = NULL;
 	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = &finishedRenderingSemaphores;
+	presentInfo.pWaitSemaphores = &finishedRenderingSemaphore->m_Semaphore;
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = &m_SwapChain;
 	presentInfo.pImageIndices = &imageIndex;

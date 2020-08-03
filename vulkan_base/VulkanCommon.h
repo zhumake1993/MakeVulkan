@@ -21,6 +21,7 @@ extern android_app* androidApp;
 #include <string>
 #include <vector>
 #include <assert.h>
+#include <memory>
 
 // 全局设置
 
@@ -52,5 +53,4 @@ namespace global
 
 	// Frame
 	extern size_t frameResourcesCount;
-
 }

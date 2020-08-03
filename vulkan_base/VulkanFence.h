@@ -13,6 +13,8 @@ public:
 	~VulkanFence();
 
 	void CleanUp();
+	void Wait();
+	void Reset();
 
 private:
 

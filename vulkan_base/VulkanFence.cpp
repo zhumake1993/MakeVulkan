@@ -25,3 +25,13 @@ void VulkanFence::CleanUp()
 		m_Fence = VK_NULL_HANDLE;
 	}
 }
+
+void VulkanFence::Wait()
+{
+	VK_CHECK_RESULT(vkWaitForFences(m_VulkanDevice->m_LogicalDevice, 1, &m_Fence, VK_TRUE, UINT64_MAX));
+}
+
+void VulkanFence::Reset()
+{
+	VK_CHECK_RESULT(vkResetFences(m_VulkanDevice->m_LogicalDevice, 1, &m_Fence));
+}

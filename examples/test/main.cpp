@@ -1,5 +1,6 @@
 #include <iostream>
 #include "VulkanBase.h"
+#include "Tools.h"
 
 class VulkanExample : public VulkanBase
 {
@@ -11,7 +12,10 @@ public:
 		// 添加单独的实例级层
 		// The VK_LAYER_KHRONOS_validation contains all current validation functionality.
 		// Note that on Android this layer requires at least NDK r20
-		//global::enabledInstanceLayers.push_back("VK_LAYER_KHRONOS_validation");
+#if defined(_WIN32)
+		// 目前我用的NDK r19
+		global::enabledInstanceLayers.push_back("VK_LAYER_KHRONOS_validation");
+#endif
 
 		// 添加单独的实例级拓展
 		// 这个暂时搁置
@@ -65,16 +69,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 void android_main(android_app* state)
 {
-
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-	if (!InitVulkan())
-	{
-		LOG("Vulkan is unavailable, install vulkan and re-start");
-		assert(false);
-	}
-	LOG("Vulkan Ready");
-#endif
-
 	vulkanExample = new VulkanExample();
 
 	androidApp = state;

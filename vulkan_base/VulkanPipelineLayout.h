@@ -4,15 +4,13 @@
 
 class VulkanDevice;
 
-class VulkanFramebuffer
+class VulkanPipelineLayout
 {
 
 public:
 
-	VulkanFramebuffer(VulkanDevice* vulkanDevice);
-	~VulkanFramebuffer();
-
-	void CleanUp();
+	VulkanPipelineLayout(VulkanDevice* vulkanDevice);
+	~VulkanPipelineLayout();
 
 private:
 
@@ -20,7 +18,7 @@ private:
 
 public:
 
-	VkFramebuffer m_Framebuffer = VK_NULL_HANDLE;
+	VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
 
 private:
 

@@ -4,6 +4,29 @@
 
 Application::Application()
 {
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+	// Get Android device name and manufacturer (to display along GPU name)
+	androidProduct = "";
+	char prop[PROP_VALUE_MAX + 1];
+	int len = __system_property_get("ro.product.manufacturer", prop);
+	if (len > 0) {
+		androidProduct += std::string(prop) + " ";
+	};
+	len = __system_property_get("ro.product.model", prop);
+	if (len > 0) {
+		androidProduct += std::string(prop);
+	};
+	LOG("androidProduct = %s", androidProduct.c_str());
+#endif
+
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+	if (!InitVulkan())
+	{
+		LOG("Vulkan is unavailable, install vulkan and re-start");
+		assert(false);
+	}
+	LOG("Vulkan Ready");
+#endif
 }
 
 Application::~Application()
