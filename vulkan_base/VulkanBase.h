@@ -14,6 +14,7 @@ class VulkanFramebuffer;
 class VulkanRenderPass;
 class VulkanPipelineLayout;
 class VulkanPipeline;
+class VulkanBuffer;
 
 struct VertexData {
 	float   x, y, z, w;
@@ -75,8 +76,8 @@ protected:
 	VulkanRenderPass* m_VulkanRenderPass;
 	VulkanPipeline* m_VulkanPipeline;
 
-	VkBuffer m_VertexBuffer;
-	VkDeviceMemory m_VertexBufferMemory;
-	VkBuffer m_IndexBuffer;
-	VkDeviceMemory m_IndexBufferMemory;
+	VulkanBuffer* m_VertexBuffer;
+	VulkanBuffer* m_IndexBuffer;
+	VulkanBuffer* m_VertexStagingBuffer;
+	VulkanBuffer* m_IndexStagingBuffer;
 };

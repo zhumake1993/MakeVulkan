@@ -12,6 +12,7 @@
 #include "VulkanShaderModule.h"
 #include "VulkanPipelineLayout.h"
 #include "VulkanPipeline.h"
+#include "VulkanBuffer.h"
 #include "Tools.h"
 
 VulkanBase::VulkanBase()
@@ -25,6 +26,11 @@ VulkanBase::~VulkanBase()
 void VulkanBase::CleanUp()
 {
 	m_VulkanDevice->WaitIdle();
+
+	m_VertexBuffer->CleanUp();
+	m_IndexBuffer->CleanUp();
+	m_VertexStagingBuffer->CleanUp();
+	m_IndexStagingBuffer->CleanUp();
 
 	m_VulkanPipeline->CleanUp();
 
@@ -104,88 +110,75 @@ void VulkanBase::CreatePipeline(std::shared_ptr<VulkanPipelineLayout> vulkanPipe
 
 void VulkanBase::PrepareVertices()
 {
-	std::vector<VertexData> vertexBuffer =
-	{
-		{   1.0f,  1.0f, 0.0f,  1.0f ,  1.0f, 0.0f, 0.0f,  0.0f  },
-		{  -1.0f,  1.0f, 0.0f,  1.0f ,  0.0f, 1.0f, 0.0f,  0.0f  },
-		{   0.0f, -1.0f, 0.0f,  1.0f ,  0.0f, 0.0f, 1.0f,  0.0f  }
-	};
-	uint32_t vertexBufferSize = static_cast<uint32_t>(vertexBuffer.size()) * sizeof(VertexData);
-
-	// Don't use staging
-	// Create host-visible buffers only and use these for rendering. This is not advised and will usually result in lower rendering performance
-
 	// Vertex buffer
-	VkBufferCreateInfo vertexBufferInfo = {};
-	vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	vertexBufferInfo.pNext = nullptr;
-	vertexBufferInfo.flags = 0;
-	vertexBufferInfo.size = vertexBufferSize;
-	vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	vertexBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	vertexBufferInfo.queueFamilyIndexCount = 0;
-	vertexBufferInfo.pQueueFamilyIndices = nullptr;
+	std::vector<float> vertexBuffer =
+	{
+		   1.0f,  1.0f, 0.0f,  1.0f ,  1.0f, 0.0f, 0.0f,  0.0f  ,
+		  -1.0f,  1.0f, 0.0f,  1.0f ,  0.0f, 1.0f, 0.0f,  0.0f  ,
+		   0.0f, -1.0f, 0.0f,  1.0f ,  0.0f, 0.0f, 1.0f,  0.0f
+	};
+	uint32_t vertexBufferSize = static_cast<uint32_t>(vertexBuffer.size()) * sizeof(vertexBuffer[0]);
 
-	// Copy vertex data to a buffer visible to the host
-	VK_CHECK_RESULT(vkCreateBuffer(m_VulkanDevice->m_LogicalDevice, &vertexBufferInfo, nullptr, &m_VertexBuffer));
+	m_VertexBuffer = new VulkanBuffer(m_VulkanDevice, vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	VkMemoryRequirements memReqs;
-	vkGetBufferMemoryRequirements(m_VulkanDevice->m_LogicalDevice, m_VertexBuffer, &memReqs);
-
-	VkMemoryAllocateInfo memoryAllocateInfo = {};
-	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	memoryAllocateInfo.pNext = nullptr;
-	memoryAllocateInfo.allocationSize = memReqs.size;
-	// VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT is host visible memory, and VK_MEMORY_PROPERTY_HOST_COHERENT_BIT makes sure writes are directly visible
-	memoryAllocateInfo.memoryTypeIndex = m_VulkanDevice->GetMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(m_VulkanDevice->m_LogicalDevice, &memoryAllocateInfo, nullptr, &m_VertexBufferMemory));
-
-	VK_CHECK_RESULT(vkBindBufferMemory(m_VulkanDevice->m_LogicalDevice, m_VertexBuffer, m_VertexBufferMemory, 0));
-
-	void *vertexBufferMemoryPointer;
-	VK_CHECK_RESULT(vkMapMemory(m_VulkanDevice->m_LogicalDevice, m_VertexBufferMemory, 0, vertexBufferSize, 0, &vertexBufferMemoryPointer));
+	m_VertexStagingBuffer = new VulkanBuffer(m_VulkanDevice, 1024, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	void* vertexBufferMemoryPointer = m_VertexStagingBuffer->Map(vertexBufferSize);
 	memcpy(vertexBufferMemoryPointer, vertexBuffer.data(), vertexBufferSize);
-
-	// 由于使用了VK_MEMORY_PROPERTY_HOST_COHERENT_BIT，因此不需要flush
-	vkUnmapMemory(m_VulkanDevice->m_LogicalDevice, m_VertexBufferMemory);
-
+	m_VertexStagingBuffer->Unmap();
 
 	// Index buffer
 	std::vector<uint32_t> indexBuffer = { 0, 1, 2 };
 	uint32_t indexBufferSize = static_cast<uint32_t>(indexBuffer.size()) * sizeof(uint32_t);
 
-	VkBufferCreateInfo indexBufferInfo = {};
-	indexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	indexBufferInfo.pNext = nullptr;
-	indexBufferInfo.flags = 0;
-	indexBufferInfo.size = indexBufferSize;
-	indexBufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-	indexBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	indexBufferInfo.queueFamilyIndexCount = 0;
-	indexBufferInfo.pQueueFamilyIndices = nullptr;
+	m_IndexBuffer = new VulkanBuffer(m_VulkanDevice, indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	VK_CHECK_RESULT(vkCreateBuffer(m_VulkanDevice->m_LogicalDevice, &indexBufferInfo, nullptr, &m_IndexBuffer));
-
-	//VkMemoryRequirements memReqs;
-	vkGetBufferMemoryRequirements(m_VulkanDevice->m_LogicalDevice, m_IndexBuffer, &memReqs);
-
-	//VkMemoryAllocateInfo memoryAllocateInfo = {};
-	memoryAllocateInfo = {};
-	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	memoryAllocateInfo.pNext = nullptr;
-	memoryAllocateInfo.allocationSize = memReqs.size;
-	// VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT is host visible memory, and VK_MEMORY_PROPERTY_HOST_COHERENT_BIT makes sure writes are directly visible
-	memoryAllocateInfo.memoryTypeIndex = m_VulkanDevice->GetMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(m_VulkanDevice->m_LogicalDevice, &memoryAllocateInfo, nullptr, &m_IndexBufferMemory));
-
-	VK_CHECK_RESULT(vkBindBufferMemory(m_VulkanDevice->m_LogicalDevice, m_IndexBuffer, m_IndexBufferMemory, 0));
-
-	void *indexBufferMemoryPointer;
-	VK_CHECK_RESULT(vkMapMemory(m_VulkanDevice->m_LogicalDevice, m_IndexBufferMemory, 0, indexBufferSize, 0, &indexBufferMemoryPointer));
+	m_IndexStagingBuffer = new VulkanBuffer(m_VulkanDevice, 1024, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	void* indexBufferMemoryPointer = m_IndexStagingBuffer->Map(indexBufferSize);
 	memcpy(indexBufferMemoryPointer, indexBuffer.data(), indexBufferSize);
+	m_IndexStagingBuffer->Unmap();
 
-	// 由于使用了VK_MEMORY_PROPERTY_HOST_COHERENT_BIT，因此不需要flush
-	vkUnmapMemory(m_VulkanDevice->m_LogicalDevice, m_IndexBufferMemory);
+	// cmd
+	auto cmd = m_VulkanCommandPool->AllocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+	cmd->Begin();
+
+	VkBufferCopy bufferCopyInfo = {};
+	bufferCopyInfo.srcOffset = 0;
+	bufferCopyInfo.dstOffset = 0;
+
+	bufferCopyInfo.size = vertexBufferSize;
+	cmd->CopyBuffer(m_VertexStagingBuffer, m_VertexBuffer, bufferCopyInfo);
+	bufferCopyInfo.size = indexBufferSize;
+	cmd->CopyBuffer(m_IndexStagingBuffer, m_IndexBuffer, bufferCopyInfo);
+
+	// 经测试发现没有这一步也没问题（许多教程也的确没有这一步）
+	/*VkBufferMemoryBarrier bufferMemoryBarrier = {};
+	bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+	bufferMemoryBarrier.pNext = nullptr;
+	bufferMemoryBarrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
+	bufferMemoryBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+	bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	bufferMemoryBarrier.buffer = m_VertexBuffer->m_Buffer;
+	bufferMemoryBarrier.offset = 0;
+	bufferMemoryBarrier.size = VK_WHOLE_SIZE;
+	vkCmdPipelineBarrier(cmd->m_CommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, nullptr, 1, &bufferMemoryBarrier, 0, nullptr);*/
+
+	cmd->End();
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = nullptr;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = nullptr;
+	submitInfo.pWaitDstStageMask = nullptr;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &cmd->m_CommandBuffer;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = nullptr;
+	VK_CHECK_RESULT(vkQueueSubmit(m_VulkanDevice->m_Queue, 1, &submitInfo, VK_NULL_HANDLE));
+
+	m_VulkanDevice->WaitIdle();
 }
 
 void VulkanBase::Draw()
@@ -221,28 +214,14 @@ void VulkanBase::Draw()
 
 void VulkanBase::RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer, VulkanFramebuffer* vulkanFramebuffer)
 {
-	VkCommandBufferBeginInfo commandBufferBeginInfo = {};
-	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	commandBufferBeginInfo.pNext = nullptr;
-	commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-	commandBufferBeginInfo.pInheritanceInfo = nullptr;
-	VK_CHECK_RESULT(vkBeginCommandBuffer(vulkanCommandBuffer->m_CommandBuffer, &commandBufferBeginInfo));
+	VkClearValue clearValue = {};
+	clearValue.color = { 0.0f, 0.0f, 0.2f, 1.0f };
+	clearValue.depthStencil = { 0.0f, 0 };
 
-	// 暂时没有depth
-	VkClearValue clearValues[1];
-	clearValues[0].color = { { 0.0f, 0.0f, 0.2f, 1.0f } };
-
-	VkRenderPassBeginInfo renderPassBeginInfo = {};
-	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassBeginInfo.pNext = nullptr;
-	renderPassBeginInfo.renderPass = m_VulkanRenderPass->m_RenderPass;
-	renderPassBeginInfo.framebuffer = vulkanFramebuffer->m_Framebuffer;
-	renderPassBeginInfo.renderArea.offset.x = 0;
-	renderPassBeginInfo.renderArea.offset.y = 0;
-	renderPassBeginInfo.renderArea.extent = m_VulkanSwapChain->m_Extent;
-	renderPassBeginInfo.clearValueCount = 1;
-	renderPassBeginInfo.pClearValues = clearValues;
-	vkCmdBeginRenderPass(vulkanCommandBuffer->m_CommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	VkRect2D area = {};
+	area.offset.x = 0;
+	area.offset.y = 0;
+	area.extent = m_VulkanSwapChain->m_Extent;
 
 	VkViewport viewport = {};
 	viewport.x = 0.0f;
@@ -251,28 +230,26 @@ void VulkanBase::RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer, V
 	viewport.height = static_cast<float>(m_VulkanSwapChain->m_Extent.height);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport(vulkanCommandBuffer->m_CommandBuffer, 0, 1, &viewport);
 
-	VkRect2D scissor = {};
-	scissor.offset.x = 0;
-	scissor.offset.y = 0;
-	scissor.extent = m_VulkanSwapChain->m_Extent;
-	vkCmdSetScissor(vulkanCommandBuffer->m_CommandBuffer, 0, 1, &scissor);
+	vulkanCommandBuffer->Begin();
 
-	vkCmdBindPipeline(vulkanCommandBuffer->m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline->m_Pipeline);
+	vulkanCommandBuffer->BeginRenderPass(m_VulkanRenderPass, vulkanFramebuffer, area, clearValue);
+	
+	vulkanCommandBuffer->SetViewport(viewport);
 
-	VkDeviceSize offsets[1] = { 0 };
-	vkCmdBindVertexBuffers(vulkanCommandBuffer->m_CommandBuffer, 0, 1, &m_VertexBuffer, offsets);
+	vulkanCommandBuffer->SetScissor(area);
 
-	// Bind triangle index buffer
-	vkCmdBindIndexBuffer(vulkanCommandBuffer->m_CommandBuffer, m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+	vulkanCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline);
 
-	// Draw indexed triangle
-	vkCmdDrawIndexed(vulkanCommandBuffer->m_CommandBuffer, 3, 1, 0, 0, 1);
+	vulkanCommandBuffer->BindVertexBuffer(0, m_VertexBuffer);
 
-	vkCmdEndRenderPass(vulkanCommandBuffer->m_CommandBuffer);
+	vulkanCommandBuffer->BindIndexBuffer(m_IndexBuffer, VK_INDEX_TYPE_UINT32);
 
-	VK_CHECK_RESULT(vkEndCommandBuffer(vulkanCommandBuffer->m_CommandBuffer));
+	vulkanCommandBuffer->DrawIndexed(3, 1, 0, 0, 1);
+
+	vulkanCommandBuffer->EndRenderPass();
+
+	vulkanCommandBuffer->End();
 }
 
 void VulkanBase::CreateFramebuffer(VulkanFramebuffer* vulkanFramebuffer, VkImageView& imageView)

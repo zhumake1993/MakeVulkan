@@ -4,6 +4,10 @@
 
 class VulkanDevice;
 class VulkanCommandPool;
+class VulkanRenderPass;
+class VulkanFramebuffer;
+class VulkanPipeline;
+class VulkanBuffer;
 
 class VulkanCommandBuffer
 {
@@ -14,6 +18,18 @@ public:
 	~VulkanCommandBuffer();
 
 	void CleanUp();
+
+	void Begin();
+	void End();
+	void BeginRenderPass(VulkanRenderPass *vulkanRenderPass, VulkanFramebuffer* vulkanFrameBuffer, VkRect2D& area, VkClearValue& clearValue);
+	void SetViewport(VkViewport& viewport);
+	void SetScissor(VkRect2D& area);
+	void BindPipeline(VkPipelineBindPoint bindPoint, VulkanPipeline* vulkanPipeline);
+	void BindVertexBuffer(uint32_t bind, VulkanBuffer* vulkanBuffer);
+	void BindIndexBuffer(VulkanBuffer* vulkanBuffer, VkIndexType indexType);
+	void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance);
+	void EndRenderPass();
+	void CopyBuffer(VulkanBuffer* src, VulkanBuffer* dst, VkBufferCopy& region);
 
 private:
 
