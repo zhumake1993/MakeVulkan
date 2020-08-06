@@ -43,6 +43,16 @@ void VulkanImage::CleanUp()
 	}
 }
 
+VkDescriptorImageInfo VulkanImage::GetVkDescriptorImageInfo()
+{
+	VkDescriptorImageInfo descriptorImageInfo = {};
+	descriptorImageInfo.sampler = m_Sampler;
+	descriptorImageInfo.imageView = m_ImageView;
+	descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	return descriptorImageInfo;
+}
+
 void VulkanImage::CreateImage()
 {
 	VkImageCreateInfo imageCreateInfo = {};

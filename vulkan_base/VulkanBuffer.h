@@ -15,6 +15,7 @@ public:
 	void CleanUp();
 	void* Map(uint32_t size);
 	void Unmap();
+	VkDescriptorBufferInfo GetVkDescriptorBufferInfo();
 
 private:
 

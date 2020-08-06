@@ -16,6 +16,9 @@ class VulkanPipelineLayout;
 class VulkanPipeline;
 class VulkanBuffer;
 class VulkanImage;
+class VulkanDescriptorSetLayout;
+class VulkanDescriptorPool;
+class VulkanDescriptorSet;
 
 struct VertexData {
 	float   x, y, z, w;
@@ -91,7 +94,7 @@ protected:
 	VulkanBuffer* m_UniformBuffer;
 	VulkanBuffer* m_UniformStagingBuffer;
 
-	VkDescriptorPool m_DescriptorPool;
-	VkDescriptorSetLayout m_DescriptorSetLayout;
-	VkDescriptorSet m_DescriptorSet;
+	VulkanDescriptorPool* m_VulkanDescriptorPool;
+	VulkanDescriptorSetLayout* m_VulkanDescriptorSetLayout;
+	VulkanDescriptorSet* m_VulkanDescriptorSet;
 };

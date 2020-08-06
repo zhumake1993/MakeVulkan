@@ -4,6 +4,7 @@
 
 class VulkanInstance;
 class VulkanSurface;
+struct DescriptorSetUpdater;
 
 class VulkanDevice
 {
@@ -15,8 +16,8 @@ public:
 
 	void CleanUp();
 	void WaitIdle();
-
 	uint32_t GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties);
+	void UpdateDescriptorSets(std::vector<DescriptorSetUpdater*>& descriptorSetUpdaters);
 
 private:
 

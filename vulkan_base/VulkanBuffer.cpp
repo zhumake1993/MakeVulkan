@@ -54,6 +54,16 @@ void VulkanBuffer::Unmap()
 	vkUnmapMemory(m_VulkanDevice->m_LogicalDevice, m_Memory);
 }
 
+VkDescriptorBufferInfo VulkanBuffer::GetVkDescriptorBufferInfo()
+{
+	VkDescriptorBufferInfo descriptorBufferInfo = {};
+	descriptorBufferInfo.buffer = m_Buffer;
+	descriptorBufferInfo.offset = 0;
+	descriptorBufferInfo.range = m_Size;
+
+	return descriptorBufferInfo;
+}
+
 void VulkanBuffer::CreateBuffer()
 {
 	VkBufferCreateInfo vertexBufferInfo = {};

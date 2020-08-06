@@ -14,6 +14,9 @@
 #include "VulkanPipeline.h"
 #include "VulkanBuffer.h"
 #include "VulkanImage.h"
+#include "VulkanDescriptorSetLayout.h"
+#include "VulkanDescriptorPool.h"
+#include "VulkanDescriptorSet.h"
 #include "Tools.h"
 
 VulkanBase::VulkanBase()
@@ -39,11 +42,8 @@ void VulkanBase::CleanUp()
 
 	m_VulkanPipeline->CleanUp();
 
-	vkDestroyDescriptorPool(m_VulkanDevice->m_LogicalDevice, m_DescriptorPool, nullptr);
-	m_DescriptorPool = VK_NULL_HANDLE;
-
-	vkDestroyDescriptorSetLayout(m_VulkanDevice->m_LogicalDevice, m_DescriptorSetLayout, nullptr);
-	m_DescriptorSetLayout = VK_NULL_HANDLE;
+	m_VulkanDescriptorPool->CleanUp();
+	m_VulkanDescriptorSetLayout->CleanUp();
 
 	m_VulkanRenderPass->CleanUp();
 
@@ -94,93 +94,29 @@ void VulkanBase::Init()
 
 	// Descriptor Set
 
-	std::vector<VkDescriptorSetLayoutBinding> layoutBindings(2);
+	m_VulkanDescriptorSetLayout = new VulkanDescriptorSetLayout(m_VulkanDevice);
+	m_VulkanDescriptorSetLayout->AddBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	m_VulkanDescriptorSetLayout->AddBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
+	m_VulkanDescriptorSetLayout->Create();
 
-	layoutBindings[0].binding = 0;
-	layoutBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	layoutBindings[0].descriptorCount = 1;
-	layoutBindings[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	layoutBindings[0].pImmutableSamplers = nullptr;
+	m_VulkanDescriptorPool = new VulkanDescriptorPool(m_VulkanDevice);
+	m_VulkanDescriptorPool->AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
+	m_VulkanDescriptorPool->AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1);
+	m_VulkanDescriptorPool->Create(1);
 
-	layoutBindings[1].binding = 1;
-	layoutBindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	layoutBindings[1].descriptorCount = 1;
-	layoutBindings[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	layoutBindings[1].pImmutableSamplers = nullptr;
+	m_VulkanDescriptorSet = m_VulkanDescriptorPool->AllocateDescriptorSet(m_VulkanDescriptorSetLayout);
 
-	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
-	descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	descriptorSetLayoutCreateInfo.pNext = nullptr;
-	descriptorSetLayoutCreateInfo.flags = 0;
-	descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(layoutBindings.size());
-	descriptorSetLayoutCreateInfo.pBindings = layoutBindings.data();
+	std::vector<DescriptorSetUpdater*> descriptorSetUpdaters(2);
 
-	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_VulkanDevice->m_LogicalDevice, &descriptorSetLayoutCreateInfo, nullptr, &m_DescriptorSetLayout));
+	descriptorSetUpdaters[0] = new DescriptorSetUpdater(m_VulkanDescriptorSet, 0, 0);
+	descriptorSetUpdaters[0]->AddImage(m_Image);
 
-	std::vector<VkDescriptorPoolSize> descriptorPoolSizes(2);
+	descriptorSetUpdaters[1] = new DescriptorSetUpdater(m_VulkanDescriptorSet, 1, 0);
+	descriptorSetUpdaters[1]->AddBuffer(m_UniformBuffer);
 
-	descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptorPoolSizes[0].descriptorCount = 1;
+	m_VulkanDevice->UpdateDescriptorSets(descriptorSetUpdaters);
 
-	descriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	descriptorPoolSizes[1].descriptorCount = 1;
-
-	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
-	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	descriptorPoolCreateInfo.pNext = nullptr;
-	descriptorPoolCreateInfo.flags = 0;
-	descriptorPoolCreateInfo.maxSets = 1;
-	descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
-	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
-
-	VK_CHECK_RESULT(vkCreateDescriptorPool(m_VulkanDevice->m_LogicalDevice, &descriptorPoolCreateInfo, nullptr, &m_DescriptorPool));
-
-	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
-	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	descriptorSetAllocateInfo.pNext = nullptr;
-	descriptorSetAllocateInfo.descriptorPool = m_DescriptorPool;
-	descriptorSetAllocateInfo.descriptorSetCount = 1;
-	descriptorSetAllocateInfo.pSetLayouts = &m_DescriptorSetLayout;
-
-	VK_CHECK_RESULT(vkAllocateDescriptorSets(m_VulkanDevice->m_LogicalDevice, &descriptorSetAllocateInfo, &m_DescriptorSet));
-
-	VkDescriptorImageInfo descriptorImageInfo = {};
-	descriptorImageInfo.sampler = m_Image->m_Sampler;
-	descriptorImageInfo.imageView = m_Image->m_ImageView;
-	descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-	VkDescriptorBufferInfo descriptorBufferInfo = {};
-	descriptorBufferInfo.buffer = m_UniformBuffer->m_Buffer;
-	descriptorBufferInfo.offset = 0;
-	descriptorBufferInfo.range = m_UniformBuffer->m_Size;
-
-	std::vector<VkWriteDescriptorSet> writeDescriptorSets(2);
-
-	writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writeDescriptorSets[0].pNext = nullptr;
-	writeDescriptorSets[0].dstSet = m_DescriptorSet;
-	writeDescriptorSets[0].dstBinding = 0;
-	writeDescriptorSets[0].dstArrayElement = 0;
-	writeDescriptorSets[0].descriptorCount = 1;
-	writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	writeDescriptorSets[0].pImageInfo = &descriptorImageInfo;
-	writeDescriptorSets[0].pBufferInfo = nullptr;
-	writeDescriptorSets[0].pTexelBufferView = nullptr;
-
-	writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writeDescriptorSets[1].pNext = nullptr;
-	writeDescriptorSets[1].dstSet = m_DescriptorSet;
-	writeDescriptorSets[1].dstBinding = 1;
-	writeDescriptorSets[1].dstArrayElement = 0;
-	writeDescriptorSets[1].descriptorCount = 1;
-	writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	writeDescriptorSets[1].pImageInfo = nullptr;
-	writeDescriptorSets[1].pBufferInfo = &descriptorBufferInfo;
-	writeDescriptorSets[1].pTexelBufferView = nullptr;
-
-	vkUpdateDescriptorSets(m_VulkanDevice->m_LogicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
-
-	m_VulkanPipelineLayout = std::shared_ptr<VulkanPipelineLayout>(new VulkanPipelineLayout(m_VulkanDevice, m_DescriptorSetLayout));
+	m_VulkanPipelineLayout = std::shared_ptr<VulkanPipelineLayout>(new VulkanPipelineLayout(m_VulkanDevice, m_VulkanDescriptorSetLayout->m_DescriptorSetLayout));
 
 	CreatePipeline();
 }
@@ -496,7 +432,7 @@ void VulkanBase::RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer, V
 
 	vulkanCommandBuffer->BindIndexBuffer(m_IndexBuffer, VK_INDEX_TYPE_UINT32);
 
-	vkCmdBindDescriptorSets(vulkanCommandBuffer->m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout->m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
+	vkCmdBindDescriptorSets(vulkanCommandBuffer->m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout->m_PipelineLayout, 0, 1, &m_VulkanDescriptorSet->m_DescriptorSet, 0, nullptr);
 
 	vulkanCommandBuffer->DrawIndexed(3, 1, 0, 0, 1);
 

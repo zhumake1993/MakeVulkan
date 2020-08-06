@@ -13,6 +13,7 @@ public:
 	~VulkanImage();
 
 	void CleanUp();
+	VkDescriptorImageInfo GetVkDescriptorImageInfo();
 
 private:
 
