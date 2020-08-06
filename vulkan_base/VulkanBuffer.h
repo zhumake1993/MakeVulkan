@@ -26,6 +26,7 @@ public:
 	uint32_t m_Size;
 	VkBufferUsageFlags m_Usage;
 	VkMemoryPropertyFlagBits m_MemoryProperty;
+
 	VkBuffer m_Buffer = VK_NULL_HANDLE;
 	VkDeviceMemory m_Memory = VK_NULL_HANDLE;
 

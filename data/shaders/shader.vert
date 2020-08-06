@@ -10,8 +10,13 @@
 
 #version 450
 
+layout(set=0, binding=1) uniform u_UniformBuffer {
+    mat4 u_ProjectionMatrix;
+};
+
 layout(location = 0) in vec4 i_Position;
 layout(location = 1) in vec4 i_Color;
+layout(location = 2) in vec2 i_Texcoord;
 
 out gl_PerVertex
 {
@@ -19,8 +24,10 @@ out gl_PerVertex
 };
 
 layout(location = 0) out vec4 v_Color;
+layout(location = 1) out vec2 v_Texcoord;
 
 void main() {
-    gl_Position = i_Position;
-    v_Color = i_Color;
+    gl_Position = u_ProjectionMatrix * i_Position;
+	v_Color = i_Color;
+    v_Texcoord = i_Texcoord;
 }

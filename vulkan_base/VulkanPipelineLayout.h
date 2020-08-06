@@ -9,7 +9,7 @@ class VulkanPipelineLayout
 
 public:
 
-	VulkanPipelineLayout(VulkanDevice* vulkanDevice);
+	VulkanPipelineLayout(VulkanDevice* vulkanDevice, VkDescriptorSetLayout descriptorSetLayout);
 	~VulkanPipelineLayout();
 
 private:

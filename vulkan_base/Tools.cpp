@@ -1,6 +1,9 @@
 #include "Tools.h"
 #include <fstream>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 std::string VulkanErrorToString(VkResult errorCode) {
 	switch (errorCode)
 	{
@@ -96,6 +99,43 @@ std::vector<char> GetBinaryFileContents(std::string const &filename) {
 #endif
 
 	return shaderCode;
+}
+
+std::vector<char> GetImageData(std::string const &filename, int requestedComponents, uint32_t *width, uint32_t *height, uint32_t *components, uint32_t *dataSize) {
+	std::vector<char> fileData = GetBinaryFileContents(filename);
+	if (fileData.size() == 0) {
+		return std::vector<char>();
+	}
+
+	int tmpWidth = 0, tmpHeight = 0, tmpComponents = 0;
+	unsigned char *imageData = stbi_load_from_memory(reinterpret_cast<unsigned char*>(&fileData[0]), static_cast<int>(fileData.size()), &tmpWidth, &tmpHeight, &tmpComponents, requestedComponents);
+	if ((imageData == nullptr) ||
+		(tmpWidth <= 0) ||
+		(tmpHeight <= 0) ||
+		(tmpComponents <= 0)) {
+		LOG("Could not read image data!");
+		return std::vector<char>();
+	}
+
+	int size = (tmpWidth) * (tmpHeight) * (requestedComponents <= 0 ? tmpComponents : requestedComponents);
+	if (dataSize) {
+		*dataSize = size;
+	}
+	if (width) {
+		*width = tmpWidth;
+	}
+	if (height) {
+		*height = tmpHeight;
+	}
+	if (components) {
+		*components = tmpComponents;
+	}
+
+	std::vector<char> output(size);
+	memcpy(&output[0], imageData, size);
+
+	stbi_image_free(imageData);
+	return output;
 }
 
 const std::string GetAssetPath()

@@ -13,6 +13,7 @@
 #include "VulkanPipelineLayout.h"
 #include "VulkanPipeline.h"
 #include "VulkanBuffer.h"
+#include "VulkanImage.h"
 #include "Tools.h"
 
 VulkanBase::VulkanBase()
@@ -27,12 +28,22 @@ void VulkanBase::CleanUp()
 {
 	m_VulkanDevice->WaitIdle();
 
+	m_Image->CleanUp();
+
+	m_UniformBuffer->CleanUp();
+	m_UniformStagingBuffer->CleanUp();
 	m_VertexBuffer->CleanUp();
 	m_IndexBuffer->CleanUp();
 	m_VertexStagingBuffer->CleanUp();
 	m_IndexStagingBuffer->CleanUp();
 
 	m_VulkanPipeline->CleanUp();
+
+	vkDestroyDescriptorPool(m_VulkanDevice->m_LogicalDevice, m_DescriptorPool, nullptr);
+	m_DescriptorPool = VK_NULL_HANDLE;
+
+	vkDestroyDescriptorSetLayout(m_VulkanDevice->m_LogicalDevice, m_DescriptorSetLayout, nullptr);
+	m_DescriptorSetLayout = VK_NULL_HANDLE;
 
 	m_VulkanRenderPass->CleanUp();
 
@@ -77,10 +88,113 @@ void VulkanBase::Init()
 
 	m_VulkanRenderPass = new VulkanRenderPass(m_VulkanDevice, m_VulkanSwapChain->m_Format.format);
 
+	PrepareVertices();
+	PrepareTextures();
+	PrepareUniformBuffer();
+
+	// Descriptor Set
+
+	std::vector<VkDescriptorSetLayoutBinding> layoutBindings(2);
+
+	layoutBindings[0].binding = 0;
+	layoutBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	layoutBindings[0].descriptorCount = 1;
+	layoutBindings[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	layoutBindings[0].pImmutableSamplers = nullptr;
+
+	layoutBindings[1].binding = 1;
+	layoutBindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	layoutBindings[1].descriptorCount = 1;
+	layoutBindings[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	layoutBindings[1].pImmutableSamplers = nullptr;
+
+	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
+	descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	descriptorSetLayoutCreateInfo.pNext = nullptr;
+	descriptorSetLayoutCreateInfo.flags = 0;
+	descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(layoutBindings.size());
+	descriptorSetLayoutCreateInfo.pBindings = layoutBindings.data();
+
+	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_VulkanDevice->m_LogicalDevice, &descriptorSetLayoutCreateInfo, nullptr, &m_DescriptorSetLayout));
+
+	std::vector<VkDescriptorPoolSize> descriptorPoolSizes(2);
+
+	descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	descriptorPoolSizes[0].descriptorCount = 1;
+
+	descriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	descriptorPoolSizes[1].descriptorCount = 1;
+
+	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
+	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	descriptorPoolCreateInfo.pNext = nullptr;
+	descriptorPoolCreateInfo.flags = 0;
+	descriptorPoolCreateInfo.maxSets = 1;
+	descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
+	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
+
+	VK_CHECK_RESULT(vkCreateDescriptorPool(m_VulkanDevice->m_LogicalDevice, &descriptorPoolCreateInfo, nullptr, &m_DescriptorPool));
+
+	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
+	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	descriptorSetAllocateInfo.pNext = nullptr;
+	descriptorSetAllocateInfo.descriptorPool = m_DescriptorPool;
+	descriptorSetAllocateInfo.descriptorSetCount = 1;
+	descriptorSetAllocateInfo.pSetLayouts = &m_DescriptorSetLayout;
+
+	VK_CHECK_RESULT(vkAllocateDescriptorSets(m_VulkanDevice->m_LogicalDevice, &descriptorSetAllocateInfo, &m_DescriptorSet));
+
+	VkDescriptorImageInfo descriptorImageInfo = {};
+	descriptorImageInfo.sampler = m_Image->m_Sampler;
+	descriptorImageInfo.imageView = m_Image->m_ImageView;
+	descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	VkDescriptorBufferInfo descriptorBufferInfo = {};
+	descriptorBufferInfo.buffer = m_UniformBuffer->m_Buffer;
+	descriptorBufferInfo.offset = 0;
+	descriptorBufferInfo.range = m_UniformBuffer->m_Size;
+
+	std::vector<VkWriteDescriptorSet> writeDescriptorSets(2);
+
+	writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSets[0].pNext = nullptr;
+	writeDescriptorSets[0].dstSet = m_DescriptorSet;
+	writeDescriptorSets[0].dstBinding = 0;
+	writeDescriptorSets[0].dstArrayElement = 0;
+	writeDescriptorSets[0].descriptorCount = 1;
+	writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	writeDescriptorSets[0].pImageInfo = &descriptorImageInfo;
+	writeDescriptorSets[0].pBufferInfo = nullptr;
+	writeDescriptorSets[0].pTexelBufferView = nullptr;
+
+	writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSets[1].pNext = nullptr;
+	writeDescriptorSets[1].dstSet = m_DescriptorSet;
+	writeDescriptorSets[1].dstBinding = 1;
+	writeDescriptorSets[1].dstArrayElement = 0;
+	writeDescriptorSets[1].descriptorCount = 1;
+	writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	writeDescriptorSets[1].pImageInfo = nullptr;
+	writeDescriptorSets[1].pBufferInfo = &descriptorBufferInfo;
+	writeDescriptorSets[1].pTexelBufferView = nullptr;
+
+	vkUpdateDescriptorSets(m_VulkanDevice->m_LogicalDevice, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
+
+	m_VulkanPipelineLayout = std::shared_ptr<VulkanPipelineLayout>(new VulkanPipelineLayout(m_VulkanDevice, m_DescriptorSetLayout));
+
+	CreatePipeline();
+}
+
+void VulkanBase::Prepare()
+{
+	m_CanRender = true;
+}
+
+void VulkanBase::CreatePipeline()
+{
 	// std::make_unique 需要C++14的支持，这里使用构造函数更保险
 	std::shared_ptr<VulkanShaderModule> vulkanShaderModuleVert = std::shared_ptr<VulkanShaderModule>(new VulkanShaderModule(m_VulkanDevice, GetAssetPath() + "shaders/shader.vert.spv"));
 	std::shared_ptr<VulkanShaderModule> vulkanShaderModuleFrag = std::shared_ptr<VulkanShaderModule>(new VulkanShaderModule(m_VulkanDevice, GetAssetPath() + "shaders/shader.frag.spv"));
-	std::shared_ptr<VulkanPipelineLayout> vulkanPipelineLayout = std::shared_ptr<VulkanPipelineLayout>(new VulkanPipelineLayout(m_VulkanDevice));
 
 	PipelineStatus pipelineStatus;
 
@@ -89,23 +203,12 @@ void VulkanBase::Init()
 
 	pipelineStatus.vertexInputState.vertexLayout.push_back(kVertexFormatFloat32x4);
 	pipelineStatus.vertexInputState.vertexLayout.push_back(kVertexFormatFloat32x4);
+	pipelineStatus.vertexInputState.vertexLayout.push_back(kVertexFormatFloat32x2);
 
 	pipelineStatus.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
 	pipelineStatus.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_SCISSOR);
 
-	m_VulkanPipeline = new VulkanPipeline(m_VulkanDevice, &pipelineStatus, vulkanPipelineLayout, m_VulkanRenderPass);
-
-	PrepareVertices();
-}
-
-void VulkanBase::Prepare()
-{
-	m_CanRender = true;
-}
-
-void VulkanBase::CreatePipeline(std::shared_ptr<VulkanPipelineLayout> vulkanPipelineLayout)
-{
-	//
+	m_VulkanPipeline = new VulkanPipeline(m_VulkanDevice, &pipelineStatus, m_VulkanPipelineLayout, m_VulkanRenderPass);
 }
 
 void VulkanBase::PrepareVertices()
@@ -113,9 +216,17 @@ void VulkanBase::PrepareVertices()
 	// Vertex buffer
 	std::vector<float> vertexBuffer =
 	{
-		   1.0f,  1.0f, 0.0f,  1.0f ,  1.0f, 0.0f, 0.0f,  0.0f  ,
-		  -1.0f,  1.0f, 0.0f,  1.0f ,  0.0f, 1.0f, 0.0f,  0.0f  ,
-		   0.0f, -1.0f, 0.0f,  1.0f ,  0.0f, 0.0f, 1.0f,  0.0f
+		  -0.5f, -0.5f, 0.0f,  1.0f ,
+		  1.0f, 0.0f, 0.0f,  0.0f  ,
+		  0.0f,  0.0f  ,
+
+		   0.5f, -0.5f, 0.0f,  1.0f ,
+		   0.0f, 1.0f, 0.0f,  0.0f  ,
+		   1.0f,  0.0f  ,
+
+		   0.5f,  0.5f, 0.0f,  1.0f ,
+		   0.0f, 0.0f, 1.0f,  0.0f,
+		   1.0f,  1.0f  ,
 	};
 	uint32_t vertexBufferSize = static_cast<uint32_t>(vertexBuffer.size()) * sizeof(vertexBuffer[0]);
 
@@ -163,6 +274,146 @@ void VulkanBase::PrepareVertices()
 	bufferMemoryBarrier.offset = 0;
 	bufferMemoryBarrier.size = VK_WHOLE_SIZE;
 	vkCmdPipelineBarrier(cmd->m_CommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, nullptr, 1, &bufferMemoryBarrier, 0, nullptr);*/
+
+	cmd->End();
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = nullptr;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = nullptr;
+	submitInfo.pWaitDstStageMask = nullptr;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &cmd->m_CommandBuffer;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = nullptr;
+	VK_CHECK_RESULT(vkQueueSubmit(m_VulkanDevice->m_Queue, 1, &submitInfo, VK_NULL_HANDLE));
+
+	m_VulkanDevice->WaitIdle();
+}
+
+void VulkanBase::PrepareTextures()
+{
+	uint32_t width = 0, height = 0, dataSize = 0;
+	std::vector<char> imageData = GetImageData(GetAssetPath() + "textures/texture.png", 4, &width, &height, nullptr, &dataSize);
+	if (imageData.size() == 0) {
+		assert(false);
+	}
+
+	m_Image = new VulkanImage(m_VulkanDevice, VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+
+	m_ImageStagingBuffer = new VulkanBuffer(m_VulkanDevice, 1000000, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	void* imageMemoryPointer = m_ImageStagingBuffer->Map(dataSize);
+	memcpy(imageMemoryPointer, imageData.data(), dataSize);
+	m_ImageStagingBuffer->Unmap();
+
+	// cmd
+	auto cmd = m_VulkanCommandPool->AllocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+	cmd->Begin();
+
+	VkImageSubresourceRange imageSubresourceRange = {};
+	imageSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	imageSubresourceRange.baseMipLevel = 0;
+	imageSubresourceRange.levelCount = 1;;
+	imageSubresourceRange.baseArrayLayer = 0;
+	imageSubresourceRange.layerCount = 1;
+
+	VkImageMemoryBarrier imageMemoryBarrier = {};
+	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	imageMemoryBarrier.pNext = nullptr;
+	imageMemoryBarrier.srcAccessMask = 0;
+	imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageMemoryBarrier.image = m_Image->m_Image;
+	imageMemoryBarrier.subresourceRange = imageSubresourceRange;
+
+	vkCmdPipelineBarrier(cmd->m_CommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+
+	VkBufferImageCopy bufferImageCopyInfo = {};
+	bufferImageCopyInfo.bufferOffset = 0;
+	bufferImageCopyInfo.bufferRowLength = 0;
+	bufferImageCopyInfo.bufferImageHeight = 0;
+	bufferImageCopyInfo.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT,0,0,1 };
+	bufferImageCopyInfo.imageOffset = { 0,0,0 };
+	bufferImageCopyInfo.imageExtent = { width,height,1 };
+
+	vkCmdCopyBufferToImage(cmd->m_CommandBuffer, m_ImageStagingBuffer->m_Buffer, m_Image->m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
+
+	VkImageMemoryBarrier imageMemoryBarrier2 = {};
+	imageMemoryBarrier2.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	imageMemoryBarrier2.pNext = nullptr;
+	imageMemoryBarrier2.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	imageMemoryBarrier2.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	imageMemoryBarrier2.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	imageMemoryBarrier2.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageMemoryBarrier2.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageMemoryBarrier2.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageMemoryBarrier2.image = m_Image->m_Image;
+	imageMemoryBarrier2.subresourceRange = imageSubresourceRange;
+
+	vkCmdPipelineBarrier(cmd->m_CommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier2);
+
+	cmd->End();
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = nullptr;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = nullptr;
+	submitInfo.pWaitDstStageMask = nullptr;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &cmd->m_CommandBuffer;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = nullptr;
+	VK_CHECK_RESULT(vkQueueSubmit(m_VulkanDevice->m_Queue, 1, &submitInfo, VK_NULL_HANDLE));
+
+	m_VulkanDevice->WaitIdle();
+}
+
+void VulkanBase::PrepareUniformBuffer()
+{
+	std::vector<float> uniformBuffer = { 
+		2.0f,0.0f,0.0f,0.0f,
+		0.0f,1.0f,0.0f,0.0f,
+		0.0f,0.0f,1.0f,0.0f,
+		0.0f,0.0f,0.0f,1.0f };
+	uint32_t uniformBufferSize = static_cast<uint32_t>(uniformBuffer.size()) * sizeof(uniformBuffer[0]);
+
+	m_UniformBuffer = new VulkanBuffer(m_VulkanDevice, uniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+	m_UniformStagingBuffer = new VulkanBuffer(m_VulkanDevice, 1024, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	void* uniformBufferMemoryPointer = m_UniformStagingBuffer->Map(uniformBufferSize);
+	memcpy(uniformBufferMemoryPointer, uniformBuffer.data(), uniformBufferSize);
+	m_UniformStagingBuffer->Unmap();
+
+	// cmd
+	auto cmd = m_VulkanCommandPool->AllocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+	cmd->Begin();
+
+	VkBufferCopy bufferCopyInfo = {};
+	bufferCopyInfo.srcOffset = 0;
+	bufferCopyInfo.dstOffset = 0;
+	bufferCopyInfo.size = uniformBufferSize;
+	cmd->CopyBuffer(m_UniformStagingBuffer, m_UniformBuffer, bufferCopyInfo);
+
+	// 经测试发现没有这一步也没问题（许多教程也的确没有这一步）
+	//VkBufferMemoryBarrier buffer_memory_barrier = {
+	//	  VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,            // VkStructureType                        sType;
+	//	  nullptr,                                            // const void                            *pNext
+	//	  VK_ACCESS_TRANSFER_WRITE_BIT,                       // VkAccessFlags                          srcAccessMask
+	//	  VK_ACCESS_UNIFORM_READ_BIT,                         // VkAccessFlags                          dstAccessMask
+	//	  VK_QUEUE_FAMILY_IGNORED,                            // uint32_t                               srcQueueFamilyIndex
+	//	  VK_QUEUE_FAMILY_IGNORED,                            // uint32_t                               dstQueueFamilyIndex
+	//	  Vulkan.UniformBuffer.Handle,                        // VkBuffer                               buffer
+	//	  0,                                                  // VkDeviceSize                           offset
+	//	  VK_WHOLE_SIZE                                       // VkDeviceSize                           size
+	//};
+	//vkCmdPipelineBarrier
 
 	cmd->End();
 
@@ -244,6 +495,8 @@ void VulkanBase::RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer, V
 	vulkanCommandBuffer->BindVertexBuffer(0, m_VertexBuffer);
 
 	vulkanCommandBuffer->BindIndexBuffer(m_IndexBuffer, VK_INDEX_TYPE_UINT32);
+
+	vkCmdBindDescriptorSets(vulkanCommandBuffer->m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout->m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
 
 	vulkanCommandBuffer->DrawIndexed(3, 1, 0, 0, 1);
 

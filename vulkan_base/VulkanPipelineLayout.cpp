@@ -2,7 +2,7 @@
 #include "VulkanDevice.h"
 #include "Tools.h"
 
-VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice * vulkanDevice):
+VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice * vulkanDevice, VkDescriptorSetLayout descriptorSetLayout):
 	m_VulkanDevice(vulkanDevice)
 {
 	// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
@@ -11,8 +11,8 @@ VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice * vulkanDevice):
 	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutCreateInfo.pNext = nullptr;
 	pipelineLayoutCreateInfo.flags = 0;
-	pipelineLayoutCreateInfo.setLayoutCount = 0;
-	pipelineLayoutCreateInfo.pSetLayouts = nullptr;
+	pipelineLayoutCreateInfo.setLayoutCount = 1;
+	pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
 	pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
 	pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
 
