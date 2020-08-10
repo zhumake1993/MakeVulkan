@@ -9,10 +9,11 @@ class VulkanBuffer
 
 public:
 
-	VulkanBuffer(VulkanDevice* vulkanDevice, uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlagBits memoryProperty);
+	VulkanBuffer(VulkanDevice* vulkanDevice, uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty);
 	~VulkanBuffer();
 
 	void CleanUp();
+	void MapAndCopy(void * data, uint32_t size);
 	void* Map(uint32_t size);
 	void Unmap();
 	VkDescriptorBufferInfo GetVkDescriptorBufferInfo();
@@ -26,7 +27,7 @@ public:
 
 	uint32_t m_Size;
 	VkBufferUsageFlags m_Usage;
-	VkMemoryPropertyFlagBits m_MemoryProperty;
+	VkMemoryPropertyFlags m_MemoryProperty;
 
 	VkBuffer m_Buffer = VK_NULL_HANDLE;
 	VkDeviceMemory m_Memory = VK_NULL_HANDLE;

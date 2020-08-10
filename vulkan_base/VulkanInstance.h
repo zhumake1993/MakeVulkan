@@ -19,8 +19,5 @@ private:
 
 public:
 
-	std::vector<VkLayerProperties> m_AvailableInstanceLayers;
-	std::vector<VkExtensionProperties> m_AvailableInstanceExtensions;
-
 	VkInstance m_Instance = VK_NULL_HANDLE;
 };

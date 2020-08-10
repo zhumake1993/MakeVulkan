@@ -7,7 +7,7 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanSemaphore.h"
 #include "VulkanFence.h"
-#include "VulkanFrameBuffer.h"
+#include "VulkanFramebuffer.h"
 #include "VulkanRenderPass.h"
 #include "VulkanShaderModule.h"
 #include "VulkanPipelineLayout.h"
@@ -31,19 +31,7 @@ void VulkanBase::CleanUp()
 {
 	m_VulkanDevice->WaitIdle();
 
-	m_Image->CleanUp();
-
-	m_UniformBuffer->CleanUp();
-	m_UniformStagingBuffer->CleanUp();
-	m_VertexBuffer->CleanUp();
-	m_IndexBuffer->CleanUp();
-	m_VertexStagingBuffer->CleanUp();
-	m_IndexStagingBuffer->CleanUp();
-
-	m_VulkanPipeline->CleanUp();
-
-	m_VulkanDescriptorPool->CleanUp();
-	m_VulkanDescriptorSetLayout->CleanUp();
+	m_StagingBuffer->CleanUp();
 
 	m_VulkanRenderPass->CleanUp();
 
@@ -88,103 +76,13 @@ void VulkanBase::Init()
 
 	m_VulkanRenderPass = new VulkanRenderPass(m_VulkanDevice, m_VulkanSwapChain->m_Format.format);
 
-	PrepareVertices();
-	PrepareTextures();
-	PrepareUniformBuffer();
-
-	// Descriptor Set
-
-	m_VulkanDescriptorSetLayout = new VulkanDescriptorSetLayout(m_VulkanDevice);
-	m_VulkanDescriptorSetLayout->AddBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-	m_VulkanDescriptorSetLayout->AddBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
-	m_VulkanDescriptorSetLayout->Create();
-
-	m_VulkanDescriptorPool = new VulkanDescriptorPool(m_VulkanDevice);
-	m_VulkanDescriptorPool->AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
-	m_VulkanDescriptorPool->AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1);
-	m_VulkanDescriptorPool->Create(1);
-
-	m_VulkanDescriptorSet = m_VulkanDescriptorPool->AllocateDescriptorSet(m_VulkanDescriptorSetLayout);
-
-	std::vector<DescriptorSetUpdater*> descriptorSetUpdaters(2);
-
-	descriptorSetUpdaters[0] = new DescriptorSetUpdater(m_VulkanDescriptorSet, 0, 0);
-	descriptorSetUpdaters[0]->AddImage(m_Image);
-
-	descriptorSetUpdaters[1] = new DescriptorSetUpdater(m_VulkanDescriptorSet, 1, 0);
-	descriptorSetUpdaters[1]->AddBuffer(m_UniformBuffer);
-
-	m_VulkanDevice->UpdateDescriptorSets(descriptorSetUpdaters);
-
-	m_VulkanPipelineLayout = std::shared_ptr<VulkanPipelineLayout>(new VulkanPipelineLayout(m_VulkanDevice, m_VulkanDescriptorSetLayout->m_DescriptorSetLayout));
-
-	CreatePipeline();
+	m_StagingBuffer = new VulkanBuffer(m_VulkanDevice, 1000000, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 }
 
-void VulkanBase::Prepare()
+void VulkanBase::UploadBuffer(VulkanBuffer * vertexBuffer, void * data, uint32_t size)
 {
-	m_CanRender = true;
-}
+	m_StagingBuffer->MapAndCopy(data, size);
 
-void VulkanBase::CreatePipeline()
-{
-	// std::make_unique 需要C++14的支持，这里使用构造函数更保险
-	std::shared_ptr<VulkanShaderModule> vulkanShaderModuleVert = std::shared_ptr<VulkanShaderModule>(new VulkanShaderModule(m_VulkanDevice, GetAssetPath() + "shaders/shader.vert.spv"));
-	std::shared_ptr<VulkanShaderModule> vulkanShaderModuleFrag = std::shared_ptr<VulkanShaderModule>(new VulkanShaderModule(m_VulkanDevice, GetAssetPath() + "shaders/shader.frag.spv"));
-
-	PipelineStatus pipelineStatus;
-
-	pipelineStatus.shaderStage.vertShaderModule = vulkanShaderModuleVert;
-	pipelineStatus.shaderStage.fragShaderModule = vulkanShaderModuleFrag;
-
-	pipelineStatus.vertexInputState.vertexLayout.push_back(kVertexFormatFloat32x4);
-	pipelineStatus.vertexInputState.vertexLayout.push_back(kVertexFormatFloat32x4);
-	pipelineStatus.vertexInputState.vertexLayout.push_back(kVertexFormatFloat32x2);
-
-	pipelineStatus.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
-	pipelineStatus.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_SCISSOR);
-
-	m_VulkanPipeline = new VulkanPipeline(m_VulkanDevice, &pipelineStatus, m_VulkanPipelineLayout, m_VulkanRenderPass);
-}
-
-void VulkanBase::PrepareVertices()
-{
-	// Vertex buffer
-	std::vector<float> vertexBuffer =
-	{
-		  -0.5f, -0.5f, 0.0f,  1.0f ,
-		  1.0f, 0.0f, 0.0f,  0.0f  ,
-		  0.0f,  0.0f  ,
-
-		   0.5f, -0.5f, 0.0f,  1.0f ,
-		   0.0f, 1.0f, 0.0f,  0.0f  ,
-		   1.0f,  0.0f  ,
-
-		   0.5f,  0.5f, 0.0f,  1.0f ,
-		   0.0f, 0.0f, 1.0f,  0.0f,
-		   1.0f,  1.0f  ,
-	};
-	uint32_t vertexBufferSize = static_cast<uint32_t>(vertexBuffer.size()) * sizeof(vertexBuffer[0]);
-
-	m_VertexBuffer = new VulkanBuffer(m_VulkanDevice, vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-	m_VertexStagingBuffer = new VulkanBuffer(m_VulkanDevice, 1024, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-	void* vertexBufferMemoryPointer = m_VertexStagingBuffer->Map(vertexBufferSize);
-	memcpy(vertexBufferMemoryPointer, vertexBuffer.data(), vertexBufferSize);
-	m_VertexStagingBuffer->Unmap();
-
-	// Index buffer
-	std::vector<uint32_t> indexBuffer = { 0, 1, 2 };
-	uint32_t indexBufferSize = static_cast<uint32_t>(indexBuffer.size()) * sizeof(uint32_t);
-
-	m_IndexBuffer = new VulkanBuffer(m_VulkanDevice, indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-	m_IndexStagingBuffer = new VulkanBuffer(m_VulkanDevice, 1024, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-	void* indexBufferMemoryPointer = m_IndexStagingBuffer->Map(indexBufferSize);
-	memcpy(indexBufferMemoryPointer, indexBuffer.data(), indexBufferSize);
-	m_IndexStagingBuffer->Unmap();
-
-	// cmd
 	auto cmd = m_VulkanCommandPool->AllocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 	cmd->Begin();
@@ -192,58 +90,25 @@ void VulkanBase::PrepareVertices()
 	VkBufferCopy bufferCopyInfo = {};
 	bufferCopyInfo.srcOffset = 0;
 	bufferCopyInfo.dstOffset = 0;
-
-	bufferCopyInfo.size = vertexBufferSize;
-	cmd->CopyBuffer(m_VertexStagingBuffer, m_VertexBuffer, bufferCopyInfo);
-	bufferCopyInfo.size = indexBufferSize;
-	cmd->CopyBuffer(m_IndexStagingBuffer, m_IndexBuffer, bufferCopyInfo);
+	bufferCopyInfo.size = size;
+	cmd->CopyBuffer(m_StagingBuffer, vertexBuffer, bufferCopyInfo);
 
 	// 经测试发现没有这一步也没问题（许多教程也的确没有这一步）
-	/*VkBufferMemoryBarrier bufferMemoryBarrier = {};
-	bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-	bufferMemoryBarrier.pNext = nullptr;
-	bufferMemoryBarrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
-	bufferMemoryBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-	bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	bufferMemoryBarrier.buffer = m_VertexBuffer->m_Buffer;
-	bufferMemoryBarrier.offset = 0;
-	bufferMemoryBarrier.size = VK_WHOLE_SIZE;
-	vkCmdPipelineBarrier(cmd->m_CommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, nullptr, 1, &bufferMemoryBarrier, 0, nullptr);*/
+	//vkCmdPipelineBarrier
 
 	cmd->End();
 
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pNext = nullptr;
-	submitInfo.waitSemaphoreCount = 0;
-	submitInfo.pWaitSemaphores = nullptr;
-	submitInfo.pWaitDstStageMask = nullptr;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &cmd->m_CommandBuffer;
-	submitInfo.signalSemaphoreCount = 0;
-	submitInfo.pSignalSemaphores = nullptr;
-	VK_CHECK_RESULT(vkQueueSubmit(m_VulkanDevice->m_Queue, 1, &submitInfo, VK_NULL_HANDLE));
+	m_VulkanDevice->Submit(cmd);
 
 	m_VulkanDevice->WaitIdle();
+
+	cmd->CleanUp();
 }
 
-void VulkanBase::PrepareTextures()
+void VulkanBase::UploadImage(VulkanImage * vulkanImage, void * data, uint32_t size)
 {
-	uint32_t width = 0, height = 0, dataSize = 0;
-	std::vector<char> imageData = GetImageData(GetAssetPath() + "textures/texture.png", 4, &width, &height, nullptr, &dataSize);
-	if (imageData.size() == 0) {
-		assert(false);
-	}
+	m_StagingBuffer->MapAndCopy(data, size);
 
-	m_Image = new VulkanImage(m_VulkanDevice, VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-
-	m_ImageStagingBuffer = new VulkanBuffer(m_VulkanDevice, 1000000, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-	void* imageMemoryPointer = m_ImageStagingBuffer->Map(dataSize);
-	memcpy(imageMemoryPointer, imageData.data(), dataSize);
-	m_ImageStagingBuffer->Unmap();
-
-	// cmd
 	auto cmd = m_VulkanCommandPool->AllocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 	cmd->Begin();
@@ -264,7 +129,7 @@ void VulkanBase::PrepareTextures()
 	imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageMemoryBarrier.image = m_Image->m_Image;
+	imageMemoryBarrier.image = vulkanImage->m_Image;
 	imageMemoryBarrier.subresourceRange = imageSubresourceRange;
 
 	vkCmdPipelineBarrier(cmd->m_CommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
@@ -275,9 +140,9 @@ void VulkanBase::PrepareTextures()
 	bufferImageCopyInfo.bufferImageHeight = 0;
 	bufferImageCopyInfo.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT,0,0,1 };
 	bufferImageCopyInfo.imageOffset = { 0,0,0 };
-	bufferImageCopyInfo.imageExtent = { width,height,1 };
+	bufferImageCopyInfo.imageExtent = { vulkanImage->m_Width,vulkanImage->m_Height,1 };
 
-	vkCmdCopyBufferToImage(cmd->m_CommandBuffer, m_ImageStagingBuffer->m_Buffer, m_Image->m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
+	vkCmdCopyBufferToImage(cmd->m_CommandBuffer, m_StagingBuffer->m_Buffer, vulkanImage->m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
 
 	VkImageMemoryBarrier imageMemoryBarrier2 = {};
 	imageMemoryBarrier2.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -288,84 +153,18 @@ void VulkanBase::PrepareTextures()
 	imageMemoryBarrier2.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	imageMemoryBarrier2.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	imageMemoryBarrier2.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageMemoryBarrier2.image = m_Image->m_Image;
+	imageMemoryBarrier2.image = vulkanImage->m_Image;
 	imageMemoryBarrier2.subresourceRange = imageSubresourceRange;
 
 	vkCmdPipelineBarrier(cmd->m_CommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier2);
 
 	cmd->End();
 
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pNext = nullptr;
-	submitInfo.waitSemaphoreCount = 0;
-	submitInfo.pWaitSemaphores = nullptr;
-	submitInfo.pWaitDstStageMask = nullptr;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &cmd->m_CommandBuffer;
-	submitInfo.signalSemaphoreCount = 0;
-	submitInfo.pSignalSemaphores = nullptr;
-	VK_CHECK_RESULT(vkQueueSubmit(m_VulkanDevice->m_Queue, 1, &submitInfo, VK_NULL_HANDLE));
+	m_VulkanDevice->Submit(cmd);
 
 	m_VulkanDevice->WaitIdle();
-}
 
-void VulkanBase::PrepareUniformBuffer()
-{
-	std::vector<float> uniformBuffer = { 
-		2.0f,0.0f,0.0f,0.0f,
-		0.0f,1.0f,0.0f,0.0f,
-		0.0f,0.0f,1.0f,0.0f,
-		0.0f,0.0f,0.0f,1.0f };
-	uint32_t uniformBufferSize = static_cast<uint32_t>(uniformBuffer.size()) * sizeof(uniformBuffer[0]);
-
-	m_UniformBuffer = new VulkanBuffer(m_VulkanDevice, uniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-	m_UniformStagingBuffer = new VulkanBuffer(m_VulkanDevice, 1024, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-	void* uniformBufferMemoryPointer = m_UniformStagingBuffer->Map(uniformBufferSize);
-	memcpy(uniformBufferMemoryPointer, uniformBuffer.data(), uniformBufferSize);
-	m_UniformStagingBuffer->Unmap();
-
-	// cmd
-	auto cmd = m_VulkanCommandPool->AllocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-
-	cmd->Begin();
-
-	VkBufferCopy bufferCopyInfo = {};
-	bufferCopyInfo.srcOffset = 0;
-	bufferCopyInfo.dstOffset = 0;
-	bufferCopyInfo.size = uniformBufferSize;
-	cmd->CopyBuffer(m_UniformStagingBuffer, m_UniformBuffer, bufferCopyInfo);
-
-	// 经测试发现没有这一步也没问题（许多教程也的确没有这一步）
-	//VkBufferMemoryBarrier buffer_memory_barrier = {
-	//	  VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,            // VkStructureType                        sType;
-	//	  nullptr,                                            // const void                            *pNext
-	//	  VK_ACCESS_TRANSFER_WRITE_BIT,                       // VkAccessFlags                          srcAccessMask
-	//	  VK_ACCESS_UNIFORM_READ_BIT,                         // VkAccessFlags                          dstAccessMask
-	//	  VK_QUEUE_FAMILY_IGNORED,                            // uint32_t                               srcQueueFamilyIndex
-	//	  VK_QUEUE_FAMILY_IGNORED,                            // uint32_t                               dstQueueFamilyIndex
-	//	  Vulkan.UniformBuffer.Handle,                        // VkBuffer                               buffer
-	//	  0,                                                  // VkDeviceSize                           offset
-	//	  VK_WHOLE_SIZE                                       // VkDeviceSize                           size
-	//};
-	//vkCmdPipelineBarrier
-
-	cmd->End();
-
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pNext = nullptr;
-	submitInfo.waitSemaphoreCount = 0;
-	submitInfo.pWaitSemaphores = nullptr;
-	submitInfo.pWaitDstStageMask = nullptr;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &cmd->m_CommandBuffer;
-	submitInfo.signalSemaphoreCount = 0;
-	submitInfo.pSignalSemaphores = nullptr;
-	VK_CHECK_RESULT(vkQueueSubmit(m_VulkanDevice->m_Queue, 1, &submitInfo, VK_NULL_HANDLE));
-
-	m_VulkanDevice->WaitIdle();
+	cmd->CleanUp();
 }
 
 void VulkanBase::Draw()
@@ -397,48 +196,6 @@ void VulkanBase::Draw()
 	VK_CHECK_RESULT(vkQueueSubmit(m_VulkanDevice->m_Queue, 1, &submitInfo, currFrameResource.fence->m_Fence));
 
 	m_VulkanSwapChain->QueuePresent(imageIndex, currFrameResource.finishedRenderingSemaphore);
-}
-
-void VulkanBase::RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer, VulkanFramebuffer* vulkanFramebuffer)
-{
-	VkClearValue clearValue = {};
-	clearValue.color = { 0.0f, 0.0f, 0.2f, 1.0f };
-	clearValue.depthStencil = { 0.0f, 0 };
-
-	VkRect2D area = {};
-	area.offset.x = 0;
-	area.offset.y = 0;
-	area.extent = m_VulkanSwapChain->m_Extent;
-
-	VkViewport viewport = {};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(m_VulkanSwapChain->m_Extent.width);
-	viewport.height = static_cast<float>(m_VulkanSwapChain->m_Extent.height);
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-
-	vulkanCommandBuffer->Begin();
-
-	vulkanCommandBuffer->BeginRenderPass(m_VulkanRenderPass, vulkanFramebuffer, area, clearValue);
-	
-	vulkanCommandBuffer->SetViewport(viewport);
-
-	vulkanCommandBuffer->SetScissor(area);
-
-	vulkanCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline);
-
-	vulkanCommandBuffer->BindVertexBuffer(0, m_VertexBuffer);
-
-	vulkanCommandBuffer->BindIndexBuffer(m_IndexBuffer, VK_INDEX_TYPE_UINT32);
-
-	vkCmdBindDescriptorSets(vulkanCommandBuffer->m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout->m_PipelineLayout, 0, 1, &m_VulkanDescriptorSet->m_DescriptorSet, 0, nullptr);
-
-	vulkanCommandBuffer->DrawIndexed(3, 1, 0, 0, 1);
-
-	vulkanCommandBuffer->EndRenderPass();
-
-	vulkanCommandBuffer->End();
 }
 
 void VulkanBase::CreateFramebuffer(VulkanFramebuffer* vulkanFramebuffer, VkImageView& imageView)

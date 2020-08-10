@@ -4,6 +4,7 @@
 #include "VulkanDescriptorSet.h"
 #include "VulkanImage.h"
 #include "VulkanBuffer.h"
+#include "VulkanCommandBuffer.h"
 #include "Tools.h"
 
 VulkanDevice::VulkanDevice(VulkanInstance* vulkanInstance, VulkanSurface* vulkanSurface):
@@ -129,6 +130,21 @@ void VulkanDevice::UpdateDescriptorSets(std::vector<DescriptorSetUpdater*>& desc
 	vkUpdateDescriptorSets(m_LogicalDevice, num, writeDescriptorSets.data(), 0, nullptr);
 }
 
+void VulkanDevice::Submit(VulkanCommandBuffer * vulkanCommandBuffer)
+{
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = nullptr;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = nullptr;
+	submitInfo.pWaitDstStageMask = nullptr;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &vulkanCommandBuffer->m_CommandBuffer;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = nullptr;
+	VK_CHECK_RESULT(vkQueueSubmit(m_Queue, 1, &submitInfo, VK_NULL_HANDLE));
+}
+
 void VulkanDevice::ConfigExtensions()
 {
 	uint32_t extensionsCount = 0;
@@ -136,15 +152,15 @@ void VulkanDevice::ConfigExtensions()
 	assert(extensionsCount > 0);
 	LOG("available device extensions ( %d ):", extensionsCount);
 
-	m_AvailableDeviceExtensions.resize(extensionsCount);
-	VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extensionsCount, m_AvailableDeviceExtensions.data()));
+	std::vector<VkExtensionProperties>  availableDeviceExtensions(extensionsCount);
+	VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extensionsCount, availableDeviceExtensions.data()));
 	for (size_t i = 0; i < extensionsCount; i++) {
-		LOG(" %s(%d)", m_AvailableDeviceExtensions[i].extensionName, m_AvailableDeviceExtensions[i].specVersion);
+		LOG(" %s(%d)", availableDeviceExtensions[i].extensionName, availableDeviceExtensions[i].specVersion);
 	}
 	LOG("\n");
 
 	for (size_t i = 0; i < global::enabledDeviceExtensions.size(); ++i) {
-		if (!CheckExtensionAvailability(global::enabledDeviceExtensions[i], m_AvailableDeviceExtensions)) {
+		if (!CheckExtensionAvailability(global::enabledDeviceExtensions[i], availableDeviceExtensions)) {
 			LOG("device extension %s not support!\n", global::enabledDeviceExtensions[i]);
 			assert(false);
 		}

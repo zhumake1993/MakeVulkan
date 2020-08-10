@@ -45,19 +45,18 @@ void VulkanInstance::ConfigInstanceLayers()
 {
 	uint32_t layersCount = 0;
 	VK_CHECK_RESULT(vkEnumerateInstanceLayerProperties(&layersCount, nullptr));
-	//
-	//assert(layersCount > 0);
+	// 移动设备上layersCount有可能是0
 	LOG("available instance layers ( %d ):", layersCount);
 
-	m_AvailableInstanceLayers.resize(layersCount);
-	VK_CHECK_RESULT(vkEnumerateInstanceLayerProperties(&layersCount, m_AvailableInstanceLayers.data()));
+	std::vector<VkLayerProperties> availableInstanceLayers(layersCount);
+	VK_CHECK_RESULT(vkEnumerateInstanceLayerProperties(&layersCount, availableInstanceLayers.data()));
 	for (size_t i = 0; i < layersCount; i++) {
-		LOG(" %s", m_AvailableInstanceLayers[i].layerName);
+		LOG(" %s", availableInstanceLayers[i].layerName);
 	}
 	LOG("\n");
 
 	for (size_t i = 0; i < global::enabledInstanceLayers.size(); ++i) {
-		if (!CheckLayerAvailability(global::enabledInstanceLayers[i], m_AvailableInstanceLayers)) {
+		if (!CheckLayerAvailability(global::enabledInstanceLayers[i], availableInstanceLayers)) {
 			LOG("instance layer %s not support!\n", global::enabledInstanceLayers[i]);
 			assert(false);
 		}
@@ -77,15 +76,15 @@ void VulkanInstance::ConfigInstanceExtensions()
 	assert(extensionsCount > 0);
 	LOG("available instance extensions ( %d ):", extensionsCount);
 
-	m_AvailableInstanceExtensions.resize(extensionsCount);
-	VK_CHECK_RESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, m_AvailableInstanceExtensions.data()));
+	std::vector<VkExtensionProperties> availableInstanceExtensions(extensionsCount);
+	VK_CHECK_RESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, availableInstanceExtensions.data()));
 	for (size_t i = 0; i < extensionsCount; i++) {
-		LOG(" %s", m_AvailableInstanceExtensions[i].extensionName);
+		LOG(" %s", availableInstanceExtensions[i].extensionName);
 	}
 	LOG("\n");
 
 	for (size_t i = 0; i < global::enabledInstanceExtensions.size(); ++i) {
-		if (!CheckExtensionAvailability(global::enabledInstanceExtensions[i], m_AvailableInstanceExtensions)) {
+		if (!CheckExtensionAvailability(global::enabledInstanceExtensions[i], availableInstanceExtensions)) {
 			LOG("instance extension %s not support!\n", global::enabledInstanceExtensions[i]);
 			assert(false);
 		}

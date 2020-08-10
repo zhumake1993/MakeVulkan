@@ -5,12 +5,8 @@
 #include "VulkanRenderPass.h"
 #include "Tools.h"
 
-PipelineCreateInfo::PipelineCreateInfo(PipelineStatus* pipelineStatus, std::shared_ptr<VulkanPipelineLayout> vulkanPipelineLayout, VulkanRenderPass* vulkanRenderPass)
+void PipelineCI::Configure(VulkanPipelineLayout* vulkanPipelineLayout, VulkanRenderPass* vulkanRenderPass)
 {
-	memset(this, 0, sizeof(*this));
-
-	m_PipelineStatus = pipelineStatus;
-
 	pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineCreateInfo.pNext = nullptr;
 	pipelineCreateInfo.flags = 0;
@@ -34,10 +30,8 @@ PipelineCreateInfo::PipelineCreateInfo(PipelineStatus* pipelineStatus, std::shar
 	pipelineCreateInfo.basePipelineIndex = -1;
 }
 
-void PipelineCreateInfo::ConfigShaderStageCreateInfos()
+void PipelineCI::ConfigShaderStageCreateInfos()
 {
-	auto& shaderStage = m_PipelineStatus->shaderStage;
-
 	// Vertex shader
 	shaderStageCreateInfos[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	shaderStageCreateInfos[0].pNext = nullptr;
@@ -60,10 +54,8 @@ void PipelineCreateInfo::ConfigShaderStageCreateInfos()
 	pipelineCreateInfo.pStages = shaderStageCreateInfos;
 }
 
-void PipelineCreateInfo::ConfigVertexInputStateCreateInfo()
+void PipelineCI::ConfigVertexInputStateCreateInfo()
 {
-	auto& vertexInputState = m_PipelineStatus->vertexInputState;
-
 	// Vertex input binding
 	// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
 	vertexInputBindings[0].binding = 0;
@@ -93,10 +85,8 @@ void PipelineCreateInfo::ConfigVertexInputStateCreateInfo()
 	pipelineCreateInfo.pVertexInputState = &vertexInputStateCreateInfo;
 }
 
-void PipelineCreateInfo::ConfigInputAssemblyStateCreateInfo()
+void PipelineCI::ConfigInputAssemblyStateCreateInfo()
 {
-	auto& inputAssemblyState = m_PipelineStatus->inputAssemblyState;
-
 	// Input assembly state describes how primitives are assembled
 	inputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssemblyStateCreateInfo.pNext = nullptr;
@@ -107,17 +97,13 @@ void PipelineCreateInfo::ConfigInputAssemblyStateCreateInfo()
 	pipelineCreateInfo.pInputAssemblyState = &inputAssemblyStateCreateInfo;
 }
 
-void PipelineCreateInfo::ConfigTessellationStateCreateInfo()
+void PipelineCI::ConfigTessellationStateCreateInfo()
 {
-	auto& tessellationState = m_PipelineStatus->tessellationState;
-
 	pipelineCreateInfo.pTessellationState = &tessellationStateCreateInfo;
 }
 
-void PipelineCreateInfo::ConfigViewportStateCreateInfo()
+void PipelineCI::ConfigViewportStateCreateInfo()
 {
-	auto& viewportState = m_PipelineStatus->viewportState;
-
 	// Viewport state sets the number of viewports and scissor used in this pipeline
 	// Note: This is actually overriden by the dynamic states (see below)
 	viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -131,10 +117,8 @@ void PipelineCreateInfo::ConfigViewportStateCreateInfo()
 	pipelineCreateInfo.pViewportState = &viewportStateCreateInfo;
 }
 
-void PipelineCreateInfo::ConfigRasterizationStateCreateInfo()
+void PipelineCI::ConfigRasterizationStateCreateInfo()
 {
-	auto& rasterizationState = m_PipelineStatus->rasterizationState;
-
 	rasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	rasterizationStateCreateInfo.pNext = nullptr;
 	rasterizationStateCreateInfo.flags = 0;
@@ -152,10 +136,8 @@ void PipelineCreateInfo::ConfigRasterizationStateCreateInfo()
 	pipelineCreateInfo.pRasterizationState = &rasterizationStateCreateInfo;
 }
 
-void PipelineCreateInfo::ConfigMultisampleStateCreateInfo()
+void PipelineCI::ConfigMultisampleStateCreateInfo()
 {
-	auto& multisampleState = m_PipelineStatus->multisampleState;
-
 	multisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampleStateCreateInfo.pNext = nullptr;
 	multisampleStateCreateInfo.flags = 0;
@@ -169,17 +151,13 @@ void PipelineCreateInfo::ConfigMultisampleStateCreateInfo()
 	pipelineCreateInfo.pMultisampleState = &multisampleStateCreateInfo;
 }
 
-void PipelineCreateInfo::ConfigDepthStencilStateCreateInfo()
+void PipelineCI::ConfigDepthStencilStateCreateInfo()
 {
-	auto& depthStencilState = m_PipelineStatus->depthStencilState;
-
 	pipelineCreateInfo.pDepthStencilState = &depthStencilStateCreateInfo;
 }
 
-void PipelineCreateInfo::ConfigColorBlendStateCreateInfo()
+void PipelineCI::ConfigColorBlendStateCreateInfo()
 {
-	auto& colorBlendState = m_PipelineStatus->colorBlendState;
-
 	// Color blend state describes how blend factors are calculated (if used)
 	// We need one blend attachment state per color attachment (even if blending is not used)
 	colorBlendAttachmentState.blendEnable = VK_FALSE;
@@ -204,10 +182,8 @@ void PipelineCreateInfo::ConfigColorBlendStateCreateInfo()
 	pipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
 }
 
-void PipelineCreateInfo::ConfigDynamicStateCreateInfo()
+void PipelineCI::ConfigDynamicStateCreateInfo()
 {
-	auto& dynamicState = m_PipelineStatus->dynamicState;
-
 	// Enable dynamic states
 	// Most states are baked into the pipeline, but there are still a few dynamic states that can be changed within a command buffer
 	// To be able to change these we need do specify which dynamic states will be changed using this pipeline. Their actual states are set later on in the command buffer.
@@ -221,11 +197,9 @@ void PipelineCreateInfo::ConfigDynamicStateCreateInfo()
 	pipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
 }
 
-VulkanPipeline::VulkanPipeline(VulkanDevice * vulkanDevice, PipelineStatus* pipelineStatus, std::shared_ptr<VulkanPipelineLayout> vulkanPipelineLayout, VulkanRenderPass* vulkanRenderPass) :
+VulkanPipeline::VulkanPipeline(VulkanDevice * vulkanDevice, PipelineCI& pipelineCI) :
 	m_VulkanDevice(vulkanDevice)
 {
-	PipelineCreateInfo pipelineCI(pipelineStatus, vulkanPipelineLayout, vulkanRenderPass);
-
 	VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_VulkanDevice->m_LogicalDevice, m_PipelineCache, 1, &pipelineCI.pipelineCreateInfo, nullptr, &m_Pipeline));
 }
 

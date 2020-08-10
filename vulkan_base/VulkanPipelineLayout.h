@@ -12,6 +12,8 @@ public:
 	VulkanPipelineLayout(VulkanDevice* vulkanDevice, VkDescriptorSetLayout descriptorSetLayout);
 	~VulkanPipelineLayout();
 
+	void CleanUp();
+
 private:
 
 	//

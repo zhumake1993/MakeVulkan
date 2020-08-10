@@ -5,6 +5,7 @@
 class VulkanInstance;
 class VulkanSurface;
 struct DescriptorSetUpdater;
+class VulkanCommandBuffer;
 
 class VulkanDevice
 {
@@ -18,6 +19,7 @@ public:
 	void WaitIdle();
 	uint32_t GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties);
 	void UpdateDescriptorSets(std::vector<DescriptorSetUpdater*>& descriptorSetUpdaters);
+	void Submit(VulkanCommandBuffer* vulkanCommandBuffer);
 
 private:
 
@@ -33,8 +35,6 @@ public:
 	VkPhysicalDeviceProperties				m_DeviceProperties;
 	VkPhysicalDeviceFeatures				m_DeviceFeatures;
 	VkPhysicalDeviceMemoryProperties		m_DeviceMemoryProperties;
-
-	std::vector<VkExtensionProperties>		m_AvailableDeviceExtensions;
 
 	std::vector<VkQueueFamilyProperties>	m_QueueFamilyProperties;
 	uint32_t								m_SelectedQueueFamilyIndex;
