@@ -5,6 +5,8 @@
 #include "VulkanFramebuffer.h"
 #include "VulkanPipeline.h"
 #include "VulkanBuffer.h"
+#include "VulkanPipelineLayout.h"
+#include "VulkanDescriptorSet.h"
 #include "Tools.h"
 
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice* vulkanDevice, VulkanCommandPool* vulkanCommandPool, VkCommandBufferLevel level):
@@ -80,6 +82,11 @@ void VulkanCommandBuffer::BindVertexBuffer(uint32_t bind, VulkanBuffer * vulkanB
 void VulkanCommandBuffer::BindIndexBuffer(VulkanBuffer * vulkanBuffer, VkIndexType indexType)
 {
 	vkCmdBindIndexBuffer(m_CommandBuffer, vulkanBuffer->m_Buffer, 0, indexType);
+}
+
+void VulkanCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VulkanPipelineLayout * vulkanPipelineLayout, VulkanDescriptorSet * vulkanDescriptorSet)
+{
+	vkCmdBindDescriptorSets(m_CommandBuffer, bindPoint, vulkanPipelineLayout->m_PipelineLayout, 0, 1, &vulkanDescriptorSet->m_DescriptorSet, 0, nullptr);
 }
 
 void VulkanCommandBuffer::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)

@@ -15,7 +15,9 @@ add_library( vulkan_lib STATIC ${vulkan_wrapper_dir}/vulkan_wrapper.cpp)
 
 # vulkan_base
 set(vulkan_base_dir ../../../vulkan_base)
-add_subdirectory( ${vulkan_base_dir} vulkan_base_binary_dir)
+file(GLOB vulkan_base_sources ${vulkan_base_dir}/*.h ${vulkan_base_dir}/*.cpp)
+add_library (vulkan_base_lib ${vulkan_base_sources})
+target_link_libraries(vulkan_base_lib vulkan_lib)
 include_directories( ${vulkan_base_dir} )
 
 # 这里不能用test作为lib的名字，似乎跟重命名有关，原因不明

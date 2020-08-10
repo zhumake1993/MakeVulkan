@@ -214,7 +214,7 @@ private:
 
 		vulkanCommandBuffer->BindIndexBuffer(m_IndexBuffer, VK_INDEX_TYPE_UINT32);
 
-		vkCmdBindDescriptorSets(vulkanCommandBuffer->m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout->m_PipelineLayout, 0, 1, &m_VulkanDescriptorSet->m_DescriptorSet, 0, nullptr);
+		vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, m_VulkanDescriptorSet);
 
 		vulkanCommandBuffer->DrawIndexed(3, 1, 0, 0, 1);
 
