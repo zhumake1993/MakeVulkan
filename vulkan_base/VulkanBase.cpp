@@ -113,50 +113,11 @@ void VulkanBase::UploadImage(VulkanImage * vulkanImage, void * data, uint32_t si
 
 	cmd->Begin();
 
-	VkImageSubresourceRange imageSubresourceRange = {};
-	imageSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	imageSubresourceRange.baseMipLevel = 0;
-	imageSubresourceRange.levelCount = 1;;
-	imageSubresourceRange.baseArrayLayer = 0;
-	imageSubresourceRange.layerCount = 1;
+	cmd->ImageMemoryBarrier(vulkanImage, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-	VkImageMemoryBarrier imageMemoryBarrier = {};
-	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	imageMemoryBarrier.pNext = nullptr;
-	imageMemoryBarrier.srcAccessMask = 0;
-	imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-	imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageMemoryBarrier.image = vulkanImage->m_Image;
-	imageMemoryBarrier.subresourceRange = imageSubresourceRange;
+	cmd->CopyBufferToImage(m_StagingBuffer, vulkanImage);
 
-	vkCmdPipelineBarrier(cmd->m_CommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
-
-	VkBufferImageCopy bufferImageCopyInfo = {};
-	bufferImageCopyInfo.bufferOffset = 0;
-	bufferImageCopyInfo.bufferRowLength = 0;
-	bufferImageCopyInfo.bufferImageHeight = 0;
-	bufferImageCopyInfo.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT,0,0,1 };
-	bufferImageCopyInfo.imageOffset = { 0,0,0 };
-	bufferImageCopyInfo.imageExtent = { vulkanImage->m_Width,vulkanImage->m_Height,1 };
-
-	vkCmdCopyBufferToImage(cmd->m_CommandBuffer, m_StagingBuffer->m_Buffer, vulkanImage->m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
-
-	VkImageMemoryBarrier imageMemoryBarrier2 = {};
-	imageMemoryBarrier2.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	imageMemoryBarrier2.pNext = nullptr;
-	imageMemoryBarrier2.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-	imageMemoryBarrier2.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-	imageMemoryBarrier2.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	imageMemoryBarrier2.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	imageMemoryBarrier2.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageMemoryBarrier2.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageMemoryBarrier2.image = vulkanImage->m_Image;
-	imageMemoryBarrier2.subresourceRange = imageSubresourceRange;
-
-	vkCmdPipelineBarrier(cmd->m_CommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier2);
+	cmd->ImageMemoryBarrier(vulkanImage, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	cmd->End();
 

@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 26
-    //buildToolsVersion "29.0.0"
 
     defaultConfig {
         applicationId "com.example.test"
@@ -11,6 +10,7 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    // 指定cmake文件的路径
     externalNativeBuild {
         cmake {
             path 'CMakeLists.txt'
@@ -22,6 +22,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    // 指定资源目录
     sourceSets {
         main.assets.srcDirs = ['assets']
     }
@@ -30,3 +31,19 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
+
+// 拷贝资源
+task copyTask {
+    copy {
+        from '../../../data/shaders'
+        into 'assets/shaders'
+        include '*.spv'
+    }
+
+    copy {
+        from '../../../data/textures'
+        into 'assets/textures'
+        include '*.*'
+    }
+}
+preBuild.dependsOn copyTask

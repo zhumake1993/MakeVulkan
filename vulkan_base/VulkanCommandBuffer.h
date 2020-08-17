@@ -10,6 +10,7 @@ class VulkanPipeline;
 class VulkanBuffer;
 class VulkanPipelineLayout;
 class VulkanDescriptorSet;
+class VulkanImage;
 
 class VulkanCommandBuffer
 {
@@ -33,6 +34,8 @@ public:
 	void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance);
 	void EndRenderPass();
 	void CopyBuffer(VulkanBuffer* src, VulkanBuffer* dst, VkBufferCopy& region);
+	void CopyBufferToImage(VulkanBuffer* src, VulkanImage* dst);
+	void ImageMemoryBarrier(VulkanImage* img, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL);
 
 private:
 

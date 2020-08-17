@@ -20,10 +20,7 @@
 #include "VulkanDescriptorSet.h"
 #include "Tools.h"
 
-struct VertexData {
-	float   x, y, z, w;
-	float   r, g, b, a;
-};
+#include "Model.h"
 
 class VulkanExample : public VulkanBase
 {
@@ -97,6 +94,10 @@ private:
 			   0.0f, 0.0f, 1.0f,  0.0f,
 			   1.0f,  1.0f  ,
 		};
+		//Model model;
+		//model.loadFromFile(GetAssetPath() + "models/viking_room.obj");
+		//auto vertexBuffer = model.m_Vertices;
+
 		uint32_t vertexBufferSize = static_cast<uint32_t>(vertexBuffer.size()) * sizeof(vertexBuffer[0]);
 
 		m_VertexBuffer = new VulkanBuffer(m_VulkanDevice, vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -105,6 +106,7 @@ private:
 
 		// Index buffer
 		std::vector<uint32_t> indexBuffer = { 0, 1, 2 };
+		//auto indexBuffer = model.m_Indices;
 		uint32_t indexBufferSize = static_cast<uint32_t>(indexBuffer.size()) * sizeof(uint32_t);
 
 		m_IndexBuffer = new VulkanBuffer(m_VulkanDevice, indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
