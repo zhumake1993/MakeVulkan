@@ -23,6 +23,11 @@ extern android_app* androidApp;
 #include <assert.h>
 #include <memory>
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE // OpenGL使用的默认深度范围是[-1,1]
+#include "../external/glm-0.9.9.7/glm/glm/glm.hpp"
+#include "../external/glm-0.9.9.7/glm/glm/gtc/matrix_transform.hpp"
+
 // 全局设置
 
 namespace global

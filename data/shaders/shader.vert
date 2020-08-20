@@ -11,7 +11,9 @@
 #version 450
 
 layout(set=0, binding=1) uniform u_UniformBuffer {
-    mat4 u_ProjectionMatrix;
+    mat4 model;
+    mat4 view;
+    mat4 proj;
 };
 
 layout(location = 0) in vec4 i_Position;
@@ -27,7 +29,7 @@ layout(location = 0) out vec4 v_Color;
 layout(location = 1) out vec2 v_Texcoord;
 
 void main() {
-    gl_Position = u_ProjectionMatrix * i_Position;
+    gl_Position = proj * view * model * i_Position;
 	v_Color = i_Color;
     v_Texcoord = i_Texcoord;
 }

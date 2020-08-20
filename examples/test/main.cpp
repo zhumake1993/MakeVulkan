@@ -21,6 +21,7 @@
 #include "Tools.h"
 
 #include "Model.h"
+#include "Camera.h"
 
 class VulkanExample : public VulkanBase
 {
@@ -50,6 +51,9 @@ public:
 #endif
 
 		global::enabledDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
+		m_Camera.LookAt(glm::vec3(0.0f, 3.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		m_Camera.SetLens(glm::radians(60.0f), 1.0f * global::windowWidth / global::windowHeight, 1.0f, 256.0f);
 	}
 
 	~VulkanExample() {
@@ -127,15 +131,27 @@ private:
 	}
 
 	void PrepareUniformBuffer() {
-		std::vector<float> uniformBuffer = {
+
+		struct UBOVS {
+			alignas(16) glm::mat4 m;
+			alignas(16) glm::mat4 v;
+			alignas(16) glm::mat4 p;
+		} uniformBuffer;
+
+		uniformBuffer.m = glm::mat4(1.0f);
+		uniformBuffer.v = m_Camera.GetView();
+		uniformBuffer.p = m_Camera.GetProj();
+
+		/*std::vector<float> uniformBuffer = {
 		2.0f,0.0f,0.0f,0.0f,
 		0.0f,1.0f,0.0f,0.0f,
 		0.0f,0.0f,1.0f,0.0f,
-		0.0f,0.0f,0.0f,1.0f };
-		uint32_t uniformBufferSize = static_cast<uint32_t>(uniformBuffer.size()) * sizeof(uniformBuffer[0]);
+		0.0f,0.0f,0.0f,1.0f };*/
+		//uint32_t uniformBufferSize = static_cast<uint32_t>(uniformBuffer.size()) * sizeof(uniformBuffer[0]);
+		uint32_t uniformBufferSize = sizeof(uniformBuffer);
 
 		m_UniformBuffer = new VulkanBuffer(m_VulkanDevice, uniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		m_UniformBuffer->MapAndCopy(uniformBuffer.data(), uniformBufferSize);
+		m_UniformBuffer->MapAndCopy(&uniformBuffer, uniformBufferSize);
 	}
 
 	void PrepareDescriptorSet() {
@@ -239,6 +255,7 @@ private:
 	VulkanDescriptorSetLayout* m_VulkanDescriptorSetLayout;
 	VulkanDescriptorSet* m_VulkanDescriptorSet;
 
+	Camera m_Camera;
 };
 
 VulkanExample *vulkanExample;
