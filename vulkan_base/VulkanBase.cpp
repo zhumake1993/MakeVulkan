@@ -36,6 +36,8 @@ void VulkanBase::CleanUp()
 	m_VulkanRenderPass->CleanUp();
 
 	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
+		m_UniformBuffers[i]->CleanUp();
+
 		m_FrameResources[i].framebuffer->CleanUp();
 		m_FrameResources[i].commandBuffer->CleanUp();
 		m_FrameResources[i].imageAvailableSemaphore->CleanUp();
@@ -77,6 +79,13 @@ void VulkanBase::Init()
 	m_VulkanRenderPass = new VulkanRenderPass(m_VulkanDevice, m_VulkanSwapChain->m_Format.format);
 
 	m_StagingBuffer = new VulkanBuffer(m_VulkanDevice, 1000000, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+
+	uint32_t uniformBufferSize = sizeof(UniformBuffer);
+	m_UniformBuffers.resize(global::frameResourcesCount);
+	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
+		m_UniformBuffers[i] = new VulkanBuffer(m_VulkanDevice, uniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	}
+
 }
 
 void VulkanBase::UploadBuffer(VulkanBuffer * vertexBuffer, void * data, uint32_t size)
@@ -132,6 +141,24 @@ void VulkanBase::Draw()
 {
 	auto& currFrameResource = m_FrameResources[m_CurrFrameIndex];
 	m_CurrFrameIndex = (m_CurrFrameIndex + 1) % global::frameResourcesCount;
+
+	// 
+	m_FrameIndex++;
+	m_AccumulateCounter++;
+
+	auto timestamp = std::chrono::high_resolution_clock::now();
+	float deltaTime = (timestamp - lastTimestamp).count() / 1000000000.0f;
+	lastTimestamp = timestamp;
+	m_AccumulateTime += deltaTime;
+	if (m_AccumulateTime >= 0.5f) {
+		m_FPS = m_AccumulateCounter / m_AccumulateTime;
+		m_AccumulateCounter = 0;
+		m_AccumulateTime = 0;
+
+		LOG("m_FPS: %f\n", m_FPS);
+	}
+
+	Logic(deltaTime);
 
 	currFrameResource.fence->Wait();
 	currFrameResource.fence->Reset();

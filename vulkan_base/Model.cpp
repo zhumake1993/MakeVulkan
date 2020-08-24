@@ -17,10 +17,10 @@ bool Model::loadFromFile(const std::string & filename)
 	std::vector<tinyobj::material_t> materials;
 	std::string warn, err;
 
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str())) {
+	/*if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str())) {
 		LOG((warn + err).c_str());
 		return false;
-	}
+	}*/
 
 	for (const auto& shape : shapes) {
 		for (const auto& index : shape.mesh.indices) {

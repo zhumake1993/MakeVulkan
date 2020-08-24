@@ -21,7 +21,6 @@
 #include "Tools.h"
 
 #include "Model.h"
-#include "Camera.h"
 
 class VulkanExample : public VulkanBase
 {
@@ -51,15 +50,11 @@ public:
 #endif
 
 		global::enabledDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-
-		m_Camera.LookAt(glm::vec3(0.0f, 3.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-		m_Camera.SetLens(glm::radians(60.0f), 1.0f * global::windowWidth / global::windowHeight, 1.0f, 256.0f);
 	}
 
 	~VulkanExample() {
 
 		m_Image->CleanUp();
-		m_UniformBuffer->CleanUp();
 		m_VertexBuffer->CleanUp();
 		m_IndexBuffer->CleanUp();
 
@@ -70,9 +65,18 @@ public:
 	}
 
 	virtual void Prepare() override {
+
+		// 摄像机
+		m_Camera.LookAt(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		m_Camera.SetLens(glm::radians(60.0f), 1.0f * global::windowWidth / global::windowHeight, 0.1f, 256.0f);
+#if defined(_WIN32)
+		m_Camera.SetSpeed(1.0f, 0.005f);
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+		m_Camera.SetSpeed(0.001f, 0.005f);
+#endif
+
 		PrepareVertices();
 		PrepareTextures();
-		PrepareUniformBuffer();
 		PrepareDescriptorSet();
 		m_VulkanPipelineLayout = new VulkanPipelineLayout(m_VulkanDevice, m_VulkanDescriptorSetLayout->m_DescriptorSetLayout);
 		CreatePipeline();
@@ -86,15 +90,15 @@ private:
 		// Vertex buffer
 		std::vector<float> vertexBuffer =
 		{
-			  -0.5f, -0.5f, 0.0f,  1.0f ,
+			  -0.5f, 0.5f, 0.0f,  1.0f ,
 			  1.0f, 0.0f, 0.0f,  0.0f  ,
 			  0.0f,  0.0f  ,
 
-			   0.5f, -0.5f, 0.0f,  1.0f ,
+			   0.5f, 0.5f, 0.0f,  1.0f ,
 			   0.0f, 1.0f, 0.0f,  0.0f  ,
 			   1.0f,  0.0f  ,
 
-			   0.5f,  0.5f, 0.0f,  1.0f ,
+			   0.5f,  -0.5f, 0.0f,  1.0f ,
 			   0.0f, 0.0f, 1.0f,  0.0f,
 			   1.0f,  1.0f  ,
 		};
@@ -130,30 +134,6 @@ private:
 		UploadImage(m_Image, imageData.data(), dataSize);
 	}
 
-	void PrepareUniformBuffer() {
-
-		struct UBOVS {
-			alignas(16) glm::mat4 m;
-			alignas(16) glm::mat4 v;
-			alignas(16) glm::mat4 p;
-		} uniformBuffer;
-
-		uniformBuffer.m = glm::mat4(1.0f);
-		uniformBuffer.v = m_Camera.GetView();
-		uniformBuffer.p = m_Camera.GetProj();
-
-		/*std::vector<float> uniformBuffer = {
-		2.0f,0.0f,0.0f,0.0f,
-		0.0f,1.0f,0.0f,0.0f,
-		0.0f,0.0f,1.0f,0.0f,
-		0.0f,0.0f,0.0f,1.0f };*/
-		//uint32_t uniformBufferSize = static_cast<uint32_t>(uniformBuffer.size()) * sizeof(uniformBuffer[0]);
-		uint32_t uniformBufferSize = sizeof(uniformBuffer);
-
-		m_UniformBuffer = new VulkanBuffer(m_VulkanDevice, uniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		m_UniformBuffer->MapAndCopy(&uniformBuffer, uniformBufferSize);
-	}
-
 	void PrepareDescriptorSet() {
 		m_VulkanDescriptorSetLayout = new VulkanDescriptorSetLayout(m_VulkanDevice);
 		m_VulkanDescriptorSetLayout->AddBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -173,7 +153,7 @@ private:
 		descriptorSetUpdaters[0]->AddImage(m_Image);
 
 		descriptorSetUpdaters[1] = new DescriptorSetUpdater(m_VulkanDescriptorSet, 1, 0);
-		descriptorSetUpdaters[1]->AddBuffer(m_UniformBuffer);
+		descriptorSetUpdaters[1]->AddBuffer(m_UniformBuffers[m_CurrFrameIndex]);
 
 		m_VulkanDevice->UpdateDescriptorSets(descriptorSetUpdaters);
 	}
@@ -192,12 +172,26 @@ private:
 		pipelineCI.vertexInputState.vertexLayout.push_back(kVertexFormatFloat32x4);
 		pipelineCI.vertexInputState.vertexLayout.push_back(kVertexFormatFloat32x2);
 
+		pipelineCI.rasterizationState.cullMode = VK_CULL_MODE_NONE;
+
 		pipelineCI.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
 		pipelineCI.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_SCISSOR);
 
 		pipelineCI.Configure(m_VulkanPipelineLayout, m_VulkanRenderPass);
 
 		m_VulkanPipeline = new VulkanPipeline(m_VulkanDevice, pipelineCI);
+	}
+
+	void Logic(float deltaTime) override {
+		// 每帧的逻辑
+
+		m_Camera.Update(m_KeyboardInput, deltaTime);
+
+		m_KeyboardInput.oldPos = m_KeyboardInput.pos;
+
+		m_UniformBuffer.view = m_Camera.GetView();
+		m_UniformBuffer.proj = m_Camera.GetProj();
+		m_UniformBuffers[m_CurrFrameIndex]->MapAndCopy(&m_UniformBuffer, sizeof(UniformBuffer));
 	}
 
 	void RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer, VulkanFramebuffer* vulkanFramebuffer) override {
@@ -249,13 +243,12 @@ private:
 	VulkanBuffer* m_VertexBuffer;
 	VulkanBuffer* m_IndexBuffer;
 	VulkanImage* m_Image;
-	VulkanBuffer* m_UniformBuffer;
 
 	VulkanDescriptorPool* m_VulkanDescriptorPool;
 	VulkanDescriptorSetLayout* m_VulkanDescriptorSetLayout;
 	VulkanDescriptorSet* m_VulkanDescriptorSet;
 
-	Camera m_Camera;
+	UniformBuffer m_UniformBuffer;
 };
 
 VulkanExample *vulkanExample;

@@ -15,6 +15,7 @@ public:
 	HWND SetupWindow(HINSTANCE hinstance, WNDPROC wndproc);
 	void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+	void HandleTouchScreenEvent(int32_t action, AInputEvent* event);
 	static int32_t HandleAppInput(struct android_app* app, AInputEvent* event);
 	static void HandleAppCommand(android_app* app, int32_t cmd);
 #endif
@@ -26,7 +27,8 @@ public:
 
 protected:
 
-	//
+	virtual void KeyPress(uint32_t) {}
+	virtual void KeyUp(uint32_t) {}
 
 private:
 
@@ -43,5 +45,6 @@ protected:
 	bool m_Focused = false;
 	std::string androidProduct;
 #endif
-
+	
+	KeyboardInput m_KeyboardInput;
 };

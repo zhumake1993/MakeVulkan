@@ -2,6 +2,8 @@
 
 #include "Application.h"
 
+#include "Camera.h"
+
 class VulkanInstance;
 class VulkanSurface;
 class VulkanDevice;
@@ -19,6 +21,12 @@ class VulkanImage;
 class VulkanDescriptorSetLayout;
 class VulkanDescriptorPool;
 class VulkanDescriptorSet;
+
+struct UniformBuffer
+{
+	alignas(16) glm::mat4 view;
+	alignas(16) glm::mat4 proj;
+};
 
 class VulkanBase : public Application
 {
@@ -54,6 +62,7 @@ protected:
 private:
 
 	void Draw() override;
+	virtual void Logic(float deltaTime) {}
 	virtual void RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer, VulkanFramebuffer* vulkanFramebuffer) {}
 	void CreateFramebuffer(VulkanFramebuffer* vulkanFramebuffer, VkImageView& imageView);
 
@@ -72,4 +81,15 @@ protected:
 	VulkanRenderPass* m_VulkanRenderPass;
 
 	VulkanBuffer* m_StagingBuffer;
+
+	// ÉãÏñ»ú
+	Camera m_Camera;
+	std::vector<VulkanBuffer*> m_UniformBuffers;
+
+	// stats
+	uint32_t m_FrameIndex = 0;
+	uint32_t m_AccumulateCounter = 0;
+	float m_AccumulateTime = 0;
+	float m_FPS = 0;
+	std::chrono::time_point<std::chrono::high_resolution_clock> lastTimestamp = std::chrono::high_resolution_clock::now();
 };

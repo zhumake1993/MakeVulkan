@@ -12,7 +12,12 @@ public:
 
 	void LookAt(glm::vec3 pos, glm::vec3 target);
 	void SetLens(float fovY, float aspect, float nearZ, float farZ);
+	void SetAspect(float aspect);
+	void SetSpeed(float moveSpeed, float rotateSpeed);
+	void Update(KeyboardInput& input, float deltaTime);
 
+	// 这3个函数没用到。。。
+	// 现在的实现方法，斜向移动的速度保持m_MoveSpeed
 	void Strafe(float d);
 	void Walk(float d);
 	void Fly(float d);
@@ -34,4 +39,7 @@ private:
 	float m_Aspect = 0.0f;
 	float m_NearZ = 0.0f;
 	float m_FarZ = 0.0f;
+
+	float m_MoveSpeed;
+	float m_RotateSpeed;
 };

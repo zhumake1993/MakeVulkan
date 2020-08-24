@@ -130,205 +130,147 @@ void Application::HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	case WM_PAINT:
 		ValidateRect(m_WindowHandle, NULL);
 		break;
-		//case WM_KEYDOWN:
-		//	switch (wParam)
-		//	{
-		//	case KEY_P:
-		//		paused = !paused;
-		//		break;
-		//	case KEY_F1:
-		//		if (settings.overlay) {
-		//			UIOverlay.visible = !UIOverlay.visible;
-		//		}
-		//		break;
-		//	case KEY_ESCAPE:
-		//		PostQuitMessage(0);
-		//		break;
-		//	}
-
-		//	if (camera.firstperson)
-		//	{
-		//		switch (wParam)
-		//		{
-		//		case KEY_W:
-		//			camera.keys.up = true;
-		//			break;
-		//		case KEY_S:
-		//			camera.keys.down = true;
-		//			break;
-		//		case KEY_A:
-		//			camera.keys.left = true;
-		//			break;
-		//		case KEY_D:
-		//			camera.keys.right = true;
-		//			break;
-		//		}
-		//	}
-
-		//	keyPressed((uint32_t)wParam);
-		//	break;
-		//case WM_KEYUP:
-		//	if (camera.firstperson)
-		//	{
-		//		switch (wParam)
-		//		{
-		//		case KEY_W:
-		//			camera.keys.up = false;
-		//			break;
-		//		case KEY_S:
-		//			camera.keys.down = false;
-		//			break;
-		//		case KEY_A:
-		//			camera.keys.left = false;
-		//			break;
-		//		case KEY_D:
-		//			camera.keys.right = false;
-		//			break;
-		//		}
-		//	}
-		//	break;
-		//case WM_LBUTTONDOWN:
-		//	mousePos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
-		//	mouseButtons.left = true;
-		//	break;
-		//case WM_RBUTTONDOWN:
-		//	mousePos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
-		//	mouseButtons.right = true;
-		//	break;
-		//case WM_MBUTTONDOWN:
-		//	mousePos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
-		//	mouseButtons.middle = true;
-		//	break;
-		//case WM_LBUTTONUP:
-		//	mouseButtons.left = false;
-		//	break;
-		//case WM_RBUTTONUP:
-		//	mouseButtons.right = false;
-		//	break;
-		//case WM_MBUTTONUP:
-		//	mouseButtons.middle = false;
-		//	break;
-		//case WM_MOUSEWHEEL:
-		//{
-		//	short wheelDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-		//	camera.translate(glm::vec3(0.0f, 0.0f, (float)wheelDelta * 0.005f));
-		//	viewUpdated = true;
-		//	break;
-		//}
-		//case WM_MOUSEMOVE:
-		//{
-		//	handleMouseMove(LOWORD(lParam), HIWORD(lParam));
-		//	break;
-		//}
-		//case WM_SIZE:
-		//	if ((prepared) && (wParam != SIZE_MINIMIZED))
-		//	{
-		//		if ((resizing) || ((wParam == SIZE_MAXIMIZED) || (wParam == SIZE_RESTORED)))
-		//		{
-		//			destWidth = LOWORD(lParam);
-		//			destHeight = HIWORD(lParam);
-		//			windowResize();
-		//		}
-		//	}
-		//	break;
-		//case WM_GETMINMAXINFO:
-		//{
-		//	LPMINMAXINFO minMaxInfo = (LPMINMAXINFO)lParam;
-		//	minMaxInfo->ptMinTrackSize.x = 64;
-		//	minMaxInfo->ptMinTrackSize.y = 64;
-		//	break;
-		//}
-		//case WM_ENTERSIZEMOVE:
-		//	resizing = true;
-		//	break;
-		//case WM_EXITSIZEMOVE:
-		//	resizing = false;
-		//	break;
+	case WM_KEYDOWN:
+		switch (wParam)
+		{
+		case KEY_W:
+			m_KeyboardInput.key_W = true;
+			break;
+		case KEY_S:
+			m_KeyboardInput.key_S = true;
+			break;
+		case KEY_A:
+			m_KeyboardInput.key_A = true;
+			break;
+		case KEY_D:
+			m_KeyboardInput.key_D = true;
+			break;
+		case KEY_Q:
+			m_KeyboardInput.key_Q = true;
+			break;
+		case KEY_E:
+			m_KeyboardInput.key_E = true;
+			break;
+		}
+		KeyPress((uint32_t)wParam);
+		break;
+	case WM_KEYUP:
+		switch (wParam)
+		{
+		case KEY_W:
+			m_KeyboardInput.key_W = false;
+			break;
+		case KEY_S:
+			m_KeyboardInput.key_S = false;
+			break;
+		case KEY_A:
+			m_KeyboardInput.key_A = false;
+			break;
+		case KEY_D:
+			m_KeyboardInput.key_D = false;
+			break;
+		case KEY_Q:
+			m_KeyboardInput.key_Q = false;
+			break;
+		case KEY_E:
+			m_KeyboardInput.key_E = false;
+			break;
+		}
+		KeyUp((uint32_t)wParam);
+		break;
+	case WM_LBUTTONDOWN:
+		m_KeyboardInput.key_MouseLeft = true;
+		m_KeyboardInput.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
+		break;
+	case WM_RBUTTONDOWN:
+		m_KeyboardInput.key_MouseRight = true;
+		m_KeyboardInput.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
+		break;
+	case WM_MBUTTONDOWN:
+		// 滚轮
+		break;
+	case WM_LBUTTONUP:
+		m_KeyboardInput.key_MouseLeft = false;
+		m_KeyboardInput.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
+		break;
+	case WM_RBUTTONUP:
+		m_KeyboardInput.key_MouseRight = false;
+		m_KeyboardInput.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
+		break;
+	case WM_MBUTTONUP:
+		// 滚轮
+		break;
+	case WM_MOUSEWHEEL:
+	{
+		// 滚轮
+		break;
+	}
+	case WM_MOUSEMOVE:
+	{
+		m_KeyboardInput.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
+		break;
+	}
+	/*case WM_SIZE:
+		if ((prepared) && (wParam != SIZE_MINIMIZED))
+		{
+			if ((resizing) || ((wParam == SIZE_MAXIMIZED) || (wParam == SIZE_RESTORED)))
+			{
+				destWidth = LOWORD(lParam);
+				destHeight = HIWORD(lParam);
+				windowResize();
+			}
+		}
+		break;
+	case WM_GETMINMAXINFO:
+	{
+		LPMINMAXINFO minMaxInfo = (LPMINMAXINFO)lParam;
+		minMaxInfo->ptMinTrackSize.x = 64;
+		minMaxInfo->ptMinTrackSize.y = 64;
+		break;
+	}
+	case WM_ENTERSIZEMOVE:
+		resizing = true;
+		break;
+	case WM_EXITSIZEMOVE:
+		resizing = false;
+		break;*/
 	}
 }
 
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
 
-void HandleTouchScreenEvent(Application* application, int32_t action)
+void Application::HandleTouchScreenEvent(int32_t action, AInputEvent* event)
 {
-	//switch (action)
-	//{
-	//	case AMOTION_EVENT_ACTION_UP:
-	//	{
-	//		vulkanExample->lastTapTime = AMotionEvent_getEventTime(event);
-	//		vulkanExample->touchPos.x = AMotionEvent_getX(event, 0);
-	//		vulkanExample->touchPos.y = AMotionEvent_getY(event, 0);
-	//		vulkanExample->touchTimer = 0.0;
-	//		vulkanExample->touchDown = false;
-	//		vulkanExample->camera.keys.up = false;
-
-	//		// Detect single tap
-	//		int64_t eventTime = AMotionEvent_getEventTime(event);
-	//		int64_t downTime = AMotionEvent_getDownTime(event);
-	//		if (eventTime - downTime <= vks::android::TAP_TIMEOUT) {
-	//			float deadZone = (160.f / vks::android::screenDensity) * vks::android::TAP_SLOP * vks::android::TAP_SLOP;
-	//			float x = AMotionEvent_getX(event, 0) - vulkanExample->touchPos.x;
-	//			float y = AMotionEvent_getY(event, 0) - vulkanExample->touchPos.y;
-	//			if ((x * x + y * y) < deadZone) {
-	//				vulkanExample->mouseButtons.left = true;
-	//			}
-	//		};
-
-	//		return 1;
-	//		break;
-	//	}
-	//	case AMOTION_EVENT_ACTION_DOWN:
-	//	{
-	//		// Detect double tap
-	//		int64_t eventTime = AMotionEvent_getEventTime(event);
-	//		if (eventTime - vulkanExample->lastTapTime <= vks::android::DOUBLE_TAP_TIMEOUT) {
-	//			float deadZone = (160.f / vks::android::screenDensity) * vks::android::DOUBLE_TAP_SLOP * vks::android::DOUBLE_TAP_SLOP;
-	//			float x = AMotionEvent_getX(event, 0) - vulkanExample->touchPos.x;
-	//			float y = AMotionEvent_getY(event, 0) - vulkanExample->touchPos.y;
-	//			if ((x * x + y * y) < deadZone) {
-	//				vulkanExample->keyPressed(TOUCH_DOUBLE_TAP);
-	//				vulkanExample->touchDown = false;
-	//			}
-	//		}
-	//		else {
-	//			vulkanExample->touchDown = true;
-	//		}
-	//		vulkanExample->touchPos.x = AMotionEvent_getX(event, 0);
-	//		vulkanExample->touchPos.y = AMotionEvent_getY(event, 0);
-	//		vulkanExample->mousePos.x = AMotionEvent_getX(event, 0);
-	//		vulkanExample->mousePos.y = AMotionEvent_getY(event, 0);
-	//		break;
-	//	}
-	//	case AMOTION_EVENT_ACTION_MOVE:
-	//	{
-	//		bool handled = false;
-	//		if (vulkanExample->settings.overlay) {
-	//			ImGuiIO& io = ImGui::GetIO();
-	//			handled = io.WantCaptureMouse;
-	//		}
-	//		if (!handled) {
-	//			int32_t eventX = AMotionEvent_getX(event, 0);
-	//			int32_t eventY = AMotionEvent_getY(event, 0);
-
-	//			float deltaX = (float)(vulkanExample->touchPos.y - eventY) * vulkanExample->camera.rotationSpeed * 0.5f;
-	//			float deltaY = (float)(vulkanExample->touchPos.x - eventX) * vulkanExample->camera.rotationSpeed * 0.5f;
-
-	//			vulkanExample->camera.rotate(glm::vec3(deltaX, 0.0f, 0.0f));
-	//			vulkanExample->camera.rotate(glm::vec3(0.0f, -deltaY, 0.0f));
-
-	//			vulkanExample->viewChanged();
-
-	//			vulkanExample->touchPos.x = eventX;
-	//			vulkanExample->touchPos.y = eventY;
-	//		}
-	//		break;
-	//	}
-	//	default:
-	//	{
-	//		return 0;
-	//		break;
-	//	}
-	//}
+	switch (action)
+	{
+		case AMOTION_EVENT_ACTION_UP:
+		{
+			m_KeyboardInput.touch = false;
+			m_KeyboardInput.pos.x = AMotionEvent_getX(event, 0);
+			m_KeyboardInput.pos.y = AMotionEvent_getY(event, 0);
+			break;
+		}
+		case AMOTION_EVENT_ACTION_DOWN:
+		{
+			m_KeyboardInput.touch = true;
+			m_KeyboardInput.pos.x = AMotionEvent_getX(event, 0);
+			m_KeyboardInput.pos.y = AMotionEvent_getY(event, 0);
+			// 注意oldPos也要改
+			m_KeyboardInput.oldPos.x = AMotionEvent_getX(event, 0);
+			m_KeyboardInput.oldPos.y = AMotionEvent_getY(event, 0);
+			break;
+		}
+		case AMOTION_EVENT_ACTION_MOVE:
+		{
+			m_KeyboardInput.pos.x = AMotionEvent_getX(event, 0);
+			m_KeyboardInput.pos.y = AMotionEvent_getY(event, 0);
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
 }
 
 int32_t Application::HandleAppInput(struct android_app* app, AInputEvent* event)
@@ -349,7 +291,7 @@ int32_t Application::HandleAppInput(struct android_app* app, AInputEvent* event)
 			case AINPUT_SOURCE_TOUCHSCREEN:
 			{
 				int32_t action = AMotionEvent_getAction(event);
-				HandleTouchScreenEvent(application, action);
+				application->HandleTouchScreenEvent(action, event);
 			}
 
 			return 1;

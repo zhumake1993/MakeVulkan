@@ -22,9 +22,11 @@ extern android_app* androidApp;
 #include <vector>
 #include <assert.h>
 #include <memory>
+#include <chrono>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE // OpenGL使用的默认深度范围是[-1,1]
+#define GLM_FORCE_LEFT_HANDED // 强制使用左手坐标系，注意，定义GLM_LEFT_HANDED宏是没用的
 #include "../external/glm-0.9.9.7/glm/glm/glm.hpp"
 #include "../external/glm-0.9.9.7/glm/glm/gtc/matrix_transform.hpp"
 
@@ -59,3 +61,37 @@ namespace global
 	// Frame
 	extern size_t frameResourcesCount;
 }
+
+#if defined(_WIN32)
+
+#define KEY_W 0x57
+#define KEY_A 0x41
+#define KEY_S 0x53
+#define KEY_D 0x44
+#define KEY_Q 0x51
+#define KEY_E 0x45
+
+struct KeyboardInput
+{
+	bool key_W = false;
+	bool key_S = false;
+	bool key_A = false;
+	bool key_D = false;
+	bool key_Q = false;
+	bool key_E = false;
+	bool key_MouseLeft = false;
+	bool key_MouseRight = false;
+	glm::vec2 pos = glm::vec2(0.0f, 0.0f);
+	glm::vec2 oldPos = glm::vec2(0.0f, 0.0f);
+};
+
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+
+struct KeyboardInput
+{
+	bool touch = false;
+	glm::vec2 pos = glm::vec2(0.0f, 0.0f);
+	glm::vec2 oldPos = glm::vec2(0.0f, 0.0f);
+};
+
+#endif

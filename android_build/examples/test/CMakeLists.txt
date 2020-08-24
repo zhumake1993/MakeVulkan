@@ -13,6 +13,10 @@ set(vulkan_wrapper_dir ../../../vulkan_wrapper)
 include_directories(${vulkan_wrapper_dir})
 add_library( vulkan_lib STATIC ${vulkan_wrapper_dir}/vulkan_wrapper.cpp)
 
+# external
+#set(external_dir ../../../external_dir)
+#include_directories(${external_dir})
+
 # vulkan_base
 set(vulkan_base_dir ../../../vulkan_base)
 file(GLOB vulkan_base_sources ${vulkan_base_dir}/*.h ${vulkan_base_dir}/*.cpp)
