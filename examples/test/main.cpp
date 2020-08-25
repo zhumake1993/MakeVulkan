@@ -187,7 +187,12 @@ private:
 
 		m_Camera.Update(m_KeyboardInput, deltaTime);
 
+#if defined(_WIN32)
 		m_KeyboardInput.oldPos = m_KeyboardInput.pos;
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+		m_KeyboardInput.oldPos0 = m_KeyboardInput.pos0;
+		m_KeyboardInput.oldPos1 = m_KeyboardInput.pos1;
+#endif
 
 		m_UniformBuffer.view = m_Camera.GetView();
 		m_UniformBuffer.proj = m_Camera.GetProj();

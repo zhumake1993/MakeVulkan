@@ -245,25 +245,56 @@ void Application::HandleTouchScreenEvent(int32_t action, AInputEvent* event)
 	{
 		case AMOTION_EVENT_ACTION_UP:
 		{
-			m_KeyboardInput.touch = false;
-			m_KeyboardInput.pos.x = AMotionEvent_getX(event, 0);
-			m_KeyboardInput.pos.y = AMotionEvent_getY(event, 0);
+			m_KeyboardInput.count = 0;
 			break;
 		}
 		case AMOTION_EVENT_ACTION_DOWN:
 		{
-			m_KeyboardInput.touch = true;
-			m_KeyboardInput.pos.x = AMotionEvent_getX(event, 0);
-			m_KeyboardInput.pos.y = AMotionEvent_getY(event, 0);
-			// 注意oldPos也要改
-			m_KeyboardInput.oldPos.x = AMotionEvent_getX(event, 0);
-			m_KeyboardInput.oldPos.y = AMotionEvent_getY(event, 0);
+			m_KeyboardInput.count = 1;
+
+			m_KeyboardInput.pos0.x = AMotionEvent_getX(event, 0);
+			m_KeyboardInput.pos0.y = AMotionEvent_getY(event, 0);
+			m_KeyboardInput.oldPos0.x = AMotionEvent_getX(event, 0);
+			m_KeyboardInput.oldPos0.y = AMotionEvent_getY(event, 0);
+
 			break;
 		}
 		case AMOTION_EVENT_ACTION_MOVE:
 		{
-			m_KeyboardInput.pos.x = AMotionEvent_getX(event, 0);
-			m_KeyboardInput.pos.y = AMotionEvent_getY(event, 0);
+			if (AMotionEvent_getPointerCount(event) == 1) {
+				m_KeyboardInput.pos0.x = AMotionEvent_getX(event, 0);
+				m_KeyboardInput.pos0.y = AMotionEvent_getY(event, 0);
+
+				// 
+				if (m_KeyboardInput.count == 2) {
+					m_KeyboardInput.count = 1;
+
+					m_KeyboardInput.oldPos0.x = AMotionEvent_getX(event, 0);
+					m_KeyboardInput.oldPos0.y = AMotionEvent_getY(event, 0);
+				}
+			}
+			else if (AMotionEvent_getPointerCount(event) == 2) {
+
+				m_KeyboardInput.pos0.x = AMotionEvent_getX(event, 0);
+				m_KeyboardInput.pos0.y = AMotionEvent_getY(event, 0);
+
+				m_KeyboardInput.pos1.x = AMotionEvent_getX(event, 1);
+				m_KeyboardInput.pos1.y = AMotionEvent_getY(event, 1);
+
+				// 
+				if (m_KeyboardInput.count == 1) {
+					m_KeyboardInput.count = 2;
+
+					m_KeyboardInput.oldPos0.x = AMotionEvent_getX(event, 0);
+					m_KeyboardInput.oldPos0.y = AMotionEvent_getY(event, 0);
+
+					m_KeyboardInput.oldPos1.x = AMotionEvent_getX(event, 1);
+					m_KeyboardInput.oldPos1.y = AMotionEvent_getY(event, 1);
+				}
+			}
+			else {
+				// 不处理2个触点以上的情况
+			}
 			break;
 		}
 		default:

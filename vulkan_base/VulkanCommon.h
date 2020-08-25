@@ -89,9 +89,14 @@ struct KeyboardInput
 
 struct KeyboardInput
 {
-	bool touch = false;
-	glm::vec2 pos = glm::vec2(0.0f, 0.0f);
-	glm::vec2 oldPos = glm::vec2(0.0f, 0.0f);
+	// 触点数量
+	int count = 0;
+
+	// 最多支持两点触屏
+	glm::vec2 pos0 = glm::vec2(0.0f, 0.0f);
+	glm::vec2 oldPos0 = glm::vec2(0.0f, 0.0f);
+	glm::vec2 pos1 = glm::vec2(0.0f, 0.0f);
+	glm::vec2 oldPos1 = glm::vec2(0.0f, 0.0f);
 };
 
 #endif

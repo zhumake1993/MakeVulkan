@@ -55,33 +55,55 @@ void Camera::Update(KeyboardInput& input, float deltaTime)
 	}
 
 	if (input.key_MouseRight) {
-		// ÕâÀï²»Òª³ËÒÔdeltaTime£¬Òª¸ù¾İÒÆ¶¯µÄ¾àÀëÀ´¿ØÖÆĞı×ªµÄ½Ç¶È
+		// è¿™é‡Œä¸è¦ä¹˜ä»¥deltaTimeï¼Œè¦æ ¹æ®ç§»åŠ¨çš„è·ç¦»æ¥æ§åˆ¶æ—‹è½¬çš„è§’åº¦
 		RotateY((input.pos.x - input.oldPos.x) * m_RotateSpeed);
 		Pitch((input.pos.y - input.oldPos.y) * m_RotateSpeed);
 	}
 
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
 
-	if (input.touch) {
+	if (input.count > 0) {
 
-		float deltaX = input.pos.x - input.oldPos.x;
-		float deltaY = input.pos.y - input.oldPos.y;
+		float deltaX = input.pos0.x - input.oldPos0.x;
+		float deltaY = input.pos0.y - input.oldPos0.y;
 		
-		if (input.pos.x < global::windowWidth / 2) {
+		if (input.pos0.x < global::windowWidth / 2) {
 
-			// ´¥ÃşÆÁÄ»×ó±ß£¬ÒÆ¶¯Î»ÖÃ
+			// è§¦æ‘¸å±å¹•å·¦è¾¹ï¼Œç§»åŠ¨ä½ç½®
 			auto right = glm::cross(m_WorldUp, m_Look);
 
 			glm::vec3 dir = deltaX * right - deltaY * m_Look;
 
 			if (glm::length(dir) > 0) {
-				// ÕâÀï²»Òª³ËÒÔdeltaTime£¬Òª¸ù¾İÒÆ¶¯µÄ¾àÀëÀ´¿ØÖÆÒÆ¶¯µÄ¾àÀë
+				// è¿™é‡Œä¸è¦ä¹˜ä»¥deltaTimeï¼Œè¦æ ¹æ®ç§»åŠ¨çš„è·ç¦»æ¥æ§åˆ¶ç§»åŠ¨çš„è·ç¦»
 				m_Position += dir * m_MoveSpeed;
 			}
 		}
 		else {
 
-			// ´¥ÃşÆÁÄ»ÓÒ±ß£¬ÒÆ¶¯ÊÓ½Ç
+			// è§¦æ‘¸å±å¹•å³è¾¹ï¼Œç§»åŠ¨è§†è§’
+			RotateY(deltaX * m_RotateSpeed);
+			Pitch(deltaY * m_RotateSpeed);
+		}
+
+		deltaX = input.pos1.x - input.oldPos1.x;
+		deltaY = input.pos1.y - input.oldPos1.y;
+
+		if (input.pos1.x < global::windowWidth / 2) {
+
+			// è§¦æ‘¸å±å¹•å·¦è¾¹ï¼Œç§»åŠ¨ä½ç½®
+			auto right = glm::cross(m_WorldUp, m_Look);
+
+			glm::vec3 dir = deltaX * right - deltaY * m_Look;
+
+			if (glm::length(dir) > 0) {
+				// è¿™é‡Œä¸è¦ä¹˜ä»¥deltaTimeï¼Œè¦æ ¹æ®ç§»åŠ¨çš„è·ç¦»æ¥æ§åˆ¶ç§»åŠ¨çš„è·ç¦»
+				m_Position += dir * m_MoveSpeed;
+			}
+		}
+		else {
+
+			// è§¦æ‘¸å±å¹•å³è¾¹ï¼Œç§»åŠ¨è§†è§’
 			RotateY(deltaX * m_RotateSpeed);
 			Pitch(deltaY * m_RotateSpeed);
 		}
