@@ -1,6 +1,6 @@
 #pragma once
 
-#include "VulkanCommon.h"
+#include "Common.h"
 #include "Tools.h"
 
 class VulkanShaderModule;

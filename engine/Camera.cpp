@@ -1,5 +1,4 @@
 #include "Camera.h"
-#include "VulkanCommon.h"
 #include "Tools.h"
 
 Camera::Camera()

@@ -18,7 +18,22 @@ set(vulkan_lib_include C:/VulkanSDK/1.2.131.2/Include)
 include_directories(${vulkan_lib_include})
 target_link_libraries(Test ${vulkan_lib})
 
-# 添加 vulkan_base 子目录
-add_subdirectory(vulkan_base)
-include_directories(vulkan_base)
-target_link_libraries(Test vulkan_base_lib)
+# common
+file(GLOB common_sources common/*.h common/*.cpp)
+include_directories(common)
+source_group("common" FILES ${common_sources})
+
+# vulkan
+file(GLOB vulkan_sources vulkan/*.h vulkan/*.cpp)
+include_directories(vulkan)
+source_group("vulkan" FILES ${vulkan_sources})
+
+# engine
+file(GLOB engine_sources engine/*.h engine/*.cpp)
+include_directories(engine)
+source_group("engine" FILES ${engine_sources})
+
+# 生成链接库
+add_library (base ${common_sources} ${vulkan_sources} ${engine_sources})
+
+target_link_libraries(Test base)

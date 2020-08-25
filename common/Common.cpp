@@ -1,4 +1,4 @@
-#include "VulkanCommon.h"
+#include "Common.h"
 
 #ifdef _WIN32
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
