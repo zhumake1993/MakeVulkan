@@ -6,7 +6,7 @@ project (MakeVulkan)
 
 # 指定生成目标
 # WIN32指示程序的入口是WinMain
-add_executable(Test WIN32 examples/test/main.cpp)
+add_executable(Test WIN32 examples/test/main.cpp examples/test/triangle.h examples/test/triangle.cpp)
 
 # 设置预定义宏
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_WIN32_KHR")
@@ -32,6 +32,9 @@ source_group("vulkan" FILES ${vulkan_sources})
 file(GLOB engine_sources engine/*.h engine/*.cpp)
 include_directories(engine)
 source_group("engine" FILES ${engine_sources})
+
+# external
+include_directories(external)
 
 # 生成链接库
 add_library (base ${common_sources} ${vulkan_sources} ${engine_sources})

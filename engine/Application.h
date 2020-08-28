@@ -2,6 +2,8 @@
 
 #include "Common.h"
 
+class Engine;
+
 class Application
 {
 
@@ -10,41 +12,35 @@ public:
 	Application();
 	virtual ~Application();
 
-#if defined(_WIN32)
-	void SetupConsole();
-	HWND SetupWindow(HINSTANCE hinstance, WNDPROC wndproc);
-	void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	void HandleTouchScreenEvent(int32_t action, AInputEvent* event);
-	static int32_t HandleAppInput(struct android_app* app, AInputEvent* event);
-	static void HandleAppCommand(android_app* app, int32_t cmd);
-#endif
-
-	virtual void CleanUp() = 0;
-	virtual void Init() = 0;
-	virtual void Prepare() = 0;
+	void CleanUp();
+	void Init(Engine* engine);
 	void Run();
-
-protected:
-
-	virtual void KeyPress(uint32_t) {}
-	virtual void KeyUp(uint32_t) {}
+	void Close();
 
 private:
 
-	virtual void Draw() {}
-
-protected:
-
-	bool m_CanRender = false;
-
 #if defined(_WIN32)
-	HINSTANCE m_WindowInstance;
-	HWND m_WindowHandle;
+
+	// 设置console
+	void SetupConsole();
+
+	// 设置窗口
+	void SetupWindow();
+
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	bool m_Focused = false;
-	std::string androidProduct;
+
+	// 显示安卓设备的名称和制造商
+	void DisplayAndroidProduct();
+
+	// 在安卓设备上Vulkan需要动态载入
+	void LoadVulkan();
+
 #endif
-	
-	KeyboardInput m_KeyboardInput;
+
+private:
+
+	Engine* m_Engine;
+	bool m_CanRender = false;
 };
+
+extern Application* application;

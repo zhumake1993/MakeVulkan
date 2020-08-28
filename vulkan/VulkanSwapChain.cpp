@@ -37,30 +37,30 @@ void VulkanSwapChain::CleanUp()
 	}
 }
 
-uint32_t VulkanSwapChain::AcquireNextImage(VulkanSemaphore* imageAvailableSemaphore)
+void VulkanSwapChain::AcquireNextImage(VulkanSemaphore* imageAvailableSemaphore)
 {
-	uint32_t imageIndex;
-
-	VkResult result = vkAcquireNextImageKHR(m_VulkanDevice->m_LogicalDevice, m_SwapChain, UINT64_MAX, imageAvailableSemaphore->m_Semaphore, VK_NULL_HANDLE, &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(m_VulkanDevice->m_LogicalDevice, m_SwapChain, UINT64_MAX, imageAvailableSemaphore->m_Semaphore, VK_NULL_HANDLE, &m_ImageIndex);
 
 	switch (result) {
 	case VK_SUCCESS:
 	case VK_SUBOPTIMAL_KHR:
-		return imageIndex;
 		break;
 	case VK_ERROR_OUT_OF_DATE_KHR:
 		LOG("recreate swapchain\n");
 		RecreateSwapChain();
-		return imageIndex;
 		break;
 	default:
 		LOG("Problem occurred during swap chain image acquisition!\n");
 		assert(false);
-		return 0;
 	}
 }
 
-void VulkanSwapChain::QueuePresent(uint32_t imageIndex, VulkanSemaphore* finishedRenderingSemaphore)
+VkImageView* VulkanSwapChain::GetCurrImageView()
+{
+	return &m_SwapChainImageViews[m_ImageIndex];
+}
+
+void VulkanSwapChain::QueuePresent(VulkanSemaphore* finishedRenderingSemaphore)
 {
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -69,7 +69,7 @@ void VulkanSwapChain::QueuePresent(uint32_t imageIndex, VulkanSemaphore* finishe
 	presentInfo.pWaitSemaphores = &finishedRenderingSemaphore->m_Semaphore;
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = &m_SwapChain;
-	presentInfo.pImageIndices = &imageIndex;
+	presentInfo.pImageIndices = &m_ImageIndex;
 	presentInfo.pResults = nullptr;
 
 	VkResult result = vkQueuePresentKHR(m_VulkanDevice->m_Queue, &presentInfo);

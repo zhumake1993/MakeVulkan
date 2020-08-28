@@ -4,7 +4,8 @@
 
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
 
-VulkanSurface::VulkanSurface(VulkanInstance* vulkanInstance, HINSTANCE windowInstance, HWND windowHandle)
+VulkanSurface::VulkanSurface(VulkanInstance* vulkanInstance, HINSTANCE windowInstance, HWND windowHandle):
+	m_VulkanInstance(vulkanInstance)
 {
 	VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
 	surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;

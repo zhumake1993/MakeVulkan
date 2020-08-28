@@ -1,6 +1,6 @@
 #include "Model.h"
 #include "Tools.h"
-#include "../external/obj/tiny_obj_loader.h"
+#include "obj/tiny_obj_loader.h"
 
 Model::Model()
 {

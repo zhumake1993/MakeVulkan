@@ -116,20 +116,6 @@ uint32_t VulkanDevice::GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFla
 	return 0;
 }
 
-void VulkanDevice::UpdateDescriptorSets(std::vector<DescriptorSetUpdater*>& descriptorSetUpdaters)
-{
-	uint32_t num = static_cast<uint32_t>(descriptorSetUpdaters.size());
-
-	std::vector<VkWriteDescriptorSet> writeDescriptorSets;
-	writeDescriptorSets.reserve(num);
-
-	for (auto updater : descriptorSetUpdaters) {
-		writeDescriptorSets.push_back(updater->Get());
-	}
-
-	vkUpdateDescriptorSets(m_LogicalDevice, num, writeDescriptorSets.data(), 0, nullptr);
-}
-
 void VulkanDevice::Submit(VulkanCommandBuffer * vulkanCommandBuffer)
 {
 	VkSubmitInfo submitInfo = {};

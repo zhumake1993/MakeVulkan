@@ -2,10 +2,10 @@
 #include <fstream>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "../external/stb/stb_image.h"
+#include "stb/stb_image.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
-#include "../external/obj/tiny_obj_loader.h"
+#include "obj/tiny_obj_loader.h"
 
 std::string VulkanErrorToString(VkResult errorCode) {
 	switch (errorCode)

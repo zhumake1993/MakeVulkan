@@ -10,8 +10,10 @@ android_app* androidApp;
 namespace global
 {
 
-	// window
+	// windows
 #if defined(_WIN32)
+	HINSTANCE windowInstance;
+	HWND windowHandle;
 	std::string consoleTitle = "Console Title";
 	std::string windowClassName = "Window Class Name";
 	std::string windowTitleName = "Window Title Name";

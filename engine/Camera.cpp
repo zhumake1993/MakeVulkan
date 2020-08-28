@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include "Tools.h"
+#include "InputManager.h"
 
 Camera::Camera()
 {
@@ -34,7 +35,7 @@ void Camera::SetSpeed(float moveSpeed, float rotateSpeed)
 	m_RotateSpeed = rotateSpeed;
 }
 
-void Camera::Update(KeyboardInput& input, float deltaTime)
+void Camera::Update(float deltaTime)
 {
 #ifdef _WIN32
 

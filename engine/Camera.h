@@ -14,7 +14,7 @@ public:
 	void SetLens(float fovY, float aspect, float nearZ, float farZ);
 	void SetAspect(float aspect);
 	void SetSpeed(float moveSpeed, float rotateSpeed);
-	void Update(KeyboardInput& input, float deltaTime);
+	void Update(float deltaTime);
 
 	// 这3个函数没用到。。。
 	// 现在的实现方法，斜向移动的速度保持m_MoveSpeed

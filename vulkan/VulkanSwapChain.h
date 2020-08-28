@@ -15,8 +15,9 @@ public:
 	~VulkanSwapChain();
 
 	void							CleanUp();
-	uint32_t						AcquireNextImage(VulkanSemaphore* imageAvailableSemaphore);
-	void							QueuePresent(uint32_t imageIndex, VulkanSemaphore* finishedRenderingSemaphore);
+	void							AcquireNextImage(VulkanSemaphore* imageAvailableSemaphore);
+	VkImageView*					GetCurrImageView();
+	void							QueuePresent(VulkanSemaphore* finishedRenderingSemaphore);
 
 private:
 
@@ -51,4 +52,6 @@ private:
 
 	VulkanDevice*					m_VulkanDevice = nullptr;
 	VulkanSurface*					m_VulkanSurface = nullptr;
+
+	uint32_t						m_ImageIndex;
 };
