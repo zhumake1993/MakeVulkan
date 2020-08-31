@@ -1,6 +1,7 @@
 #include "Common.h"
 #include "Application.h"
-#include "triangle.h"
+#include "Triangle.h"
+#include "Tools.h"
 
 #ifdef _WIN32
 
@@ -10,8 +11,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 	ConfigGlobalSettings();
 
-	application = new Application();
-	application->Init(new Triangle());
+	application = new Application(new Triangle());
+	application->Init();
 	application->Run();
 	application->CleanUp();
 
@@ -25,17 +26,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 void android_main(android_app* state)
 {
+	androidApp = state;
+
 	ConfigGlobalSettings();
 
-	vulkanExample = new VulkanExample();
+	application = new Application(new Triangle());
+	state->userData = application;
+	state->onAppCmd = HandleAppCommand;
+	state->onInputEvent = HandleAppInput;
+	application->Run();
 
-	androidApp = state;
-	androidApp->userData = vulkanExample;
-	androidApp->onAppCmd = VulkanExample::HandleAppCommand;
-	androidApp->onInputEvent = VulkanExample::HandleAppInput;
-	vulkanExample->Run();
-
-	delete(vulkanExample);
+	delete(application);
 }
 
 #endif

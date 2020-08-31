@@ -35,7 +35,7 @@ add_library (base ${common_sources} ${vulkan_sources} ${engine_sources})
 target_link_libraries(base vulkan_lib)
 
 # 这里不能用test作为lib的名字，似乎跟重命名有关，原因不明
-add_library(app SHARED ../../../examples/test/main.cpp)
+add_library(app SHARED ${top_dir}/examples/test/main.cpp ${top_dir}/examples/test/Triangle.h ${top_dir}/examples/test/Triangle.cpp)
 
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
 

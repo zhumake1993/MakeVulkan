@@ -1,4 +1,4 @@
-#include "triangle.h"
+#include "Triangle.h"
 
 #include "InputManager.h"
 

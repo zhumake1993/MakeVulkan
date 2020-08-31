@@ -9,13 +9,20 @@ class Application
 
 public:
 
-	Application();
+	Application(Engine* engine);
 	virtual ~Application();
 
 	void CleanUp();
-	void Init(Engine* engine);
+	void Init();
 	void Run();
-	void Close();
+	void DeActivate();
+
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+
+	void GainFocus();
+	void LostFocus();
+
+#endif
 
 private:
 
@@ -41,6 +48,18 @@ private:
 
 	Engine* m_Engine;
 	bool m_CanRender = false;
+	
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+	// true if application has focused, false if moved to background
+	bool m_Focused = false;
+#endif
 };
 
 extern Application* application;
+
+#if defined(_WIN32)
+void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+int32_t HandleAppInput(struct android_app* app, AInputEvent* event);
+void HandleAppCommand(android_app* app, int32_t cmd);
+#endif

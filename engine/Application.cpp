@@ -6,14 +6,8 @@
 
 Application* application;
 
-#if defined(_WIN32)
-void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-int32_t HandleAppInput(struct android_app* app, AInputEvent* event);
-void HandleAppCommand(android_app* app, int32_t cmd);
-#endif
-
-Application::Application()
+Application::Application(Engine* engine):
+	m_Engine(engine)
 {
 }
 
@@ -26,16 +20,12 @@ void Application::CleanUp()
 	m_Engine->CleanUpEngine();
 }
 
-void Application::Init(Engine* engine)
+void Application::Init()
 {
-	m_Engine = engine;
-
 #if defined(_WIN32)
 
 	SetupConsole();
 	SetupWindow();
-
-	engine->InitEngine();
 
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
 
@@ -44,6 +34,7 @@ void Application::Init(Engine* engine)
 
 #endif
 
+	m_Engine->InitEngine();
 	m_CanRender = true;
 }
 
@@ -94,15 +85,31 @@ void Application::Run()
 			break;
 		}
 
-		m_Engine->TickEngine();
+		if (m_CanRender) {
+			m_Engine->TickEngine();
+		}
 	}
 #endif
 }
 
-void Application::Close()
+void Application::DeActivate()
 {
 	m_CanRender = false;
 }
+
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+
+void Application::GainFocus()
+{
+	m_Focused = true;
+}
+
+void Application::LostFocus()
+{
+	m_Focused = false;
+}
+
+#endif
 
 #if defined(_WIN32)
 
@@ -228,7 +235,7 @@ void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 	case WM_CLOSE:
-		application->Close();
+		application->DeActivate();
 		DestroyWindow(hWnd);
 		PostQuitMessage(0);
 		break;
@@ -337,51 +344,51 @@ void HandleTouchScreenEvent(int32_t action, AInputEvent* event)
 	{
 	case AMOTION_EVENT_ACTION_UP:
 	{
-		m_KeyboardInput.count = 0;
+		input.count = 0;
 		break;
 		}
 	case AMOTION_EVENT_ACTION_DOWN:
 	{
-		m_KeyboardInput.count = 1;
+		input.count = 1;
 
-		m_KeyboardInput.pos0.x = AMotionEvent_getX(event, 0);
-		m_KeyboardInput.pos0.y = AMotionEvent_getY(event, 0);
-		m_KeyboardInput.oldPos0.x = AMotionEvent_getX(event, 0);
-		m_KeyboardInput.oldPos0.y = AMotionEvent_getY(event, 0);
+		input.pos0.x = AMotionEvent_getX(event, 0);
+		input.pos0.y = AMotionEvent_getY(event, 0);
+		input.oldPos0.x = AMotionEvent_getX(event, 0);
+		input.oldPos0.y = AMotionEvent_getY(event, 0);
 
 		break;
 	}
 	case AMOTION_EVENT_ACTION_MOVE:
 	{
 		if (AMotionEvent_getPointerCount(event) == 1) {
-			m_KeyboardInput.pos0.x = AMotionEvent_getX(event, 0);
-			m_KeyboardInput.pos0.y = AMotionEvent_getY(event, 0);
+			input.pos0.x = AMotionEvent_getX(event, 0);
+			input.pos0.y = AMotionEvent_getY(event, 0);
 
 			// 
-			if (m_KeyboardInput.count == 2) {
-				m_KeyboardInput.count = 1;
+			if (input.count == 2) {
+				input.count = 1;
 
-				m_KeyboardInput.oldPos0.x = AMotionEvent_getX(event, 0);
-				m_KeyboardInput.oldPos0.y = AMotionEvent_getY(event, 0);
+				input.oldPos0.x = AMotionEvent_getX(event, 0);
+				input.oldPos0.y = AMotionEvent_getY(event, 0);
 			}
 		}
 		else if (AMotionEvent_getPointerCount(event) == 2) {
 
-			m_KeyboardInput.pos0.x = AMotionEvent_getX(event, 0);
-			m_KeyboardInput.pos0.y = AMotionEvent_getY(event, 0);
+			input.pos0.x = AMotionEvent_getX(event, 0);
+			input.pos0.y = AMotionEvent_getY(event, 0);
 
-			m_KeyboardInput.pos1.x = AMotionEvent_getX(event, 1);
-			m_KeyboardInput.pos1.y = AMotionEvent_getY(event, 1);
+			input.pos1.x = AMotionEvent_getX(event, 1);
+			input.pos1.y = AMotionEvent_getY(event, 1);
 
 			// 
-			if (m_KeyboardInput.count == 1) {
-				m_KeyboardInput.count = 2;
+			if (input.count == 1) {
+				input.count = 2;
 
-				m_KeyboardInput.oldPos0.x = AMotionEvent_getX(event, 0);
-				m_KeyboardInput.oldPos0.y = AMotionEvent_getY(event, 0);
+				input.oldPos0.x = AMotionEvent_getX(event, 0);
+				input.oldPos0.y = AMotionEvent_getY(event, 0);
 
-				m_KeyboardInput.oldPos1.x = AMotionEvent_getX(event, 1);
-				m_KeyboardInput.oldPos1.y = AMotionEvent_getY(event, 1);
+				input.oldPos1.x = AMotionEvent_getX(event, 1);
+				input.oldPos1.y = AMotionEvent_getY(event, 1);
 			}
 		}
 		else {
@@ -398,7 +405,6 @@ void HandleTouchScreenEvent(int32_t action, AInputEvent* event)
 
 int32_t HandleAppInput(struct android_app* app, AInputEvent* event)
 {
-	Application* application = reinterpret_cast<Application*>(app->userData);
 	if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION)
 	{
 		int32_t eventSource = AInputEvent_getSource(event);
@@ -414,7 +420,7 @@ int32_t HandleAppInput(struct android_app* app, AInputEvent* event)
 		case AINPUT_SOURCE_TOUCHSCREEN:
 		{
 			int32_t action = AMotionEvent_getAction(event);
-			application->HandleTouchScreenEvent(action, event);
+			HandleTouchScreenEvent(action, event);
 		}
 
 		return 1;
@@ -433,7 +439,6 @@ int32_t HandleAppInput(struct android_app* app, AInputEvent* event)
 
 void HandleAppCommand(android_app * app, int32_t cmd)
 {
-	Application* application = reinterpret_cast<Application*>(app->userData);
 	switch (cmd)
 	{
 	case APP_CMD_SAVE_STATE:
@@ -442,15 +447,14 @@ void HandleAppCommand(android_app * app, int32_t cmd)
 	case APP_CMD_INIT_WINDOW:
 		LOG("APP_CMD_INIT_WINDOW");
 		application->Init();
-		application->Prepare();
 		break;
 	case APP_CMD_LOST_FOCUS:
 		LOG("APP_CMD_LOST_FOCUS");
-		application->m_Focused = false;
+		application->LostFocus();
 		break;
 	case APP_CMD_GAINED_FOCUS:
 		LOG("APP_CMD_GAINED_FOCUS");
-		application->m_Focused = true;
+		application->GainFocus();
 		break;
 	case APP_CMD_TERM_WINDOW:
 		LOG("APP_CMD_TERM_WINDOW");
