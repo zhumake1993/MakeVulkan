@@ -161,7 +161,7 @@ private:
 	VkPipelineViewportStateCreateInfo viewportStateCreateInfo;
 	VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo;
 	VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo;
-	VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo = {};
+	VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo;
 	VkPipelineColorBlendAttachmentState colorBlendAttachmentState;
 	VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo;
 	VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo;

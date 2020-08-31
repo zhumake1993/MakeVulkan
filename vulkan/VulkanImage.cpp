@@ -2,13 +2,14 @@
 #include "VulkanDevice.h"
 #include "Tools.h"
 
-VulkanImage::VulkanImage(VulkanDevice* vulkanDevice, VkImageType imageType, VkFormat format, uint32_t width, uint32_t height, VkImageUsageFlags usage):
+VulkanImage::VulkanImage(VulkanDevice* vulkanDevice, VkImageType imageType, VkFormat format, uint32_t width, uint32_t height, VkImageUsageFlags usage, VkImageAspectFlags aspect):
 	m_VulkanDevice(vulkanDevice),
 	m_ImageType(imageType),
 	m_Format(format),
 	m_Width(width),
 	m_Height(height),
-	m_Usage(usage)
+	m_Usage(usage),
+	m_Aspect(aspect)
 {
 	CreateImage();
 	AllocateMemory();
@@ -98,7 +99,7 @@ void VulkanImage::CreateImageView()
 	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;// ÏÈÄ¬ÈÏ°É
 	imageViewCreateInfo.format = m_Format;
 	imageViewCreateInfo.components = { VK_COMPONENT_SWIZZLE_IDENTITY,VK_COMPONENT_SWIZZLE_IDENTITY,VK_COMPONENT_SWIZZLE_IDENTITY,VK_COMPONENT_SWIZZLE_IDENTITY };
-	imageViewCreateInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT,0,1,0,1 };
+	imageViewCreateInfo.subresourceRange = { m_Aspect,0,1,0,1 };
 
 	VK_CHECK_RESULT(vkCreateImageView(m_VulkanDevice->m_LogicalDevice, &imageViewCreateInfo, nullptr, &m_ImageView));
 }

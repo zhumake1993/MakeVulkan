@@ -40,7 +40,7 @@ shader.frag
               18:   15(fvec2) Load 17(v_Texcoord)
               19:    7(fvec4) ImageSampleImplicitLod 14 18
               22:    7(fvec4) Load 21(v_Color)
-              23:    7(fvec4) FMul 19 22
+              23:    7(fvec4) FAdd 19 22
                               Store 9(o_Color) 23
                               Return
                               FunctionEnd

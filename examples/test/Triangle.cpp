@@ -18,6 +18,8 @@
 
 #include "VulkanCommandBuffer.h"
 
+#include "Model.h"
+
 void ConfigGlobalSettings() {
 	// 添加单独的实例级层
 
@@ -121,9 +123,9 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 {
 	auto driver = GetVulkanDriver();
 
-	VkClearValue clearValue = {};
-	clearValue.color = { 0.0f, 0.0f, 0.2f, 1.0f };
-	clearValue.depthStencil = { 0.0f, 0 };
+	std::vector<VkClearValue> clearValues(2);
+	clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+	clearValues[1].depthStencil = { 1.0f, 0 };
 
 	VkRect2D area = {};
 	area.offset.x = 0;
@@ -141,7 +143,7 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 
 	vulkanCommandBuffer->Begin();
 
-	vulkanCommandBuffer->BeginRenderPass(m_VulkanRenderPass, driver.CreateFramebuffer(m_VulkanRenderPass), area, clearValue);
+	vulkanCommandBuffer->BeginRenderPass(m_VulkanRenderPass, driver.CreateFramebuffer(m_VulkanRenderPass), area, clearValues);
 
 	vulkanCommandBuffer->SetViewport(viewport);
 
@@ -155,7 +157,7 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 
 	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, m_VulkanDescriptorSet);
 
-	vulkanCommandBuffer->DrawIndexed(3, 1, 0, 0, 1);
+	vulkanCommandBuffer->DrawIndexed(11484, 1, 0, 0, 1);
 
 	vulkanCommandBuffer->EndRenderPass();
 
@@ -167,7 +169,7 @@ void Triangle::PrepareVertices()
 	auto driver = GetVulkanDriver();
 
 	// Vertex buffer
-	std::vector<float> vertexBuffer =
+	/*std::vector<float> vertexBuffer =
 	{
 		  -0.5f, 0.5f, 0.0f,  1.0f ,
 		  1.0f, 0.0f, 0.0f,  0.0f  ,
@@ -180,10 +182,10 @@ void Triangle::PrepareVertices()
 		   0.5f,  -0.5f, 0.0f,  1.0f ,
 		   0.0f, 0.0f, 1.0f,  0.0f,
 		   1.0f,  1.0f  ,
-	};
-	//Model model;
-	//model.loadFromFile(GetAssetPath() + "models/viking_room.obj");
-	//auto vertexBuffer = model.m_Vertices;
+	};*/
+	Model model;
+	model.loadFromFile(GetAssetPath() + "models/viking_room.obj");
+	auto vertexBuffer = model.m_Vertices;
 
 	uint32_t vertexBufferSize = static_cast<uint32_t>(vertexBuffer.size()) * sizeof(vertexBuffer[0]);
 
@@ -192,8 +194,8 @@ void Triangle::PrepareVertices()
 	driver.UploadVulkanBuffer(m_VertexBuffer, vertexBuffer.data(), vertexBufferSize);
 
 	// Index buffer
-	std::vector<uint32_t> indexBuffer = { 0, 1, 2 };
-	//auto indexBuffer = model.m_Indices;
+	//std::vector<uint32_t> indexBuffer = { 0, 1, 2 };
+	auto indexBuffer = model.m_Indices;
 	uint32_t indexBufferSize = static_cast<uint32_t>(indexBuffer.size()) * sizeof(uint32_t);
 
 	m_IndexBuffer = driver.CreateVulkanBuffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -206,12 +208,12 @@ void Triangle::PrepareTextures()
 	auto driver = GetVulkanDriver();
 
 	uint32_t width = 0, height = 0, dataSize = 0;
-	std::vector<char> imageData = GetImageData(GetAssetPath() + "textures/texture.png", 4, &width, &height, nullptr, &dataSize);
+	std::vector<char> imageData = GetImageData(GetAssetPath() + "textures/viking_room.png", 4, &width, &height, nullptr, &dataSize);
 	if (imageData.size() == 0) {
 		assert(false);
 	}
 
-	m_Image = driver.CreateVulkanImage(VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+	m_Image = driver.CreateVulkanImage(VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
 
 	driver.UploadVulkanImage(m_Image, imageData.data(), dataSize);
 }
@@ -262,7 +264,7 @@ void Triangle::CreatePipeline()
 	pipelineCI.vertexInputState.vertexLayout.push_back(kVertexFormatFloat32x4);
 	pipelineCI.vertexInputState.vertexLayout.push_back(kVertexFormatFloat32x2);
 
-	pipelineCI.rasterizationState.cullMode = VK_CULL_MODE_NONE;
+	//pipelineCI.rasterizationState.cullMode = VK_CULL_MODE_NONE;
 
 	pipelineCI.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
 	pipelineCI.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_SCISSOR);

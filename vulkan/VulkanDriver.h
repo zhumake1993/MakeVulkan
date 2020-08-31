@@ -34,7 +34,7 @@ public:
 
 	// Resource
 	VulkanBuffer* CreateVulkanBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty);
-	VulkanImage* CreateVulkanImage(VkImageType imageType, VkFormat format, uint32_t width, uint32_t height, VkImageUsageFlags usage);
+	VulkanImage* CreateVulkanImage(VkImageType imageType, VkFormat format, uint32_t width, uint32_t height, VkImageUsageFlags usage, VkImageAspectFlags aspect);
 	void UploadVulkanBuffer(VulkanBuffer* vertexBuffer, void* data, uint32_t size);
 	void UploadVulkanImage(VulkanImage* vulkanImage, void* data, uint32_t size);
 
@@ -59,6 +59,10 @@ public:
 
 private:
 
+	
+
+private:
+
 	VulkanInstance* m_VulkanInstance;
 	VulkanSurface* m_VulkanSurface;
 	VulkanDevice* m_VulkanDevice;
@@ -71,6 +75,9 @@ private:
 	VulkanBuffer* m_StagingBuffer;
 
 	std::vector<VulkanBuffer*> m_UniformBuffers;
+
+	VkFormat m_DepthFormat;
+	VulkanImage* m_DepthImage;
 };
 
 void SetVulkanDriver(VulkanDriver* vulkanDriver);

@@ -16,7 +16,7 @@ public:
 
 	void							CleanUp();
 	void							AcquireNextImage(VulkanSemaphore* imageAvailableSemaphore);
-	VkImageView*					GetCurrImageView();
+	VkImageView						GetCurrImageView();
 	void							QueuePresent(VulkanSemaphore* finishedRenderingSemaphore);
 
 private:

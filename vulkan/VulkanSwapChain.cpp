@@ -55,9 +55,9 @@ void VulkanSwapChain::AcquireNextImage(VulkanSemaphore* imageAvailableSemaphore)
 	}
 }
 
-VkImageView* VulkanSwapChain::GetCurrImageView()
+VkImageView VulkanSwapChain::GetCurrImageView()
 {
-	return &m_SwapChainImageViews[m_ImageIndex];
+	return m_SwapChainImageViews[m_ImageIndex];
 }
 
 void VulkanSwapChain::QueuePresent(VulkanSemaphore* finishedRenderingSemaphore)

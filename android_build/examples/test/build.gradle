@@ -45,5 +45,11 @@ task copyTask {
         into 'assets/textures'
         include '*.*'
     }
+
+    copy {
+        from '../../../data/models'
+        into 'assets/models'
+        include '*.*'
+    }
 }
 preBuild.dependsOn copyTask

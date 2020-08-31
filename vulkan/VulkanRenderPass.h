@@ -9,7 +9,7 @@ class VulkanRenderPass
 
 public:
 
-	VulkanRenderPass(VulkanDevice* vulkanDevice, VkFormat format);
+	VulkanRenderPass(VulkanDevice* vulkanDevice, VkFormat colorFormat, VkFormat depthFormat);
 	~VulkanRenderPass();
 
 	void CleanUp();

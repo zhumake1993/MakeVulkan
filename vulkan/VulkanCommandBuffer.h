@@ -24,7 +24,7 @@ public:
 
 	void Begin();
 	void End();
-	void BeginRenderPass(VulkanRenderPass *vulkanRenderPass, VulkanFramebuffer* vulkanFrameBuffer, VkRect2D& area, VkClearValue& clearValue);
+	void BeginRenderPass(VulkanRenderPass *vulkanRenderPass, VulkanFramebuffer* vulkanFrameBuffer, VkRect2D& area, std::vector<VkClearValue>& clearValues);
 	void SetViewport(VkViewport& viewport);
 	void SetScissor(VkRect2D& area);
 	void BindPipeline(VkPipelineBindPoint bindPoint, VulkanPipeline* vulkanPipeline);

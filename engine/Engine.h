@@ -1,9 +1,7 @@
 #pragma once
 
 #include "Common.h"
-
-class VulkanCommandBuffer;
-class VulkanFramebuffer;
+#include "VulkanFwd.h"
 
 class Engine
 {
@@ -22,6 +20,7 @@ protected:
 	virtual void CleanUp() = 0;
 	virtual void Init() = 0;
 	virtual void Tick() = 0;
+
 	virtual void RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer) = 0;
 
 protected:

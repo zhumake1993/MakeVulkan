@@ -89,7 +89,7 @@ void VulkanDriver::Init()
 		m_FrameResources[i].fence = new VulkanFence(m_VulkanDevice, true);
 	}
 
-	m_StagingBuffer = new VulkanBuffer(m_VulkanDevice, 1000000, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	m_StagingBuffer = new VulkanBuffer(m_VulkanDevice, 10000000, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 	uint32_t uniformBufferSize = sizeof(float) * 128;
 	m_UniformBuffers.resize(global::frameResourcesCount);
@@ -97,6 +97,8 @@ void VulkanDriver::Init()
 		m_UniformBuffers[i] = new VulkanBuffer(m_VulkanDevice, uniformBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	}
 
+	m_DepthFormat = m_VulkanDevice->GetSupportedDepthFormat();
+	m_DepthImage = CreateVulkanImage(VK_IMAGE_TYPE_2D, m_DepthFormat, global::windowWidth, global::windowHeight, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 void VulkanDriver::WaitIdle()
@@ -142,9 +144,9 @@ VulkanBuffer * VulkanDriver::CreateVulkanBuffer(uint32_t size, VkBufferUsageFlag
 	return new VulkanBuffer(m_VulkanDevice, size, usage, memoryProperty);
 }
 
-VulkanImage * VulkanDriver::CreateVulkanImage(VkImageType imageType, VkFormat format, uint32_t width, uint32_t height, VkImageUsageFlags usage)
+VulkanImage * VulkanDriver::CreateVulkanImage(VkImageType imageType, VkFormat format, uint32_t width, uint32_t height, VkImageUsageFlags usage, VkImageAspectFlags aspect)
 {
-	return new VulkanImage(m_VulkanDevice, imageType, format, width, height, usage);
+	return new VulkanImage(m_VulkanDevice, imageType, format, width, height, usage, aspect);
 }
 
 void VulkanDriver::UploadVulkanBuffer(VulkanBuffer * vertexBuffer, void * data, uint32_t size)
@@ -238,7 +240,7 @@ VulkanPipeline * VulkanDriver::CreateVulkanPipeline(PipelineCI & pipelineCI)
 
 VulkanRenderPass * VulkanDriver::CreateVulkanRenderPass()
 {
-	return new VulkanRenderPass(m_VulkanDevice, m_VulkanSwapChain->m_Format.format);
+	return new VulkanRenderPass(m_VulkanDevice, m_VulkanSwapChain->m_Format.format, m_DepthFormat);
 }
 
 void VulkanDriver::UpdateUniformBuffer(void * data, uint32_t size)
@@ -255,13 +257,17 @@ VulkanFramebuffer* VulkanDriver::CreateFramebuffer(VulkanRenderPass* vulkanRende
 		vulkanFramebuffer->m_Framebuffer = VK_NULL_HANDLE;
 	}
 
+	VkImageView attachments[2];
+	attachments[0] = m_VulkanSwapChain->GetCurrImageView();
+	attachments[1] = m_DepthImage->m_ImageView;
+
 	VkFramebufferCreateInfo frameBufferCreateInfo = {};
 	frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	frameBufferCreateInfo.pNext = nullptr;
 	frameBufferCreateInfo.flags = 0;
 	frameBufferCreateInfo.renderPass = vulkanRenderPass->m_RenderPass;
-	frameBufferCreateInfo.attachmentCount = 1;
-	frameBufferCreateInfo.pAttachments = m_VulkanSwapChain->GetCurrImageView();
+	frameBufferCreateInfo.attachmentCount = 2;
+	frameBufferCreateInfo.pAttachments = attachments;
 	frameBufferCreateInfo.width = m_VulkanSwapChain->m_Extent.width;
 	frameBufferCreateInfo.height = m_VulkanSwapChain->m_Extent.height;
 	frameBufferCreateInfo.layers = 1;
