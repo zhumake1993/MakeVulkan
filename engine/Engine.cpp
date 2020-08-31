@@ -41,10 +41,9 @@ void Engine::TickEngine()
 
 	driver.WaitForPresent();
 
-	auto framebuffer = driver.CreateFramebuffer();
 	auto cmd = driver.GetCurrCommandBuffer();
 
-	RecordCommandBuffer(cmd, framebuffer);
+	RecordCommandBuffer(cmd);
 
 	driver.Present();
 }

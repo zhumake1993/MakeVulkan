@@ -31,7 +31,7 @@ include_directories(${top_dir}/engine)
 include_directories(${top_dir}/external)
 
 # 生成链接库
-add_library (base ${common_sources} ${vulkan_sources} ${engine_sources})
+add_library (base STATIC ${common_sources} ${vulkan_sources} ${engine_sources})
 target_link_libraries(base vulkan_lib)
 
 # 这里不能用test作为lib的名字，似乎跟重命名有关，原因不明

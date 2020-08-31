@@ -5,11 +5,11 @@
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
 #include "VulkanCommandPool.h"
+
 #include "VulkanCommandBuffer.h"
 #include "VulkanSemaphore.h"
 #include "VulkanFence.h"
 #include "VulkanFramebuffer.h"
-#include "VulkanRenderPass.h"
 
 #include "VulkanBuffer.h"
 #include "VulkanImage.h"
@@ -21,6 +21,7 @@
 #include "VulkanShaderModule.h"
 #include "VulkanPipelineLayout.h"
 #include "VulkanPipeline.h"
+#include "VulkanRenderPass.h"
 
 #include "Tools.h"
 
@@ -47,8 +48,6 @@ VulkanDriver::~VulkanDriver()
 void VulkanDriver::CleanUp()
 {
 	m_StagingBuffer->CleanUp();
-
-	m_VulkanRenderPass->CleanUp();
 
 	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
 		m_UniformBuffers[i]->CleanUp();
@@ -89,8 +88,6 @@ void VulkanDriver::Init()
 		m_FrameResources[i].finishedRenderingSemaphore = new VulkanSemaphore(m_VulkanDevice);
 		m_FrameResources[i].fence = new VulkanFence(m_VulkanDevice, true);
 	}
-
-	m_VulkanRenderPass = new VulkanRenderPass(m_VulkanDevice, m_VulkanSwapChain->m_Format.format);
 
 	m_StagingBuffer = new VulkanBuffer(m_VulkanDevice, 1000000, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
@@ -136,7 +133,6 @@ void VulkanDriver::Present()
 	VK_CHECK_RESULT(vkQueueSubmit(m_VulkanDevice->m_Queue, 1, &submitInfo, currFrameResource.fence->m_Fence));
 
 	m_VulkanSwapChain->QueuePresent(currFrameResource.finishedRenderingSemaphore);
-
 
 	m_CurrFrameIndex = (m_CurrFrameIndex + 1) % global::frameResourcesCount;
 }
@@ -240,12 +236,17 @@ VulkanPipeline * VulkanDriver::CreateVulkanPipeline(PipelineCI & pipelineCI)
 	return new VulkanPipeline(m_VulkanDevice, pipelineCI);;
 }
 
+VulkanRenderPass * VulkanDriver::CreateVulkanRenderPass()
+{
+	return new VulkanRenderPass(m_VulkanDevice, m_VulkanSwapChain->m_Format.format);
+}
+
 void VulkanDriver::UpdateUniformBuffer(void * data, uint32_t size)
 {
 	m_UniformBuffers[m_CurrFrameIndex]->MapAndCopy(data, size);
 }
 
-VulkanFramebuffer* VulkanDriver::CreateFramebuffer()
+VulkanFramebuffer* VulkanDriver::CreateFramebuffer(VulkanRenderPass* vulkanRenderPass)
 {
 	auto& vulkanFramebuffer = m_FrameResources[m_CurrFrameIndex].framebuffer;
 
@@ -258,7 +259,7 @@ VulkanFramebuffer* VulkanDriver::CreateFramebuffer()
 	frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	frameBufferCreateInfo.pNext = nullptr;
 	frameBufferCreateInfo.flags = 0;
-	frameBufferCreateInfo.renderPass = m_VulkanRenderPass->m_RenderPass;
+	frameBufferCreateInfo.renderPass = vulkanRenderPass->m_RenderPass;
 	frameBufferCreateInfo.attachmentCount = 1;
 	frameBufferCreateInfo.pAttachments = m_VulkanSwapChain->GetCurrImageView();
 	frameBufferCreateInfo.width = m_VulkanSwapChain->m_Extent.width;
@@ -277,9 +278,4 @@ VulkanCommandBuffer * VulkanDriver::GetCurrCommandBuffer()
 VulkanBuffer * VulkanDriver::GetCurrUniformBuffer()
 {
 	return m_UniformBuffers[m_CurrFrameIndex];
-}
-
-VulkanRenderPass * VulkanDriver::GetRenderPass()
-{
-	return m_VulkanRenderPass;
 }

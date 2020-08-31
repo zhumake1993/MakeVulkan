@@ -24,7 +24,7 @@ protected:
 	void CleanUp() override;
 	void Init() override;
 	void Tick() override;
-	void RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer, VulkanFramebuffer* vulkanFramebuffer) override;
+	void RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer) override;
 
 private:
 
@@ -35,22 +35,25 @@ private:
 
 private:
 
-	VulkanPipeline* m_VulkanPipeline;
-	VulkanPipelineLayout* m_VulkanPipelineLayout;
-
+	// Resource
 	VulkanBuffer* m_VertexBuffer;
 	VulkanBuffer* m_IndexBuffer;
 	VulkanImage* m_Image;
 
+	// DescriptorSet
 	VulkanDescriptorPool* m_VulkanDescriptorPool;
 	VulkanDescriptorSetLayout* m_VulkanDescriptorSetLayout;
 	VulkanDescriptorSet* m_VulkanDescriptorSet;
 
+	// Render Status
+	VulkanPipeline* m_VulkanPipeline;
+	VulkanPipelineLayout* m_VulkanPipelineLayout;
+	VulkanRenderPass* m_VulkanRenderPass;
 
-
+	// Uniform Buffer
 	UniformBuffer m_UniformBuffer;
 
-	// ÉãÏñ»ú
+	// camera
 	Camera m_Camera;
 
 	// stats

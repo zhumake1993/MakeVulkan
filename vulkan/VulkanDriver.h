@@ -38,24 +38,24 @@ public:
 	void UploadVulkanBuffer(VulkanBuffer* vertexBuffer, void* data, uint32_t size);
 	void UploadVulkanImage(VulkanImage* vulkanImage, void* data, uint32_t size);
 
-	// DescriptorSet
+	// Descriptor Set
 	VulkanDescriptorSetLayout* CreateVulkanDescriptorSetLayout();
 	VulkanDescriptorPool* CreateVulkanDescriptorPool();
 	void UpdateDescriptorSets(std::vector<DescriptorSetUpdater*>& descriptorSetUpdaters);
 
-	// Pipeline
+	// Render Status
 	VulkanShaderModule* CreateVulkanShaderModule(const std::string& filename);
 	VulkanPipelineLayout* CreateVulkanPipelineLayout(VulkanDescriptorSetLayout* vulkanDescriptorSetLayout);
 	VulkanPipeline* CreateVulkanPipeline(PipelineCI& pipelineCI);
+	VulkanRenderPass* CreateVulkanRenderPass();
 
-	//
+	// Uniform Buffer
 	void UpdateUniformBuffer(void* data, uint32_t size);
 
-	// Ø½´ýÐÞ¸Ä
-	VulkanFramebuffer* CreateFramebuffer();
+	// Frame Resource
+	VulkanFramebuffer* CreateFramebuffer(VulkanRenderPass* vulkanRenderPass);
 	VulkanCommandBuffer* GetCurrCommandBuffer();
 	VulkanBuffer* GetCurrUniformBuffer();
-	VulkanRenderPass* GetRenderPass();
 
 private:
 
@@ -67,8 +67,6 @@ private:
 
 	size_t m_CurrFrameIndex = 0;
 	std::vector<FrameResource> m_FrameResources;
-
-	VulkanRenderPass* m_VulkanRenderPass;
 
 	VulkanBuffer* m_StagingBuffer;
 

@@ -14,6 +14,7 @@
 #include "VulkanShaderModule.h"
 #include "VulkanPipelineLayout.h"
 #include "VulkanPipeline.h"
+#include "VulkanRenderPass.h"
 
 #include "VulkanCommandBuffer.h"
 
@@ -60,6 +61,7 @@ void Triangle::CleanUp()
 	m_VulkanDescriptorSetLayout->CleanUp();
 	m_VulkanPipeline->CleanUp();
 	m_VulkanPipelineLayout->CleanUp();
+	m_VulkanRenderPass->CleanUp();
 }
 
 void Triangle::Init()
@@ -115,7 +117,7 @@ void Triangle::Tick()
 	driver.UpdateUniformBuffer(&m_UniformBuffer, sizeof(UniformBuffer));
 }
 
-void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer, VulkanFramebuffer * vulkanFramebuffer)
+void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 {
 	auto driver = GetVulkanDriver();
 
@@ -139,7 +141,7 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer, Vu
 
 	vulkanCommandBuffer->Begin();
 
-	vulkanCommandBuffer->BeginRenderPass(driver.GetRenderPass(), vulkanFramebuffer, area, clearValue);
+	vulkanCommandBuffer->BeginRenderPass(m_VulkanRenderPass, driver.CreateFramebuffer(m_VulkanRenderPass), area, clearValue);
 
 	vulkanCommandBuffer->SetViewport(viewport);
 
@@ -245,6 +247,8 @@ void Triangle::CreatePipeline()
 {
 	auto driver = GetVulkanDriver();
 
+	m_VulkanRenderPass = driver.CreateVulkanRenderPass();
+
 	// std::make_unique 需要C++14的支持，这里使用构造函数更保险
 	std::shared_ptr<VulkanShaderModule> vulkanShaderModuleVert = std::shared_ptr<VulkanShaderModule>(driver.CreateVulkanShaderModule(GetAssetPath() + "shaders/shader.vert.spv"));
 	std::shared_ptr<VulkanShaderModule> vulkanShaderModuleFrag = std::shared_ptr<VulkanShaderModule>(driver.CreateVulkanShaderModule(GetAssetPath() + "shaders/shader.frag.spv"));
@@ -265,7 +269,7 @@ void Triangle::CreatePipeline()
 
 	m_VulkanPipelineLayout = driver.CreateVulkanPipelineLayout(m_VulkanDescriptorSetLayout);
 
-	pipelineCI.Configure(m_VulkanPipelineLayout, driver.GetRenderPass());
+	pipelineCI.Configure(m_VulkanPipelineLayout, m_VulkanRenderPass);
 
 	m_VulkanPipeline = driver.CreateVulkanPipeline(pipelineCI);
 }
