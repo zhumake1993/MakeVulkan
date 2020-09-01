@@ -2,7 +2,7 @@
 
 #include "Engine.h"
 #include "VulkanFwd.h"
-#include "Camera.h"
+#include "EngineFwd.h"
 
 void ConfigGlobalSettings();
 
@@ -28,16 +28,17 @@ protected:
 
 private:
 
-	void PrepareVertices();
+	void PrepareModels();
 	void PrepareTextures();
 	void PrepareDescriptorSet();
 	void CreatePipeline();
 
 private:
 
+	// Mesh
+	Mesh* m_Mesh;
+
 	// Resource
-	VulkanBuffer* m_VertexBuffer;
-	VulkanBuffer* m_IndexBuffer;
 	VulkanImage* m_Image;
 
 	// DescriptorSet
@@ -54,7 +55,7 @@ private:
 	UniformBuffer m_UniformBuffer;
 
 	// camera
-	Camera m_Camera;
+	Camera* m_Camera;
 
 	// stats
 	uint32_t m_FrameIndex = 0;

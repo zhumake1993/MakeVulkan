@@ -5,6 +5,22 @@
 #include "VulkanRenderPass.h"
 #include "Tools.h"
 
+uint32_t VkFormatToSize(VkFormat format) {
+	switch (format)
+	{
+	case VK_FORMAT_R32G32B32_SFLOAT:
+		return 3 * sizeof(float);
+		break;
+	case VK_FORMAT_R32G32_SFLOAT:
+		return 2 * sizeof(float);
+		break;
+	default:
+		LOG("wrong VkFormat");
+		assert(false);
+		return 0;
+	}
+}
+
 void PipelineCI::Configure(VulkanPipelineLayout* vulkanPipelineLayout, VulkanRenderPass* vulkanRenderPass)
 {
 	pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -56,22 +72,22 @@ void PipelineCI::ConfigShaderStageCreateInfos()
 
 void PipelineCI::ConfigVertexInputStateCreateInfo()
 {
-	// Vertex input binding
-	// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
-	vertexInputBindings[0].binding = 0;
-	vertexInputBindings[0].stride = vertexInputState.GetStride();
-	vertexInputBindings[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
 	// Inpute attribute bindings describe shader attribute locations and memory layouts
-	uint32_t num = static_cast<uint32_t>(vertexInputState.vertexLayout.size());
+	uint32_t num = static_cast<uint32_t>(vertexInputState.formats.size());
 	uint32_t offset = 0;
 	for (uint32_t i = 0; i < num; i++) {
 		vertexInputAttributs[i].binding = 0;
 		vertexInputAttributs[i].location = i;
-		vertexInputAttributs[i].format = vertexInputState.GetVkFormat(i);
+		vertexInputAttributs[i].format = vertexInputState.formats[i];
 		vertexInputAttributs[i].offset = offset;
-		offset += vertexInputState.GetSize(i);
+		offset += VkFormatToSize(vertexInputState.formats[i]);
 	}
+	
+	// Vertex input binding
+	// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
+	vertexInputBindings[0].binding = 0;
+	vertexInputBindings[0].stride = offset;
+	vertexInputBindings[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 	// Vertex input state used for pipeline creation
 	vertexInputStateCreateInfo.pNext = nullptr;
@@ -157,14 +173,14 @@ void PipelineCI::ConfigDepthStencilStateCreateInfo()
 	depthStencilStateCreateInfo.pNext = nullptr;
 	depthStencilStateCreateInfo.flags = 0;
 
-	depthStencilStateCreateInfo.depthTestEnable = VK_FALSE;
-	depthStencilStateCreateInfo.depthWriteEnable = VK_FALSE;
-	depthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	depthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
+	depthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
+	depthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
 	depthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
 
 	depthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
 	depthStencilStateCreateInfo.front = {};
-	depthStencilStateCreateInfo.back.failOp = {};
+	depthStencilStateCreateInfo.back = {};
 
 	depthStencilStateCreateInfo.minDepthBounds = 0.0f;
 	depthStencilStateCreateInfo.maxDepthBounds = 1.0f;

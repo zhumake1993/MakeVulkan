@@ -19,12 +19,6 @@ enum VKShaderType
 	kVKShaderCount
 };
 
-enum VertexChannel {
-	kVertexFormatFloat32x4,
-	kVertexFormatFloat32x3,
-	kVertexFormatFloat32x2,
-};
-
 struct PipelineCI
 {
 
@@ -38,49 +32,7 @@ struct PipelineCI
 
 	struct VertexInputState
 	{
-		std::vector<VertexChannel> vertexLayout;
-
-		uint32_t GetStride() {
-			uint32_t stride = 0;
-			for (uint32_t i = 0; i < vertexLayout.size(); i++) {
-				stride += GetSize(i);
-			}
-			return stride;
-		}
-
-		VkFormat GetVkFormat(uint32_t i) {
-			assert(i < vertexLayout.size());
-			switch (vertexLayout[i])
-			{
-			case kVertexFormatFloat32x4:
-				return VK_FORMAT_R32G32B32A32_SFLOAT;
-			case kVertexFormatFloat32x3:
-				return VK_FORMAT_R32G32B32_SFLOAT;
-			case kVertexFormatFloat32x2:
-				return VK_FORMAT_R32G32_SFLOAT;
-			default:
-				LOG("invalid vertex channel!");
-				assert(false);
-				return VK_FORMAT_UNDEFINED;
-			}
-		}
-
-		uint32_t GetSize(uint32_t i) {
-			assert(i < vertexLayout.size());
-			switch (vertexLayout[i])
-			{
-			case kVertexFormatFloat32x4:
-				return 4 * sizeof(float);
-			case kVertexFormatFloat32x3:
-				return 3 * sizeof(float);
-			case kVertexFormatFloat32x2:
-				return 2 * sizeof(float);
-			default:
-				LOG("invalid vertex channel!");
-				assert(false);
-				return 0;
-			}
-		}
+		std::vector<VkFormat> formats;
 	};
 
 	struct InputAssemblyState

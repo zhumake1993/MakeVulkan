@@ -2,15 +2,13 @@
 
 #include "Common.h"
 
-class Mesh;
-
-class Model
+class Material
 {
 
 public:
 
-	Model();
-	~Model();
+	Material();
+	~Material();
 
 	//
 
@@ -24,5 +22,5 @@ public:
 
 private:
 
-	Mesh* m_Mesh;
+	//
 };

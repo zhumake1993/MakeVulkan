@@ -1,7 +1,5 @@
-#include "Common.h"
 #include "Application.h"
 #include "Triangle.h"
-#include "Tools.h"
 
 #ifdef _WIN32
 

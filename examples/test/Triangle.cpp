@@ -18,6 +18,8 @@
 
 #include "VulkanCommandBuffer.h"
 
+#include "Camera.h"
+#include "Mesh.h"
 #include "Model.h"
 
 void ConfigGlobalSettings() {
@@ -56,8 +58,6 @@ Triangle::~Triangle()
 void Triangle::CleanUp()
 {
 	m_Image->CleanUp();
-	m_VertexBuffer->CleanUp();
-	m_IndexBuffer->CleanUp();
 
 	m_VulkanDescriptorPool->CleanUp();
 	m_VulkanDescriptorSetLayout->CleanUp();
@@ -69,15 +69,16 @@ void Triangle::CleanUp()
 void Triangle::Init()
 {
 	// 摄像机
-	m_Camera.LookAt(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	m_Camera.SetLens(glm::radians(60.0f), 1.0f * global::windowWidth / global::windowHeight, 0.1f, 256.0f);
+	m_Camera = new Camera();
+	m_Camera->LookAt(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	m_Camera->SetLens(glm::radians(60.0f), 1.0f * global::windowWidth / global::windowHeight, 0.1f, 256.0f);
 #if defined(_WIN32)
-	m_Camera.SetSpeed(1.0f, 0.005f);
+	m_Camera->SetSpeed(1.0f, 0.005f);
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	m_Camera.SetSpeed(0.001f, 0.005f);
+	m_Camera->SetSpeed(0.001f, 0.005f);
 #endif
 
-	PrepareVertices();
+	PrepareModels();
 	PrepareTextures();
 	PrepareDescriptorSet();
 	CreatePipeline();
@@ -102,7 +103,7 @@ void Triangle::Tick()
 
 	// 每帧的逻辑
 
-	m_Camera.Update(deltaTime);
+	m_Camera->Update(deltaTime);
 
 #if defined(_WIN32)
 	input.oldPos = input.pos;
@@ -111,8 +112,8 @@ void Triangle::Tick()
 	input.oldPos1 = input.pos1;
 #endif
 
-	m_UniformBuffer.view = m_Camera.GetView();
-	m_UniformBuffer.proj = m_Camera.GetProj();
+	m_UniformBuffer.view = m_Camera->GetView();
+	m_UniformBuffer.proj = m_Camera->GetProj();
 
 	auto driver = GetVulkanDriver();
 
@@ -151,56 +152,27 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 
 	vulkanCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline);
 
-	vulkanCommandBuffer->BindVertexBuffer(0, m_VertexBuffer);
+	vulkanCommandBuffer->BindVertexBuffer(0, m_Mesh->GetVertexBuffer());
 
-	vulkanCommandBuffer->BindIndexBuffer(m_IndexBuffer, VK_INDEX_TYPE_UINT32);
+	vulkanCommandBuffer->BindIndexBuffer(m_Mesh->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 
 	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, m_VulkanDescriptorSet);
 
-	vulkanCommandBuffer->DrawIndexed(11484, 1, 0, 0, 1);
+	vulkanCommandBuffer->DrawIndexed(m_Mesh->GetIndexCount(), 1, 0, 0, 1);
 
 	vulkanCommandBuffer->EndRenderPass();
 
 	vulkanCommandBuffer->End();
 }
 
-void Triangle::PrepareVertices()
+void Triangle::PrepareModels()
 {
-	auto driver = GetVulkanDriver();
+	std::vector<VertexChannel> channels = { kVertexPosition ,kVertexColor, kVertexTexcoord };
 
-	// Vertex buffer
-	/*std::vector<float> vertexBuffer =
-	{
-		  -0.5f, 0.5f, 0.0f,  1.0f ,
-		  1.0f, 0.0f, 0.0f,  0.0f  ,
-		  0.0f,  0.0f  ,
-
-		   0.5f, 0.5f, 0.0f,  1.0f ,
-		   0.0f, 1.0f, 0.0f,  0.0f  ,
-		   1.0f,  0.0f  ,
-
-		   0.5f,  -0.5f, 0.0f,  1.0f ,
-		   0.0f, 0.0f, 1.0f,  0.0f,
-		   1.0f,  1.0f  ,
-	};*/
-	Model model;
-	model.loadFromFile(GetAssetPath() + "models/viking_room.obj");
-	auto vertexBuffer = model.m_Vertices;
-
-	uint32_t vertexBufferSize = static_cast<uint32_t>(vertexBuffer.size()) * sizeof(vertexBuffer[0]);
-
-	m_VertexBuffer = driver.CreateVulkanBuffer(vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-	driver.UploadVulkanBuffer(m_VertexBuffer, vertexBuffer.data(), vertexBufferSize);
-
-	// Index buffer
-	//std::vector<uint32_t> indexBuffer = { 0, 1, 2 };
-	auto indexBuffer = model.m_Indices;
-	uint32_t indexBufferSize = static_cast<uint32_t>(indexBuffer.size()) * sizeof(uint32_t);
-
-	m_IndexBuffer = driver.CreateVulkanBuffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-	driver.UploadVulkanBuffer(m_IndexBuffer, indexBuffer.data(), indexBufferSize);
+	m_Mesh = new Mesh();
+	m_Mesh->SetVertexChannels(channels);
+	m_Mesh->LoadFromFile(global::AssetPath + "models/viking_room.obj");
+	m_Mesh->UploadToGPU();
 }
 
 void Triangle::PrepareTextures()
@@ -208,7 +180,7 @@ void Triangle::PrepareTextures()
 	auto driver = GetVulkanDriver();
 
 	uint32_t width = 0, height = 0, dataSize = 0;
-	std::vector<char> imageData = GetImageData(GetAssetPath() + "textures/viking_room.png", 4, &width, &height, nullptr, &dataSize);
+	std::vector<char> imageData = GetImageData(global::AssetPath + "textures/viking_room.png", 4, &width, &height, nullptr, &dataSize);
 	if (imageData.size() == 0) {
 		assert(false);
 	}
@@ -252,19 +224,15 @@ void Triangle::CreatePipeline()
 	m_VulkanRenderPass = driver.CreateVulkanRenderPass();
 
 	// std::make_unique 需要C++14的支持，这里使用构造函数更保险
-	std::shared_ptr<VulkanShaderModule> vulkanShaderModuleVert = std::shared_ptr<VulkanShaderModule>(driver.CreateVulkanShaderModule(GetAssetPath() + "shaders/shader.vert.spv"));
-	std::shared_ptr<VulkanShaderModule> vulkanShaderModuleFrag = std::shared_ptr<VulkanShaderModule>(driver.CreateVulkanShaderModule(GetAssetPath() + "shaders/shader.frag.spv"));
+	std::shared_ptr<VulkanShaderModule> vulkanShaderModuleVert = std::shared_ptr<VulkanShaderModule>(driver.CreateVulkanShaderModule(global::AssetPath + "shaders/shader.vert.spv"));
+	std::shared_ptr<VulkanShaderModule> vulkanShaderModuleFrag = std::shared_ptr<VulkanShaderModule>(driver.CreateVulkanShaderModule(global::AssetPath + "shaders/shader.frag.spv"));
 
 	PipelineCI pipelineCI;
 
 	pipelineCI.shaderStage.vertShaderModule = vulkanShaderModuleVert;
 	pipelineCI.shaderStage.fragShaderModule = vulkanShaderModuleFrag;
 
-	pipelineCI.vertexInputState.vertexLayout.push_back(kVertexFormatFloat32x4);
-	pipelineCI.vertexInputState.vertexLayout.push_back(kVertexFormatFloat32x4);
-	pipelineCI.vertexInputState.vertexLayout.push_back(kVertexFormatFloat32x2);
-
-	//pipelineCI.rasterizationState.cullMode = VK_CULL_MODE_NONE;
+	pipelineCI.vertexInputState.formats = m_Mesh->GetVertexFormats();
 
 	pipelineCI.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
 	pipelineCI.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_SCISSOR);

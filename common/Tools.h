@@ -40,5 +40,3 @@ bool CheckLayerAvailability(const char *layerName, const std::vector<VkLayerProp
 std::vector<char> GetBinaryFileContents(std::string const &filename);
 
 std::vector<char> GetImageData(std::string const &filename, int requestedComponents, uint32_t *width, uint32_t *height, uint32_t *components, uint32_t *dataSize);
-
-const std::string GetAssetPath();

@@ -10,7 +10,7 @@ android_app* androidApp;
 namespace global
 {
 
-	// windows
+	// display
 #if defined(_WIN32)
 	HINSTANCE windowInstance;
 	HWND windowHandle;
@@ -37,5 +37,11 @@ namespace global
 
 	// Frame
 	size_t frameResourcesCount = 3;
+
+#if defined(_WIN32)
+	std::string AssetPath = "C:/Users/1/Desktop/MakeVulkan/data/";
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+	std::string AssetPath = "";
+#endif
 
 }

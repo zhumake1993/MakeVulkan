@@ -35,7 +35,7 @@ extern android_app* androidApp;
 namespace global
 {
 
-	// windows
+	// display
 #if defined(_WIN32)
 	extern HINSTANCE windowInstance;
 	extern HWND windowHandle;
@@ -62,4 +62,7 @@ namespace global
 
 	// Frame
 	extern size_t frameResourcesCount;
+
+	extern std::string AssetPath;
+
 }

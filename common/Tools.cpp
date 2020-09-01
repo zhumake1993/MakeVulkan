@@ -140,12 +140,3 @@ std::vector<char> GetImageData(std::string const &filename, int requestedCompone
 	stbi_image_free(imageData);
 	return output;
 }
-
-const std::string GetAssetPath()
-{
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-	return "";
-#else
-	return "../data/";
-#endif
-}
