@@ -4,10 +4,6 @@ cmake_minimum_required (VERSION 2.8)
 # 项目信息
 project (MakeVulkan)
 
-# 指定生成目标
-# WIN32指示程序的入口是WinMain
-add_executable(triangle WIN32 examples/triangle/Triangle.h examples/triangle/Triangle.cpp)
-
 # 设置预定义宏
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_WIN32_KHR")
 
@@ -16,7 +12,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_WIN32_KHR")
 set(vulkan_lib C:/VulkanSDK/1.2.131.2/Lib/vulkan-1.lib)
 set(vulkan_lib_include C:/VulkanSDK/1.2.131.2/Include)
 include_directories(${vulkan_lib_include})
-target_link_libraries(triangle ${vulkan_lib})
 
 # common
 file(GLOB common_sources common/*.h common/*.cpp)
@@ -39,4 +34,23 @@ include_directories(external)
 # 生成链接库
 add_library (base ${common_sources} ${vulkan_sources} ${engine_sources})
 
-target_link_libraries(triangle base)
+# 查找所有的example
+file(GLOB EXAMPLES RELATIVE ${PROJECT_SOURCE_DIR}/examples/ examples/*)
+
+function(buildExample EXAMPLE_NAME)
+
+	# 指定生成目标
+	# WIN32指示程序的入口是WinMain
+	file(GLOB example_sources examples/${EXAMPLE_NAME}/*.h examples/${EXAMPLE_NAME}/*.cpp)
+	add_executable(${EXAMPLE_NAME} WIN32 ${example_sources})
+	source_group("" FILES ${example_sources})
+	
+	# 链接
+	target_link_libraries(${EXAMPLE_NAME} ${vulkan_lib})
+	target_link_libraries(${EXAMPLE_NAME} base)
+	
+endfunction(buildExample)
+
+foreach(EXAMPLE ${EXAMPLES})
+	buildExample(${EXAMPLE})
+endforeach(EXAMPLE)
