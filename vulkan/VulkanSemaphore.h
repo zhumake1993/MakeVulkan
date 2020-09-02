@@ -12,8 +12,6 @@ public:
 	VulkanSemaphore(VulkanDevice* vulkanDevice);
 	~VulkanSemaphore();
 
-	void CleanUp();
-
 private:
 
 	//

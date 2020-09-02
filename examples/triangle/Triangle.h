@@ -4,8 +4,6 @@
 #include "VulkanFwd.h"
 #include "EngineFwd.h"
 
-void ConfigGlobalSettings();
-
 class Triangle : public Engine
 {
 	struct UniformBuffer

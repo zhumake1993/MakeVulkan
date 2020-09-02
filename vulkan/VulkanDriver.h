@@ -59,7 +59,7 @@ public:
 
 private:
 
-	
+	//
 
 private:
 
@@ -80,5 +80,6 @@ private:
 	VulkanImage* m_DepthImage;
 };
 
-void SetVulkanDriver(VulkanDriver* vulkanDriver);
+void CreateVulkanDriver();
 VulkanDriver& GetVulkanDriver();
+void ReleaseVulkanDriver();

@@ -11,10 +11,6 @@ VulkanDescriptorPool::VulkanDescriptorPool(VulkanDevice * vulkanDevice):
 
 VulkanDescriptorPool::~VulkanDescriptorPool()
 {
-}
-
-void VulkanDescriptorPool::CleanUp()
-{
 	if (m_VulkanDevice && m_VulkanDevice->m_LogicalDevice != VK_NULL_HANDLE && m_DescriptorPool != VK_NULL_HANDLE) {
 		vkDestroyDescriptorPool(m_VulkanDevice->m_LogicalDevice, m_DescriptorPool, nullptr);
 		m_DescriptorPool = VK_NULL_HANDLE;

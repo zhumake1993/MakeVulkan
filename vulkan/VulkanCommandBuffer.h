@@ -20,8 +20,6 @@ public:
 	VulkanCommandBuffer(VulkanDevice* vulkanDevice, VulkanCommandPool* vulkanCommandPool, VkCommandBufferLevel level);
 	~VulkanCommandBuffer();
 
-	void CleanUp();
-
 	void Begin();
 	void End();
 	void BeginRenderPass(VulkanRenderPass *vulkanRenderPass, VulkanFramebuffer* vulkanFrameBuffer, VkRect2D& area, std::vector<VkClearValue>& clearValues);

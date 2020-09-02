@@ -15,10 +15,6 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* vulkanDevice, uint32_t size, VkBufferUs
 
 VulkanBuffer::~VulkanBuffer()
 {
-}
-
-void VulkanBuffer::CleanUp()
-{
 	if (m_VulkanDevice && m_VulkanDevice->m_LogicalDevice != VK_NULL_HANDLE) {
 		if (m_Buffer != VK_NULL_HANDLE) {
 			vkDestroyBuffer(m_VulkanDevice->m_LogicalDevice, m_Buffer, nullptr);

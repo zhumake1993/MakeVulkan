@@ -27,14 +27,21 @@
 
 VulkanDriver* driver;
 
-void SetVulkanDriver(VulkanDriver * vulkanDriver)
+void CreateVulkanDriver()
 {
-	driver = vulkanDriver;
+	driver = new VulkanDriver();
+	driver->Init();
 }
 
 VulkanDriver& GetVulkanDriver()
 {
 	return *driver;
+}
+
+void ReleaseVulkanDriver()
+{
+	driver->CleanUp();
+	RELEASE(driver);
 }
 
 VulkanDriver::VulkanDriver()
@@ -43,27 +50,32 @@ VulkanDriver::VulkanDriver()
 
 VulkanDriver::~VulkanDriver()
 {
+	// 不要再这里释放资源！
 }
 
 void VulkanDriver::CleanUp()
 {
-	m_StagingBuffer->CleanUp();
+	WaitIdle();
+
+	RELEASE(m_DepthImage);
+
+	RELEASE(m_StagingBuffer);
 
 	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
-		m_UniformBuffers[i]->CleanUp();
+		RELEASE(m_UniformBuffers[i]);
 
-		m_FrameResources[i].framebuffer->CleanUp();
-		m_FrameResources[i].commandBuffer->CleanUp();
-		m_FrameResources[i].imageAvailableSemaphore->CleanUp();
-		m_FrameResources[i].finishedRenderingSemaphore->CleanUp();
-		m_FrameResources[i].fence->CleanUp();
+		RELEASE(m_FrameResources[i].framebuffer);
+		RELEASE(m_FrameResources[i].commandBuffer);
+		RELEASE(m_FrameResources[i].imageAvailableSemaphore);
+		RELEASE(m_FrameResources[i].finishedRenderingSemaphore);
+		RELEASE(m_FrameResources[i].fence);
 	}
 
-	m_VulkanCommandPool->CleanUp();
-	m_VulkanSwapChain->CleanUp();
-	m_VulkanDevice->CleanUp();
-	m_VulkanSurface->CleanUp();
-	m_VulkanInstance->CleanUp();
+	RELEASE(m_VulkanCommandPool);
+	RELEASE(m_VulkanSwapChain);
+	RELEASE(m_VulkanDevice);
+	RELEASE(m_VulkanSurface);
+	RELEASE(m_VulkanInstance);
 }
 
 void VulkanDriver::Init()
@@ -173,7 +185,7 @@ void VulkanDriver::UploadVulkanBuffer(VulkanBuffer * vertexBuffer, void * data, 
 
 	m_VulkanDevice->WaitIdle();
 
-	cmd->CleanUp();
+	RELEASE(cmd);
 }
 
 void VulkanDriver::UploadVulkanImage(VulkanImage * vulkanImage, void * data, uint32_t size)
@@ -196,7 +208,7 @@ void VulkanDriver::UploadVulkanImage(VulkanImage * vulkanImage, void * data, uin
 
 	m_VulkanDevice->WaitIdle();
 
-	cmd->CleanUp();
+	RELEASE(cmd);
 }
 
 VulkanDescriptorSetLayout * VulkanDriver::CreateVulkanDescriptorSetLayout()

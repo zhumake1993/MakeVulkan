@@ -12,8 +12,6 @@ public:
 	VulkanRenderPass(VulkanDevice* vulkanDevice, VkFormat colorFormat, VkFormat depthFormat);
 	~VulkanRenderPass();
 
-	void CleanUp();
-
 private:
 
 	//

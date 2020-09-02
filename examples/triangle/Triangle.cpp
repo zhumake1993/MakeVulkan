@@ -18,6 +18,7 @@
 
 #include "VulkanCommandBuffer.h"
 
+#include "Application.h"
 #include "Camera.h"
 #include "Mesh.h"
 #include "Model.h"
@@ -57,13 +58,19 @@ Triangle::~Triangle()
 
 void Triangle::CleanUp()
 {
-	m_Image->CleanUp();
+	RELEASE(m_Mesh);
 
-	m_VulkanDescriptorPool->CleanUp();
-	m_VulkanDescriptorSetLayout->CleanUp();
-	m_VulkanPipeline->CleanUp();
-	m_VulkanPipelineLayout->CleanUp();
-	m_VulkanRenderPass->CleanUp();
+	RELEASE(m_Image);
+
+	RELEASE(m_VulkanDescriptorPool);
+	RELEASE(m_VulkanDescriptorSetLayout);
+	RELEASE(m_VulkanDescriptorSet);
+
+	RELEASE(m_VulkanPipeline);
+	RELEASE(m_VulkanPipelineLayout);
+	RELEASE(m_VulkanRenderPass);
+
+	RELEASE(m_Camera);
 }
 
 void Triangle::Init()
@@ -215,6 +222,11 @@ void Triangle::PrepareDescriptorSet()
 	descriptorSetUpdaters[1]->AddBuffer(driver.GetCurrUniformBuffer());
 
 	driver.UpdateDescriptorSets(descriptorSetUpdaters);
+
+	// release 
+	for (auto& p : descriptorSetUpdaters) {
+		RELEASE(p);
+	}
 }
 
 void Triangle::CreatePipeline()
@@ -243,3 +255,46 @@ void Triangle::CreatePipeline()
 
 	m_VulkanPipeline = driver.CreateVulkanPipeline(pipelineCI);
 }
+
+// Èë¿Ú
+
+#ifdef _WIN32
+
+#if USE_VISUAL_LEAK_DETECTOR
+#include "vld.h"
+#endif
+
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
+{
+	global::windowInstance = hInstance;
+
+	ConfigGlobalSettings();
+
+	application = new Application(new Triangle());
+	application->Init();
+	application->Run();
+	application->CleanUp();
+	RELEASE(application);
+
+	system("PAUSE");
+	return 0;
+}
+
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+
+void android_main(android_app* state)
+{
+	androidApp = state;
+
+	ConfigGlobalSettings();
+
+	application = new Application(new Triangle());
+	state->userData = application;
+	state->onAppCmd = HandleAppCommand;
+	state->onInputEvent = HandleAppInput;
+	application->Run();
+	application->CleanUp();
+	RELEASE(application);
+}
+
+#endif

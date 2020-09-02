@@ -14,7 +14,6 @@ public:
 	VulkanDevice(VulkanInstance* vulkanInstance, VulkanSurface* vulkanSurface);
 	~VulkanDevice();
 
-	void CleanUp();
 	void WaitIdle();
 	uint32_t GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties);
 	VkFormat GetSupportedDepthFormat();

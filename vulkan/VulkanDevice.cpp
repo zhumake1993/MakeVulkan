@@ -80,10 +80,6 @@ VulkanDevice::VulkanDevice(VulkanInstance* vulkanInstance, VulkanSurface* vulkan
 
 VulkanDevice::~VulkanDevice()
 {
-}
-
-void VulkanDevice::CleanUp()
-{
 	if (m_LogicalDevice != VK_NULL_HANDLE) {
 		vkDestroyDevice(m_LogicalDevice, nullptr);
 		m_LogicalDevice = VK_NULL_HANDLE;

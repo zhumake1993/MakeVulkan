@@ -13,21 +13,17 @@ Engine::~Engine()
 void Engine::CleanUpEngine()
 {
 	auto driver = GetVulkanDriver();
-
 	driver.WaitIdle();
 
 	// 先清理子类
 	CleanUp();
 
-	driver.CleanUp();
+	ReleaseVulkanDriver();
 }
 
 void Engine::InitEngine()
 {
-	auto driver = new VulkanDriver();
-	SetVulkanDriver(driver);
-
-	driver->Init();
+	CreateVulkanDriver();
 
 	// 后初始化子类
 	Init();

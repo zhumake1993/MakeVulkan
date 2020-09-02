@@ -30,7 +30,8 @@ extern android_app* androidApp;
 #include "glm-0.9.9.7/glm/glm/glm.hpp"
 #include "glm-0.9.9.7/glm/glm/gtc/matrix_transform.hpp"
 
-// 全局设置
+// 使用Visual Leak Detector（仅限PC）
+#define USE_VISUAL_LEAK_DETECTOR 1
 
 namespace global
 {

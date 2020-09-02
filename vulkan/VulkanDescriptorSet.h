@@ -15,7 +15,6 @@ public:
 	VulkanDescriptorSet(VulkanDevice* vulkanDevice, VulkanDescriptorSetLayout* vulkanDescriptorSetLayout);
 	~VulkanDescriptorSet();
 
-	void CleanUp();
 	VkDescriptorType GetDescriptorType(uint32_t binding);
 
 private:

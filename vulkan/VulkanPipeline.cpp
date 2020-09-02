@@ -237,10 +237,6 @@ VulkanPipeline::VulkanPipeline(VulkanDevice * vulkanDevice, PipelineCI& pipeline
 
 VulkanPipeline::~VulkanPipeline()
 {
-}
-
-void VulkanPipeline::CleanUp()
-{
 	if (m_VulkanDevice && m_VulkanDevice->m_LogicalDevice != VK_NULL_HANDLE && m_Pipeline != VK_NULL_HANDLE) {
 		vkDestroyPipeline(m_VulkanDevice->m_LogicalDevice, m_Pipeline, nullptr);
 		m_Pipeline = VK_NULL_HANDLE;

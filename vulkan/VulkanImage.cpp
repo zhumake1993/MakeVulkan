@@ -20,10 +20,6 @@ VulkanImage::VulkanImage(VulkanDevice* vulkanDevice, VkImageType imageType, VkFo
 
 VulkanImage::~VulkanImage()
 {
-}
-
-void VulkanImage::CleanUp()
-{
 	if (m_VulkanDevice && m_VulkanDevice->m_LogicalDevice != VK_NULL_HANDLE) {
 		if (m_Sampler != VK_NULL_HANDLE) {
 			vkDestroySampler(m_VulkanDevice->m_LogicalDevice, m_Sampler, nullptr);

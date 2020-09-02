@@ -31,10 +31,6 @@ VulkanInstance::VulkanInstance()
 
 VulkanInstance::~VulkanInstance()
 {
-}
-
-void VulkanInstance::CleanUp()
-{
 	if (m_Instance != VK_NULL_HANDLE) {
 		vkDestroyInstance(m_Instance, nullptr);
 		m_Instance = VK_NULL_HANDLE;

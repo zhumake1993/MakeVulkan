@@ -19,8 +19,8 @@ Mesh::Mesh()
 
 Mesh::~Mesh()
 {
-	m_VertexBuffer->CleanUp();
-	m_IndexBuffer->CleanUp();
+	RELEASE(m_VertexBuffer);
+	RELEASE(m_IndexBuffer);
 }
 
 void Mesh::SetVertexChannels(std::vector<VertexChannel>& channels)

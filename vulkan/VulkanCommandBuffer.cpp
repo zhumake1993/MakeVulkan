@@ -19,10 +19,6 @@ VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice* vulkanDevice, VulkanComma
 
 VulkanCommandBuffer::~VulkanCommandBuffer()
 {
-}
-
-void VulkanCommandBuffer::CleanUp()
-{
 	if (m_VulkanDevice && m_VulkanDevice->m_LogicalDevice != VK_NULL_HANDLE
 		&& m_VulkanCommandPool && m_VulkanCommandPool->m_CommandPool != VK_NULL_HANDLE
 		&& m_CommandBuffer != VK_NULL_HANDLE) {

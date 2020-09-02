@@ -13,7 +13,6 @@ public:
 	VulkanCommandPool(VulkanDevice* vulkanDevice, VkCommandPoolCreateFlags flags, uint32_t queueFamilyIndex);
 	~VulkanCommandPool();
 
-	void CleanUp();
 	VulkanCommandBuffer* AllocateCommandBuffer(VkCommandBufferLevel level);
 
 private:

@@ -12,8 +12,6 @@ public:
 	VulkanFramebuffer(VulkanDevice* vulkanDevice);
 	~VulkanFramebuffer();
 
-	void CleanUp();
-
 private:
 
 	//

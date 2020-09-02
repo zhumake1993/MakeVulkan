@@ -18,13 +18,18 @@ Application::~Application()
 void Application::CleanUp()
 {
 	m_Engine->CleanUpEngine();
+	RELEASE(m_Engine);
 }
 
 void Application::Init()
 {
 #if defined(_WIN32)
 
+	// VLD跟控制台输出有冲突
+	#if !(USE_VISUAL_LEAK_DETECTOR)
 	SetupConsole();
+	#endif // !USE_VISUAL_LEAK_DETECTOR
+
 	SetupWindow();
 
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)

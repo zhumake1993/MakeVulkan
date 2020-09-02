@@ -34,10 +34,6 @@ VulkanSurface::VulkanSurface(VulkanInstance* vulkanInstance, ANativeWindow* wind
 
 VulkanSurface::~VulkanSurface()
 {
-}
-
-void VulkanSurface::CleanUp()
-{
 	if (m_VulkanInstance && m_VulkanInstance->m_Instance != VK_NULL_HANDLE && m_Surface != VK_NULL_HANDLE) {
 		vkDestroySurfaceKHR(m_VulkanInstance->m_Instance, m_Surface, nullptr);
 		m_Surface = VK_NULL_HANDLE;

@@ -10,8 +10,6 @@ public:
 	VulkanInstance();
 	~VulkanInstance();
 
-	void CleanUp();
-
 private:
 
 	void ConfigInstanceLayers();

@@ -13,6 +13,7 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, VulkanSurface* surf
 
 VulkanSwapChain::~VulkanSwapChain()
 {
+	CleanUp();
 }
 
 void VulkanSwapChain::CleanUp()

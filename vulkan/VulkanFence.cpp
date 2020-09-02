@@ -16,10 +16,6 @@ VulkanFence::VulkanFence(VulkanDevice * vulkanDevice, bool signaled):
 
 VulkanFence::~VulkanFence()
 {
-}
-
-void VulkanFence::CleanUp()
-{
 	if (m_VulkanDevice && m_VulkanDevice->m_LogicalDevice != VK_NULL_HANDLE && m_Fence != VK_NULL_HANDLE) {
 		vkDestroyFence(m_VulkanDevice->m_LogicalDevice, m_Fence, nullptr);
 		m_Fence = VK_NULL_HANDLE;

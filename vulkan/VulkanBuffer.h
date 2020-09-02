@@ -12,7 +12,6 @@ public:
 	VulkanBuffer(VulkanDevice* vulkanDevice, uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty);
 	~VulkanBuffer();
 
-	void CleanUp();
 	void MapAndCopy(void * data, uint32_t size);
 	void* Map(uint32_t size);
 	void Unmap();

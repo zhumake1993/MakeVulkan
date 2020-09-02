@@ -15,10 +15,6 @@ VulkanSemaphore::VulkanSemaphore(VulkanDevice * vulkanDevice):
 
 VulkanSemaphore::~VulkanSemaphore()
 {
-}
-
-void VulkanSemaphore::CleanUp()
-{
 	if (m_VulkanDevice && m_VulkanDevice->m_LogicalDevice != VK_NULL_HANDLE && m_Semaphore != VK_NULL_HANDLE) {
 		vkDestroySemaphore(m_VulkanDevice->m_LogicalDevice, m_Semaphore, nullptr);
 		m_Semaphore = VK_NULL_HANDLE;

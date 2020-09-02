@@ -20,7 +20,6 @@ public:
 	VulkanDescriptorPool(VulkanDevice* vulkanDevice);
 	~VulkanDescriptorPool();
 
-	void CleanUp();
 	void AddPoolSize(VkDescriptorType descriptorType, uint32_t count);
 	void Create(uint32_t maxSets);
 	VulkanDescriptorSet* AllocateDescriptorSet(VulkanDescriptorSetLayout* vulkanDescriptorSetLayout);

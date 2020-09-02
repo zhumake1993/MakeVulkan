@@ -9,10 +9,6 @@ VulkanDescriptorSetLayout::VulkanDescriptorSetLayout(VulkanDevice * vulkanDevice
 
 VulkanDescriptorSetLayout::~VulkanDescriptorSetLayout()
 {
-}
-
-void VulkanDescriptorSetLayout::CleanUp()
-{
 	if (m_VulkanDevice && m_VulkanDevice->m_LogicalDevice != VK_NULL_HANDLE && m_DescriptorSetLayout != VK_NULL_HANDLE) {
 		vkDestroyDescriptorSetLayout(m_VulkanDevice->m_LogicalDevice, m_DescriptorSetLayout, nullptr);
 		m_DescriptorSetLayout = VK_NULL_HANDLE;

@@ -21,10 +21,6 @@ VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice * vulkanDevice, VkDescri
 
 VulkanPipelineLayout::~VulkanPipelineLayout()
 {
-}
-
-void VulkanPipelineLayout::CleanUp()
-{
 	if (m_VulkanDevice && m_VulkanDevice->m_LogicalDevice != VK_NULL_HANDLE && m_PipelineLayout != VK_NULL_HANDLE) {
 		vkDestroyPipelineLayout(m_VulkanDevice->m_LogicalDevice, m_PipelineLayout, nullptr);
 		m_PipelineLayout = VK_NULL_HANDLE;

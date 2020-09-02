@@ -13,10 +13,6 @@ VulkanDescriptorSet::VulkanDescriptorSet(VulkanDevice * vulkanDevice, VulkanDesc
 
 VulkanDescriptorSet::~VulkanDescriptorSet()
 {
-}
-
-void VulkanDescriptorSet::CleanUp()
-{
 	/*if (m_VulkanDevice && m_VulkanDevice->m_LogicalDevice != VK_NULL_HANDLE && m_DescriptorSetLayout != VK_NULL_HANDLE) {
 		vkFreeDescriptorSets(m_VulkanDevice->m_LogicalDevice, m_DescriptorSetLayout, nullptr);
 		m_DescriptorSetLayout = VK_NULL_HANDLE;

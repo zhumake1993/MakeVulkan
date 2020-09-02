@@ -16,7 +16,6 @@ public:
 #endif
 	~VulkanSurface();
 
-	void CleanUp();
 	bool SupportPresent(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex);
 
 public:

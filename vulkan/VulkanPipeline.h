@@ -127,8 +127,6 @@ public:
 	VulkanPipeline(VulkanDevice* vulkanDevice, PipelineCI& pipelineCI);
 	~VulkanPipeline();
 
-	void CleanUp();
-
 private:
 
 	//

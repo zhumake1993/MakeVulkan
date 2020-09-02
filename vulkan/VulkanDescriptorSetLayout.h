@@ -19,7 +19,6 @@ public:
 	VulkanDescriptorSetLayout(VulkanDevice* vulkanDevice);
 	~VulkanDescriptorSetLayout();
 
-	void CleanUp();
 	void AddBinding(VkDescriptorType descriptorType, uint32_t count, VkShaderStageFlags shaderStageFlags);
 	void Create();
 	VkDescriptorType GetDescriptorType(uint32_t binding);

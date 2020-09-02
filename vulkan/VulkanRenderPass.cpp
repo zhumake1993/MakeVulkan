@@ -81,10 +81,6 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice * vulkanDevice, VkFormat colorFo
 
 VulkanRenderPass::~VulkanRenderPass()
 {
-}
-
-void VulkanRenderPass::CleanUp()
-{
 	if (m_VulkanDevice && m_VulkanDevice->m_LogicalDevice != VK_NULL_HANDLE && m_RenderPass != VK_NULL_HANDLE) {
 		vkDestroyRenderPass(m_VulkanDevice->m_LogicalDevice, m_RenderPass, nullptr);
 		m_RenderPass = VK_NULL_HANDLE;
