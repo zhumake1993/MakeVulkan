@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "Triangle.h"
 
+#include "vld.h"
 #ifdef _WIN32
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)

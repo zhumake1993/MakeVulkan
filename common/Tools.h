@@ -21,6 +21,15 @@
 }
 
 //
+#define RELEASE(pointer)		\
+{								\
+	if (pointer != nullptr) {	\
+		delete pointer;			\
+		pointer = nullptr;		\
+	}							\
+}
+
+//
 std::string VulkanErrorToString(VkResult errorCode);
 
 //
