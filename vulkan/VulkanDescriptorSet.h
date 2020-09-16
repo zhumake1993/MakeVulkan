@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Common.h"
+#include "VulkanDescriptorTypes.h"
 
 class VulkanDevice;
+class VulkanDescriptorPool;
 class VulkanDescriptorSetLayout;
 class VulkanImage;
 class VulkanBuffer;
@@ -12,7 +14,7 @@ class VulkanDescriptorSet
 
 public:
 
-	VulkanDescriptorSet(VulkanDevice* vulkanDevice, VulkanDescriptorSetLayout* vulkanDescriptorSetLayout);
+	VulkanDescriptorSet(VulkanDevice* vulkanDevice, VulkanDescriptorPool* vulkanDescriptorPool, VulkanDescriptorSetLayout* vulkanDescriptorSetLayout);
 	~VulkanDescriptorSet();
 
 	VkDescriptorType GetDescriptorType(uint32_t binding);
@@ -28,24 +30,6 @@ public:
 private:
 
 	VulkanDevice* m_VulkanDevice = nullptr;
+	VulkanDescriptorPool* m_VulkanDescriptorPool = nullptr;
 	VulkanDescriptorSetLayout* m_VulkanDescriptorSetLayout = nullptr;
-};
-
-struct DescriptorSetUpdater
-{
-	DescriptorSetUpdater(VulkanDescriptorSet* vulkanDescriptorSet, uint32_t binding, uint32_t index);
-
-	void AddImage(VulkanImage* vulkanImage);
-
-	void AddBuffer(VulkanBuffer* vulkanBuffer);
-
-	VkWriteDescriptorSet Get();
-
-private:
-
-	VkWriteDescriptorSet writeDescriptorSet;
-
-	std::vector<VkDescriptorImageInfo> descriptorImageInfos;
-	std::vector<VkDescriptorBufferInfo> descriptorBufferInfos;
-	std::vector<VkBufferView> bufferViews;
 };

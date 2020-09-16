@@ -12,10 +12,11 @@ public:
 	VulkanBuffer(VulkanDevice* vulkanDevice, uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty);
 	~VulkanBuffer();
 
-	void MapAndCopy(void * data, uint32_t size);
-	void* Map(uint32_t size);
+	void Map(VkDeviceSize offset = 0, VkDeviceSize size = VK_WHOLE_SIZE);
 	void Unmap();
-	VkDescriptorBufferInfo GetVkDescriptorBufferInfo();
+	void Copy(void * data, uint32_t offset, uint32_t size);
+	void Flush(VkDeviceSize offset = 0, VkDeviceSize size = VK_WHOLE_SIZE);
+	void Invalidate(VkDeviceSize offset = 0, VkDeviceSize size = VK_WHOLE_SIZE);
 
 private:
 
@@ -30,6 +31,7 @@ public:
 
 	VkBuffer m_Buffer = VK_NULL_HANDLE;
 	VkDeviceMemory m_Memory = VK_NULL_HANDLE;
+	void* m_MappedPointer = nullptr;
 
 private:
 

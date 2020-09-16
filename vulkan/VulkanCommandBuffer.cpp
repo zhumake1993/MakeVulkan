@@ -87,7 +87,7 @@ void VulkanCommandBuffer::ImageMemoryBarrier(VulkanImage * img, VkPipelineStageF
 
 void VulkanCommandBuffer::UploadVulkanBuffer(VulkanBuffer * vertexBuffer, void * data, uint32_t size, VulkanBuffer * stagingBuffer)
 {
-	stagingBuffer->MapAndCopy(data, size);
+	stagingBuffer->Copy(data, 0, size);
 
 	Begin();
 
@@ -110,7 +110,7 @@ void VulkanCommandBuffer::UploadVulkanBuffer(VulkanBuffer * vertexBuffer, void *
 
 void VulkanCommandBuffer::UploadVulkanImage(VulkanImage * vulkanImage, void * data, uint32_t size, VulkanBuffer * stagingBuffer)
 {
-	stagingBuffer->MapAndCopy(data, size);
+	stagingBuffer->Copy(data, 0, size);
 
 	Begin();
 

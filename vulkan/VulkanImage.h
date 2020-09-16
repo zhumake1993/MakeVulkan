@@ -12,8 +12,6 @@ public:
 	VulkanImage(VulkanDevice* vulkanDevice, VkImageType imageType, VkFormat format, uint32_t width, uint32_t height, VkImageUsageFlags usage, VkImageAspectFlags aspect);
 	~VulkanImage();
 
-	VkDescriptorImageInfo GetVkDescriptorImageInfo();
-
 private:
 
 	void CreateImage();

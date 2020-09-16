@@ -21,7 +21,7 @@
 #include "Application.h"
 #include "Camera.h"
 #include "Mesh.h"
-#include "Model.h"
+#include "RenderNode.h"
 
 void ConfigGlobalSettings() {
 	// 添加单独的实例级层
@@ -62,9 +62,11 @@ void Triangle::CleanUp()
 
 	RELEASE(m_Image);
 
-	RELEASE(m_VulkanDescriptorPool);
+	RELEASE(m_RenderNode);
+
 	RELEASE(m_VulkanDescriptorSetLayout);
 	RELEASE(m_VulkanDescriptorSet);
+	RELEASE(m_VulkanDescriptorPool);
 
 	RELEASE(m_VulkanPipeline);
 	RELEASE(m_VulkanPipelineLayout);
@@ -92,8 +94,7 @@ void Triangle::Init()
 	m_Camera->SetSpeed(0.001f, 0.005f);
 #endif
 
-	PrepareModels();
-	PrepareTextures();
+	PrepareResources();
 	PrepareDescriptorSet();
 	CreatePipeline();
 }
@@ -132,6 +133,13 @@ void Triangle::Tick()
 	m_PassUniform.proj = m_Camera->GetProj();
 
 	driver.UpdatePassUniformBuffer(&m_PassUniform);
+
+	{
+		if (m_RenderNode->m_NumFramesDirty > 0) {
+			driver.UpdateObjectUniformBuffer(&m_RenderNode->m_World, m_RenderNode->m_ObjectUBIndex);
+			m_RenderNode->m_NumFramesDirty--;
+		}
+	}
 }
 
 void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
@@ -181,61 +189,69 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	vulkanCommandBuffer->End();
 }
 
-void Triangle::PrepareModels()
-{
-	std::vector<VertexChannel> channels = { kVertexPosition ,kVertexColor, kVertexTexcoord };
-
-	m_Mesh = new Mesh();
-	m_Mesh->SetVertexChannels(channels);
-	m_Mesh->LoadFromFile(global::AssetPath + "models/viking_room.obj");
-	m_Mesh->UploadToGPU();
-}
-
-void Triangle::PrepareTextures()
+void Triangle::PrepareResources()
 {
 	auto& driver = GetVulkanDriver();
 
-	uint32_t width = 0, height = 0, dataSize = 0;
-	std::vector<char> imageData = GetImageData(global::AssetPath + "textures/viking_room.png", 4, &width, &height, nullptr, &dataSize);
-	if (imageData.size() == 0) {
-		assert(false);
+	// Mesh
+	{
+		std::vector<VertexChannel> channels = { kVertexPosition ,kVertexColor, kVertexTexcoord };
+
+		m_Mesh = new Mesh();
+		m_Mesh->SetVertexChannels(channels);
+		m_Mesh->LoadFromFile(global::AssetPath + "models/viking_room.obj");
+		m_Mesh->UploadToGPU();
 	}
 
-	m_Image = driver.CreateVulkanImage(VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+	// Texture
+	{
+		uint32_t width = 0, height = 0, dataSize = 0;
+		std::vector<char> imageData = GetImageData(global::AssetPath + "textures/viking_room.png", 4, &width, &height, nullptr, &dataSize);
+		if (imageData.size() == 0) {
+			assert(false);
+		}
 
-	driver.UploadVulkanImage(m_Image, imageData.data(), dataSize);
+		m_Image = driver.CreateVulkanImage(VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+
+		driver.UploadVulkanImage(m_Image, imageData.data(), dataSize);
+	}
+	
+	// RenderNode
+	m_RenderNode = new RenderNode();
+	m_RenderNode->m_ObjectUBIndex = 0;
+	m_RenderNode->m_Mesh = m_Mesh;
+	auto world = glm::mat4(1.0f);
+	world = glm::rotate(glm::mat4(1.0f), -1.57f, glm::vec3(1.0f, 0.0f, 0.0f)) * world;
+	world = glm::rotate(glm::mat4(1.0f), 1.57f, glm::vec3(0.0f, 1.0f, 0.0f)) * world;
+	world = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.3f, 0.3f)) * world;
+	m_RenderNode->m_World = world;
 }
 
 void Triangle::PrepareDescriptorSet()
 {
 	auto& driver = GetVulkanDriver();
 
-	m_VulkanDescriptorSetLayout = driver.CreateVulkanDescriptorSetLayout();
-	m_VulkanDescriptorSetLayout->AddBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-	m_VulkanDescriptorSetLayout->AddBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
-	m_VulkanDescriptorSetLayout->Create();
+	DSLBindings bindings(3);
+	bindings[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT };
+	bindings[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT };
+	bindings[2] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT };
+	m_VulkanDescriptorSetLayout = driver.CreateVulkanDescriptorSetLayout(bindings);
 
-	m_VulkanDescriptorPool = driver.CreateVulkanDescriptorPool();
-	m_VulkanDescriptorPool->AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1);
-	m_VulkanDescriptorPool->AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1);
-	m_VulkanDescriptorPool->Create(1);
+	DPSizes sizes(2);
+	sizes[0] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 };
+	sizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2 };
+	m_VulkanDescriptorPool = driver.CreateVulkanDescriptorPool(1, sizes);
 
 	m_VulkanDescriptorSet = m_VulkanDescriptorPool->AllocateDescriptorSet(m_VulkanDescriptorSetLayout);
 
-	std::vector<DescriptorSetUpdater*> descriptorSetUpdaters(2);
-
-	descriptorSetUpdaters[0] = new DescriptorSetUpdater(m_VulkanDescriptorSet, 0, 0);
-	descriptorSetUpdaters[0]->AddImage(m_Image);
-
-	descriptorSetUpdaters[1] = new DescriptorSetUpdater(m_VulkanDescriptorSet, 1, 0);
-	descriptorSetUpdaters[1]->AddBuffer(driver.GetCurrPassUniformBuffer());
-
-	driver.UpdateDescriptorSets(descriptorSetUpdaters);
-
-	// release 
-	for (auto& p : descriptorSetUpdaters) {
-		RELEASE(p);
-	}
+	DesUpdateInfos infos(3);
+	infos[0].binding = 0;
+	infos[0].info.buffer = { driver.GetCurrPassUniformBuffer()->m_Buffer,0,sizeof(PassUniform) };
+	infos[1].binding = 1;
+	infos[1].info.buffer = { driver.GetCurrObjectUniformBuffer()->m_Buffer,0,sizeof(ObjectUniform) };
+	infos[2].binding = 2;
+	infos[2].info.image = { m_Image->m_Sampler,m_Image->m_ImageView,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+	driver.UpdateDescriptorSets(m_VulkanDescriptorSet, infos);
 }
 
 void Triangle::CreatePipeline()

@@ -3,6 +3,7 @@
 #include "Common.h"
 #include "NonCopyable.h"
 #include "VulkanFwd.h"
+#include "VulkanDescriptorTypes.h"
 
 class VulkanDriver : public NonCopyable
 {
@@ -56,9 +57,9 @@ public:
 	void UploadVulkanImage(VulkanImage* vulkanImage, void* data, uint32_t size);
 
 	// Descriptor Set
-	VulkanDescriptorSetLayout* CreateVulkanDescriptorSetLayout();
-	VulkanDescriptorPool* CreateVulkanDescriptorPool();
-	void UpdateDescriptorSets(std::vector<DescriptorSetUpdater*>& descriptorSetUpdaters);
+	VulkanDescriptorSetLayout* CreateVulkanDescriptorSetLayout(DSLBindings& bindings);
+	VulkanDescriptorPool* CreateVulkanDescriptorPool(uint32_t maxSets, DPSizes& sizes);
+	void UpdateDescriptorSets(VulkanDescriptorSet* vulkanDescriptorSet, DesUpdateInfos& infos);
 
 	// Render Status
 	VulkanShaderModule* CreateVulkanShaderModule(const std::string& filename);
@@ -74,6 +75,7 @@ public:
 	void UpdatePassUniformBuffer(void* data);
 	void UpdateObjectUniformBuffer(void* data, uint32_t index);
 	VulkanBuffer* GetCurrPassUniformBuffer();
+	VulkanBuffer* GetCurrObjectUniformBuffer();
 
 	// render
 	void WaitForPresent();

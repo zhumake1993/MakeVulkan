@@ -10,9 +10,13 @@
 
 #version 450
 
-layout(set=0, binding=1) uniform u_UniformBuffer {
+layout(set=0, binding=0) uniform u_PassUniformBuffer {
     mat4 view;
     mat4 proj;
+};
+
+layout(set=0, binding=1) uniform u_ObjectUniformBuffer {
+    mat4 world;
 };
 
 layout(location = 0) in vec4 i_Position;
@@ -28,7 +32,7 @@ layout(location = 0) out vec4 v_Color;
 layout(location = 1) out vec2 v_Texcoord;
 
 void main() {
-    gl_Position = proj * view * i_Position;
+    gl_Position = proj * view * world * i_Position;
 	v_Color = i_Color;
     v_Texcoord = i_Texcoord;
 }

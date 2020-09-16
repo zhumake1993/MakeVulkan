@@ -21,8 +21,7 @@ protected:
 
 private:
 
-	void PrepareModels();
-	void PrepareTextures();
+	void PrepareResources();
 	void PrepareDescriptorSet();
 	void CreatePipeline();
 
@@ -31,8 +30,11 @@ private:
 	// Mesh
 	Mesh* m_Mesh;
 
-	// Resource
+	// Texture
 	VulkanImage* m_Image;
+
+	// RenderNode
+	RenderNode* m_RenderNode;
 
 	// DescriptorSet
 	VulkanDescriptorPool* m_VulkanDescriptorPool;

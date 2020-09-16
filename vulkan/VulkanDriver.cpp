@@ -96,6 +96,7 @@ void VulkanDriver::Init()
 	m_VulkanCommandPool = CreateVulkanCommandPool();
 	m_UploadVulkanCommandBuffer = CreateVulkanCommandBuffer(m_VulkanCommandPool);
 	m_StagingBuffer = CreateVulkanBuffer(m_StagingBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	m_StagingBuffer->Map();
 
 	m_FrameResources.resize(global::frameResourcesCount);
 	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
@@ -110,7 +111,10 @@ void VulkanDriver::Init()
 	m_ObjectUniformBuffers.resize(global::frameResourcesCount);
 	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
 		m_PassUniformBuffers[i] = CreateVulkanBuffer(sizeof(PassUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		m_PassUniformBuffers[i]->Map();
+
 		m_ObjectUniformBuffers[i] = CreateVulkanBuffer(sizeof(ObjectUniform) * m_ObjectUniformNum, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		m_ObjectUniformBuffers[i]->Map();
 	}
 
 	m_DepthFormat = m_VulkanDevice->GetSupportedDepthFormat();
@@ -191,25 +195,32 @@ void VulkanDriver::UploadVulkanImage(VulkanImage * vulkanImage, void * data, uin
 	m_UploadVulkanCommandBuffer->UploadVulkanImage(vulkanImage, data, size, m_StagingBuffer);
 }
 
-VulkanDescriptorSetLayout * VulkanDriver::CreateVulkanDescriptorSetLayout()
+VulkanDescriptorSetLayout * VulkanDriver::CreateVulkanDescriptorSetLayout(DSLBindings& bindings)
 {
-	return new VulkanDescriptorSetLayout(m_VulkanDevice);
+	return new VulkanDescriptorSetLayout(m_VulkanDevice, bindings);
 }
 
-VulkanDescriptorPool * VulkanDriver::CreateVulkanDescriptorPool()
+VulkanDescriptorPool * VulkanDriver::CreateVulkanDescriptorPool(uint32_t maxSets, DPSizes& sizes)
 {
-	return new VulkanDescriptorPool(m_VulkanDevice);
+	return new VulkanDescriptorPool(m_VulkanDevice, maxSets, sizes);
 }
 
-void VulkanDriver::UpdateDescriptorSets(std::vector<DescriptorSetUpdater*>& descriptorSetUpdaters)
+void VulkanDriver::UpdateDescriptorSets(VulkanDescriptorSet * vulkanDescriptorSet, DesUpdateInfos& infos)
 {
-	uint32_t num = static_cast<uint32_t>(descriptorSetUpdaters.size());
+	uint32_t num = static_cast<uint32_t>(infos.size());
 
-	std::vector<VkWriteDescriptorSet> writeDescriptorSets;
-	writeDescriptorSets.reserve(num);
-
-	for (auto updater : descriptorSetUpdaters) {
-		writeDescriptorSets.push_back(updater->Get());
+	std::vector<VkWriteDescriptorSet> writeDescriptorSets(num);
+	for (uint32_t i = 0; i < num; i++) {
+		writeDescriptorSets[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSets[i].pNext = nullptr;
+		writeDescriptorSets[i].dstSet = vulkanDescriptorSet->m_DescriptorSet;
+		writeDescriptorSets[i].dstBinding = infos[i].binding;
+		writeDescriptorSets[i].dstArrayElement = 0;
+		writeDescriptorSets[i].descriptorCount = 1;
+		writeDescriptorSets[i].descriptorType = vulkanDescriptorSet->GetDescriptorType(infos[i].binding);
+		writeDescriptorSets[i].pImageInfo = &infos[i].info.image;
+		writeDescriptorSets[i].pBufferInfo = &infos[i].info.buffer;
+		writeDescriptorSets[i].pTexelBufferView = &infos[i].info.texelBufferView;
 	}
 
 	vkUpdateDescriptorSets(m_VulkanDevice->m_LogicalDevice, num, writeDescriptorSets.data(), 0, nullptr);
@@ -251,17 +262,22 @@ VulkanFramebuffer * VulkanDriver::RebuildCurrFramebuffer(VulkanRenderPass * vulk
 
 void VulkanDriver::UpdatePassUniformBuffer(void * data)
 {
-	m_PassUniformBuffers[m_CurrFrameIndex]->MapAndCopy(data, sizeof(PassUniform));
+	m_PassUniformBuffers[m_CurrFrameIndex]->Copy(data, 0, sizeof(PassUniform));
 }
 
 void VulkanDriver::UpdateObjectUniformBuffer(void * data, uint32_t index)
 {
-	//
+	m_ObjectUniformBuffers[m_CurrFrameIndex]->Copy(data, sizeof(ObjectUniform) * index, sizeof(ObjectUniform));
 }
 
 VulkanBuffer * VulkanDriver::GetCurrPassUniformBuffer()
 {
 	return m_PassUniformBuffers[m_CurrFrameIndex];
+}
+
+VulkanBuffer * VulkanDriver::GetCurrObjectUniformBuffer()
+{
+	return m_ObjectUniformBuffers[m_CurrFrameIndex];
 }
 
 void VulkanDriver::WaitForPresent()

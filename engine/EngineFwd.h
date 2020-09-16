@@ -3,4 +3,4 @@
 class Camera;
 class Material;
 class Mesh;
-class Model;
+class RenderNode;

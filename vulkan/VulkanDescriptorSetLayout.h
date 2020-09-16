@@ -1,26 +1,18 @@
 #pragma once
 
 #include "Common.h"
+#include "VulkanDescriptorTypes.h"
 
 class VulkanDevice;
 
 class VulkanDescriptorSetLayout
 {
 
-	struct DescriptorSetLayoutBinding
-	{
-		VkDescriptorType descriptorType;
-		uint32_t descriptorCount;
-		VkShaderStageFlags stageFlags;
-	};
-
 public:
 
-	VulkanDescriptorSetLayout(VulkanDevice* vulkanDevice);
+	VulkanDescriptorSetLayout(VulkanDevice* vulkanDevice, DSLBindings& bindings);
 	~VulkanDescriptorSetLayout();
 
-	void AddBinding(VkDescriptorType descriptorType, uint32_t count, VkShaderStageFlags shaderStageFlags);
-	void Create();
 	VkDescriptorType GetDescriptorType(uint32_t binding);
 
 private:
@@ -33,6 +25,6 @@ public:
 
 private:
 
-	std::vector<DescriptorSetLayoutBinding> m_DescriptorSetLayoutBindings;
+	DSLBindings m_Bindings;
 	VulkanDevice* m_VulkanDevice = nullptr;
 };

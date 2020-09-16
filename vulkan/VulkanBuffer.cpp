@@ -27,44 +27,48 @@ VulkanBuffer::~VulkanBuffer()
 	}
 }
 
-void VulkanBuffer::MapAndCopy(void * data, uint32_t size)
+void VulkanBuffer::Map(VkDeviceSize offset, VkDeviceSize size)
 {
-	void* memoryPointer = Map(size);
-	memcpy(memoryPointer, data, size);
-	Unmap();
-}
-
-void * VulkanBuffer::Map(uint32_t size)
-{
-	void *bufferMemoryPointer;
-	VK_CHECK_RESULT(vkMapMemory(m_VulkanDevice->m_LogicalDevice, m_Memory, 0, size, 0, &bufferMemoryPointer));
-	return bufferMemoryPointer;
+	assert(m_MappedPointer == nullptr);
+	VK_CHECK_RESULT(vkMapMemory(m_VulkanDevice->m_LogicalDevice, m_Memory, offset, size, 0, &m_MappedPointer));
 }
 
 void VulkanBuffer::Unmap()
 {
-	// 如果使用了VK_MEMORY_PROPERTY_HOST_COHERENT_BIT，就不需要flush
-	// size 必须是 VkPhysicalDeviceLimits::nonCoherentAtomSize 的倍数，这里为了方便就使用VK_WHOLE_SIZE
+	vkUnmapMemory(m_VulkanDevice->m_LogicalDevice, m_Memory);
+}
+
+void VulkanBuffer::Copy(void * data, uint32_t offset, uint32_t size)
+{
+	assert(m_MappedPointer);
+	memcpy(static_cast<byte*>(m_MappedPointer) + offset, data, size);
+}
+
+void VulkanBuffer::Flush(VkDeviceSize offset, VkDeviceSize size)
+{
+	// 只有non-coherent的需要flush
+	// size 必须是 VkPhysicalDeviceLimits::nonCoherentAtomSize 的倍数
 	VkMappedMemoryRange flushRange = {};
 	flushRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
 	flushRange.pNext = nullptr;
 	flushRange.memory = m_Memory;
-	flushRange.offset = 0;
-	flushRange.size = VK_WHOLE_SIZE;
+	flushRange.offset = offset;
+	flushRange.size = size;
 
 	vkFlushMappedMemoryRanges(m_VulkanDevice->m_LogicalDevice, 1, &flushRange);
-
-	vkUnmapMemory(m_VulkanDevice->m_LogicalDevice, m_Memory);
 }
 
-VkDescriptorBufferInfo VulkanBuffer::GetVkDescriptorBufferInfo()
+void VulkanBuffer::Invalidate(VkDeviceSize offset, VkDeviceSize size)
 {
-	VkDescriptorBufferInfo descriptorBufferInfo = {};
-	descriptorBufferInfo.buffer = m_Buffer;
-	descriptorBufferInfo.offset = 0;
-	descriptorBufferInfo.range = m_Size;
+	// 只有non-coherent的需要invalidate
+	VkMappedMemoryRange mappedRange = {};
+	mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+	mappedRange.pNext = nullptr;
+	mappedRange.memory = m_Memory;
+	mappedRange.offset = offset;
+	mappedRange.size = size;
 
-	return descriptorBufferInfo;
+	vkInvalidateMappedMemoryRanges(m_VulkanDevice->m_LogicalDevice, 1, &mappedRange);
 }
 
 void VulkanBuffer::CreateBuffer()

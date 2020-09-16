@@ -16,7 +16,7 @@ shader.frag
                               Name 21  "v_Color"
                               Decorate 9(o_Color) Location 0
                               Decorate 13(u_Texture) DescriptorSet 0
-                              Decorate 13(u_Texture) Binding 0
+                              Decorate 13(u_Texture) Binding 2
                               Decorate 17(v_Texcoord) Location 1
                               Decorate 21(v_Color) Location 0
                2:             TypeVoid
