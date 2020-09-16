@@ -67,3 +67,13 @@ namespace global
 	extern std::string AssetPath;
 
 }
+
+struct PassUniform {
+	alignas(16) glm::mat4 view;
+	alignas(16) glm::mat4 proj;
+};
+
+struct ObjectUniform {
+	alignas(16) glm::mat4 view;
+	alignas(16) glm::mat4 proj;
+};

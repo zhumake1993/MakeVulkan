@@ -16,8 +16,11 @@ public:
 
 	void							CleanUp();
 	void							AcquireNextImage(VulkanSemaphore* imageAvailableSemaphore);
-	VkImageView						GetCurrImageView();
 	void							QueuePresent(VulkanSemaphore* finishedRenderingSemaphore);
+	VkImageView						GetCurrImageView();
+	uint32_t						GetWidth();
+	uint32_t						GetHeight();
+	VkFormat						GetFormat();
 
 private:
 

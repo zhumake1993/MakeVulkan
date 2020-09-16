@@ -22,6 +22,15 @@ public:
 
 	void Begin();
 	void End();
+
+	// Resource
+	void CopyBuffer(VulkanBuffer* src, VulkanBuffer* dst, VkBufferCopy& region);
+	void CopyBufferToImage(VulkanBuffer* src, VulkanImage* dst);
+	void ImageMemoryBarrier(VulkanImage* img, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL);
+	void UploadVulkanBuffer(VulkanBuffer* vertexBuffer, void* data, uint32_t size, VulkanBuffer* stagingBuffer);
+	void UploadVulkanImage(VulkanImage* vulkanImage, void* data, uint32_t size, VulkanBuffer* stagingBuffer);
+
+	//
 	void BeginRenderPass(VulkanRenderPass *vulkanRenderPass, VulkanFramebuffer* vulkanFrameBuffer, VkRect2D& area, std::vector<VkClearValue>& clearValues);
 	void SetViewport(VkViewport& viewport);
 	void SetScissor(VkRect2D& area);
@@ -31,9 +40,6 @@ public:
 	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VulkanPipelineLayout* vulkanPipelineLayout, VulkanDescriptorSet* vulkanDescriptorSet);
 	void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance);
 	void EndRenderPass();
-	void CopyBuffer(VulkanBuffer* src, VulkanBuffer* dst, VkBufferCopy& region);
-	void CopyBufferToImage(VulkanBuffer* src, VulkanImage* dst);
-	void ImageMemoryBarrier(VulkanImage* img, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL);
 
 private:
 

@@ -71,10 +71,17 @@ void Triangle::CleanUp()
 	RELEASE(m_VulkanRenderPass);
 
 	RELEASE(m_Camera);
+
+	RELEASE(m_DepthImage);
 }
 
 void Triangle::Init()
 {
+	auto& driver = GetVulkanDriver();
+
+	m_DepthFormat = driver.GetDepthFormat();
+	m_DepthImage = driver.CreateVulkanImage(VK_IMAGE_TYPE_2D, m_DepthFormat, global::windowWidth, global::windowHeight, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
+
 	// 摄像机
 	m_Camera = new Camera();
 	m_Camera->LookAt(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
@@ -93,6 +100,8 @@ void Triangle::Init()
 
 void Triangle::Tick()
 {
+	auto& driver = GetVulkanDriver();
+
 	m_FrameIndex++;
 	m_AccumulateCounter++;
 
@@ -119,17 +128,15 @@ void Triangle::Tick()
 	input.oldPos1 = input.pos1;
 #endif
 
-	m_UniformBuffer.view = m_Camera->GetView();
-	m_UniformBuffer.proj = m_Camera->GetProj();
+	m_PassUniform.view = m_Camera->GetView();
+	m_PassUniform.proj = m_Camera->GetProj();
 
-	auto driver = GetVulkanDriver();
-
-	driver.UpdateUniformBuffer(&m_UniformBuffer, sizeof(UniformBuffer));
+	driver.UpdatePassUniformBuffer(&m_PassUniform);
 }
 
 void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 {
-	auto driver = GetVulkanDriver();
+	auto& driver = GetVulkanDriver();
 
 	std::vector<VkClearValue> clearValues(2);
 	clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -149,9 +156,11 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
+	VulkanFramebuffer* vulkanFramebuffer = driver.RebuildCurrFramebuffer(m_VulkanRenderPass, driver.GetSwapChainCurrImageView(), m_DepthImage->m_ImageView, driver.GetSwapChainWidth(), driver.GetSwapChainHeight());
+
 	vulkanCommandBuffer->Begin();
 
-	vulkanCommandBuffer->BeginRenderPass(m_VulkanRenderPass, driver.CreateFramebuffer(m_VulkanRenderPass), area, clearValues);
+	vulkanCommandBuffer->BeginRenderPass(m_VulkanRenderPass, vulkanFramebuffer, area, clearValues);
 
 	vulkanCommandBuffer->SetViewport(viewport);
 
@@ -184,7 +193,7 @@ void Triangle::PrepareModels()
 
 void Triangle::PrepareTextures()
 {
-	auto driver = GetVulkanDriver();
+	auto& driver = GetVulkanDriver();
 
 	uint32_t width = 0, height = 0, dataSize = 0;
 	std::vector<char> imageData = GetImageData(global::AssetPath + "textures/viking_room.png", 4, &width, &height, nullptr, &dataSize);
@@ -199,7 +208,7 @@ void Triangle::PrepareTextures()
 
 void Triangle::PrepareDescriptorSet()
 {
-	auto driver = GetVulkanDriver();
+	auto& driver = GetVulkanDriver();
 
 	m_VulkanDescriptorSetLayout = driver.CreateVulkanDescriptorSetLayout();
 	m_VulkanDescriptorSetLayout->AddBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -219,7 +228,7 @@ void Triangle::PrepareDescriptorSet()
 	descriptorSetUpdaters[0]->AddImage(m_Image);
 
 	descriptorSetUpdaters[1] = new DescriptorSetUpdater(m_VulkanDescriptorSet, 1, 0);
-	descriptorSetUpdaters[1]->AddBuffer(driver.GetCurrUniformBuffer());
+	descriptorSetUpdaters[1]->AddBuffer(driver.GetCurrPassUniformBuffer());
 
 	driver.UpdateDescriptorSets(descriptorSetUpdaters);
 
@@ -231,9 +240,9 @@ void Triangle::PrepareDescriptorSet()
 
 void Triangle::CreatePipeline()
 {
-	auto driver = GetVulkanDriver();
+	auto& driver = GetVulkanDriver();
 
-	m_VulkanRenderPass = driver.CreateVulkanRenderPass();
+	m_VulkanRenderPass = driver.CreateVulkanRenderPass(driver.GetSwapChainFormat(), m_DepthFormat);
 
 	// std::make_unique 需要C++14的支持，这里使用构造函数更保险
 	std::shared_ptr<VulkanShaderModule> vulkanShaderModuleVert = std::shared_ptr<VulkanShaderModule>(driver.CreateVulkanShaderModule(global::AssetPath + "shaders/shader.vert.spv"));

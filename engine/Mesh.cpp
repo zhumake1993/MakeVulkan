@@ -92,7 +92,7 @@ void Mesh::LoadFromFile(const std::string & filename)
 
 void Mesh::UploadToGPU()
 {
-	auto driver = GetVulkanDriver();
+	auto& driver = GetVulkanDriver();
 
 	// Vertex buffer
 	uint32_t vertexBufferSize = static_cast<uint32_t>(m_Vertices.size()) * sizeof(m_Vertices[0]);

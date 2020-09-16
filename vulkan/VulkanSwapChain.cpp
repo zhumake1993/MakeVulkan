@@ -56,11 +56,6 @@ void VulkanSwapChain::AcquireNextImage(VulkanSemaphore* imageAvailableSemaphore)
 	}
 }
 
-VkImageView VulkanSwapChain::GetCurrImageView()
-{
-	return m_SwapChainImageViews[m_ImageIndex];
-}
-
 void VulkanSwapChain::QueuePresent(VulkanSemaphore* finishedRenderingSemaphore)
 {
 	VkPresentInfoKHR presentInfo = {};
@@ -87,6 +82,26 @@ void VulkanSwapChain::QueuePresent(VulkanSemaphore* finishedRenderingSemaphore)
 		LOG("Problem occurred during image presentation!\n");
 		assert(false);
 	}
+}
+
+VkImageView VulkanSwapChain::GetCurrImageView()
+{
+	return m_SwapChainImageViews[m_ImageIndex];
+}
+
+uint32_t VulkanSwapChain::GetWidth()
+{
+	return m_Extent.width;
+}
+
+uint32_t VulkanSwapChain::GetHeight()
+{
+	return m_Extent.height;
+}
+
+VkFormat VulkanSwapChain::GetFormat()
+{
+	return m_Format.format;
 }
 
 void VulkanSwapChain::RecreateSwapChain()

@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Common.h"
+#include "NonCopyable.h"
 
 class Engine;
 
-class Application
+class Application : public NonCopyable
 {
 
 public:

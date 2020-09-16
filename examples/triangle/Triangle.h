@@ -6,11 +6,6 @@
 
 class Triangle : public Engine
 {
-	struct UniformBuffer
-	{
-		alignas(16) glm::mat4 view;
-		alignas(16) glm::mat4 proj;
-	};
 
 public:
 
@@ -50,7 +45,7 @@ private:
 	VulkanRenderPass* m_VulkanRenderPass;
 
 	// Uniform Buffer
-	UniformBuffer m_UniformBuffer;
+	PassUniform m_PassUniform;
 
 	// camera
 	Camera* m_Camera;
@@ -61,4 +56,8 @@ private:
 	float m_AccumulateTime = 0;
 	float m_FPS = 0;
 	std::chrono::time_point<std::chrono::high_resolution_clock> lastTimestamp = std::chrono::high_resolution_clock::now();
+
+	// depth
+	VkFormat m_DepthFormat;
+	VulkanImage* m_DepthImage;
 };
