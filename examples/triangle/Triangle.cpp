@@ -244,6 +244,8 @@ void Triangle::PrepareDescriptorSet()
 
 	m_VulkanDescriptorSet = m_VulkanDescriptorPool->AllocateDescriptorSet(m_VulkanDescriptorSetLayout);
 
+	// 这里有很多问题。。。
+
 	DesUpdateInfos infos(3);
 	infos[0].binding = 0;
 	infos[0].info.buffer = { driver.GetCurrPassUniformBuffer()->m_Buffer,0,sizeof(PassUniform) };
