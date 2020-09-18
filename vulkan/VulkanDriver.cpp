@@ -57,19 +57,6 @@ VulkanDriver::~VulkanDriver()
 
 void VulkanDriver::CleanUp()
 {
-	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
-		RELEASE(m_FrameResources[i].framebuffer);
-		RELEASE(m_FrameResources[i].commandBuffer);
-		RELEASE(m_FrameResources[i].imageAvailableSemaphore);
-		RELEASE(m_FrameResources[i].finishedRenderingSemaphore);
-		RELEASE(m_FrameResources[i].fence);
-	}
-
-	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
-		RELEASE(m_PassUniformBuffers[i]);
-		RELEASE(m_ObjectUniformBuffers[i]);
-	}
-
 	RELEASE(m_UploadVulkanCommandBuffer);
 	RELEASE(m_VulkanCommandPool);
 	RELEASE(m_StagingBuffer);
@@ -98,25 +85,6 @@ void VulkanDriver::Init()
 	m_StagingBuffer = CreateVulkanBuffer(m_StagingBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 	m_StagingBuffer->Map();
 
-	m_FrameResources.resize(global::frameResourcesCount);
-	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
-		m_FrameResources[i].framebuffer = nullptr; // ¶¯Ì¬´´½¨framebuffer
-		m_FrameResources[i].commandBuffer = m_VulkanCommandPool->AllocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-		m_FrameResources[i].imageAvailableSemaphore = CreateVulkanSemaphore();
-		m_FrameResources[i].finishedRenderingSemaphore = CreateVulkanSemaphore();
-		m_FrameResources[i].fence = CreateVulkanFence(true);
-	}
-
-	m_PassUniformBuffers.resize(global::frameResourcesCount);
-	m_ObjectUniformBuffers.resize(global::frameResourcesCount);
-	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
-		m_PassUniformBuffers[i] = CreateVulkanBuffer(sizeof(PassUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		m_PassUniformBuffers[i]->Map();
-
-		m_ObjectUniformBuffers[i] = CreateVulkanBuffer(sizeof(ObjectUniform) * m_ObjectUniformNum, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		m_ObjectUniformBuffers[i]->Map();
-	}
-
 	m_DepthFormat = m_VulkanDevice->GetSupportedDepthFormat();
 }
 
@@ -128,6 +96,21 @@ void VulkanDriver::WaitIdle()
 VkFormat VulkanDriver::GetDepthFormat()
 {
 	return m_DepthFormat;
+}
+
+void VulkanDriver::QueueSubmit(VkSubmitInfo & submitInfo, VulkanFence * fence)
+{
+	VK_CHECK_RESULT(vkQueueSubmit(m_VulkanDevice->m_Queue, 1, &submitInfo, fence->m_Fence));
+}
+
+void VulkanDriver::AcquireNextImage(VulkanSemaphore * vulkanSemaphore)
+{
+	m_VulkanSwapChain->AcquireNextImage(vulkanSemaphore);
+}
+
+void VulkanDriver::QueuePresent(VulkanSemaphore * vulkanSemaphore)
+{
+	m_VulkanSwapChain->QueuePresent(vulkanSemaphore);
 }
 
 VkImageView VulkanDriver::GetSwapChainCurrImageView()
@@ -158,11 +141,6 @@ VulkanCommandPool * VulkanDriver::CreateVulkanCommandPool()
 VulkanCommandBuffer * VulkanDriver::CreateVulkanCommandBuffer(VulkanCommandPool * vulkanCommandPool)
 {
 	return vulkanCommandPool->AllocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-}
-
-VulkanCommandBuffer * VulkanDriver::GetCurrVulkanCommandBuffer()
-{
-	return m_FrameResources[m_CurrFrameIndex].commandBuffer;
 }
 
 VulkanSemaphore * VulkanDriver::CreateVulkanSemaphore()
@@ -249,66 +227,4 @@ VulkanRenderPass * VulkanDriver::CreateVulkanRenderPass(VkFormat colorFormat, Vk
 VulkanFramebuffer* VulkanDriver::CreateFramebuffer(VulkanRenderPass* vulkanRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height)
 {
 	return new VulkanFramebuffer(m_VulkanDevice, vulkanRenderPass, color, depth, width, height);
-}
-
-VulkanFramebuffer * VulkanDriver::RebuildCurrFramebuffer(VulkanRenderPass * vulkanRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height)
-{
-	RELEASE(m_FrameResources[m_CurrFrameIndex].framebuffer);
-
-	m_FrameResources[m_CurrFrameIndex].framebuffer = CreateFramebuffer(vulkanRenderPass, color, depth, width, height);
-
-	return m_FrameResources[m_CurrFrameIndex].framebuffer;
-}
-
-void VulkanDriver::UpdatePassUniformBuffer(void * data)
-{
-	m_PassUniformBuffers[m_CurrFrameIndex]->Copy(data, 0, sizeof(PassUniform));
-}
-
-void VulkanDriver::UpdateObjectUniformBuffer(void * data, uint32_t index)
-{
-	m_ObjectUniformBuffers[m_CurrFrameIndex]->Copy(data, sizeof(ObjectUniform) * index, sizeof(ObjectUniform));
-}
-
-VulkanBuffer * VulkanDriver::GetCurrPassUniformBuffer()
-{
-	return m_PassUniformBuffers[m_CurrFrameIndex];
-}
-
-VulkanBuffer * VulkanDriver::GetCurrObjectUniformBuffer()
-{
-	return m_ObjectUniformBuffers[m_CurrFrameIndex];
-}
-
-void VulkanDriver::WaitForPresent()
-{
-	auto& currFrameResource = m_FrameResources[m_CurrFrameIndex];
-
-	currFrameResource.fence->Wait();
-	currFrameResource.fence->Reset();
-
-	m_VulkanSwapChain->AcquireNextImage(currFrameResource.imageAvailableSemaphore);
-}
-
-void VulkanDriver::Present()
-{
-	auto& currFrameResource = m_FrameResources[m_CurrFrameIndex];
-
-	VkPipelineStageFlags waitDstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pNext = nullptr;
-	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = &currFrameResource.imageAvailableSemaphore->m_Semaphore;
-	submitInfo.pWaitDstStageMask = &waitDstStageMask;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &currFrameResource.commandBuffer->m_CommandBuffer;
-	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = &currFrameResource.finishedRenderingSemaphore->m_Semaphore;
-
-	VK_CHECK_RESULT(vkQueueSubmit(m_VulkanDevice->m_Queue, 1, &submitInfo, currFrameResource.fence->m_Fence));
-
-	m_VulkanSwapChain->QueuePresent(currFrameResource.finishedRenderingSemaphore);
-
-	m_CurrFrameIndex = (m_CurrFrameIndex + 1) % global::frameResourcesCount;
 }

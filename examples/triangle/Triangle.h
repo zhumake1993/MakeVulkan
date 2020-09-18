@@ -28,13 +28,16 @@ private:
 private:
 
 	// Mesh
-	Mesh* m_Mesh;
+	Mesh* m_Home;
+	Mesh* m_Cube;
 
 	// Texture
 	VulkanImage* m_Image;
 
 	// RenderNode
-	RenderNode* m_RenderNode;
+	RenderNode* m_HomeNode;
+	RenderNode* m_CubeNode1;
+	RenderNode* m_CubeNode2;
 
 	// DescriptorSet
 	VulkanDescriptorPool* m_VulkanDescriptorPool;

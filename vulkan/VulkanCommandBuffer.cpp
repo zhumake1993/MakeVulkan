@@ -166,9 +166,9 @@ void VulkanCommandBuffer::BindIndexBuffer(VulkanBuffer * vulkanBuffer, VkIndexTy
 	vkCmdBindIndexBuffer(m_CommandBuffer, vulkanBuffer->m_Buffer, 0, indexType);
 }
 
-void VulkanCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VulkanPipelineLayout * vulkanPipelineLayout, VulkanDescriptorSet * vulkanDescriptorSet)
+void VulkanCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VulkanPipelineLayout * vulkanPipelineLayout, VulkanDescriptorSet * vulkanDescriptorSet, uint32_t offset)
 {
-	vkCmdBindDescriptorSets(m_CommandBuffer, bindPoint, vulkanPipelineLayout->m_PipelineLayout, 0, 1, &vulkanDescriptorSet->m_DescriptorSet, 0, nullptr);
+	vkCmdBindDescriptorSets(m_CommandBuffer, bindPoint, vulkanPipelineLayout->m_PipelineLayout, 0, 1, &vulkanDescriptorSet->m_DescriptorSet, 1, &offset);
 }
 
 void VulkanCommandBuffer::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)

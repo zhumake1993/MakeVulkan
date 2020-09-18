@@ -37,7 +37,7 @@ public:
 	void BindPipeline(VkPipelineBindPoint bindPoint, VulkanPipeline* vulkanPipeline);
 	void BindVertexBuffer(uint32_t bind, VulkanBuffer* vulkanBuffer);
 	void BindIndexBuffer(VulkanBuffer* vulkanBuffer, VkIndexType indexType);
-	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VulkanPipelineLayout* vulkanPipelineLayout, VulkanDescriptorSet* vulkanDescriptorSet);
+	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VulkanPipelineLayout* vulkanPipelineLayout, VulkanDescriptorSet* vulkanDescriptorSet, uint32_t offset);
 	void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance);
 	void EndRenderPass();
 

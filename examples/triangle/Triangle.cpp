@@ -58,11 +58,14 @@ Triangle::~Triangle()
 
 void Triangle::CleanUp()
 {
-	RELEASE(m_Mesh);
+	RELEASE(m_Home);
+	RELEASE(m_Cube);
 
 	RELEASE(m_Image);
 
-	RELEASE(m_RenderNode);
+	RELEASE(m_HomeNode);
+	RELEASE(m_CubeNode1);
+	RELEASE(m_CubeNode2);
 
 	RELEASE(m_VulkanDescriptorSetLayout);
 	RELEASE(m_VulkanDescriptorSet);
@@ -132,12 +135,25 @@ void Triangle::Tick()
 	m_PassUniform.view = m_Camera->GetView();
 	m_PassUniform.proj = m_Camera->GetProj();
 
-	driver.UpdatePassUniformBuffer(&m_PassUniform);
+	UpdatePassUniformBuffer(&m_PassUniform);
+
+	m_CubeNode1->m_World = glm::rotate(glm::mat4(1.0f), deltaTime * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f)) * m_CubeNode1->m_World;
+	m_CubeNode1->m_NumFramesDirty = global::frameResourcesCount;
 
 	{
-		if (m_RenderNode->m_NumFramesDirty > 0) {
-			driver.UpdateObjectUniformBuffer(&m_RenderNode->m_World, m_RenderNode->m_ObjectUBIndex);
-			m_RenderNode->m_NumFramesDirty--;
+		if (m_HomeNode->m_NumFramesDirty > 0) {
+			UpdateObjectUniformBuffer(&m_HomeNode->m_World, m_HomeNode->m_ObjectUBIndex);
+			m_HomeNode->m_NumFramesDirty--;
+		}
+
+		if (m_CubeNode1->m_NumFramesDirty > 0) {
+			UpdateObjectUniformBuffer(&m_CubeNode1->m_World, m_CubeNode1->m_ObjectUBIndex);
+			m_CubeNode1->m_NumFramesDirty--;
+		}
+
+		if (m_CubeNode2->m_NumFramesDirty > 0) {
+			UpdateObjectUniformBuffer(&m_CubeNode2->m_World, m_CubeNode2->m_ObjectUBIndex);
+			m_CubeNode2->m_NumFramesDirty--;
 		}
 	}
 }
@@ -164,7 +180,7 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
-	VulkanFramebuffer* vulkanFramebuffer = driver.RebuildCurrFramebuffer(m_VulkanRenderPass, driver.GetSwapChainCurrImageView(), m_DepthImage->m_ImageView, driver.GetSwapChainWidth(), driver.GetSwapChainHeight());
+	VulkanFramebuffer* vulkanFramebuffer = RebuildFramebuffer(m_VulkanRenderPass, driver.GetSwapChainCurrImageView(), m_DepthImage->m_ImageView, driver.GetSwapChainWidth(), driver.GetSwapChainHeight());
 
 	vulkanCommandBuffer->Begin();
 
@@ -176,13 +192,23 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 
 	vulkanCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline);
 
-	vulkanCommandBuffer->BindVertexBuffer(0, m_Mesh->GetVertexBuffer());
+	// home
+	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, m_VulkanDescriptorSet, 0 * sizeof(ObjectUniform));
+	vulkanCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
+	vulkanCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+	vulkanCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
 
-	vulkanCommandBuffer->BindIndexBuffer(m_Mesh->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+	// cube1
+	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, m_VulkanDescriptorSet, 1 * sizeof(ObjectUniform));
+	vulkanCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
+	vulkanCommandBuffer->BindIndexBuffer(m_CubeNode1->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+	vulkanCommandBuffer->DrawIndexed(m_CubeNode1->GetIndexCount(), 1, 0, 0, 1);
 
-	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, m_VulkanDescriptorSet);
-
-	vulkanCommandBuffer->DrawIndexed(m_Mesh->GetIndexCount(), 1, 0, 0, 1);
+	// cube2
+	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, m_VulkanDescriptorSet, 2 * sizeof(ObjectUniform));
+	vulkanCommandBuffer->BindVertexBuffer(0, m_CubeNode2->GetVertexBuffer());
+	vulkanCommandBuffer->BindIndexBuffer(m_CubeNode2->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+	vulkanCommandBuffer->DrawIndexed(m_CubeNode2->GetIndexCount(), 1, 0, 0, 1);
 
 	vulkanCommandBuffer->EndRenderPass();
 
@@ -197,10 +223,16 @@ void Triangle::PrepareResources()
 	{
 		std::vector<VertexChannel> channels = { kVertexPosition ,kVertexColor, kVertexTexcoord };
 
-		m_Mesh = new Mesh();
-		m_Mesh->SetVertexChannels(channels);
-		m_Mesh->LoadFromFile(global::AssetPath + "models/viking_room.obj");
-		m_Mesh->UploadToGPU();
+		m_Home = new Mesh();
+		m_Home->SetVertexChannels(channels);
+		m_Home->LoadFromFile(global::AssetPath + "models/viking_room.obj");
+		m_Home->UploadToGPU();
+
+		//std::vector<VertexChannel> simpleChannels = { kVertexPosition ,kVertexColor };
+		m_Cube = new Mesh();
+		m_Home->SetVertexChannels(channels);
+		m_Cube->LoadFromGeo();
+		m_Cube->UploadToGPU();
 	}
 
 	// Texture
@@ -217,14 +249,24 @@ void Triangle::PrepareResources()
 	}
 	
 	// RenderNode
-	m_RenderNode = new RenderNode();
-	m_RenderNode->m_ObjectUBIndex = 0;
-	m_RenderNode->m_Mesh = m_Mesh;
+	m_HomeNode = new RenderNode();
+	m_HomeNode->m_ObjectUBIndex = 0;
+	m_HomeNode->m_Mesh = m_Home;
 	auto world = glm::mat4(1.0f);
 	world = glm::rotate(glm::mat4(1.0f), -1.57f, glm::vec3(1.0f, 0.0f, 0.0f)) * world;
 	world = glm::rotate(glm::mat4(1.0f), 1.57f, glm::vec3(0.0f, 1.0f, 0.0f)) * world;
 	world = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.3f, 0.3f)) * world;
-	m_RenderNode->m_World = world;
+	m_HomeNode->m_World = world;
+
+	m_CubeNode1 = new RenderNode();
+	m_CubeNode1->m_ObjectUBIndex = 1;
+	m_CubeNode1->m_Mesh = m_Cube;
+	m_CubeNode1->m_World = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.3f, 0.3f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 0.1f));
+
+	m_CubeNode2 = new RenderNode();
+	m_CubeNode2->m_ObjectUBIndex = 2;
+	m_CubeNode2->m_Mesh = m_Cube;
+	m_CubeNode2->m_World = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.5f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 0.1f));
 }
 
 void Triangle::PrepareDescriptorSet()
@@ -233,13 +275,14 @@ void Triangle::PrepareDescriptorSet()
 
 	DSLBindings bindings(3);
 	bindings[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT };
-	bindings[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT };
+	bindings[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT };
 	bindings[2] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT };
 	m_VulkanDescriptorSetLayout = driver.CreateVulkanDescriptorSetLayout(bindings);
 
-	DPSizes sizes(2);
-	sizes[0] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 };
-	sizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2 };
+	DPSizes sizes(3);
+	sizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 };
+	sizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1 };
+	sizes[2] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 };
 	m_VulkanDescriptorPool = driver.CreateVulkanDescriptorPool(1, sizes);
 
 	m_VulkanDescriptorSet = m_VulkanDescriptorPool->AllocateDescriptorSet(m_VulkanDescriptorSetLayout);
@@ -248,9 +291,9 @@ void Triangle::PrepareDescriptorSet()
 
 	DesUpdateInfos infos(3);
 	infos[0].binding = 0;
-	infos[0].info.buffer = { driver.GetCurrPassUniformBuffer()->m_Buffer,0,sizeof(PassUniform) };
+	infos[0].info.buffer = { GetCurrPassUniformBuffer()->m_Buffer,0,sizeof(PassUniform) };
 	infos[1].binding = 1;
-	infos[1].info.buffer = { driver.GetCurrObjectUniformBuffer()->m_Buffer,0,sizeof(ObjectUniform) };
+	infos[1].info.buffer = { GetCurrObjectUniformBuffer()->m_Buffer,0,sizeof(ObjectUniform) };
 	infos[2].binding = 2;
 	infos[2].info.image = { m_Image->m_Sampler,m_Image->m_ImageView,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 	driver.UpdateDescriptorSets(m_VulkanDescriptorSet, infos);
@@ -271,7 +314,7 @@ void Triangle::CreatePipeline()
 	pipelineCI.shaderStage.vertShaderModule = vulkanShaderModuleVert;
 	pipelineCI.shaderStage.fragShaderModule = vulkanShaderModuleFrag;
 
-	pipelineCI.vertexInputState.formats = m_Mesh->GetVertexFormats();
+	pipelineCI.vertexInputState.formats = m_Home->GetVertexFormats();
 
 	pipelineCI.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
 	pipelineCI.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_SCISSOR);

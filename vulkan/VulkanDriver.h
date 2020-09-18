@@ -8,22 +8,6 @@
 class VulkanDriver : public NonCopyable
 {
 
-	struct FrameResource {
-		VulkanFramebuffer* framebuffer;
-		VulkanCommandBuffer* commandBuffer;
-		VulkanSemaphore* imageAvailableSemaphore;
-		VulkanSemaphore* finishedRenderingSemaphore;
-		VulkanFence* fence;
-
-		FrameResource() :
-			framebuffer(nullptr),
-			commandBuffer(nullptr),
-			imageAvailableSemaphore(nullptr),
-			finishedRenderingSemaphore(nullptr),
-			fence(nullptr) {
-		}
-	};
-
 public:
 	VulkanDriver();
 	virtual ~VulkanDriver();
@@ -34,8 +18,11 @@ public:
 	// Device
 	void WaitIdle();
 	VkFormat GetDepthFormat();
+	void QueueSubmit(VkSubmitInfo& submitInfo, VulkanFence* fence);
 
 	// SwapChain
+	void AcquireNextImage(VulkanSemaphore* vulkanSemaphore);
+	void QueuePresent(VulkanSemaphore* vulkanSemaphore);
 	VkImageView GetSwapChainCurrImageView();
 	uint32_t GetSwapChainWidth();
 	uint32_t GetSwapChainHeight();
@@ -44,7 +31,6 @@ public:
 	// Command
 	VulkanCommandPool* CreateVulkanCommandPool();
 	VulkanCommandBuffer* CreateVulkanCommandBuffer(VulkanCommandPool* vulkanCommandPool);
-	VulkanCommandBuffer* GetCurrVulkanCommandBuffer();
 
 	// Semaphore
 	VulkanSemaphore* CreateVulkanSemaphore();
@@ -67,19 +53,8 @@ public:
 	VulkanPipeline* CreateVulkanPipeline(PipelineCI& pipelineCI);
 	VulkanRenderPass* CreateVulkanRenderPass(VkFormat colorFormat, VkFormat depthFormat);
 
-	//
+	// Framebuffer
 	VulkanFramebuffer* CreateFramebuffer(VulkanRenderPass* vulkanRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height);
-	VulkanFramebuffer* RebuildCurrFramebuffer(VulkanRenderPass* vulkanRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height);
-
-	//
-	void UpdatePassUniformBuffer(void* data);
-	void UpdateObjectUniformBuffer(void* data, uint32_t index);
-	VulkanBuffer* GetCurrPassUniformBuffer();
-	VulkanBuffer* GetCurrObjectUniformBuffer();
-
-	// render
-	void WaitForPresent();
-	void Present();
 
 private:
 
@@ -96,12 +71,6 @@ private:
 	VulkanCommandBuffer* m_UploadVulkanCommandBuffer;
 	const uint32_t m_StagingBufferSize = 10000000;
 	VulkanBuffer* m_StagingBuffer;
-
-	size_t m_CurrFrameIndex = 0;
-	std::vector<FrameResource> m_FrameResources;
-	std::vector<VulkanBuffer*> m_PassUniformBuffers;
-	const uint32_t m_ObjectUniformNum = 100;
-	std::vector<VulkanBuffer*> m_ObjectUniformBuffers;
 
 	VkFormat m_DepthFormat;
 };
