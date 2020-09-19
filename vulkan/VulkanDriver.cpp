@@ -14,9 +14,7 @@
 #include "VulkanBuffer.h"
 #include "VulkanImage.h"
 
-#include "VulkanDescriptorSetLayout.h"
-#include "VulkanDescriptorPool.h"
-#include "VulkanDescriptorSet.h"
+#include "DescriptorSetMgr.h"
 
 #include "VulkanShaderModule.h"
 #include "VulkanPipelineLayout.h"
@@ -173,35 +171,9 @@ void VulkanDriver::UploadVulkanImage(VulkanImage * vulkanImage, void * data, uin
 	m_UploadVulkanCommandBuffer->UploadVulkanImage(vulkanImage, data, size, m_StagingBuffer);
 }
 
-VulkanDescriptorSetLayout * VulkanDriver::CreateVulkanDescriptorSetLayout(DSLBindings& bindings)
+DescriptorSetMgr * VulkanDriver::CreateDescriptorSetMgr()
 {
-	return new VulkanDescriptorSetLayout(m_VulkanDevice, bindings);
-}
-
-VulkanDescriptorPool * VulkanDriver::CreateVulkanDescriptorPool(uint32_t maxSets, DPSizes& sizes)
-{
-	return new VulkanDescriptorPool(m_VulkanDevice, maxSets, sizes);
-}
-
-void VulkanDriver::UpdateDescriptorSets(VulkanDescriptorSet * vulkanDescriptorSet, DesUpdateInfos& infos)
-{
-	uint32_t num = static_cast<uint32_t>(infos.size());
-
-	std::vector<VkWriteDescriptorSet> writeDescriptorSets(num);
-	for (uint32_t i = 0; i < num; i++) {
-		writeDescriptorSets[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSets[i].pNext = nullptr;
-		writeDescriptorSets[i].dstSet = vulkanDescriptorSet->m_DescriptorSet;
-		writeDescriptorSets[i].dstBinding = infos[i].binding;
-		writeDescriptorSets[i].dstArrayElement = 0;
-		writeDescriptorSets[i].descriptorCount = 1;
-		writeDescriptorSets[i].descriptorType = vulkanDescriptorSet->GetDescriptorType(infos[i].binding);
-		writeDescriptorSets[i].pImageInfo = &infos[i].info.image;
-		writeDescriptorSets[i].pBufferInfo = &infos[i].info.buffer;
-		writeDescriptorSets[i].pTexelBufferView = &infos[i].info.texelBufferView;
-	}
-
-	vkUpdateDescriptorSets(m_VulkanDevice->m_LogicalDevice, num, writeDescriptorSets.data(), 0, nullptr);
+	return new DescriptorSetMgr(m_VulkanDevice->m_LogicalDevice);
 }
 
 VulkanShaderModule * VulkanDriver::CreateVulkanShaderModule(const std::string & filename)
@@ -209,9 +181,9 @@ VulkanShaderModule * VulkanDriver::CreateVulkanShaderModule(const std::string & 
 	return new VulkanShaderModule(m_VulkanDevice, filename);
 }
 
-VulkanPipelineLayout * VulkanDriver::CreateVulkanPipelineLayout(VulkanDescriptorSetLayout * vulkanDescriptorSetLayout)
+VulkanPipelineLayout * VulkanDriver::CreateVulkanPipelineLayout(VkDescriptorSetLayout layout)
 {
-	return new VulkanPipelineLayout(m_VulkanDevice, vulkanDescriptorSetLayout->m_DescriptorSetLayout);;
+	return new VulkanPipelineLayout(m_VulkanDevice, layout);
 }
 
 VulkanPipeline * VulkanDriver::CreateVulkanPipeline(PipelineCI & pipelineCI)

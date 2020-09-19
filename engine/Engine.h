@@ -3,6 +3,9 @@
 #include "Common.h"
 #include "NonCopyable.h"
 #include "VulkanFwd.h"
+#include "DescriptorSetTypes.h"
+
+class DescriptorSetMgr;
 
 class Engine : public NonCopyable
 {
@@ -28,6 +31,11 @@ protected:
 	void UpdateObjectUniformBuffer(void* data, uint32_t index);
 	VulkanBuffer* GetCurrPassUniformBuffer();
 	VulkanBuffer* GetCurrObjectUniformBuffer();
+
+	// DescriptorSet
+	VkDescriptorSetLayout CreateDescriptorSetLayout(DSLBindings& bindings);
+	VkDescriptorSet GetDescriptorSet(VkDescriptorSetLayout layout);
+	void UpdateDescriptorSet(VkDescriptorSet set, DesUpdateInfos& infos);
 
 private:
 
@@ -63,4 +71,6 @@ private:
 	std::vector<VulkanBuffer*> m_PassUniformBuffers;
 	const uint32_t m_ObjectUniformNum = 100;
 	std::vector<VulkanBuffer*> m_ObjectUniformBuffers;
+
+	DescriptorSetMgr* m_DescriptorSetMgr;
 };

@@ -9,14 +9,6 @@ struct DescriptorSetLayoutBinding
 
 using DSLBindings = std::vector<DescriptorSetLayoutBinding>;
 
-struct DescriptorPoolSize
-{
-	VkDescriptorType descriptorType;
-	uint32_t count;
-};
-
-using DPSizes = std::vector<DescriptorPoolSize>;
-
 union DescriptorInfo
 {
 	VkDescriptorBufferInfo buffer;

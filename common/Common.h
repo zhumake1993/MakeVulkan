@@ -20,6 +20,8 @@ extern android_app* androidApp;
 
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <forward_list>
 #include <assert.h>
 #include <memory>
 #include <chrono>
@@ -31,7 +33,7 @@ extern android_app* androidApp;
 #include "glm-0.9.9.7/glm/glm/gtc/matrix_transform.hpp"
 
 // 使用Visual Leak Detector（仅限PC）
-#define USE_VISUAL_LEAK_DETECTOR 1
+#define USE_VISUAL_LEAK_DETECTOR 0
 
 namespace global
 {
@@ -62,7 +64,7 @@ namespace global
 	extern std::vector<const char*> enabledDeviceExtensions;
 
 	// Frame
-	extern size_t frameResourcesCount;
+	extern uint32_t frameResourcesCount;
 
 	extern std::string AssetPath;
 

@@ -40,9 +40,7 @@ private:
 	RenderNode* m_CubeNode2;
 
 	// DescriptorSet
-	VulkanDescriptorPool* m_VulkanDescriptorPool;
-	VulkanDescriptorSetLayout* m_VulkanDescriptorSetLayout;
-	VulkanDescriptorSet* m_VulkanDescriptorSet;
+	VkDescriptorSetLayout m_DescriptorSetLayout;
 
 	// Render Status
 	VulkanPipeline* m_VulkanPipeline;

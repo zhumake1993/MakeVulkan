@@ -12,9 +12,7 @@
 #include "VulkanBuffer.h"
 #include "VulkanImage.h"
 
-#include "VulkanDescriptorSetLayout.h"
-#include "VulkanDescriptorPool.h"
-#include "VulkanDescriptorSet.h"
+#include "DescriptorSetMgr.h"
 
 #include "VulkanShaderModule.h"
 #include "VulkanPipelineLayout.h"
@@ -57,6 +55,8 @@ void Engine::CleanUpEngine()
 
 	RELEASE(m_VulkanCommandPool);
 
+	RELEASE(m_DescriptorSetMgr);
+
 	// 最后清理Driver
 
 	ReleaseVulkanDriver();
@@ -93,6 +93,8 @@ void Engine::InitEngine()
 		m_ObjectUniformBuffers[i]->Map();
 	}
 
+	m_DescriptorSetMgr = driver.CreateDescriptorSetMgr();
+
 	// 最后初始化子类
 
 	Init();
@@ -105,6 +107,8 @@ void Engine::TickEngine()
 	auto& driver = GetVulkanDriver();
 
 	WaitForPresent();
+
+	m_DescriptorSetMgr->Tick();
 
 	RecordCommandBuffer(m_FrameResources[m_CurrFrameIndex].commandBuffer);
 
@@ -140,6 +144,21 @@ VulkanBuffer * Engine::GetCurrPassUniformBuffer()
 VulkanBuffer * Engine::GetCurrObjectUniformBuffer()
 {
 	return m_ObjectUniformBuffers[m_CurrFrameIndex];
+}
+
+VkDescriptorSetLayout Engine::CreateDescriptorSetLayout(DSLBindings & bindings)
+{
+	return m_DescriptorSetMgr->CreateDescriptorSetLayout(bindings);
+}
+
+VkDescriptorSet Engine::GetDescriptorSet(VkDescriptorSetLayout layout)
+{
+	return m_DescriptorSetMgr->GetDescriptorSet(layout);
+}
+
+void Engine::UpdateDescriptorSet(VkDescriptorSet set, DesUpdateInfos & infos)
+{
+	m_DescriptorSetMgr->UpdateDescriptorSet(set, infos);
 }
 
 void Engine::WaitForPresent()

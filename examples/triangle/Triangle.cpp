@@ -7,9 +7,7 @@
 #include "VulkanBuffer.h"
 #include "VulkanImage.h"
 
-#include "VulkanDescriptorSetLayout.h"
-#include "VulkanDescriptorPool.h"
-#include "VulkanDescriptorSet.h"
+#include "DescriptorSetTypes.h"
 
 #include "VulkanShaderModule.h"
 #include "VulkanPipelineLayout.h"
@@ -66,10 +64,6 @@ void Triangle::CleanUp()
 	RELEASE(m_HomeNode);
 	RELEASE(m_CubeNode1);
 	RELEASE(m_CubeNode2);
-
-	RELEASE(m_VulkanDescriptorSetLayout);
-	RELEASE(m_VulkanDescriptorSet);
-	RELEASE(m_VulkanDescriptorPool);
 
 	RELEASE(m_VulkanPipeline);
 	RELEASE(m_VulkanPipelineLayout);
@@ -180,6 +174,21 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
+	// DescriptorSet
+
+	auto descriptorSet = GetDescriptorSet(m_DescriptorSetLayout);
+
+	DesUpdateInfos infos(3);
+	infos[0].binding = 0;
+	infos[0].info.buffer = { GetCurrPassUniformBuffer()->m_Buffer,0,sizeof(PassUniform) };
+	infos[1].binding = 1;
+	infos[1].info.buffer = { GetCurrObjectUniformBuffer()->m_Buffer,0,sizeof(ObjectUniform) };
+	infos[2].binding = 2;
+	infos[2].info.image = { m_Image->m_Sampler,m_Image->m_ImageView,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+	UpdateDescriptorSet(descriptorSet, infos);
+
+	//
+
 	VulkanFramebuffer* vulkanFramebuffer = RebuildFramebuffer(m_VulkanRenderPass, driver.GetSwapChainCurrImageView(), m_DepthImage->m_ImageView, driver.GetSwapChainWidth(), driver.GetSwapChainHeight());
 
 	vulkanCommandBuffer->Begin();
@@ -193,19 +202,19 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	vulkanCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline);
 
 	// home
-	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, m_VulkanDescriptorSet, 0 * sizeof(ObjectUniform));
+	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, descriptorSet, 0 * sizeof(ObjectUniform));
 	vulkanCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
 	vulkanCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 	vulkanCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
 
 	// cube1
-	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, m_VulkanDescriptorSet, 1 * sizeof(ObjectUniform));
+	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, descriptorSet, 1 * sizeof(ObjectUniform));
 	vulkanCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
 	vulkanCommandBuffer->BindIndexBuffer(m_CubeNode1->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 	vulkanCommandBuffer->DrawIndexed(m_CubeNode1->GetIndexCount(), 1, 0, 0, 1);
 
 	// cube2
-	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, m_VulkanDescriptorSet, 2 * sizeof(ObjectUniform));
+	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, descriptorSet, 2 * sizeof(ObjectUniform));
 	vulkanCommandBuffer->BindVertexBuffer(0, m_CubeNode2->GetVertexBuffer());
 	vulkanCommandBuffer->BindIndexBuffer(m_CubeNode2->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 	vulkanCommandBuffer->DrawIndexed(m_CubeNode2->GetIndexCount(), 1, 0, 0, 1);
@@ -277,26 +286,7 @@ void Triangle::PrepareDescriptorSet()
 	bindings[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT };
 	bindings[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT };
 	bindings[2] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT };
-	m_VulkanDescriptorSetLayout = driver.CreateVulkanDescriptorSetLayout(bindings);
-
-	DPSizes sizes(3);
-	sizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 };
-	sizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1 };
-	sizes[2] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 };
-	m_VulkanDescriptorPool = driver.CreateVulkanDescriptorPool(1, sizes);
-
-	m_VulkanDescriptorSet = m_VulkanDescriptorPool->AllocateDescriptorSet(m_VulkanDescriptorSetLayout);
-
-	// 这里有很多问题。。。
-
-	DesUpdateInfos infos(3);
-	infos[0].binding = 0;
-	infos[0].info.buffer = { GetCurrPassUniformBuffer()->m_Buffer,0,sizeof(PassUniform) };
-	infos[1].binding = 1;
-	infos[1].info.buffer = { GetCurrObjectUniformBuffer()->m_Buffer,0,sizeof(ObjectUniform) };
-	infos[2].binding = 2;
-	infos[2].info.image = { m_Image->m_Sampler,m_Image->m_ImageView,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-	driver.UpdateDescriptorSets(m_VulkanDescriptorSet, infos);
+	m_DescriptorSetLayout = CreateDescriptorSetLayout(bindings);
 }
 
 void Triangle::CreatePipeline()
@@ -319,7 +309,7 @@ void Triangle::CreatePipeline()
 	pipelineCI.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
 	pipelineCI.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_SCISSOR);
 
-	m_VulkanPipelineLayout = driver.CreateVulkanPipelineLayout(m_VulkanDescriptorSetLayout);
+	m_VulkanPipelineLayout = driver.CreateVulkanPipelineLayout(m_DescriptorSetLayout);
 
 	pipelineCI.Configure(m_VulkanPipelineLayout, m_VulkanRenderPass);
 

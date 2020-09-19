@@ -36,7 +36,7 @@ namespace global
 	std::vector<const char*> enabledDeviceExtensions;
 
 	// Frame
-	size_t frameResourcesCount = 3;
+	uint32_t frameResourcesCount = 3;
 
 #if defined(_WIN32)
 	std::string AssetPath = "C:/Users/1/Desktop/MakeVulkan/data/";

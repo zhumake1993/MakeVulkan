@@ -41,13 +41,13 @@ void VulkanBuffer::Unmap()
 void VulkanBuffer::Copy(void * data, uint32_t offset, uint32_t size)
 {
 	assert(m_MappedPointer);
-	memcpy(static_cast<byte*>(m_MappedPointer) + offset, data, size);
+	memcpy(static_cast<char*>(m_MappedPointer) + offset, data, size);
 }
 
 void VulkanBuffer::Flush(VkDeviceSize offset, VkDeviceSize size)
 {
-	// Ö»ÓÐnon-coherentµÄÐèÒªflush
-	// size ±ØÐëÊÇ VkPhysicalDeviceLimits::nonCoherentAtomSize µÄ±¶Êý
+	// Ö»ï¿½ï¿½non-coherentï¿½ï¿½ï¿½ï¿½Òªflush
+	// size ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ VkPhysicalDeviceLimits::nonCoherentAtomSize ï¿½Ä±ï¿½ï¿½ï¿½
 	VkMappedMemoryRange flushRange = {};
 	flushRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
 	flushRange.pNext = nullptr;
@@ -60,7 +60,7 @@ void VulkanBuffer::Flush(VkDeviceSize offset, VkDeviceSize size)
 
 void VulkanBuffer::Invalidate(VkDeviceSize offset, VkDeviceSize size)
 {
-	// Ö»ÓÐnon-coherentµÄÐèÒªinvalidate
+	// Ö»ï¿½ï¿½non-coherentï¿½ï¿½ï¿½ï¿½Òªinvalidate
 	VkMappedMemoryRange mappedRange = {};
 	mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
 	mappedRange.pNext = nullptr;
