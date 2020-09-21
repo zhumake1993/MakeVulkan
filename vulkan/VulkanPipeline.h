@@ -12,82 +12,37 @@ enum VKShaderType
 {
 	kVKShaderVertex = 0,
 	kVKShaderFragment = 1,
-	kVKShaderTessControl = 2,
-	kVKShaderTessEval = 3,
-	kVKShaderGeometry = 4,
-	kVKShaderRayTracing = 5,
 	kVKShaderCount
 };
 
 struct PipelineCI
 {
+	PipelineCI();
 
-	struct ShaderStage
-	{
-		std::shared_ptr<VulkanShaderModule> vertShaderModule;
-		std::string vertEntry = "main";
-		std::shared_ptr<VulkanShaderModule> fragShaderModule;
-		std::string fragEntry = "main";
-	};
+	void SetVertexInputState(std::vector<VkFormat>& formats);
+	void SetDynamicState(std::vector<VkDynamicState>& states);
 
-	struct VertexInputState
-	{
-		std::vector<VkFormat> formats;
-	};
+	// 只支持vs和ps
+	VkPipelineShaderStageCreateInfo shaderStageCreateInfos[kVKShaderCount];
 
-	struct InputAssemblyState
-	{
-		VkPrimitiveTopology primitiveTopology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	};
+	std::vector<VkFormat> vertexFormats;
+	// 只支持一个绑定点0
+	VkVertexInputBindingDescription vertexInputBindings[1];
+	// 只支持最多4个顶点属性
+	VkVertexInputAttributeDescription vertexInputAttributs[4];
+	VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo;
 
-	struct TessellationState
-	{
-		//
-	};
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo;
+	VkPipelineTessellationStateCreateInfo tessellationStateCreateInfo;
+	VkPipelineViewportStateCreateInfo viewportStateCreateInfo;
+	VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo;
+	VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo;
+	VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo;
+	VkPipelineColorBlendAttachmentState colorBlendAttachmentState;
+	VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo;
 
-	struct ViewportState
-	{
-		//
-	};
-
-	struct RasterizationState
-	{
-		VkCullModeFlags cullMode = VK_CULL_MODE_BACK_BIT;
-		VkFrontFace frontFace = VK_FRONT_FACE_CLOCKWISE;
-	};
-
-	struct MultisampleState
-	{
-		//
-	};
-
-	struct DepthStencilState
-	{
-		//
-	};
-
-	struct ColorBlendState
-	{
-		//
-	};
-
-	struct DynamicState
-	{
-		std::vector<VkDynamicState> dynamicStates;
-	};
-
-	ShaderStage shaderStage;
-	VertexInputState vertexInputState;
-	InputAssemblyState inputAssemblyState;
-	TessellationState tessellationState;
-	ViewportState viewportState;
-	RasterizationState rasterizationState;
-	MultisampleState multisampleState;
-	DepthStencilState depthStencilState;
-	ColorBlendState colorBlendState;
-	DynamicState dynamicState;
-
-	void Configure(VulkanPipelineLayout* vulkanPipelineLayout, VulkanRenderPass* vulkanRenderPass);
+	std::vector<VkDynamicState> dynamicStates;
+	VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo;
 
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo;
 
@@ -103,20 +58,6 @@ private:
 	void ConfigDepthStencilStateCreateInfo();
 	void ConfigColorBlendStateCreateInfo();
 	void ConfigDynamicStateCreateInfo();
-
-	VkPipelineShaderStageCreateInfo shaderStageCreateInfos[kVKShaderCount];
-	VkVertexInputBindingDescription vertexInputBindings[1];
-	VkVertexInputAttributeDescription vertexInputAttributs[4];
-	VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo;
-	VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo;
-	VkPipelineTessellationStateCreateInfo tessellationStateCreateInfo;
-	VkPipelineViewportStateCreateInfo viewportStateCreateInfo;
-	VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo;
-	VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo;
-	VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo;
-	VkPipelineColorBlendAttachmentState colorBlendAttachmentState;
-	VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo;
-	VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo;
 };
 
 class VulkanPipeline

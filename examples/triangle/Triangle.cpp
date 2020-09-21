@@ -65,7 +65,8 @@ void Triangle::CleanUp()
 	RELEASE(m_CubeNode1);
 	RELEASE(m_CubeNode2);
 
-	RELEASE(m_VulkanPipeline);
+	RELEASE(m_TexPipeline);
+	RELEASE(m_ColorPipeline);
 	RELEASE(m_VulkanPipelineLayout);
 	RELEASE(m_VulkanRenderPass);
 
@@ -199,13 +200,15 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 
 	vulkanCommandBuffer->SetScissor(area);
 
-	vulkanCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline);
+	vulkanCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_TexPipeline);
 
 	// home
 	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, descriptorSet, 0 * sizeof(ObjectUniform));
 	vulkanCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
 	vulkanCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 	vulkanCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
+
+	vulkanCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_ColorPipeline);
 
 	// cube1
 	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, descriptorSet, 1 * sizeof(ObjectUniform));
@@ -237,9 +240,9 @@ void Triangle::PrepareResources()
 		m_Home->LoadFromFile(global::AssetPath + "models/viking_room.obj");
 		m_Home->UploadToGPU();
 
-		//std::vector<VertexChannel> simpleChannels = { kVertexPosition ,kVertexColor };
+		std::vector<VertexChannel> simpleChannels = { kVertexPosition ,kVertexColor };
 		m_Cube = new Mesh();
-		m_Home->SetVertexChannels(channels);
+		m_Cube->SetVertexChannels(simpleChannels);
 		m_Cube->LoadFromGeo();
 		m_Cube->UploadToGPU();
 	}
@@ -293,27 +296,39 @@ void Triangle::CreatePipeline()
 {
 	auto& driver = GetVulkanDriver();
 
+	m_VulkanPipelineLayout = driver.CreateVulkanPipelineLayout(m_DescriptorSetLayout);
 	m_VulkanRenderPass = driver.CreateVulkanRenderPass(driver.GetSwapChainFormat(), m_DepthFormat);
 
-	// std::make_unique 需要C++14的支持，这里使用构造函数更保险
-	std::shared_ptr<VulkanShaderModule> vulkanShaderModuleVert = std::shared_ptr<VulkanShaderModule>(driver.CreateVulkanShaderModule(global::AssetPath + "shaders/shader.vert.spv"));
-	std::shared_ptr<VulkanShaderModule> vulkanShaderModuleFrag = std::shared_ptr<VulkanShaderModule>(driver.CreateVulkanShaderModule(global::AssetPath + "shaders/shader.frag.spv"));
+	VulkanShaderModule* shaderModuleVert = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/shader.vert.spv");
+	VulkanShaderModule* shaderModuleFrag = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/shader.frag.spv");
+
+	VulkanShaderModule* simpleColorVert = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/simpleColor.vert.spv");
+	VulkanShaderModule* simpleColorFrag = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/simpleColor.frag.spv");
 
 	PipelineCI pipelineCI;
+	pipelineCI.pipelineCreateInfo.layout = m_VulkanPipelineLayout->m_PipelineLayout;
+	pipelineCI.pipelineCreateInfo.renderPass = m_VulkanRenderPass->m_RenderPass;
 
-	pipelineCI.shaderStage.vertShaderModule = vulkanShaderModuleVert;
-	pipelineCI.shaderStage.fragShaderModule = vulkanShaderModuleFrag;
+	// tex
 
-	pipelineCI.vertexInputState.formats = m_Home->GetVertexFormats();
+	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = shaderModuleVert->m_ShaderModule;
+	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = shaderModuleFrag->m_ShaderModule;
+	pipelineCI.SetVertexInputState(m_Home->GetVertexFormats());
 
-	pipelineCI.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
-	pipelineCI.dynamicState.dynamicStates.push_back(VK_DYNAMIC_STATE_SCISSOR);
+	m_TexPipeline = driver.CreateVulkanPipeline(pipelineCI);
 
-	m_VulkanPipelineLayout = driver.CreateVulkanPipelineLayout(m_DescriptorSetLayout);
+	// color
 
-	pipelineCI.Configure(m_VulkanPipelineLayout, m_VulkanRenderPass);
+	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = simpleColorVert->m_ShaderModule;
+	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = simpleColorFrag->m_ShaderModule;
+	pipelineCI.SetVertexInputState(m_Cube->GetVertexFormats());
 
-	m_VulkanPipeline = driver.CreateVulkanPipeline(pipelineCI);
+	m_ColorPipeline = driver.CreateVulkanPipeline(pipelineCI);
+
+	RELEASE(shaderModuleVert);
+	RELEASE(shaderModuleFrag);
+	RELEASE(simpleColorVert);
+	RELEASE(simpleColorFrag);
 }
 
 // 入口

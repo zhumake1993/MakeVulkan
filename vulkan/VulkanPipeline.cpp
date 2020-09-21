@@ -21,14 +21,17 @@ uint32_t VkFormatToSize(VkFormat format) {
 	}
 }
 
-void PipelineCI::Configure(VulkanPipelineLayout* vulkanPipelineLayout, VulkanRenderPass* vulkanRenderPass)
+PipelineCI::PipelineCI()
 {
 	pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineCreateInfo.pNext = nullptr;
 	pipelineCreateInfo.flags = 0;
 
 	ConfigShaderStageCreateInfos();
+
+	vertexFormats = { VK_FORMAT_R32G32B32_SFLOAT };
 	ConfigVertexInputStateCreateInfo();
+
 	ConfigInputAssemblyStateCreateInfo();
 	ConfigTessellationStateCreateInfo();
 	ConfigViewportStateCreateInfo();
@@ -36,53 +39,67 @@ void PipelineCI::Configure(VulkanPipelineLayout* vulkanPipelineLayout, VulkanRen
 	ConfigMultisampleStateCreateInfo();
 	ConfigDepthStencilStateCreateInfo();
 	ConfigColorBlendStateCreateInfo();
+
+	dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT , VK_DYNAMIC_STATE_SCISSOR };
 	ConfigDynamicStateCreateInfo();
 
 	pipelineCreateInfo.pDynamicState = &dynamicStateCreateInfo;
-	pipelineCreateInfo.layout = vulkanPipelineLayout->m_PipelineLayout;
-	pipelineCreateInfo.renderPass = vulkanRenderPass->m_RenderPass;
+	pipelineCreateInfo.layout = VK_NULL_HANDLE;
+	pipelineCreateInfo.renderPass = VK_NULL_HANDLE;
 	pipelineCreateInfo.subpass = 0;
 	pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 	pipelineCreateInfo.basePipelineIndex = -1;
 }
 
+void PipelineCI::SetVertexInputState(std::vector<VkFormat>& formats)
+{
+	vertexFormats = formats;
+	ConfigVertexInputStateCreateInfo();
+}
+
+void PipelineCI::SetDynamicState(std::vector<VkDynamicState>& states)
+{
+	dynamicStates = states;
+	ConfigDynamicStateCreateInfo();
+}
+
 void PipelineCI::ConfigShaderStageCreateInfos()
 {
 	// Vertex shader
-	shaderStageCreateInfos[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	shaderStageCreateInfos[0].pNext = nullptr;
-	shaderStageCreateInfos[0].flags = 0;
-	shaderStageCreateInfos[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-	shaderStageCreateInfos[0].module = shaderStage.vertShaderModule->m_ShaderModule;
-	shaderStageCreateInfos[0].pName = shaderStage.vertEntry.c_str();
-	shaderStageCreateInfos[0].pSpecializationInfo = nullptr;
+	shaderStageCreateInfos[kVKShaderVertex].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	shaderStageCreateInfos[kVKShaderVertex].pNext = nullptr;
+	shaderStageCreateInfos[kVKShaderVertex].flags = 0;
+	shaderStageCreateInfos[kVKShaderVertex].stage = VK_SHADER_STAGE_VERTEX_BIT;
+	shaderStageCreateInfos[kVKShaderVertex].module = VK_NULL_HANDLE;
+	shaderStageCreateInfos[kVKShaderVertex].pName = "main";
+	shaderStageCreateInfos[kVKShaderVertex].pSpecializationInfo = nullptr;
 
 	// Fragment shader
-	shaderStageCreateInfos[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	shaderStageCreateInfos[1].pNext = nullptr;
-	shaderStageCreateInfos[1].flags = 0;
-	shaderStageCreateInfos[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	shaderStageCreateInfos[1].module = shaderStage.fragShaderModule->m_ShaderModule;
-	shaderStageCreateInfos[1].pName = shaderStage.fragEntry.c_str();
-	shaderStageCreateInfos[1].pSpecializationInfo = nullptr;
+	shaderStageCreateInfos[kVKShaderFragment].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	shaderStageCreateInfos[kVKShaderFragment].pNext = nullptr;
+	shaderStageCreateInfos[kVKShaderFragment].flags = 0;
+	shaderStageCreateInfos[kVKShaderFragment].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+	shaderStageCreateInfos[kVKShaderFragment].module = VK_NULL_HANDLE;
+	shaderStageCreateInfos[kVKShaderFragment].pName = "main";
+	shaderStageCreateInfos[kVKShaderFragment].pSpecializationInfo = nullptr;
 
-	pipelineCreateInfo.stageCount = 2;
+	pipelineCreateInfo.stageCount = kVKShaderCount;
 	pipelineCreateInfo.pStages = shaderStageCreateInfos;
 }
 
 void PipelineCI::ConfigVertexInputStateCreateInfo()
 {
 	// Inpute attribute bindings describe shader attribute locations and memory layouts
-	uint32_t num = static_cast<uint32_t>(vertexInputState.formats.size());
+	uint32_t num = static_cast<uint32_t>(vertexFormats.size());
 	uint32_t offset = 0;
 	for (uint32_t i = 0; i < num; i++) {
 		vertexInputAttributs[i].binding = 0;
 		vertexInputAttributs[i].location = i;
-		vertexInputAttributs[i].format = vertexInputState.formats[i];
+		vertexInputAttributs[i].format = vertexFormats[i];
 		vertexInputAttributs[i].offset = offset;
-		offset += VkFormatToSize(vertexInputState.formats[i]);
+		offset += VkFormatToSize(vertexFormats[i]);
 	}
-	
+
 	// Vertex input binding
 	// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
 	vertexInputBindings[0].binding = 0;
@@ -107,7 +124,7 @@ void PipelineCI::ConfigInputAssemblyStateCreateInfo()
 	inputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssemblyStateCreateInfo.pNext = nullptr;
 	inputAssemblyStateCreateInfo.flags = 0;
-	inputAssemblyStateCreateInfo.topology = inputAssemblyState.primitiveTopology;
+	inputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	inputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
 
 	pipelineCreateInfo.pInputAssemblyState = &inputAssemblyStateCreateInfo;
@@ -141,8 +158,8 @@ void PipelineCI::ConfigRasterizationStateCreateInfo()
 	rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
 	rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 	rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
-	rasterizationStateCreateInfo.cullMode = rasterizationState.cullMode;
-	rasterizationStateCreateInfo.frontFace = rasterizationState.frontFace;
+	rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+	rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
 	rasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
 	rasterizationStateCreateInfo.depthBiasClamp = 0.0f;
@@ -223,8 +240,8 @@ void PipelineCI::ConfigDynamicStateCreateInfo()
 	dynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamicStateCreateInfo.pNext = nullptr;
 	dynamicStateCreateInfo.flags = 0;
-	dynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicState.dynamicStates.size());
-	dynamicStateCreateInfo.pDynamicStates = dynamicState.dynamicStates.data();
+	dynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+	dynamicStateCreateInfo.pDynamicStates = dynamicStates.data();
 
 	pipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
 }

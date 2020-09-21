@@ -43,7 +43,8 @@ private:
 	VkDescriptorSetLayout m_DescriptorSetLayout;
 
 	// Render Status
-	VulkanPipeline* m_VulkanPipeline;
+	VulkanPipeline* m_TexPipeline;
+	VulkanPipeline* m_ColorPipeline;
 	VulkanPipelineLayout* m_VulkanPipelineLayout;
 	VulkanRenderPass* m_VulkanRenderPass;
 
