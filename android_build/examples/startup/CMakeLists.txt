@@ -8,7 +8,7 @@ add_library( app-glue STATIC ${app_glue_dir}/android_native_app_glue.c)
 # =====设置预定义宏=====
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -std=c++11 -DVK_USE_PLATFORM_ANDROID_KHR")
 
-set(name test)
+set(name startup)
 set(top_dir ../../..)
 
 # Vulkan loader

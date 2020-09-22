@@ -1,4 +1,8 @@
-#include "Test.h"
+#include "Startup.h"
+#include "Application.h"
+#include "Tools.h"
+
+#include "VulkanCommandBuffer.h"
 
 void ConfigGlobalSettings() {
 	// 添加单独的实例级层
@@ -25,11 +29,11 @@ void ConfigGlobalSettings() {
 	global::enabledDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 }
 
-Test::Test()
+Startup::Startup()
 {
 }
 
-Test::~Test()
+Startup::~Startup()
 {
 }
 
@@ -47,7 +51,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 	ConfigGlobalSettings();
 
-	application = new Application(new Test());
+	application = new Application(new Startup());
 	application->Init();
 	application->Run();
 	application->CleanUp();
@@ -65,7 +69,7 @@ void android_main(android_app* state)
 
 	ConfigGlobalSettings();
 
-	application = new Application(new Test());
+	application = new Application(new Startup());
 	state->userData = application;
 	state->onAppCmd = HandleAppCommand;
 	state->onInputEvent = HandleAppInput;
@@ -75,3 +79,25 @@ void android_main(android_app* state)
 }
 
 #endif
+
+void Startup::CleanUp()
+{
+}
+
+void Startup::Init()
+{
+}
+
+void Startup::Tick()
+{
+}
+
+void Startup::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
+{
+	vulkanCommandBuffer->Begin();
+
+	// todo
+	//vkCmdPipelineBarrier
+
+	vulkanCommandBuffer->End();
+}

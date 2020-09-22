@@ -4,13 +4,13 @@
 #include "VulkanFwd.h"
 #include "EngineFwd.h"
 
-class Test : public Engine
+class Startup : public Engine
 {
 
 public:
 
-	Test();
-	virtual ~Test();
+	Startup();
+	virtual ~Startup();
 
 protected:
 
@@ -21,10 +21,7 @@ protected:
 
 private:
 
-	void PrepareModels();
-	void PrepareTextures();
-	void PrepareDescriptorSet();
-	void CreatePipeline();
+	//
 
 private:
 
