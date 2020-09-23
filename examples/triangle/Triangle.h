@@ -24,6 +24,7 @@ private:
 	void PrepareResources();
 	void PrepareDescriptorSet();
 	void CreatePipeline();
+	void UpdateUI(float deltaTime);
 
 private:
 

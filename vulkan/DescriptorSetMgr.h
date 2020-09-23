@@ -21,7 +21,7 @@ public:
 	~DescriptorSetMgr();
 
 	VkDescriptorSetLayout CreateDescriptorSetLayout(DSLBindings& bindings);
-	VkDescriptorSet GetDescriptorSet(VkDescriptorSetLayout layout);
+	VkDescriptorSet GetDescriptorSet(VkDescriptorSetLayout layout, bool persistent = false);
 	void UpdateDescriptorSet(VkDescriptorSet set, DesUpdateInfos& infos);
 	void Tick();
 

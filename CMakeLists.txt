@@ -31,8 +31,13 @@ source_group("engine" FILES ${engine_sources})
 # external
 include_directories(external)
 
+# external/imgui
+# imgui需要包含cpp文件
+file(GLOB imgui_sources external/imgui/*.h external/imgui/*.cpp)
+source_group("imgui" FILES ${imgui_sources})
+
 # 生成链接库
-add_library (base ${common_sources} ${vulkan_sources} ${engine_sources})
+add_library (base ${common_sources} ${vulkan_sources} ${engine_sources} ${imgui_sources})
 
 # 查找所有的example
 file(GLOB EXAMPLES RELATIVE ${PROJECT_SOURCE_DIR}/examples/ examples/*)

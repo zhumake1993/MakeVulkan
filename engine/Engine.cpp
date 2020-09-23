@@ -40,6 +40,8 @@ void Engine::CleanUpEngine()
 
 	// 再清理父类
 
+	RELEASE(m_Imgui);
+
 	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
 		RELEASE(m_FrameResources[i].framebuffer);
 		RELEASE(m_FrameResources[i].commandBuffer);
@@ -54,8 +56,6 @@ void Engine::CleanUpEngine()
 	}
 
 	RELEASE(m_VulkanCommandPool);
-
-	RELEASE(m_DescriptorSetMgr);
 
 	// 最后清理Driver
 
@@ -93,7 +93,8 @@ void Engine::InitEngine()
 		m_ObjectUniformBuffers[i]->Map();
 	}
 
-	m_DescriptorSetMgr = driver.CreateDescriptorSetMgr();
+	auto renderpass = driver.CreateVulkanRenderPass(driver.GetSwapChainFormat(), driver.GetDepthFormat());
+	m_Imgui = new Imgui(renderpass);
 
 	// 最后初始化子类
 
@@ -106,9 +107,11 @@ void Engine::TickEngine()
 
 	auto& driver = GetVulkanDriver();
 
-	WaitForPresent();
+	m_Imgui->Tick();
 
-	m_DescriptorSetMgr->Tick();
+	driver.GetDescriptorSetMgr().Tick();
+
+	WaitForPresent();
 
 	RecordCommandBuffer(m_FrameResources[m_CurrFrameIndex].commandBuffer);
 
@@ -144,21 +147,6 @@ VulkanBuffer * Engine::GetCurrPassUniformBuffer()
 VulkanBuffer * Engine::GetCurrObjectUniformBuffer()
 {
 	return m_ObjectUniformBuffers[m_CurrFrameIndex];
-}
-
-VkDescriptorSetLayout Engine::CreateDescriptorSetLayout(DSLBindings & bindings)
-{
-	return m_DescriptorSetMgr->CreateDescriptorSetLayout(bindings);
-}
-
-VkDescriptorSet Engine::GetDescriptorSet(VkDescriptorSetLayout layout)
-{
-	return m_DescriptorSetMgr->GetDescriptorSet(layout);
-}
-
-void Engine::UpdateDescriptorSet(VkDescriptorSet set, DesUpdateInfos & infos)
-{
-	m_DescriptorSetMgr->UpdateDescriptorSet(set, infos);
 }
 
 void Engine::WaitForPresent()

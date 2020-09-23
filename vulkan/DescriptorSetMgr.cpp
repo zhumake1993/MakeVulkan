@@ -5,16 +5,24 @@
 DescriptorSetMgr::DescriptorSetMgr(VkDevice device):
 	m_Device(device)
 {
-	std::vector<VkDescriptorPoolSize> descriptorPoolSizes(3);
-	descriptorPoolSizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER , 10 };
-	descriptorPoolSizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC , 10 };
-	descriptorPoolSizes[2] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER , 10 };
+	std::vector<VkDescriptorPoolSize> descriptorPoolSizes(11);
+	descriptorPoolSizes[0] = { VK_DESCRIPTOR_TYPE_SAMPLER , 100 };
+	descriptorPoolSizes[1] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER , 100 };
+	descriptorPoolSizes[2] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE , 100 };
+	descriptorPoolSizes[3] = { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE , 100 };
+	descriptorPoolSizes[4] = { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER , 100 };
+	descriptorPoolSizes[5] = { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER , 100 };
+	descriptorPoolSizes[6] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER , 100 };
+	descriptorPoolSizes[7] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER , 100 };
+	descriptorPoolSizes[8] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC , 100 };
+	descriptorPoolSizes[9] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC , 100 };
+	descriptorPoolSizes[10] = { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT , 100 };
 
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	descriptorPoolCreateInfo.pNext = nullptr;
 	descriptorPoolCreateInfo.flags = 0;
-	descriptorPoolCreateInfo.maxSets = 10;
+	descriptorPoolCreateInfo.maxSets = 100;
 	descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
 	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
 
@@ -66,31 +74,38 @@ VkDescriptorSetLayout DescriptorSetMgr::CreateDescriptorSetLayout(DSLBindings & 
 	return descriptorSetLayout;
 }
 
-VkDescriptorSet DescriptorSetMgr::GetDescriptorSet(VkDescriptorSetLayout layout)
+VkDescriptorSet DescriptorSetMgr::GetDescriptorSet(VkDescriptorSetLayout layout, bool persistent)
 {
-	if (m_SetCaches.find(layout) == m_SetCaches.end()) {
-		m_SetCaches[layout] = SetCache();
-
+	if (persistent) {
 		auto set = AllocateDescriptorSet(layout);
-		m_SetCaches[layout].set3.push_front(set);
 
 		return set;
 	}
 	else {
-		auto& cache = m_SetCaches[layout];
+		if (m_SetCaches.find(layout) == m_SetCaches.end()) {
+			m_SetCaches[layout] = SetCache();
 
-		if (cache.set0.empty()) {
 			auto set = AllocateDescriptorSet(layout);
-			cache.set3.push_front(set);
+			m_SetCaches[layout].set3.push_front(set);
 
 			return set;
 		}
 		else {
-			auto set = cache.set0.front();
-			cache.set0.pop_front();
-			cache.set3.push_front(set);
+			auto& cache = m_SetCaches[layout];
 
-			return set;
+			if (cache.set0.empty()) {
+				auto set = AllocateDescriptorSet(layout);
+				cache.set3.push_front(set);
+
+				return set;
+			}
+			else {
+				auto set = cache.set0.front();
+				cache.set0.pop_front();
+				cache.set3.push_front(set);
+
+				return set;
+			}
 		}
 	}
 }

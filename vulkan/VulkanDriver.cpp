@@ -55,6 +55,8 @@ VulkanDriver::~VulkanDriver()
 
 void VulkanDriver::CleanUp()
 {
+	RELEASE(m_DescriptorSetMgr);
+
 	RELEASE(m_UploadVulkanCommandBuffer);
 	RELEASE(m_VulkanCommandPool);
 	RELEASE(m_StagingBuffer);
@@ -84,6 +86,8 @@ void VulkanDriver::Init()
 	m_StagingBuffer->Map();
 
 	m_DepthFormat = m_VulkanDevice->GetSupportedDepthFormat();
+
+	m_DescriptorSetMgr = new DescriptorSetMgr(m_VulkanDevice->m_LogicalDevice);
 }
 
 void VulkanDriver::WaitIdle()
@@ -171,9 +175,9 @@ void VulkanDriver::UploadVulkanImage(VulkanImage * vulkanImage, void * data, uin
 	m_UploadVulkanCommandBuffer->UploadVulkanImage(vulkanImage, data, size, m_StagingBuffer);
 }
 
-DescriptorSetMgr * VulkanDriver::CreateDescriptorSetMgr()
+DescriptorSetMgr& VulkanDriver::GetDescriptorSetMgr()
 {
-	return new DescriptorSetMgr(m_VulkanDevice->m_LogicalDevice);
+	return *m_DescriptorSetMgr;
 }
 
 VulkanShaderModule * VulkanDriver::CreateVulkanShaderModule(const std::string & filename)

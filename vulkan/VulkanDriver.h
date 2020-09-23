@@ -3,8 +3,7 @@
 #include "Common.h"
 #include "NonCopyable.h"
 #include "VulkanFwd.h"
-
-class DescriptorSetMgr;
+#include "DescriptorSetMgr.h"
 
 class VulkanDriver : public NonCopyable
 {
@@ -43,8 +42,8 @@ public:
 	void UploadVulkanBuffer(VulkanBuffer* vertexBuffer, void* data, uint32_t size);
 	void UploadVulkanImage(VulkanImage* vulkanImage, void* data, uint32_t size);
 
-	// DescriptorSet
-	DescriptorSetMgr* CreateDescriptorSetMgr();
+	// DescriptorSetMgr
+	DescriptorSetMgr& GetDescriptorSetMgr();
 
 	// Render Status
 	VulkanShaderModule* CreateVulkanShaderModule(const std::string& filename);
@@ -54,6 +53,11 @@ public:
 
 	// Framebuffer
 	VulkanFramebuffer* CreateFramebuffer(VulkanRenderPass* vulkanRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height);
+
+	// ½ö×ö²âÊÔÓÃ£¡£¡
+	VulkanDevice* GetVulkanDevice() {
+		return m_VulkanDevice;
+	}
 
 private:
 
@@ -72,6 +76,8 @@ private:
 	VulkanBuffer* m_StagingBuffer;
 
 	VkFormat m_DepthFormat;
+
+	DescriptorSetMgr* m_DescriptorSetMgr;
 };
 
 void CreateVulkanDriver();

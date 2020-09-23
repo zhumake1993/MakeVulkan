@@ -7,7 +7,7 @@
 #include "VulkanBuffer.h"
 #include "VulkanImage.h"
 
-#include "DescriptorSetTypes.h"
+#include "DescriptorSetMgr.h"
 
 #include "VulkanShaderModule.h"
 #include "VulkanPipelineLayout.h"
@@ -151,6 +151,8 @@ void Triangle::Tick()
 			m_CubeNode2->m_NumFramesDirty--;
 		}
 	}
+
+	UpdateUI(deltaTime);
 }
 
 void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
@@ -176,8 +178,8 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	viewport.maxDepth = 1.0f;
 
 	// DescriptorSet
-
-	auto descriptorSet = GetDescriptorSet(m_DescriptorSetLayout);
+	auto& descriptorSetMgr = driver.GetDescriptorSetMgr();
+	auto descriptorSet = descriptorSetMgr.GetDescriptorSet(m_DescriptorSetLayout);
 
 	DesUpdateInfos infos(3);
 	infos[0].binding = 0;
@@ -186,7 +188,7 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	infos[1].info.buffer = { GetCurrObjectUniformBuffer()->m_Buffer,0,sizeof(ObjectUniform) };
 	infos[2].binding = 2;
 	infos[2].info.image = { m_Image->m_Sampler,m_Image->m_ImageView,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-	UpdateDescriptorSet(descriptorSet, infos);
+	descriptorSetMgr.UpdateDescriptorSet(descriptorSet, infos);
 
 	//
 
@@ -221,6 +223,8 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	vulkanCommandBuffer->BindVertexBuffer(0, m_CubeNode2->GetVertexBuffer());
 	vulkanCommandBuffer->BindIndexBuffer(m_CubeNode2->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 	vulkanCommandBuffer->DrawIndexed(m_CubeNode2->GetIndexCount(), 1, 0, 0, 1);
+
+	m_Imgui->RecordCommandBuffer(vulkanCommandBuffer);
 
 	vulkanCommandBuffer->EndRenderPass();
 
@@ -284,12 +288,13 @@ void Triangle::PrepareResources()
 void Triangle::PrepareDescriptorSet()
 {
 	auto& driver = GetVulkanDriver();
+	auto& descriptorSetMgr = driver.GetDescriptorSetMgr();
 
 	DSLBindings bindings(3);
 	bindings[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT };
 	bindings[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT };
 	bindings[2] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT };
-	m_DescriptorSetLayout = CreateDescriptorSetLayout(bindings);
+	m_DescriptorSetLayout = descriptorSetMgr.CreateDescriptorSetLayout(bindings);
 }
 
 void Triangle::CreatePipeline()
@@ -329,6 +334,27 @@ void Triangle::CreatePipeline()
 	RELEASE(shaderModuleFrag);
 	RELEASE(simpleColorVert);
 	RELEASE(simpleColorFrag);
+}
+
+void Triangle::UpdateUI(float deltaTime)
+{
+	ImGuiIO& io = ImGui::GetIO();
+
+	io.DisplaySize = ImVec2(global::windowWidth, global::windowHeight);
+	io.DeltaTime = deltaTime;
+
+	//io.MousePos = ImVec2(mousePos.x, mousePos.y);
+	//io.MouseDown[0] = mouseButtons.left;
+	//io.MouseDown[1] = mouseButtons.right;
+
+	ImGui::NewFrame();
+
+	//ImGui::Text("Hello from another window!");
+	bool show_demo_window = true;
+	ImGui::ShowDemoWindow(&show_demo_window);
+	//ImGui::Text("Hello from another window!");
+
+	ImGui::Render();
 }
 
 // Èë¿Ú
