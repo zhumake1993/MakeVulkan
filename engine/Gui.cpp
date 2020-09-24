@@ -19,18 +19,30 @@
 
 Imgui::Imgui(VulkanRenderPass* renderpass)
 {
+	IMGUI_CHECKVERSION();
+
 	ImGui::CreateContext();
+
 	ImGuiIO& io = ImGui::GetIO();
+
+	// Settings
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+	//ImGui::StyleColorsClassic();
 
 	auto& driver = GetVulkanDriver();
 
-	// texture
+	// font texture
 
 	int width, height;
 	unsigned char* pixels = NULL;
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 	VkDeviceSize dataSize = width * height * 4 * sizeof(char);
 
+	// 需要定制化，例如minLod
 	m_FontImage = driver.CreateVulkanImage(VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
 	driver.UploadVulkanImage(m_FontImage, pixels, dataSize);
 
@@ -70,7 +82,7 @@ Imgui::Imgui(VulkanRenderPass* renderpass)
 	VkPushConstantRange pushConstantRange = {};
 	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 	pushConstantRange.offset = 0;
-	pushConstantRange.size = sizeof(PushConstBlock);
+	pushConstantRange.size = sizeof(float) * 4;
 	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutCreateInfo.pNext = nullptr;
@@ -98,13 +110,13 @@ Imgui::Imgui(VulkanRenderPass* renderpass)
 	pipelineCI.rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
 	pipelineCI.colorBlendAttachmentState.blendEnable = VK_TRUE;
-	pipelineCI.colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	pipelineCI.colorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 	pipelineCI.colorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 	pipelineCI.colorBlendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
 	pipelineCI.colorBlendAttachmentState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 	pipelineCI.colorBlendAttachmentState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 	pipelineCI.colorBlendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;
+	pipelineCI.colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	
 	pipelineCI.depthStencilStateCreateInfo.depthTestEnable = VK_FALSE;
 	pipelineCI.depthStencilStateCreateInfo.depthWriteEnable = VK_FALSE;
@@ -168,12 +180,25 @@ void Imgui::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	vulkanCommandBuffer->BindVertexBuffer(0, m_VertexBuffer);
 	vulkanCommandBuffer->BindIndexBuffer(m_IndexBuffer, VK_INDEX_TYPE_UINT16);
 
+	// todo
+	// vkCmdSetViewport
+
+	//
+	float scale[2];
+	scale[0] = 2.0f / imDrawData->DisplaySize.x;
+	scale[1] = 2.0f / imDrawData->DisplaySize.y;
+	float translate[2];
+	translate[0] = -1.0f - imDrawData->DisplayPos.x * scale[0];
+	translate[1] = -1.0f - imDrawData->DisplayPos.y * scale[1];
+	vkCmdPushConstants(vulkanCommandBuffer->m_CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 0, sizeof(float) * 2, scale);
+	vkCmdPushConstants(vulkanCommandBuffer->m_CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 2, sizeof(float) * 2, translate);
+
 	// test
-	PushConstBlock pushConstBlock;
-	pushConstBlock.scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
-	pushConstBlock.translate = glm::vec2(-1.0f);
+	//PushConstBlock pushConstBlock;
+	//pushConstBlock.scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
+	//pushConstBlock.translate = glm::vec2(-1.0f);
 	// test
-	vkCmdPushConstants(vulkanCommandBuffer->m_CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstBlock), &pushConstBlock);
+	//vkCmdPushConstants(vulkanCommandBuffer->m_CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstBlock), &pushConstBlock);
 
 	int vertexOffset = 0;
 	int indexOffset = 0;
@@ -194,8 +219,6 @@ void Imgui::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 			vulkanCommandBuffer->SetScissor(scissorRect);
 
 			vulkanCommandBuffer->DrawIndexed(pcmd->ElemCount, 1, pcmd->IdxOffset + indexOffset, pcmd->VtxOffset + vertexOffset, 0);
-
-			//indexOffset += pcmd->ElemCount;
 		}
 		vertexOffset += cmd_list->VtxBuffer.Size;
 		indexOffset += cmd_list->IdxBuffer.Size;

@@ -120,6 +120,7 @@ void Triangle::Tick()
 
 	m_Camera->Update(deltaTime);
 
+	// 需要修改到engine里
 #if defined(_WIN32)
 	input.oldPos = input.pos;
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
@@ -343,9 +344,13 @@ void Triangle::UpdateUI(float deltaTime)
 	io.DisplaySize = ImVec2(global::windowWidth, global::windowHeight);
 	io.DeltaTime = deltaTime;
 
-	//io.MousePos = ImVec2(mousePos.x, mousePos.y);
-	//io.MouseDown[0] = mouseButtons.left;
-	//io.MouseDown[1] = mouseButtons.right;
+#if defined(_WIN32)
+	io.MousePos = ImVec2(input.pos.x, input.pos.y);
+	io.MouseDown[0] = input.key_MouseLeft;
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+	io.MousePos = ImVec2(input.pos0.x, input.pos0.y);
+	io.MouseDown[0] = input.count != 0;
+#endif
 
 	ImGui::NewFrame();
 
