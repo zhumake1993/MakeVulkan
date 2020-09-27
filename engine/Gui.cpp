@@ -7,16 +7,15 @@
 #include "VKSampler.h"
 
 #include "VulkanShaderModule.h"
-#include "VulkanPipelineLayout.h"
+#include "VKPipelineLayout.h"
 #include "VulkanPipeline.h"
 #include "VulkanRenderPass.h"
 
 #include "VulkanCommandBuffer.h"
 
-#include <algorithm>
+#include "InputManager.h"
 
-// test!!
-#include "VulkanDevice.h"
+#include <algorithm>
 
 Imgui::Imgui(VulkanRenderPass* renderpass)
 {
@@ -35,7 +34,7 @@ Imgui::Imgui(VulkanRenderPass* renderpass)
 	int width, height;
 	unsigned char* pixels = NULL;
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-	VkDeviceSize dataSize = width * height * 4 * sizeof(char);
+	uint64_t dataSize = width * height * 4 * sizeof(char);
 
 	VKImageCI(imageCI);
 	imageCI.extent.width = width;
@@ -79,21 +78,7 @@ Imgui::Imgui(VulkanRenderPass* renderpass)
 
 	PipelineCI pipelineCI;
 
-	//m_VulkanPipelineLayout = driver.CreateVulkanPipelineLayout(descriptorSetLayout);
-	// Push constants for UI rendering parameters
-	VkPushConstantRange pushConstantRange = {};
-	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	pushConstantRange.offset = 0;
-	pushConstantRange.size = sizeof(float) * 4;
-	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
-	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutCreateInfo.pNext = nullptr;
-	pipelineLayoutCreateInfo.flags = 0;
-	pipelineLayoutCreateInfo.setLayoutCount = 1;
-	pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
-	pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
-	pipelineLayoutCreateInfo.pPushConstantRanges = &pushConstantRange;
-	VK_CHECK_RESULT(vkCreatePipelineLayout(driver.GetVulkanDevice()->m_LogicalDevice, &pipelineLayoutCreateInfo, nullptr, &m_PipelineLayout));
+	m_PipelineLayout = driver.CreateVKPipelineLayout(descriptorSetLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 4);
 
 	VulkanShaderModule* shaderVert = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/imgui/shader.vert.spv");
 	VulkanShaderModule* shaderFrag = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/imgui/shader.frag.spv");
@@ -104,8 +89,7 @@ Imgui::Imgui(VulkanRenderPass* renderpass)
 	std::vector<VkFormat> formats = { VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R8G8B8A8_UNORM };
 	pipelineCI.SetVertexInputState(formats);
 
-	// test
-	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout;
+	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->GetLayout();
 	pipelineCI.pipelineCreateInfo.renderPass = renderpass->m_RenderPass;
 
 	pipelineCI.rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_NONE;
@@ -131,12 +115,31 @@ Imgui::Imgui(VulkanRenderPass* renderpass)
 
 Imgui::~Imgui()
 {
+	ImGui::DestroyContext();
 	RELEASE(m_FontImage);
 	RELEASE(m_Sampler);
 	RELEASE(m_VertexBuffer);
 	RELEASE(m_IndexBuffer);
-	RELEASE(m_VulkanPipelineLayout);
+	RELEASE(m_PipelineLayout);
 	RELEASE(m_VulkanPipeline);
+}
+
+void Imgui::Prepare(float deltaTime)
+{
+	ImGuiIO& io = ImGui::GetIO();
+
+	io.DisplaySize = ImVec2(static_cast<float>(global::windowWidth), static_cast<float>(global::windowHeight));
+	io.DeltaTime = deltaTime;
+
+#if defined(_WIN32)
+	io.MousePos = ImVec2(input.pos.x, input.pos.y);
+	io.MouseDown[0] = input.key_MouseLeft;
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+	io.MousePos = ImVec2(input.pos0.x, input.pos0.y);
+	io.MouseDown[0] = input.count != 0;
+#endif
+
+	ImGui::NewFrame();
 }
 
 void Imgui::Tick()
@@ -177,24 +180,28 @@ void Imgui::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	ImGuiIO& io = ImGui::GetIO();
 
 	vulkanCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline);
-	//vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, m_DescriptorSet);
-	// test
-	vkCmdBindDescriptorSets(vulkanCommandBuffer->m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
+	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, m_DescriptorSet);
 	vulkanCommandBuffer->BindVertexBuffer(0, m_VertexBuffer);
 	vulkanCommandBuffer->BindIndexBuffer(m_IndexBuffer, VK_INDEX_TYPE_UINT16);
 
-	// todo
-	// vkCmdSetViewport
+	VkViewport viewport = {};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = static_cast<float>(global::windowWidth);
+	viewport.height = static_cast<float>(global::windowHeight);
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+	vulkanCommandBuffer->SetViewport(viewport);
 
-	//
+	// pushConstant
 	float scale[2];
 	scale[0] = 2.0f / imDrawData->DisplaySize.x;
 	scale[1] = 2.0f / imDrawData->DisplaySize.y;
 	float translate[2];
 	translate[0] = -1.0f - imDrawData->DisplayPos.x * scale[0];
 	translate[1] = -1.0f - imDrawData->DisplayPos.y * scale[1];
-	vkCmdPushConstants(vulkanCommandBuffer->m_CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 0, sizeof(float) * 2, scale);
-	vkCmdPushConstants(vulkanCommandBuffer->m_CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 2, sizeof(float) * 2, translate);
+	vulkanCommandBuffer->PushConstants(m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 0, sizeof(float) * 2, scale);
+	vulkanCommandBuffer->PushConstants(m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 2, sizeof(float) * 2, translate);
 
 	int vertexOffset = 0;
 	int indexOffset = 0;

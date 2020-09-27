@@ -18,7 +18,7 @@
 #include "DescriptorSetMgr.h"
 
 #include "VulkanShaderModule.h"
-#include "VulkanPipelineLayout.h"
+#include "VKPipelineLayout.h"
 #include "VulkanPipeline.h"
 #include "VulkanRenderPass.h"
 
@@ -161,7 +161,7 @@ VulkanFence * VulkanDriver::CreateVulkanFence(bool signaled)
 	return new VulkanFence(m_VulkanDevice, signaled);
 }
 
-VulkanBuffer * VulkanDriver::CreateVulkanBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty)
+VulkanBuffer * VulkanDriver::CreateVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty)
 {
 	return new VulkanBuffer(m_VulkanDevice, size, usage, memoryProperty);
 }
@@ -176,12 +176,12 @@ VKSampler * VulkanDriver::CreateVKSampler(VkSamplerCreateInfo & ci)
 	return new VKSampler(m_VulkanDevice->m_LogicalDevice, ci);
 }
 
-void VulkanDriver::UploadVulkanBuffer(VulkanBuffer * vertexBuffer, void * data, uint32_t size)
+void VulkanDriver::UploadVulkanBuffer(VulkanBuffer * vertexBuffer, void * data, VkDeviceSize size)
 {
 	m_UploadVulkanCommandBuffer->UploadVulkanBuffer(vertexBuffer, data, size, m_StagingBuffer);
 }
 
-void VulkanDriver::UploadVKImage(VKImage * image, void * data, uint32_t size)
+void VulkanDriver::UploadVKImage(VKImage * image, void * data, VkDeviceSize size)
 {
 	m_UploadVulkanCommandBuffer->UploadVKImage(image, data, size, m_StagingBuffer);
 }
@@ -196,9 +196,9 @@ VulkanShaderModule * VulkanDriver::CreateVulkanShaderModule(const std::string & 
 	return new VulkanShaderModule(m_VulkanDevice, filename);
 }
 
-VulkanPipelineLayout * VulkanDriver::CreateVulkanPipelineLayout(VkDescriptorSetLayout layout)
+VKPipelineLayout * VulkanDriver::CreateVKPipelineLayout(VkDescriptorSetLayout layout, VkShaderStageFlags pcStage, uint32_t pcSize)
 {
-	return new VulkanPipelineLayout(m_VulkanDevice, layout);
+	return new VKPipelineLayout(m_VulkanDevice->m_LogicalDevice, layout, pcStage, pcSize);
 }
 
 VulkanPipeline * VulkanDriver::CreateVulkanPipeline(PipelineCI & pipelineCI)

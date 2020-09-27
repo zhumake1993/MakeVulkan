@@ -2,7 +2,7 @@
 #include "VulkanDevice.h"
 #include "Tools.h"
 
-VulkanBuffer::VulkanBuffer(VulkanDevice* vulkanDevice, uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty):
+VulkanBuffer::VulkanBuffer(VulkanDevice* vulkanDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty):
 	m_VulkanDevice(vulkanDevice),
 	m_Size(size),
 	m_Usage(usage),
@@ -38,7 +38,7 @@ void VulkanBuffer::Unmap()
 	vkUnmapMemory(m_VulkanDevice->m_LogicalDevice, m_Memory);
 }
 
-void VulkanBuffer::Copy(void * data, uint32_t offset, uint32_t size)
+void VulkanBuffer::Copy(void * data, VkDeviceSize offset, VkDeviceSize size)
 {
 	assert(m_MappedPointer);
 	memcpy(static_cast<char*>(m_MappedPointer) + offset, data, size);

@@ -23,6 +23,8 @@ struct Input
 	bool key_MouseRight = false;
 	glm::vec2 pos = glm::vec2(0.0f, 0.0f);
 	glm::vec2 oldPos = glm::vec2(0.0f, 0.0f);
+
+	void Tick();
 };
 
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)

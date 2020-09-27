@@ -15,8 +15,11 @@ enum VKShaderType
 	kVKShaderCount
 };
 
-struct PipelineCI
+class PipelineCI
 {
+
+public:
+
 	PipelineCI();
 
 	void SetVertexInputState(std::vector<VkFormat>& formats);

@@ -38,28 +38,23 @@ public:
 	VulkanFence* CreateVulkanFence(bool signaled);
 
 	// Resource
-	VulkanBuffer* CreateVulkanBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty);
+	VulkanBuffer* CreateVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty);
 	VKImage* CreateVKImage(VkImageCreateInfo& imageCI, VkImageViewCreateInfo& viewCI);
 	VKSampler* CreateVKSampler(VkSamplerCreateInfo& ci);
-	void UploadVulkanBuffer(VulkanBuffer* vertexBuffer, void* data, uint32_t size);
-	void UploadVKImage(VKImage* image, void* data, uint32_t size);
+	void UploadVulkanBuffer(VulkanBuffer* vertexBuffer, void* data, VkDeviceSize size);
+	void UploadVKImage(VKImage* image, void* data, VkDeviceSize size);
 
 	// DescriptorSetMgr
 	DescriptorSetMgr& GetDescriptorSetMgr();
 
 	// Render Status
 	VulkanShaderModule* CreateVulkanShaderModule(const std::string& filename);
-	VulkanPipelineLayout* CreateVulkanPipelineLayout(VkDescriptorSetLayout layout);
+	VKPipelineLayout* CreateVKPipelineLayout(VkDescriptorSetLayout layout, VkShaderStageFlags pcStage = VK_SHADER_STAGE_VERTEX_BIT, uint32_t pcSize = 0);
 	VulkanPipeline* CreateVulkanPipeline(PipelineCI& pipelineCI);
 	VulkanRenderPass* CreateVulkanRenderPass(VkFormat colorFormat, VkFormat depthFormat);
 
 	// Framebuffer
 	VulkanFramebuffer* CreateFramebuffer(VulkanRenderPass* vulkanRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height);
-
-	// ½ö×ö²âÊÔÓÃ£¡£¡
-	VulkanDevice* GetVulkanDevice() {
-		return m_VulkanDevice;
-	}
 
 private:
 

@@ -31,7 +31,7 @@ DescriptorSetMgr::DescriptorSetMgr(VkDevice device):
 
 DescriptorSetMgr::~DescriptorSetMgr()
 {
-	for (auto& pair : m_SetCaches) {
+	for (auto& pair : m_LayoutBindingTypes) {
 		vkDestroyDescriptorSetLayout(m_Device, pair.first, nullptr);
 	}
 

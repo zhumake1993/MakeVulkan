@@ -1,7 +1,5 @@
 #include "Triangle.h"
 
-#include "InputManager.h"
-
 #include "VulkanDriver.h"
 
 #include "VulkanBuffer.h"
@@ -11,8 +9,9 @@
 #include "DescriptorSetMgr.h"
 
 #include "VulkanShaderModule.h"
-#include "VulkanPipelineLayout.h"
+#include "VKPipelineLayout.h"
 #include "VulkanPipeline.h"
+
 #include "VulkanRenderPass.h"
 
 #include "VulkanCommandBuffer.h"
@@ -69,7 +68,7 @@ void Triangle::CleanUp()
 
 	RELEASE(m_TexPipeline);
 	RELEASE(m_ColorPipeline);
-	RELEASE(m_VulkanPipelineLayout);
+	RELEASE(m_PipelineLayout);
 	RELEASE(m_VulkanRenderPass);
 
 	RELEASE(m_Camera);
@@ -107,36 +106,13 @@ void Triangle::Init()
 	CreatePipeline();
 }
 
-void Triangle::Tick()
+void Triangle::Tick(float deltaTime)
 {
 	auto& driver = GetVulkanDriver();
-
-	m_FrameIndex++;
-	m_AccumulateCounter++;
-
-	auto timestamp = std::chrono::high_resolution_clock::now();
-	float deltaTime = (timestamp - lastTimestamp).count() / 1000000000.0f;
-	lastTimestamp = timestamp;
-	m_AccumulateTime += deltaTime;
-	if (m_AccumulateTime >= 0.5f) {
-		m_FPS = m_AccumulateCounter / m_AccumulateTime;
-		m_AccumulateCounter = 0;
-		m_AccumulateTime = 0;
-
-		LOG("m_FPS: %f\n", m_FPS);
-	}
 
 	// 每帧的逻辑
 
 	m_Camera->Update(deltaTime);
-
-	// 需要修改到engine里
-#if defined(_WIN32)
-	input.oldPos = input.pos;
-#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	input.oldPos0 = input.pos0;
-	input.oldPos1 = input.pos1;
-#endif
 
 	m_PassUniform.view = m_Camera->GetView();
 	m_PassUniform.proj = m_Camera->GetProj();
@@ -162,8 +138,52 @@ void Triangle::Tick()
 			m_CubeNode2->m_NumFramesDirty--;
 		}
 	}
+}
 
-	UpdateUI(deltaTime);
+void Triangle::TickUI()
+{
+	//ImGui::Text("Hello from another window!");
+	bool show_demo_window = true;
+	ImGui::ShowDemoWindow(&show_demo_window);
+	//ImGui::Text("Hello from another window!");
+
+	// example
+	//// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+	//if (show_demo_window)
+	//	ImGui::ShowDemoWindow(&show_demo_window);
+
+	//// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+	//{
+	//	static float f = 0.0f;
+	//	static int counter = 0;
+
+	//	ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+	//	ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+	//	ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+	//	ImGui::Checkbox("Another Window", &show_another_window);
+
+	//	ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+	//	ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+	//	if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+	//		counter++;
+	//	ImGui::SameLine();
+	//	ImGui::Text("counter = %d", counter);
+
+	//	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	//	ImGui::End();
+	//}
+
+	//// 3. Show another simple window.
+	//if (show_another_window)
+	//{
+	//	ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+	//	ImGui::Text("Hello from another window!");
+	//	if (ImGui::Button("Close Me"))
+	//		show_another_window = false;
+	//	ImGui::End();
+	//}
 }
 
 void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
@@ -216,7 +236,7 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	vulkanCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_TexPipeline);
 
 	// home
-	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, descriptorSet, 0 * sizeof(ObjectUniform));
+	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 0 * sizeof(ObjectUniform));
 	vulkanCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
 	vulkanCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 	vulkanCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
@@ -224,13 +244,13 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	vulkanCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_ColorPipeline);
 
 	// cube1
-	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, descriptorSet, 1 * sizeof(ObjectUniform));
+	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 1 * sizeof(ObjectUniform));
 	vulkanCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
 	vulkanCommandBuffer->BindIndexBuffer(m_CubeNode1->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 	vulkanCommandBuffer->DrawIndexed(m_CubeNode1->GetIndexCount(), 1, 0, 0, 1);
 
 	// cube2
-	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipelineLayout, descriptorSet, 2 * sizeof(ObjectUniform));
+	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 2 * sizeof(ObjectUniform));
 	vulkanCommandBuffer->BindVertexBuffer(0, m_CubeNode2->GetVertexBuffer());
 	vulkanCommandBuffer->BindIndexBuffer(m_CubeNode2->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 	vulkanCommandBuffer->DrawIndexed(m_CubeNode2->GetIndexCount(), 1, 0, 0, 1);
@@ -322,7 +342,7 @@ void Triangle::CreatePipeline()
 {
 	auto& driver = GetVulkanDriver();
 
-	m_VulkanPipelineLayout = driver.CreateVulkanPipelineLayout(m_DescriptorSetLayout);
+	m_PipelineLayout = driver.CreateVKPipelineLayout(m_DescriptorSetLayout);
 	m_VulkanRenderPass = driver.CreateVulkanRenderPass(driver.GetSwapChainFormat(), m_DepthFormat);
 
 	VulkanShaderModule* shaderModuleVert = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/shader.vert.spv");
@@ -332,7 +352,7 @@ void Triangle::CreatePipeline()
 	VulkanShaderModule* simpleColorFrag = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/simpleColor.frag.spv");
 
 	PipelineCI pipelineCI;
-	pipelineCI.pipelineCreateInfo.layout = m_VulkanPipelineLayout->m_PipelineLayout;
+	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->GetLayout();
 	pipelineCI.pipelineCreateInfo.renderPass = m_VulkanRenderPass->m_RenderPass;
 
 	// tex
@@ -355,69 +375,6 @@ void Triangle::CreatePipeline()
 	RELEASE(shaderModuleFrag);
 	RELEASE(simpleColorVert);
 	RELEASE(simpleColorFrag);
-}
-
-void Triangle::UpdateUI(float deltaTime)
-{
-	ImGuiIO& io = ImGui::GetIO();
-
-	io.DisplaySize = ImVec2(global::windowWidth, global::windowHeight);
-	io.DeltaTime = deltaTime;
-
-#if defined(_WIN32)
-	io.MousePos = ImVec2(input.pos.x, input.pos.y);
-	io.MouseDown[0] = input.key_MouseLeft;
-#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	io.MousePos = ImVec2(input.pos0.x, input.pos0.y);
-	io.MouseDown[0] = input.count != 0;
-#endif
-
-	ImGui::NewFrame();
-
-	//ImGui::Text("Hello from another window!");
-	bool show_demo_window = true;
-	ImGui::ShowDemoWindow(&show_demo_window);
-	//ImGui::Text("Hello from another window!");
-
-	// example
-	//// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-	//if (show_demo_window)
-	//	ImGui::ShowDemoWindow(&show_demo_window);
-
-	//// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-	//{
-	//	static float f = 0.0f;
-	//	static int counter = 0;
-
-	//	ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-	//	ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-	//	ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-	//	ImGui::Checkbox("Another Window", &show_another_window);
-
-	//	ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-	//	ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-	//	if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-	//		counter++;
-	//	ImGui::SameLine();
-	//	ImGui::Text("counter = %d", counter);
-
-	//	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	//	ImGui::End();
-	//}
-
-	//// 3. Show another simple window.
-	//if (show_another_window)
-	//{
-	//	ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-	//	ImGui::Text("Hello from another window!");
-	//	if (ImGui::Button("Close Me"))
-	//		show_another_window = false;
-	//	ImGui::End();
-	//}
-
-	ImGui::Render();
 }
 
 // 入口

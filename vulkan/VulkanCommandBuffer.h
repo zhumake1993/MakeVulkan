@@ -1,16 +1,7 @@
 #pragma once
 
 #include "Common.h"
-
-class VulkanDevice;
-class VulkanCommandPool;
-class VulkanRenderPass;
-class VulkanFramebuffer;
-class VulkanPipeline;
-class VulkanBuffer;
-class VKImage;
-class VKSampler;
-class VulkanPipelineLayout;
+#include "VulkanFwd.h"
 
 class VulkanCommandBuffer
 {
@@ -27,8 +18,8 @@ public:
 	void CopyBuffer(VulkanBuffer* src, VulkanBuffer* dst, VkBufferCopy& region);
 	void CopyBufferToImage(VulkanBuffer* src, VKImage* dst);
 	void ImageMemoryBarrier(VKImage* image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL);
-	void UploadVulkanBuffer(VulkanBuffer* vertexBuffer, void* data, uint32_t size, VulkanBuffer* stagingBuffer);
-	void UploadVKImage(VKImage* image, void* data, uint32_t size, VulkanBuffer* stagingBuffer);
+	void UploadVulkanBuffer(VulkanBuffer* vertexBuffer, void* data, VkDeviceSize size, VulkanBuffer* stagingBuffer);
+	void UploadVKImage(VKImage* image, void* data, VkDeviceSize size, VulkanBuffer* stagingBuffer);
 
 	//
 	void BeginRenderPass(VulkanRenderPass *vulkanRenderPass, VulkanFramebuffer* vulkanFrameBuffer, VkRect2D& area, std::vector<VkClearValue>& clearValues);
@@ -37,7 +28,8 @@ public:
 	void BindPipeline(VkPipelineBindPoint bindPoint, VulkanPipeline* vulkanPipeline);
 	void BindVertexBuffer(uint32_t bind, VulkanBuffer* vulkanBuffer);
 	void BindIndexBuffer(VulkanBuffer* vulkanBuffer, VkIndexType indexType);
-	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VulkanPipelineLayout* vulkanPipelineLayout, VkDescriptorSet set, uint32_t offset = 0);
+	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VKPipelineLayout* pipelineLayout, VkDescriptorSet set, uint32_t offset = -1);
+	void PushConstants(VKPipelineLayout* pipelineLayout, VkShaderStageFlags pcStage, uint32_t offset, uint32_t size, void* data);
 	void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance);
 	void EndRenderPass();
 

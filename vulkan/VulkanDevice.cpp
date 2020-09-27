@@ -1,7 +1,7 @@
 #include "VulkanDevice.h"
 #include "VulkanInstance.h"
 #include "VulkanSurface.h"
-#include "VulkanImage.h"
+#include "VKImage.h"
 #include "VulkanBuffer.h"
 #include "VulkanCommandBuffer.h"
 #include "Tools.h"
@@ -24,7 +24,7 @@ VulkanDevice::VulkanDevice(VulkanInstance* vulkanInstance, VulkanSurface* vulkan
 		LOG("Device [%d] : %s, Type : %s\n", i, deviceProperties.deviceName, PhysicalDeviceTypeString(deviceProperties.deviceType).c_str());
 	}
 
-	// é»˜è®¤é€‰æ‹©ç¬¬ä¸€ä¸ªç‰©ç†è®¾å¤‡
+	// Ä¬ÈÏÑ¡ÔñµÚÒ»¸öÎïÀíÉè±¸
 	m_PhysicalDevice = physicalDevices[0];
 	LOG("selected physical device: %d\n", 0);
 
@@ -209,7 +209,7 @@ void VulkanDevice::ConfigQueueFamilies()
 		LOG("queueFlags: %d, queueCount: %d, timestampValidBits: %d\n", m_QueueFamilyProperties[i].queueFlags, m_QueueFamilyProperties[i].queueCount, m_QueueFamilyProperties[i].timestampValidBits);
 	}
 
-	// æ‰¾åˆ°ä¸€ä¸ªæ”¯æŒæ‰€æœ‰æ“ä½œçš„ä¸‡èƒ½QueueFamily
+	// ÕÒµ½Ò»¸öÖ§³ÖËùÓĞ²Ù×÷µÄÍòÄÜQueueFamily
 
 	m_SelectedQueueFamilyIndex = UINT32_MAX;
 	for (uint32_t i = 0; i < static_cast<uint32_t>(m_QueueFamilyProperties.size()); i++)

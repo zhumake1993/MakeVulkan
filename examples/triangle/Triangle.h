@@ -16,7 +16,8 @@ protected:
 
 	void CleanUp() override;
 	void Init() override;
-	void Tick() override;
+	void Tick(float deltaTime) override;
+	void TickUI() override;
 	void RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer) override;
 
 private:
@@ -24,7 +25,6 @@ private:
 	void PrepareResources();
 	void PrepareDescriptorSet();
 	void CreatePipeline();
-	void UpdateUI(float deltaTime);
 
 private:
 
@@ -47,7 +47,7 @@ private:
 	// Render Status
 	VulkanPipeline* m_TexPipeline;
 	VulkanPipeline* m_ColorPipeline;
-	VulkanPipelineLayout* m_VulkanPipelineLayout;
+	VKPipelineLayout* m_PipelineLayout;
 	VulkanRenderPass* m_VulkanRenderPass;
 
 	// Uniform Buffer
@@ -55,13 +55,6 @@ private:
 
 	// camera
 	Camera* m_Camera;
-
-	// stats
-	uint32_t m_FrameIndex = 0;
-	uint32_t m_AccumulateCounter = 0;
-	float m_AccumulateTime = 0;
-	float m_FPS = 0;
-	std::chrono::time_point<std::chrono::high_resolution_clock> lastTimestamp = std::chrono::high_resolution_clock::now();
 
 	// depth
 	VkFormat m_DepthFormat;

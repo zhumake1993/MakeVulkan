@@ -25,7 +25,7 @@ void Application::Init()
 {
 #if defined(_WIN32)
 
-	// VLDè·Ÿæ§åˆ¶å°è¾“å‡ºæœ‰å†²çª
+	// VLD¸ú¿ØÖÆÌ¨Êä³öÓĞ³åÍ»
 	#if !(USE_VISUAL_LEAK_DETECTOR)
 	SetupConsole();
 	#endif // !USE_VISUAL_LEAK_DETECTOR
@@ -192,7 +192,7 @@ void Application::SetupWindow()
 		exit(1);
 	}
 
-	// å±…ä¸­
+	// ¾ÓÖĞ
 	uint32_t x = (GetSystemMetrics(SM_CXSCREEN) - windowRect.right) / 2;
 	uint32_t y = (GetSystemMetrics(SM_CYSCREEN) - windowRect.bottom) / 2;
 	SetWindowPos(global::windowHandle, 0, x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
@@ -302,7 +302,7 @@ void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		input.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
 		break;
 	case WM_MBUTTONDOWN:
-		// æ»šè½®
+		// ¹öÂÖ
 		break;
 	case WM_LBUTTONUP:
 		input.key_MouseLeft = false;
@@ -313,11 +313,11 @@ void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		input.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
 		break;
 	case WM_MBUTTONUP:
-		// æ»šè½®
+		// ¹öÂÖ
 		break;
 	case WM_MOUSEWHEEL:
 	{
-		// æ»šè½®
+		// ¹öÂÖ
 		break;
 	}
 	case WM_MOUSEMOVE:
@@ -397,7 +397,7 @@ void HandleTouchScreenEvent(int32_t action, AInputEvent* event)
 			}
 		}
 		else {
-			// ä¸å¤„ç†2ä¸ªè§¦ç‚¹ä»¥ä¸Šçš„æƒ…å†µ
+			// ²»´¦Àí2¸ö´¥µãÒÔÉÏµÄÇé¿ö
 		}
 		break;
 	}
@@ -417,7 +417,7 @@ int32_t HandleAppInput(struct android_app* app, AInputEvent* event)
 		{
 		case AINPUT_SOURCE_JOYSTICK:
 		{
-			// ä¸å¤„ç†æ‰‹æŸ„äº‹ä»¶
+			// ²»´¦ÀíÊÖ±úÊÂ¼ş
 			LOG("Joystick event not handled!");
 			return 0;
 		}
@@ -434,7 +434,7 @@ int32_t HandleAppInput(struct android_app* app, AInputEvent* event)
 
 	if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_KEY)
 	{
-		// ä¸å¤„ç†é”®ç›˜äº‹ä»¶
+		// ²»´¦Àí¼üÅÌÊÂ¼ş
 		LOG("Key event not handled!");
 		return 0;
 	}

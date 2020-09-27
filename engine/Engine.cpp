@@ -15,11 +15,12 @@
 #include "DescriptorSetMgr.h"
 
 #include "VulkanShaderModule.h"
-#include "VulkanPipelineLayout.h"
+#include "VKPipelineLayout.h"
 #include "VulkanPipeline.h"
 #include "VulkanRenderPass.h"
 
 #include "Tools.h"
+#include "InputManager.h"
 
 Engine::Engine()
 {
@@ -95,6 +96,7 @@ void Engine::InitEngine()
 
 	auto renderpass = driver.CreateVulkanRenderPass(driver.GetSwapChainFormat(), driver.GetDepthFormat());
 	m_Imgui = new Imgui(renderpass);
+	RELEASE(renderpass);
 
 	// 最后初始化子类
 
@@ -103,17 +105,34 @@ void Engine::InitEngine()
 
 void Engine::TickEngine()
 {
-	Tick();
+	// 更新时间
+	m_TimeMgr.Tick();
+	float deltaTime = m_TimeMgr.GetDeltaTime();
 
-	auto& driver = GetVulkanDriver();
+	// 更新游戏逻辑
+	Tick(deltaTime);
 
+	// 更新UI逻辑
+	m_Imgui->Prepare(deltaTime);
+	TickUI();
+	ImGui::Render();
+
+	// 更新输入
+	input.Tick();
+
+	// 更新UI顶点计算
 	m_Imgui->Tick();
 
+	// 更新DescriptorSetMgr
+	auto& driver = GetVulkanDriver();
 	driver.GetDescriptorSetMgr().Tick();
 
 	WaitForPresent();
 
+	// 提交draw call
 	RecordCommandBuffer(m_FrameResources[m_CurrFrameIndex].commandBuffer);
+
+	// 提交UI draw call
 
 	Present();
 }

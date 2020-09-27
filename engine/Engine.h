@@ -5,6 +5,7 @@
 #include "VulkanFwd.h"
 #include "DescriptorSetTypes.h"
 #include "Gui.h"
+#include "TimeMgr.h"
 
 class Engine : public NonCopyable
 {
@@ -22,7 +23,8 @@ protected:
 
 	virtual void CleanUp() = 0;
 	virtual void Init() = 0;
-	virtual void Tick() = 0;
+	virtual void Tick(float deltaTime) = 0;
+	virtual void TickUI() = 0;
 	virtual void RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer) = 0;
 
 	VulkanFramebuffer* RebuildFramebuffer(VulkanRenderPass* vulkanRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height);
@@ -66,5 +68,5 @@ private:
 	const uint32_t m_ObjectUniformNum = 100;
 	std::vector<VulkanBuffer*> m_ObjectUniformBuffers;
 
-	//Imgui* m_Imgui;
+	TimeMgr m_TimeMgr;
 };

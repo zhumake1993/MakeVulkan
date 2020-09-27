@@ -27,14 +27,14 @@ extern android_app* androidApp;
 #include <chrono>
 
 #define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE // OpenGLä½¿ç”¨çš„é»˜è®¤æ·±åº¦èŒƒå›´æ˜¯[-1,1]
-#define GLM_FORCE_LEFT_HANDED // å¼ºåˆ¶ä½¿ç”¨å·¦æ‰‹åæ ‡ç³»ï¼Œæ³¨æ„ï¼Œå®šä¹‰GLM_LEFT_HANDEDå®æ˜¯æ²¡ç”¨çš„
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE // OpenGLÊ¹ÓÃµÄÄ¬ÈÏÉî¶È·¶Î§ÊÇ[-1,1]
+#define GLM_FORCE_LEFT_HANDED // Ç¿ÖÆÊ¹ÓÃ×óÊÖ×ø±êÏµ£¬×¢Òâ£¬¶¨ÒåGLM_LEFT_HANDEDºêÊÇÃ»ÓÃµÄ
 #include "glm-0.9.9.7/glm/glm/glm.hpp"
 #include "glm-0.9.9.7/glm/glm/gtc/matrix_transform.hpp"
 
 #include "imgui/imgui.h"
 
-// ä½¿ç”¨Visual Leak Detectorï¼ˆä»…é™PCï¼‰
+// Ê¹ÓÃVisual Leak Detector£¨½öÏŞPC£©
 #define USE_VISUAL_LEAK_DETECTOR 0
 
 namespace global

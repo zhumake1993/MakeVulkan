@@ -1,14 +1,7 @@
 #pragma once
 
 #include "Common.h" 
-
-class VulkanBuffer;
-class VKImage;
-class VKSampler;
-class VulkanPipelineLayout;
-class VulkanPipeline;
-class VulkanRenderPass;
-class VulkanCommandBuffer;
+#include "VulkanFwd.h"
 
 class Imgui
 {
@@ -18,6 +11,7 @@ public:
 	Imgui(VulkanRenderPass* renderpass);
 	~Imgui();
 
+	void Prepare(float deltaTime);
 	void Tick();
 	void RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer);
 
@@ -40,9 +34,6 @@ private:
 	VulkanBuffer* m_IndexBuffer;
 
 	VkDescriptorSet m_DescriptorSet;
-	VulkanPipelineLayout* m_VulkanPipelineLayout;
+	VKPipelineLayout* m_PipelineLayout;
 	VulkanPipeline* m_VulkanPipeline;
-
-	// test
-	VkPipelineLayout m_PipelineLayout;
 };

@@ -5,7 +5,10 @@
 class Mesh;
 class VulkanBuffer;
 
-struct RenderNode {
+class RenderNode 
+{
+
+public:
 
 	glm::mat4 m_World;
 	uint32_t m_NumFramesDirty = global::frameResourcesCount;
@@ -18,26 +21,3 @@ public:
 	VulkanBuffer* GetIndexBuffer();
 	uint32_t GetIndexCount();
 };
-
-//class RenderNode
-//{
-//
-//public:
-//
-//	RenderNode();
-//	~RenderNode();
-//
-//	//
-//
-//private:
-//
-//	//
-//
-//public:
-//
-//	//
-//
-//private:
-//
-//	Mesh* m_Mesh;
-//};

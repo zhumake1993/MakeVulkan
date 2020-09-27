@@ -10,12 +10,14 @@ class VulkanSemaphore;
 class VulkanFence;
 class VulkanFramebuffer;
 class VulkanRenderPass;
-class VulkanPipelineLayout;
 
+// resource
 class VulkanBuffer;
 class VKImage;
 class VKSampler;
 
+// render state
 class VulkanShaderModule;
-struct PipelineCI;
+class PipelineCI;
+class VKPipelineLayout;
 class VulkanPipeline;

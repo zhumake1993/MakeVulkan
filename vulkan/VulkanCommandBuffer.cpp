@@ -5,7 +5,7 @@
 #include "VulkanFramebuffer.h"
 #include "VulkanPipeline.h"
 #include "VulkanBuffer.h"
-#include "VulkanPipelineLayout.h"
+#include "VKPipelineLayout.h"
 #include "VKImage.h"
 #include "Tools.h"
 
@@ -84,7 +84,7 @@ void VulkanCommandBuffer::ImageMemoryBarrier(VKImage * image, VkPipelineStageFla
 	vkCmdPipelineBarrier(m_CommandBuffer, srcPSF, dstPSF, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 }
 
-void VulkanCommandBuffer::UploadVulkanBuffer(VulkanBuffer * vertexBuffer, void * data, uint32_t size, VulkanBuffer * stagingBuffer)
+void VulkanCommandBuffer::UploadVulkanBuffer(VulkanBuffer * vertexBuffer, void * data, VkDeviceSize size, VulkanBuffer * stagingBuffer)
 {
 	stagingBuffer->Copy(data, 0, size);
 
@@ -107,7 +107,7 @@ void VulkanCommandBuffer::UploadVulkanBuffer(VulkanBuffer * vertexBuffer, void *
 	m_VulkanDevice->WaitIdle();
 }
 
-void VulkanCommandBuffer::UploadVKImage(VKImage* image, void * data, uint32_t size, VulkanBuffer * stagingBuffer)
+void VulkanCommandBuffer::UploadVKImage(VKImage* image, void * data, VkDeviceSize size, VulkanBuffer * stagingBuffer)
 {
 	stagingBuffer->Copy(data, 0, size);
 
@@ -165,9 +165,14 @@ void VulkanCommandBuffer::BindIndexBuffer(VulkanBuffer * vulkanBuffer, VkIndexTy
 	vkCmdBindIndexBuffer(m_CommandBuffer, vulkanBuffer->m_Buffer, 0, indexType);
 }
 
-void VulkanCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VulkanPipelineLayout * vulkanPipelineLayout, VkDescriptorSet set, uint32_t offset)
+void VulkanCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VKPipelineLayout* pipelineLayout, VkDescriptorSet set, uint32_t offset)
 {
-	vkCmdBindDescriptorSets(m_CommandBuffer, bindPoint, vulkanPipelineLayout->m_PipelineLayout, 0, 1, &set, 1, &offset);
+	vkCmdBindDescriptorSets(m_CommandBuffer, bindPoint, pipelineLayout->GetLayout(), 0, 1, &set, offset == -1 ? 0 : 1, &offset);
+}
+
+void VulkanCommandBuffer::PushConstants(VKPipelineLayout * pipelineLayout, VkShaderStageFlags pcStage, uint32_t offset, uint32_t size, void * data)
+{
+	vkCmdPushConstants(m_CommandBuffer, pipelineLayout->GetLayout(), pcStage, offset, size, data);
 }
 
 void VulkanCommandBuffer::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
