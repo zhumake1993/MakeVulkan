@@ -17,6 +17,7 @@ public:
 
 	// Device
 	void WaitIdle();
+	uint32_t GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties);
 	VkFormat GetDepthFormat();
 	void QueueSubmit(VkSubmitInfo& submitInfo, VulkanFence* fence);
 
@@ -38,9 +39,10 @@ public:
 
 	// Resource
 	VulkanBuffer* CreateVulkanBuffer(uint32_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty);
-	VulkanImage* CreateVulkanImage(VkImageType imageType, VkFormat format, uint32_t width, uint32_t height, VkImageUsageFlags usage, VkImageAspectFlags aspect);
+	VKImage* CreateVKImage(VkImageCreateInfo& imageCI, VkImageViewCreateInfo& viewCI);
+	VKSampler* CreateVKSampler(VkSamplerCreateInfo& ci);
 	void UploadVulkanBuffer(VulkanBuffer* vertexBuffer, void* data, uint32_t size);
-	void UploadVulkanImage(VulkanImage* vulkanImage, void* data, uint32_t size);
+	void UploadVKImage(VKImage* image, void* data, uint32_t size);
 
 	// DescriptorSetMgr
 	DescriptorSetMgr& GetDescriptorSetMgr();

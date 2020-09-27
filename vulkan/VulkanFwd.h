@@ -13,7 +13,8 @@ class VulkanRenderPass;
 class VulkanPipelineLayout;
 
 class VulkanBuffer;
-class VulkanImage;
+class VKImage;
+class VKSampler;
 
 class VulkanShaderModule;
 struct PipelineCI;

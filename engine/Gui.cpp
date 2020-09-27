@@ -3,7 +3,8 @@
 #include "VulkanDriver.h"
 
 #include "VulkanBuffer.h"
-#include "VulkanImage.h"
+#include "VKImage.h"
+#include "VKSampler.h"
 
 #include "VulkanShaderModule.h"
 #include "VulkanPipelineLayout.h"
@@ -25,26 +26,27 @@ Imgui::Imgui(VulkanRenderPass* renderpass)
 
 	ImGuiIO& io = ImGui::GetIO();
 
-	// Settings
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
-	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
-	//ImGui::StyleColorsClassic();
 
 	auto& driver = GetVulkanDriver();
 
-	// font texture
+	// font texture, use the default
 
 	int width, height;
 	unsigned char* pixels = NULL;
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 	VkDeviceSize dataSize = width * height * 4 * sizeof(char);
 
-	// 需要定制化，例如minLod
-	m_FontImage = driver.CreateVulkanImage(VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
-	driver.UploadVulkanImage(m_FontImage, pixels, dataSize);
+	VKImageCI(imageCI);
+	imageCI.extent.width = width;
+	imageCI.extent.height = height;
+	VKImageViewCI(imageViewCI);
+	m_FontImage = driver.CreateVKImage(imageCI, imageViewCI);
+	driver.UploadVKImage(m_FontImage, pixels, dataSize);
+
+	// Sampler
+	VKSamplerCI(samplerCI);
+	m_Sampler = driver.CreateVKSampler(samplerCI);
 
 	// Vertex buffer
 
@@ -70,7 +72,7 @@ Imgui::Imgui(VulkanRenderPass* renderpass)
 
 	DesUpdateInfos infos(1);
 	infos[0].binding = 0;
-	infos[0].info.image = { m_FontImage->m_Sampler, m_FontImage->m_ImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+	infos[0].info.image = { m_Sampler->GetSampler(), m_FontImage->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 	descriptorSetMgr.UpdateDescriptorSet(m_DescriptorSet, infos);
 
 	// pipeline
@@ -130,6 +132,7 @@ Imgui::Imgui(VulkanRenderPass* renderpass)
 Imgui::~Imgui()
 {
 	RELEASE(m_FontImage);
+	RELEASE(m_Sampler);
 	RELEASE(m_VertexBuffer);
 	RELEASE(m_IndexBuffer);
 	RELEASE(m_VulkanPipelineLayout);
@@ -192,13 +195,6 @@ void Imgui::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	translate[1] = -1.0f - imDrawData->DisplayPos.y * scale[1];
 	vkCmdPushConstants(vulkanCommandBuffer->m_CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 0, sizeof(float) * 2, scale);
 	vkCmdPushConstants(vulkanCommandBuffer->m_CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 2, sizeof(float) * 2, translate);
-
-	// test
-	//PushConstBlock pushConstBlock;
-	//pushConstBlock.scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
-	//pushConstBlock.translate = glm::vec2(-1.0f);
-	// test
-	//vkCmdPushConstants(vulkanCommandBuffer->m_CommandBuffer, m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstBlock), &pushConstBlock);
 
 	int vertexOffset = 0;
 	int indexOffset = 0;

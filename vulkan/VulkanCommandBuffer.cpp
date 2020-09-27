@@ -6,7 +6,7 @@
 #include "VulkanPipeline.h"
 #include "VulkanBuffer.h"
 #include "VulkanPipelineLayout.h"
-#include "VulkanImage.h"
+#include "VKImage.h"
 #include "Tools.h"
 
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice* vulkanDevice, VulkanCommandPool* vulkanCommandPool, VkCommandBufferLevel level):
@@ -47,7 +47,7 @@ void VulkanCommandBuffer::CopyBuffer(VulkanBuffer * src, VulkanBuffer * dst, VkB
 	vkCmdCopyBuffer(m_CommandBuffer, src->m_Buffer, dst->m_Buffer, 1, &region);
 }
 
-void VulkanCommandBuffer::CopyBufferToImage(VulkanBuffer * src, VulkanImage * dst)
+void VulkanCommandBuffer::CopyBufferToImage(VulkanBuffer * src, VKImage * dst)
 {
 	VkBufferImageCopy bufferImageCopyInfo = {};
 	bufferImageCopyInfo.bufferOffset = 0;
@@ -55,12 +55,12 @@ void VulkanCommandBuffer::CopyBufferToImage(VulkanBuffer * src, VulkanImage * ds
 	bufferImageCopyInfo.bufferImageHeight = 0;
 	bufferImageCopyInfo.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT,0,0,1 };
 	bufferImageCopyInfo.imageOffset = { 0,0,0 };
-	bufferImageCopyInfo.imageExtent = { dst->m_Width,dst->m_Height,1 };
+	bufferImageCopyInfo.imageExtent = { dst->GetWidth(),dst->GetHeight(),1 };
 
-	vkCmdCopyBufferToImage(m_CommandBuffer, src->m_Buffer, dst->m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
+	vkCmdCopyBufferToImage(m_CommandBuffer, src->m_Buffer, dst->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
 }
 
-void VulkanCommandBuffer::ImageMemoryBarrier(VulkanImage * img, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL)
+void VulkanCommandBuffer::ImageMemoryBarrier(VKImage * image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL)
 {
 	VkImageSubresourceRange imageSubresourceRange = {};
 	imageSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -78,7 +78,7 @@ void VulkanCommandBuffer::ImageMemoryBarrier(VulkanImage * img, VkPipelineStageF
 	imageMemoryBarrier.newLayout = newIL;
 	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageMemoryBarrier.image = img->m_Image;
+	imageMemoryBarrier.image = image->GetImage();
 	imageMemoryBarrier.subresourceRange = imageSubresourceRange;
 
 	vkCmdPipelineBarrier(m_CommandBuffer, srcPSF, dstPSF, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
@@ -107,17 +107,17 @@ void VulkanCommandBuffer::UploadVulkanBuffer(VulkanBuffer * vertexBuffer, void *
 	m_VulkanDevice->WaitIdle();
 }
 
-void VulkanCommandBuffer::UploadVulkanImage(VulkanImage * vulkanImage, void * data, uint32_t size, VulkanBuffer * stagingBuffer)
+void VulkanCommandBuffer::UploadVKImage(VKImage* image, void * data, uint32_t size, VulkanBuffer * stagingBuffer)
 {
 	stagingBuffer->Copy(data, 0, size);
 
 	Begin();
 
-	ImageMemoryBarrier(vulkanImage, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	ImageMemoryBarrier(image, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-	CopyBufferToImage(stagingBuffer, vulkanImage);
+	CopyBufferToImage(stagingBuffer, image);
 
-	ImageMemoryBarrier(vulkanImage, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	ImageMemoryBarrier(image, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	End();
 

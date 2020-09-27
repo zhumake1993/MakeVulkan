@@ -12,7 +12,8 @@
 #include "VulkanFence.h"
 
 #include "VulkanBuffer.h"
-#include "VulkanImage.h"
+#include "VKImage.h"
+#include "VKSampler.h"
 
 #include "DescriptorSetMgr.h"
 
@@ -95,6 +96,11 @@ void VulkanDriver::WaitIdle()
 	m_VulkanDevice->WaitIdle();
 }
 
+uint32_t VulkanDriver::GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties)
+{
+	return m_VulkanDevice->GetMemoryTypeIndex(typeBits, properties);
+}
+
 VkFormat VulkanDriver::GetDepthFormat()
 {
 	return m_DepthFormat;
@@ -160,9 +166,14 @@ VulkanBuffer * VulkanDriver::CreateVulkanBuffer(uint32_t size, VkBufferUsageFlag
 	return new VulkanBuffer(m_VulkanDevice, size, usage, memoryProperty);
 }
 
-VulkanImage * VulkanDriver::CreateVulkanImage(VkImageType imageType, VkFormat format, uint32_t width, uint32_t height, VkImageUsageFlags usage, VkImageAspectFlags aspect)
+VKImage * VulkanDriver::CreateVKImage(VkImageCreateInfo& imageCI, VkImageViewCreateInfo& viewCI)
 {
-	return new VulkanImage(m_VulkanDevice, imageType, format, width, height, usage, aspect);
+	return new VKImage(m_VulkanDevice->m_LogicalDevice, imageCI, viewCI);
+}
+
+VKSampler * VulkanDriver::CreateVKSampler(VkSamplerCreateInfo & ci)
+{
+	return new VKSampler(m_VulkanDevice->m_LogicalDevice, ci);
 }
 
 void VulkanDriver::UploadVulkanBuffer(VulkanBuffer * vertexBuffer, void * data, uint32_t size)
@@ -170,9 +181,9 @@ void VulkanDriver::UploadVulkanBuffer(VulkanBuffer * vertexBuffer, void * data, 
 	m_UploadVulkanCommandBuffer->UploadVulkanBuffer(vertexBuffer, data, size, m_StagingBuffer);
 }
 
-void VulkanDriver::UploadVulkanImage(VulkanImage * vulkanImage, void * data, uint32_t size)
+void VulkanDriver::UploadVKImage(VKImage * image, void * data, uint32_t size)
 {
-	m_UploadVulkanCommandBuffer->UploadVulkanImage(vulkanImage, data, size, m_StagingBuffer);
+	m_UploadVulkanCommandBuffer->UploadVKImage(image, data, size, m_StagingBuffer);
 }
 
 DescriptorSetMgr& VulkanDriver::GetDescriptorSetMgr()

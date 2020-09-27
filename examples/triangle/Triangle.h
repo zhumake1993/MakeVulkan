@@ -33,7 +33,8 @@ private:
 	Mesh* m_Cube;
 
 	// Texture
-	VulkanImage* m_Image;
+	VKImage* m_Image;
+	VKSampler* m_Sampler;
 
 	// RenderNode
 	RenderNode* m_HomeNode;
@@ -64,5 +65,5 @@ private:
 
 	// depth
 	VkFormat m_DepthFormat;
-	VulkanImage* m_DepthImage;
+	VKImage* m_DepthImage;
 };

@@ -5,7 +5,8 @@
 #include "VulkanDriver.h"
 
 #include "VulkanBuffer.h"
-#include "VulkanImage.h"
+#include "VKImage.h"
+#include "VKSampler.h"
 
 #include "DescriptorSetMgr.h"
 
@@ -60,6 +61,7 @@ void Triangle::CleanUp()
 	RELEASE(m_Cube);
 
 	RELEASE(m_Image);
+	RELEASE(m_Sampler);
 
 	RELEASE(m_HomeNode);
 	RELEASE(m_CubeNode1);
@@ -80,7 +82,15 @@ void Triangle::Init()
 	auto& driver = GetVulkanDriver();
 
 	m_DepthFormat = driver.GetDepthFormat();
-	m_DepthImage = driver.CreateVulkanImage(VK_IMAGE_TYPE_2D, m_DepthFormat, global::windowWidth, global::windowHeight, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+	VKImageCI(imageCI);
+	imageCI.format = m_DepthFormat;
+	imageCI.extent.width = global::windowWidth;
+	imageCI.extent.height = global::windowHeight;
+	imageCI.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+	VKImageViewCI(imageViewCI);
+	imageViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	m_DepthImage = driver.CreateVKImage(imageCI, imageViewCI);
 
 	// ÉãÏñ»ú
 	m_Camera = new Camera();
@@ -188,12 +198,12 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	infos[1].binding = 1;
 	infos[1].info.buffer = { GetCurrObjectUniformBuffer()->m_Buffer,0,sizeof(ObjectUniform) };
 	infos[2].binding = 2;
-	infos[2].info.image = { m_Image->m_Sampler,m_Image->m_ImageView,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+	infos[2].info.image = { m_Sampler->GetSampler(),m_Image->GetView(),VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 	descriptorSetMgr.UpdateDescriptorSet(descriptorSet, infos);
 
 	//
 
-	VulkanFramebuffer* vulkanFramebuffer = RebuildFramebuffer(m_VulkanRenderPass, driver.GetSwapChainCurrImageView(), m_DepthImage->m_ImageView, driver.GetSwapChainWidth(), driver.GetSwapChainHeight());
+	VulkanFramebuffer* vulkanFramebuffer = RebuildFramebuffer(m_VulkanRenderPass, driver.GetSwapChainCurrImageView(), m_DepthImage->GetView(), driver.GetSwapChainWidth(), driver.GetSwapChainHeight());
 
 	vulkanCommandBuffer->Begin();
 
@@ -260,9 +270,19 @@ void Triangle::PrepareResources()
 			assert(false);
 		}
 
-		m_Image = driver.CreateVulkanImage(VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
+		VKImageCI(imageCI);
+		imageCI.extent.width = width;
+		imageCI.extent.height = height;
+		VKImageViewCI(imageViewCI)
+		m_Image = driver.CreateVKImage(imageCI, imageViewCI);
 
-		driver.UploadVulkanImage(m_Image, imageData.data(), dataSize);
+		driver.UploadVKImage(m_Image, imageData.data(), dataSize);
+	}
+
+	// Sampler
+	{
+		VKSamplerCI(samplerCI);
+		m_Sampler = driver.CreateVKSampler(samplerCI);
 	}
 	
 	// RenderNode
@@ -358,6 +378,44 @@ void Triangle::UpdateUI(float deltaTime)
 	bool show_demo_window = true;
 	ImGui::ShowDemoWindow(&show_demo_window);
 	//ImGui::Text("Hello from another window!");
+
+	// example
+	//// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+	//if (show_demo_window)
+	//	ImGui::ShowDemoWindow(&show_demo_window);
+
+	//// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+	//{
+	//	static float f = 0.0f;
+	//	static int counter = 0;
+
+	//	ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+	//	ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+	//	ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+	//	ImGui::Checkbox("Another Window", &show_another_window);
+
+	//	ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+	//	ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+	//	if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+	//		counter++;
+	//	ImGui::SameLine();
+	//	ImGui::Text("counter = %d", counter);
+
+	//	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	//	ImGui::End();
+	//}
+
+	//// 3. Show another simple window.
+	//if (show_another_window)
+	//{
+	//	ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+	//	ImGui::Text("Hello from another window!");
+	//	if (ImGui::Button("Close Me"))
+	//		show_another_window = false;
+	//	ImGui::End();
+	//}
 
 	ImGui::Render();
 }

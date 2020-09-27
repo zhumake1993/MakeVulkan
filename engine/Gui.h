@@ -2,8 +2,9 @@
 
 #include "Common.h" 
 
-class VulkanImage;
 class VulkanBuffer;
+class VKImage;
+class VKSampler;
 class VulkanPipelineLayout;
 class VulkanPipeline;
 class VulkanRenderPass;
@@ -11,12 +12,6 @@ class VulkanCommandBuffer;
 
 class Imgui
 {
-
-	// test!!
-	struct PushConstBlock {
-		glm::vec2 scale;
-		glm::vec2 translate;
-	};
 
 public:
 
@@ -36,7 +31,8 @@ public:
 
 private:
 
-	VulkanImage* m_FontImage;
+	VKImage* m_FontImage;
+	VKSampler* m_Sampler;
 
 	uint32_t m_MaxVertexCount = 65536;
 	uint32_t m_MaxIndexCount = 65536;

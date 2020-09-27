@@ -8,8 +8,9 @@ class VulkanRenderPass;
 class VulkanFramebuffer;
 class VulkanPipeline;
 class VulkanBuffer;
+class VKImage;
+class VKSampler;
 class VulkanPipelineLayout;
-class VulkanImage;
 
 class VulkanCommandBuffer
 {
@@ -24,10 +25,10 @@ public:
 
 	// Resource
 	void CopyBuffer(VulkanBuffer* src, VulkanBuffer* dst, VkBufferCopy& region);
-	void CopyBufferToImage(VulkanBuffer* src, VulkanImage* dst);
-	void ImageMemoryBarrier(VulkanImage* img, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL);
+	void CopyBufferToImage(VulkanBuffer* src, VKImage* dst);
+	void ImageMemoryBarrier(VKImage* image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL);
 	void UploadVulkanBuffer(VulkanBuffer* vertexBuffer, void* data, uint32_t size, VulkanBuffer* stagingBuffer);
-	void UploadVulkanImage(VulkanImage* vulkanImage, void* data, uint32_t size, VulkanBuffer* stagingBuffer);
+	void UploadVKImage(VKImage* image, void* data, uint32_t size, VulkanBuffer* stagingBuffer);
 
 	//
 	void BeginRenderPass(VulkanRenderPass *vulkanRenderPass, VulkanFramebuffer* vulkanFrameBuffer, VkRect2D& area, std::vector<VkClearValue>& clearValues);

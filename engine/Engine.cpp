@@ -10,7 +10,7 @@
 #include "VulkanFramebuffer.h"
 
 #include "VulkanBuffer.h"
-#include "VulkanImage.h"
+#include "VKImage.h"
 
 #include "DescriptorSetMgr.h"
 
