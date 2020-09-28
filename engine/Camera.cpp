@@ -10,6 +10,11 @@ Camera::~Camera()
 {
 }
 
+glm::vec3 Camera::GetPosition()
+{
+	return m_Position;
+}
+
 void Camera::LookAt(glm::vec3 pos, glm::vec3 target)
 {
 	m_Position = pos;
@@ -47,8 +52,8 @@ void Camera::Update(float deltaTime)
 	if (input.key_S) dir -= m_Look;
 	if (input.key_A) dir -= right;
 	if (input.key_D) dir += right;
-	if (input.key_Q) dir += m_WorldUp;
-	if (input.key_E) dir -= m_WorldUp;
+	if (input.key_Q) dir -= m_WorldUp;
+	if (input.key_E) dir += m_WorldUp;
 
 	if (glm::length(dir) > 0) {
 		m_Position += glm::normalize(dir) * m_MoveSpeed * deltaTime;

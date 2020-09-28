@@ -28,7 +28,7 @@ void ConfigGlobalSettings() {
 	// Note that on Android this layer requires at least NDK r20
 #if defined(_WIN32)
 	// 目前我用的NDK r19
-	global::enabledInstanceLayers.push_back("VK_LAYER_KHRONOS_validation");
+	//global::enabledInstanceLayers.push_back("VK_LAYER_KHRONOS_validation");
 #endif
 
 	// 添加单独的实例级拓展
@@ -78,6 +78,8 @@ void Triangle::CleanUp()
 
 void Triangle::Init()
 {
+	m_PassUniform.lightPos = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+
 	auto& driver = GetVulkanDriver();
 
 	m_DepthFormat = driver.GetDepthFormat();
@@ -116,12 +118,16 @@ void Triangle::Tick(float deltaTime)
 
 	m_PassUniform.view = m_Camera->GetView();
 	m_PassUniform.proj = m_Camera->GetProj();
-
-	UpdatePassUniformBuffer(&m_PassUniform);
+	m_PassUniform.eyePos = glm::vec4(m_Camera->GetPosition(), 0.0f);
 
 	m_CubeNode1->m_World = glm::rotate(glm::mat4(1.0f), deltaTime * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f)) * m_CubeNode1->m_World;
 	m_CubeNode1->m_NumFramesDirty = global::frameResourcesCount;
 
+	m_PassUniform.lightPos = glm::rotate(glm::mat4(1.0f), deltaTime * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f)) * m_PassUniform.lightPos;
+
+	{
+		UpdatePassUniformBuffer(&m_PassUniform);
+	}
 	{
 		if (m_HomeNode->m_NumFramesDirty > 0) {
 			UpdateObjectUniformBuffer(&m_HomeNode->m_World, m_HomeNode->m_ObjectUBIndex);
@@ -269,7 +275,7 @@ void Triangle::PrepareResources()
 
 	// Mesh
 	{
-		std::vector<VertexChannel> channels = { kVertexPosition ,kVertexColor, kVertexTexcoord };
+		std::vector<VertexChannel> channels = { kVertexPosition ,kVertexNormal, kVertexTexcoord };
 
 		m_Home = new Mesh();
 		m_Home->SetVertexChannels(channels);
@@ -333,7 +339,7 @@ void Triangle::PrepareDescriptorSet()
 	auto& descriptorSetMgr = driver.GetDescriptorSetMgr();
 
 	DSLBindings bindings(3);
-	bindings[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT };
+	bindings[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT };
 	bindings[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT };
 	bindings[2] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT };
 	m_DescriptorSetLayout = descriptorSetMgr.CreateDescriptorSetLayout(bindings);
@@ -394,6 +400,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 
 	application = new Application(new Triangle());
 	application->Init();
+
+	SetWindowText(global::windowHandle, "Triangle");
+
 	application->Run();
 	application->CleanUp();
 	RELEASE(application);

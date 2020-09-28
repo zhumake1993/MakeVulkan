@@ -77,6 +77,8 @@ namespace global
 struct PassUniform {
 	alignas(16) glm::mat4 view;
 	alignas(16) glm::mat4 proj;
+	alignas(16) glm::vec4 eyePos;
+	alignas(16) glm::vec4 lightPos;
 };
 
 struct ObjectUniform {
