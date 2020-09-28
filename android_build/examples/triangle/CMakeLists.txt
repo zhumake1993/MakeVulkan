@@ -31,8 +31,12 @@ include_directories(${top_dir}/engine)
 # external
 include_directories(${top_dir}/external)
 
+# external/imgui
+# imgui需要包含cpp文件
+file(GLOB imgui_sources ${top_dir}/external/imgui/*.h ${top_dir}/external/imgui/*.cpp)
+
 # 生成链接库
-add_library (base STATIC ${common_sources} ${vulkan_sources} ${engine_sources})
+add_library (base STATIC ${common_sources} ${vulkan_sources} ${engine_sources} ${imgui_sources})
 target_link_libraries(base vulkan_lib)
 
 # 这里不能用test作为lib的名字，似乎跟重命名有关，原因不明

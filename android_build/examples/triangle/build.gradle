@@ -35,8 +35,14 @@ dependencies {
 // 拷贝资源
 task copyTask {
     copy {
-        from '../../../data/shaders'
-        into 'assets/shaders'
+        from '../../../data/shaders/triangle'
+        into 'assets/shaders/triangle'
+        include '*.spv'
+    }
+
+    copy {
+        from '../../../data/shaders/imgui'
+        into 'assets/shaders/imgui'
         include '*.spv'
     }
 

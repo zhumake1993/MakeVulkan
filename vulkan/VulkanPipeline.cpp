@@ -54,13 +54,13 @@ PipelineCI::PipelineCI()
 	pipelineCreateInfo.basePipelineIndex = -1;
 }
 
-void PipelineCI::SetVertexInputState(std::vector<VkFormat>& formats)
+void PipelineCI::SetVertexInputState(const std::vector<VkFormat>& formats)
 {
 	vertexFormats = formats;
 	ConfigVertexInputStateCreateInfo();
 }
 
-void PipelineCI::SetDynamicState(std::vector<VkDynamicState>& states)
+void PipelineCI::SetDynamicState(const std::vector<VkDynamicState>& states)
 {
 	dynamicStates = states;
 	ConfigDynamicStateCreateInfo();

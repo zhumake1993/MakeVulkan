@@ -255,6 +255,7 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	vulkanCommandBuffer->BindIndexBuffer(m_CubeNode2->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 	vulkanCommandBuffer->DrawIndexed(m_CubeNode2->GetIndexCount(), 1, 0, 0, 1);
 
+	// todo
 	m_Imgui->RecordCommandBuffer(vulkanCommandBuffer);
 
 	vulkanCommandBuffer->EndRenderPass();
@@ -345,11 +346,11 @@ void Triangle::CreatePipeline()
 	m_PipelineLayout = driver.CreateVKPipelineLayout(m_DescriptorSetLayout);
 	m_VulkanRenderPass = driver.CreateVulkanRenderPass(driver.GetSwapChainFormat(), m_DepthFormat);
 
-	VulkanShaderModule* shaderModuleVert = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/shader.vert.spv");
-	VulkanShaderModule* shaderModuleFrag = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/shader.frag.spv");
+	VulkanShaderModule* shaderModuleVert = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/triangle/shader.vert.spv");
+	VulkanShaderModule* shaderModuleFrag = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/triangle/shader.frag.spv");
 
-	VulkanShaderModule* simpleColorVert = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/simpleColor.vert.spv");
-	VulkanShaderModule* simpleColorFrag = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/simpleColor.frag.spv");
+	VulkanShaderModule* simpleColorVert = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/triangle/simpleColor.vert.spv");
+	VulkanShaderModule* simpleColorFrag = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/triangle/simpleColor.frag.spv");
 
 	PipelineCI pipelineCI;
 	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->GetLayout();

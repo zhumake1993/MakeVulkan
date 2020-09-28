@@ -8,7 +8,7 @@ class Imgui
 
 public:
 
-	Imgui(VulkanRenderPass* renderpass);
+	Imgui();
 	~Imgui();
 
 	void Prepare(float deltaTime);
@@ -36,4 +36,6 @@ private:
 	VkDescriptorSet m_DescriptorSet;
 	VKPipelineLayout* m_PipelineLayout;
 	VulkanPipeline* m_VulkanPipeline;
+
+	VulkanRenderPass* m_RenderPass;
 };

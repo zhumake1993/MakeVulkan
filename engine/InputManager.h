@@ -39,6 +39,8 @@ struct Input
 	glm::vec2 oldPos0 = glm::vec2(0.0f, 0.0f);
 	glm::vec2 pos1 = glm::vec2(0.0f, 0.0f);
 	glm::vec2 oldPos1 = glm::vec2(0.0f, 0.0f);
+
+	void Tick();
 };
 
 #endif

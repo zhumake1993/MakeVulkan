@@ -22,8 +22,8 @@ public:
 
 	PipelineCI();
 
-	void SetVertexInputState(std::vector<VkFormat>& formats);
-	void SetDynamicState(std::vector<VkDynamicState>& states);
+	void SetVertexInputState(const std::vector<VkFormat>& formats);
+	void SetDynamicState(const std::vector<VkDynamicState>& states);
 
 	// 只支持vs和ps
 	VkPipelineShaderStageCreateInfo shaderStageCreateInfos[kVKShaderCount];

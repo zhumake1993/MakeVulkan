@@ -94,9 +94,7 @@ void Engine::InitEngine()
 		m_ObjectUniformBuffers[i]->Map();
 	}
 
-	auto renderpass = driver.CreateVulkanRenderPass(driver.GetSwapChainFormat(), driver.GetDepthFormat());
-	m_Imgui = new Imgui(renderpass);
-	RELEASE(renderpass);
+	m_Imgui = new Imgui();
 
 	// 最后初始化子类
 
@@ -133,6 +131,7 @@ void Engine::TickEngine()
 	RecordCommandBuffer(m_FrameResources[m_CurrFrameIndex].commandBuffer);
 
 	// 提交UI draw call
+	//m_Imgui->RecordCommandBuffer(m_FrameResources[m_CurrFrameIndex].commandBuffer);
 
 	Present();
 }

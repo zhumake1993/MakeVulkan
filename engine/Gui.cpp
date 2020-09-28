@@ -17,7 +17,7 @@
 
 #include <algorithm>
 
-Imgui::Imgui(VulkanRenderPass* renderpass)
+Imgui::Imgui()
 {
 	IMGUI_CHECKVERSION();
 
@@ -80,6 +80,8 @@ Imgui::Imgui(VulkanRenderPass* renderpass)
 
 	m_PipelineLayout = driver.CreateVKPipelineLayout(descriptorSetLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 4);
 
+	m_RenderPass = driver.CreateVulkanRenderPass(driver.GetSwapChainFormat(), driver.GetDepthFormat());
+
 	VulkanShaderModule* shaderVert = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/imgui/shader.vert.spv");
 	VulkanShaderModule* shaderFrag = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/imgui/shader.frag.spv");
 
@@ -90,7 +92,7 @@ Imgui::Imgui(VulkanRenderPass* renderpass)
 	pipelineCI.SetVertexInputState(formats);
 
 	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->GetLayout();
-	pipelineCI.pipelineCreateInfo.renderPass = renderpass->m_RenderPass;
+	pipelineCI.pipelineCreateInfo.renderPass = m_RenderPass->m_RenderPass;
 
 	pipelineCI.rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_NONE;
 	pipelineCI.rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
@@ -122,6 +124,7 @@ Imgui::~Imgui()
 	RELEASE(m_IndexBuffer);
 	RELEASE(m_PipelineLayout);
 	RELEASE(m_VulkanPipeline);
+	RELEASE(m_RenderPass);
 }
 
 void Imgui::Prepare(float deltaTime)
