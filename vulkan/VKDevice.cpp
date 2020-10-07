@@ -1,0 +1,183 @@
+#include "VKDevice.h"
+
+#include "DeviceProperties.h"
+#include "Tools.h"
+
+#include "VKInstance.h"
+#include "VKSurface.h"
+
+std::string PhysicalDeviceTypeString(VkPhysicalDeviceType type)
+{
+	switch (type)
+	{
+#define STR(r) case VK_PHYSICAL_DEVICE_TYPE_##r: return #r
+		STR(OTHER);
+		STR(INTEGRATED_GPU);
+		STR(DISCRETE_GPU);
+		STR(VIRTUAL_GPU);
+#undef STR
+	default: return "UNKNOWN_DEVICE_TYPE";
+	}
+}
+
+VkPhysicalDevice SelectPhysicalDevice(VkInstance instance)
+{
+	auto& dp = GetDeviceProperties();
+
+	uint32_t deviceNum = 0;
+	VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &deviceNum, nullptr));
+	assert(deviceNum > 0);
+	LOG("available physical devices: %d\n", deviceNum);
+
+	std::vector<VkPhysicalDevice> physicalDevices(deviceNum);
+	VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &deviceNum, physicalDevices.data()));
+	for (uint32_t i = 0; i < deviceNum; i++) {
+		VkPhysicalDeviceProperties deviceProperties;
+		vkGetPhysicalDeviceProperties(physicalDevices[i], &deviceProperties);
+		LOG("Device [%d] : %s, Type : %s\n", i, deviceProperties.deviceName, PhysicalDeviceTypeString(deviceProperties.deviceType).c_str());
+	}
+
+	VkPhysicalDevice physicalDevice = physicalDevices[dp.selectedPhysicalDeviceIndex];
+	LOG("selected physical device: %d\n", dp.selectedPhysicalDeviceIndex);
+
+	return physicalDevice;
+}
+
+void CheckDeviceFeatures()
+{
+	auto& dp = GetDeviceProperties();
+
+	int num = sizeof(dp.deviceFeatures) / sizeof(VkBool32);
+	auto enable = reinterpret_cast<VkBool32*>(&dp.enabledDeviceFeatures);
+	auto available = reinterpret_cast<VkBool32*>(&dp.deviceFeatures);
+	for (int i = 0; i < num; i++) {
+		if (*(enable + i) == VK_TRUE) {
+			if (*(available + i) != VK_TRUE) {
+				LOG("device feature not support: %d", i);
+				assert(false);
+			}
+		}
+	}
+}
+
+void ConfigExtensions(VkPhysicalDevice physicalDevice)
+{
+	auto& dp = GetDeviceProperties();
+
+	uint32_t extensionsCount = 0;
+	VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionsCount, nullptr));
+	assert(extensionsCount > 0);
+	LOG("available device extensions ( %d ):", extensionsCount);
+
+	dp.availableDeviceExtensions.resize(extensionsCount);
+	VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionsCount, dp.availableDeviceExtensions.data()));
+
+	for (size_t i = 0; i < dp.enabledDeviceExtensions.size(); ++i) {
+		if (!CheckExtensionAvailability(dp.enabledDeviceExtensions[i], dp.availableDeviceExtensions)) {
+			LOG("device extension %s not support!\n", dp.enabledDeviceExtensions[i]);
+			assert(false);
+		}
+	}
+}
+
+void ConfigQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
+{
+	auto& dp = GetDeviceProperties();
+
+	uint32_t queueFamiliesCount;
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamiliesCount, nullptr);
+	assert(queueFamiliesCount > 0);
+	LOG("available queue families ( %d ):\n", queueFamiliesCount);
+
+	dp.queueFamilyProperties.resize(queueFamiliesCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamiliesCount, dp.queueFamilyProperties.data());
+	for (size_t i = 0; i < queueFamiliesCount; i++) {
+		LOG("queueFlags: %d, queueCount: %d, timestampValidBits: %d\n", dp.queueFamilyProperties[i].queueFlags, dp.queueFamilyProperties[i].queueCount, dp.queueFamilyProperties[i].timestampValidBits);
+	}
+
+	// 找到一个支持所有操作的万能QueueFamily
+
+	dp.selectedQueueFamilyIndex = UINT32_MAX;
+	for (uint32_t i = 0; i < static_cast<uint32_t>(dp.queueFamilyProperties.size()); i++)
+	{
+		if ((dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) &&
+			(dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) &&
+			(dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_TRANSFER_BIT))
+		{
+			VkBool32 supportPresent;
+			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &supportPresent);
+
+			if (supportPresent) {
+				dp.selectedQueueFamilyIndex = i;
+				break;
+			}
+		}
+	}
+
+	if (dp.selectedQueueFamilyIndex == UINT32_MAX) {
+		LOG("Could not find a matching queue family index");
+	}
+}
+
+VKDevice::VKDevice(VKInstance * vkInstance, VKSurface * vkSurface)
+{
+	auto& dp = GetDeviceProperties();
+
+	physicalDevice = SelectPhysicalDevice(vkInstance->instance);
+
+	vkGetPhysicalDeviceProperties(physicalDevice, &dp.deviceProperties);
+	vkGetPhysicalDeviceFeatures(physicalDevice, &dp.deviceFeatures);
+	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &dp.deviceMemoryProperties);
+
+	CheckDeviceFeatures();
+
+	ConfigExtensions(physicalDevice);
+
+	ConfigQueueFamilies(physicalDevice, vkSurface->surface);
+
+	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+	std::vector<float> queuePriorities = { 1.0f };
+
+	VkDeviceQueueCreateInfo queueInfo = {};
+	queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	queueInfo.pNext = NULL;
+	queueInfo.flags = 0;
+	queueInfo.queueFamilyIndex = dp.selectedQueueFamilyIndex;
+	queueInfo.queueCount = 1;
+	queueInfo.pQueuePriorities = queuePriorities.data();
+	queueCreateInfos.push_back(queueInfo);
+
+	VkDeviceCreateInfo deviceCreateInfo = {};
+	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	deviceCreateInfo.pNext = nullptr;
+	deviceCreateInfo.flags = 0;
+	deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+	deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
+	deviceCreateInfo.enabledLayerCount = 0;
+	deviceCreateInfo.ppEnabledLayerNames = nullptr;
+	deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(dp.enabledDeviceExtensions.size());
+	deviceCreateInfo.ppEnabledExtensionNames = dp.enabledDeviceExtensions.data();
+	deviceCreateInfo.pEnabledFeatures = &dp.enabledDeviceFeatures;
+
+	//// If a pNext(Chain) has been passed, we need to add it to the device creation info
+	//VkPhysicalDeviceFeatures2 physicalDeviceFeatures2{};
+	//if (pNextChain) {
+	//	physicalDeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+	//	physicalDeviceFeatures2.features = enabledFeatures;
+	//	physicalDeviceFeatures2.pNext = pNextChain;
+	//	deviceCreateInfo.pEnabledFeatures = nullptr;
+	//	deviceCreateInfo.pNext = &physicalDeviceFeatures2;
+	//}
+
+	VK_CHECK_RESULT(vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device));
+
+	vkGetDeviceQueue(device, dp.selectedQueueFamilyIndex, 0, &queue);
+}
+
+VKDevice::~VKDevice()
+{
+	if (device != VK_NULL_HANDLE) {
+		vkDestroyDevice(device, nullptr);
+		device = VK_NULL_HANDLE;
+	}
+}

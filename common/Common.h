@@ -54,19 +54,6 @@ namespace global
 	extern uint32_t windowWidth;
 	extern uint32_t windowHeight;
 
-	// Vulkan Instance
-	extern std::string applicationName;
-	extern uint32_t applicationVersion;
-	extern std::string engineName;
-	extern uint32_t engineVersion;
-	extern uint32_t apiVersion;
-	extern std::vector<const char*> enabledInstanceLayers;
-	extern std::vector<const char*> enabledInstanceExtensions;
-
-	// Vulkan Device
-	extern VkPhysicalDeviceFeatures enabledDeviceFeatures;
-	extern std::vector<const char*> enabledDeviceExtensions;
-
 	// Frame
 	extern uint32_t frameResourcesCount;
 

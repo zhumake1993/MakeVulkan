@@ -121,7 +121,19 @@ void VulkanCommandBuffer::UploadVKImage(VKImage* image, void * data, VkDeviceSiz
 
 	End();
 
-	m_VulkanDevice->Submit(this);
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = nullptr;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = nullptr;
+	submitInfo.pWaitDstStageMask = nullptr;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &m_CommandBuffer;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = nullptr;
+	VK_CHECK_RESULT(vkQueueSubmit(m_Queue, 1, &submitInfo, VK_NULL_HANDLE));
+
+	//m_VulkanDevice->Submit(this);
 
 	m_VulkanDevice->WaitIdle();
 }

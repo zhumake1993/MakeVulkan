@@ -16,22 +16,22 @@ public:
 	void Init();
 
 	// Device
-	void WaitIdle();
+	void DeviceWaitIdle();
 	uint32_t GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties);
-	VkFormat GetDepthFormat();
+	VkFormat GetSupportedDepthFormat();
 	void QueueSubmit(VkSubmitInfo& submitInfo, VulkanFence* fence);
 
 	// SwapChain
-	void AcquireNextImage(VulkanSemaphore* vulkanSemaphore);
-	void QueuePresent(VulkanSemaphore* vulkanSemaphore);
-	VkImageView GetSwapChainCurrImageView();
+	uint32_t AcquireNextImage(VulkanSemaphore* vulkanSemaphore);
+	void QueuePresent(VulkanSemaphore* vulkanSemaphore, uint32_t imageIndex);
+	VkImageView GetSwapChainImageView(uint32_t imageIndex);
 	uint32_t GetSwapChainWidth();
 	uint32_t GetSwapChainHeight();
 	VkFormat GetSwapChainFormat();
 
 	// Command
-	VulkanCommandPool* CreateVulkanCommandPool();
-	VulkanCommandBuffer* CreateVulkanCommandBuffer(VulkanCommandPool* vulkanCommandPool);
+	VKCommandPool* CreateVKCommandPool();
+	VKCommandBuffer* CreateVKCommandBuffer(VKCommandPool* vkCommandPool);
 
 	// Semaphore
 	VulkanSemaphore* CreateVulkanSemaphore();
@@ -62,17 +62,15 @@ private:
 
 private:
 
-	VulkanInstance* m_VulkanInstance;
-	VulkanSurface* m_VulkanSurface;
-	VulkanDevice* m_VulkanDevice;
-	VulkanSwapChain* m_VulkanSwapChain;
+	VKInstance* m_VKInstance;
+	VKSurface* m_VKSurface;
+	VKDevice* m_VKDevice;
+	VKSwapChain* m_VKSwapChain;
 
-	VulkanCommandPool* m_VulkanCommandPool;
-	VulkanCommandBuffer* m_UploadVulkanCommandBuffer;
+	VKCommandPool* m_VKCommandPool;
+	VKCommandBuffer* m_UploadVKCommandBuffer;
 	const uint32_t m_StagingBufferSize = 10000000;
 	VulkanBuffer* m_StagingBuffer;
-
-	VkFormat m_DepthFormat;
 
 	DescriptorSetMgr* m_DescriptorSetMgr;
 };

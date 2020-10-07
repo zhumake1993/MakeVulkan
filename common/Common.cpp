@@ -22,15 +22,6 @@ namespace global
 	uint32_t windowWidth = 1280;
 	uint32_t windowHeight = 720;
 
-	// Vulkan Instance
-	std::string applicationName = "Application Name";
-	uint32_t applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-	std::string engineName = "Engine Name";
-	uint32_t engineVersion = VK_MAKE_VERSION(1, 0, 0);
-	uint32_t apiVersion = VK_API_VERSION_1_0;
-	std::vector<const char*> enabledInstanceLayers;
-	std::vector<const char*> enabledInstanceExtensions;
-
 	// Vulkan Device
 	VkPhysicalDeviceFeatures enabledDeviceFeatures = {};
 	std::vector<const char*> enabledDeviceExtensions;

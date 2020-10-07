@@ -1,12 +1,14 @@
 #include "VulkanDriver.h"
 
-#include "VulkanInstance.h"
-#include "VulkanSurface.h"
-#include "VulkanDevice.h"
-#include "VulkanSwapChain.h"
+#include "DeviceProperties.h"
 
-#include "VulkanCommandPool.h"
-#include "VulkanCommandBuffer.h"
+#include "VKInstance.h"
+#include "VKSurface.h"
+#include "VKDevice.h"
+#include "VKSwapChain.h"
+
+#include "VKCommandPool.h"
+#include "VKCommandBuffer.h"
 
 #include "VulkanSemaphore.h"
 #include "VulkanFence.h"
@@ -58,122 +60,210 @@ void VulkanDriver::CleanUp()
 {
 	RELEASE(m_DescriptorSetMgr);
 
-	RELEASE(m_UploadVulkanCommandBuffer);
-	RELEASE(m_VulkanCommandPool);
+	RELEASE(m_UploadVKCommandBuffer);
+	RELEASE(m_VKCommandPool);
 	RELEASE(m_StagingBuffer);
 
-	RELEASE(m_VulkanSwapChain);
-	RELEASE(m_VulkanDevice);
-	RELEASE(m_VulkanSurface);
-	RELEASE(m_VulkanInstance);
+	RELEASE(m_VKSwapChain);
+	RELEASE(m_VKDevice);
+	RELEASE(m_VKSurface);
+	RELEASE(m_VKInstance);
 }
 
 void VulkanDriver::Init()
 {
-	m_VulkanInstance = new VulkanInstance();
+	m_VKInstance = new VKInstance();
 
 #if defined(_WIN32)
-	m_VulkanSurface = new VulkanSurface(m_VulkanInstance, global::windowInstance, global::windowHandle);
+	m_VKSurface = new VKSurface(m_VKInstance, global::windowInstance, global::windowHandle);
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	m_VulkanSurface = new VulkanSurface(m_VulkanInstance, androidApp->window);
+	m_VKSurface = new VKSurface(m_VKInstance, androidApp->window);
 #endif
 
-	m_VulkanDevice = new VulkanDevice(m_VulkanInstance, m_VulkanSurface);
-	m_VulkanSwapChain = new VulkanSwapChain(m_VulkanDevice, m_VulkanSurface);
+	m_VKDevice = new VKDevice(m_VKInstance, m_VKSurface);
+	m_VKSwapChain = new VKSwapChain(m_VKDevice, m_VKSurface);
 
-	m_VulkanCommandPool = CreateVulkanCommandPool();
-	m_UploadVulkanCommandBuffer = CreateVulkanCommandBuffer(m_VulkanCommandPool);
+	m_VKCommandPool = CreateVKCommandPool();
+	m_UploadVKCommandBuffer = CreateVKCommandBuffer(m_VKCommandPool);
 	m_StagingBuffer = CreateVulkanBuffer(m_StagingBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 	m_StagingBuffer->Map();
 
-	m_DepthFormat = m_VulkanDevice->GetSupportedDepthFormat();
-
-	m_DescriptorSetMgr = new DescriptorSetMgr(m_VulkanDevice->m_LogicalDevice);
+	m_DescriptorSetMgr = new DescriptorSetMgr(m_VKDevice->device);
 }
 
-void VulkanDriver::WaitIdle()
+void VulkanDriver::DeviceWaitIdle()
 {
-	m_VulkanDevice->WaitIdle();
+	vkDeviceWaitIdle(m_VKDevice->device);
 }
 
 uint32_t VulkanDriver::GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties)
 {
-	return m_VulkanDevice->GetMemoryTypeIndex(typeBits, properties);
+	auto& dp = GetDeviceProperties();
+
+	for (uint32_t i = 0; i < dp.deviceMemoryProperties.memoryTypeCount; i++)
+	{
+		if ((typeBits & 1) == 1)
+		{
+			if ((dp.deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+			{
+				return i;
+			}
+		}
+		typeBits >>= 1;
+	}
+
+	LOG("Could not find a matching memory type");
+	assert(false);
+	return 0;
 }
 
-VkFormat VulkanDriver::GetDepthFormat()
+VkFormat VulkanDriver::GetSupportedDepthFormat()
 {
-	return m_DepthFormat;
+	// Since all depth formats may be optional, we need to find a suitable depth format to use
+	// Start with the highest precision packed format
+	std::vector<VkFormat> depthFormats = {
+		VK_FORMAT_D32_SFLOAT_S8_UINT,
+		VK_FORMAT_D32_SFLOAT,
+		VK_FORMAT_D24_UNORM_S8_UINT,
+		VK_FORMAT_D16_UNORM_S8_UINT,
+		VK_FORMAT_D16_UNORM
+	};
+
+	for (auto& format : depthFormats)
+	{
+		VkFormatProperties formatProps;
+		vkGetPhysicalDeviceFormatProperties(m_VKDevice->physicalDevice, format, &formatProps);
+		// Format must support depth stencil attachment for optimal tiling
+		if (formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+		{
+			return format;
+		}
+	}
+
+	LOG("Can not find supported depth format");
+	return VK_FORMAT_UNDEFINED;
 }
 
 void VulkanDriver::QueueSubmit(VkSubmitInfo & submitInfo, VulkanFence * fence)
 {
-	VK_CHECK_RESULT(vkQueueSubmit(m_VulkanDevice->m_Queue, 1, &submitInfo, fence->m_Fence));
+	VK_CHECK_RESULT(vkQueueSubmit(m_VKDevice->queue, 1, &submitInfo, fence->m_Fence));
 }
 
-void VulkanDriver::AcquireNextImage(VulkanSemaphore * vulkanSemaphore)
+uint32_t VulkanDriver::AcquireNextImage(VulkanSemaphore * vulkanSemaphore)
 {
-	m_VulkanSwapChain->AcquireNextImage(vulkanSemaphore);
+	uint32_t imageIndex;
+	VkResult result = vkAcquireNextImageKHR(m_VKDevice->device, m_VKSwapChain->swapChain, UINT64_MAX, vulkanSemaphore->m_Semaphore, VK_NULL_HANDLE, &imageIndex);
+
+	switch (result) {
+	case VK_SUCCESS:
+	case VK_SUBOPTIMAL_KHR:
+		break;
+	case VK_ERROR_OUT_OF_DATE_KHR:
+		LOG("recreate swapchain\n");
+		RELEASE(m_VKSwapChain);
+		m_VKSwapChain = new VKSwapChain(m_VKDevice, m_VKSurface);
+		break;
+	default:
+		LOG("Problem occurred during swap chain image acquisition!\n");
+		assert(false);
+	}
+
+	return imageIndex;
 }
 
-void VulkanDriver::QueuePresent(VulkanSemaphore * vulkanSemaphore)
+void VulkanDriver::QueuePresent(VulkanSemaphore * vulkanSemaphore, uint32_t imageIndex)
 {
-	m_VulkanSwapChain->QueuePresent(vulkanSemaphore);
+	VkPresentInfoKHR presentInfo = {};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.pNext = NULL;
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = &vulkanSemaphore->m_Semaphore;
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = &m_VKSwapChain->swapChain;
+	presentInfo.pImageIndices = &imageIndex;
+	presentInfo.pResults = nullptr;
+
+	VkResult result = vkQueuePresentKHR(m_VKDevice->queue, &presentInfo);
+
+	switch (result) {
+	case VK_SUCCESS:
+	case VK_SUBOPTIMAL_KHR:
+		break;
+	case VK_ERROR_OUT_OF_DATE_KHR:
+		LOG("recreate swapchain\n");
+		RELEASE(m_VKSwapChain);
+		m_VKSwapChain = new VKSwapChain(m_VKDevice, m_VKSurface);
+		break;
+	default:
+		LOG("Problem occurred during image presentation!\n");
+		assert(false);
+	}
 }
 
-VkImageView VulkanDriver::GetSwapChainCurrImageView()
+VkImageView VulkanDriver::GetSwapChainImageView(uint32_t imageIndex)
 {
-	return m_VulkanSwapChain->GetCurrImageView();
+	return m_VKSwapChain->swapChainImageViews[imageIndex];
 }
 
 uint32_t VulkanDriver::GetSwapChainWidth()
 {
-	return m_VulkanSwapChain->m_Extent.width;
+	return m_VKSwapChain->extent.width;
 }
 
 uint32_t VulkanDriver::GetSwapChainHeight()
 {
-	return m_VulkanSwapChain->m_Extent.height;
+	return m_VKSwapChain->extent.height;
 }
 
 VkFormat VulkanDriver::GetSwapChainFormat()
 {
-	return m_VulkanSwapChain->GetFormat();
+	return m_VKSwapChain->format.format;
 }
 
-VulkanCommandPool * VulkanDriver::CreateVulkanCommandPool()
+VKCommandPool * VulkanDriver::CreateVKCommandPool()
 {
-	return new VulkanCommandPool(m_VulkanDevice, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, m_VulkanDevice->m_SelectedQueueFamilyIndex);;
+	auto& dp = GetDeviceProperties();
+
+	return new VKCommandPool(m_VKDevice, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, dp.selectedQueueFamilyIndex);;
 }
 
-VulkanCommandBuffer * VulkanDriver::CreateVulkanCommandBuffer(VulkanCommandPool * vulkanCommandPool)
+VKCommandBuffer * VulkanDriver::CreateVKCommandBuffer(VKCommandPool * vkCommandPool)
 {
-	return vulkanCommandPool->AllocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
+	cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	cmdBufferAllocInfo.pNext = nullptr;
+	cmdBufferAllocInfo.commandPool = vkCommandPool->commandPool;
+	cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	cmdBufferAllocInfo.commandBufferCount = 1;
+
+	VKCommandBuffer* vkCommandBuffer = new VKCommandBuffer(m_VKDevice, vkCommandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	VK_CHECK_RESULT(vkAllocateCommandBuffers(m_VKDevice->device, &cmdBufferAllocInfo, &vkCommandBuffer->commandBuffer));
+	return vkCommandBuffer;
 }
 
 VulkanSemaphore * VulkanDriver::CreateVulkanSemaphore()
 {
-	return new VulkanSemaphore(m_VulkanDevice);
+	return new VulkanSemaphore(m_VKDevice->device);
 }
 
 VulkanFence * VulkanDriver::CreateVulkanFence(bool signaled)
 {
-	return new VulkanFence(m_VulkanDevice, signaled);
+	return new VulkanFence(m_VKDevice->device, signaled);
 }
 
 VulkanBuffer * VulkanDriver::CreateVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty)
 {
-	return new VulkanBuffer(m_VulkanDevice, size, usage, memoryProperty);
+	return new VulkanBuffer(m_VKDevice->device, size, usage, memoryProperty);
 }
 
 VKImage * VulkanDriver::CreateVKImage(VkImageCreateInfo& imageCI, VkImageViewCreateInfo& viewCI)
 {
-	return new VKImage(m_VulkanDevice->m_LogicalDevice, imageCI, viewCI);
+	return new VKImage(m_VKDevice->device, imageCI, viewCI);
 }
 
 VKSampler * VulkanDriver::CreateVKSampler(VkSamplerCreateInfo & ci)
 {
-	return new VKSampler(m_VulkanDevice->m_LogicalDevice, ci);
+	return new VKSampler(m_VKDevice->device, ci);
 }
 
 void VulkanDriver::UploadVulkanBuffer(VulkanBuffer * vertexBuffer, void * data, VkDeviceSize size)
@@ -193,25 +283,25 @@ DescriptorSetMgr& VulkanDriver::GetDescriptorSetMgr()
 
 VulkanShaderModule * VulkanDriver::CreateVulkanShaderModule(const std::string & filename)
 {
-	return new VulkanShaderModule(m_VulkanDevice, filename);
+	return new VulkanShaderModule(m_VKDevice->device, filename);
 }
 
 VKPipelineLayout * VulkanDriver::CreateVKPipelineLayout(VkDescriptorSetLayout layout, VkShaderStageFlags pcStage, uint32_t pcSize)
 {
-	return new VKPipelineLayout(m_VulkanDevice->m_LogicalDevice, layout, pcStage, pcSize);
+	return new VKPipelineLayout(m_VKDevice->device, layout, pcStage, pcSize);
 }
 
 VulkanPipeline * VulkanDriver::CreateVulkanPipeline(PipelineCI & pipelineCI)
 {
-	return new VulkanPipeline(m_VulkanDevice, pipelineCI);;
+	return new VulkanPipeline(m_VKDevice->device, pipelineCI);;
 }
 
 VulkanRenderPass * VulkanDriver::CreateVulkanRenderPass(VkFormat colorFormat, VkFormat depthFormat)
 {
-	return new VulkanRenderPass(m_VulkanDevice, colorFormat, depthFormat);
+	return new VulkanRenderPass(m_VKDevice->device, colorFormat, depthFormat);
 }
 
 VulkanFramebuffer* VulkanDriver::CreateFramebuffer(VulkanRenderPass* vulkanRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height)
 {
-	return new VulkanFramebuffer(m_VulkanDevice, vulkanRenderPass, color, depth, width, height);
+	return new VulkanFramebuffer(m_VKDevice->device, vulkanRenderPass, color, depth, width, height);
 }

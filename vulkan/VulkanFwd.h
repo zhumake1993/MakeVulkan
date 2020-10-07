@@ -1,11 +1,12 @@
 #pragma once
 
-class VulkanInstance;
-class VulkanSurface;
-class VulkanDevice;
-class VulkanSwapChain;
-class VulkanCommandPool;
-class VulkanCommandBuffer;
+class VKInstance;
+class VKSurface;
+class VKDevice;
+class VKSwapChain;
+
+class VKCommandPool;
+class VKCommandBuffer;
 class VulkanSemaphore;
 class VulkanFence;
 class VulkanFramebuffer;

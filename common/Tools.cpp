@@ -40,20 +40,6 @@ std::string VulkanErrorToString(VkResult errorCode) {
 	}
 }
 
-std::string PhysicalDeviceTypeString(VkPhysicalDeviceType type)
-{
-	switch (type)
-	{
-#define STR(r) case VK_PHYSICAL_DEVICE_TYPE_##r: return #r
-		STR(OTHER);
-		STR(INTEGRATED_GPU);
-		STR(DISCRETE_GPU);
-		STR(VIRTUAL_GPU);
-#undef STR
-	default: return "UNKNOWN_DEVICE_TYPE";
-	}
-}
-
 bool CheckExtensionAvailability(const char *extensionName, const std::vector<VkExtensionProperties> &availableExtensions) {
 	for (size_t i = 0; i < availableExtensions.size(); ++i) {
 		if (strcmp(availableExtensions[i].extensionName, extensionName) == 0) {

@@ -33,9 +33,6 @@
 std::string VulkanErrorToString(VkResult errorCode);
 
 //
-std::string PhysicalDeviceTypeString(VkPhysicalDeviceType type);
-
-//
 bool CheckExtensionAvailability(const char *extensionName, const std::vector<VkExtensionProperties> &availableExtensions);
 
 //
