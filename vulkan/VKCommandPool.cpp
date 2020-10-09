@@ -23,6 +23,4 @@ VKCommandPool::~VKCommandPool()
 		vkDestroyCommandPool(device, commandPool, nullptr);
 		commandPool = VK_NULL_HANDLE;
 	}
-
-	device = VK_NULL_HANDLE;
 }

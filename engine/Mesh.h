@@ -2,7 +2,7 @@
 
 #include "Common.h"
 
-class VulkanBuffer;
+struct VKBuffer;
 
 enum VertexChannel {
 	kVertexPosition,
@@ -31,8 +31,8 @@ public:
 	void UploadToGPU();
 
 	std::vector<VkFormat> GetVertexFormats();
-	VulkanBuffer* GetVertexBuffer();
-	VulkanBuffer* GetIndexBuffer();
+	VKBuffer* GetVertexBuffer();
+	VKBuffer* GetIndexBuffer();
 	uint32_t GetIndexCount();
 
 private:
@@ -50,6 +50,6 @@ private:
 	std::vector<float> m_Vertices;
 	std::vector<uint32_t> m_Indices;
 
-	VulkanBuffer* m_VertexBuffer;
-	VulkanBuffer* m_IndexBuffer;
+	VKBuffer* m_VertexBuffer;
+	VKBuffer* m_IndexBuffer;
 };

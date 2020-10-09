@@ -7,7 +7,7 @@
 
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
 
-VKSurfacce::VKSurfacce(VKInstance* vkInstance, HINSTANCE windowInstance, HWND windowHandle) :
+VKSurface::VKSurface(VKInstance* vkInstance, HINSTANCE windowInstance, HWND windowHandle) :
 	instance(vkInstance->instance)
 {
 	VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
@@ -22,7 +22,7 @@ VKSurfacce::VKSurfacce(VKInstance* vkInstance, HINSTANCE windowInstance, HWND wi
 
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
 
-VKSurfacce::VKSurfacce(VKInstance* vkInstance, ANativeWindow* window) :
+VKSurface::VKSurface(VKInstance* vkInstance, ANativeWindow* window) :
 	instance(vkInstance->instance)
 {
 	VkAndroidSurfaceCreateInfoKHR surfaceCreateInfo = {};
@@ -36,12 +36,10 @@ VKSurfacce::VKSurfacce(VKInstance* vkInstance, ANativeWindow* window) :
 
 #endif
 
-VKSurfacce::~VKSurfacce()
+VKSurface::~VKSurface()
 {
 	if (instance != VK_NULL_HANDLE && surface != VK_NULL_HANDLE) {
 		vkDestroySurfaceKHR(instance, surface, nullptr);
 		surface = VK_NULL_HANDLE;
 	}
-
-	instance = VK_NULL_HANDLE;
 }

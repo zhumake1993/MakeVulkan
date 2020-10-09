@@ -2,16 +2,16 @@
 #include "Tools.h"
 #include "VulkanDriver.h"
 
-#include "VulkanBuffer.h"
+#include "VKBuffer.h"
 #include "VKImage.h"
 #include "VKSampler.h"
 
-#include "VulkanShaderModule.h"
+#include "VKShaderModule.h"
 #include "VKPipelineLayout.h"
-#include "VulkanPipeline.h"
-#include "VulkanRenderPass.h"
+#include "VKPipeline.h"
+#include "VKRenderPass.h"
 
-#include "VulkanCommandBuffer.h"
+#include "VKCommandBuffer.h"
 
 #include "InputManager.h"
 
@@ -50,13 +50,13 @@ Imgui::Imgui()
 	// Vertex buffer
 
 	VkDeviceSize vertexBufferSize = m_MaxVertexCount * sizeof(ImDrawVert);
-	m_VertexBuffer = driver.CreateVulkanBuffer(vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	m_VertexBuffer = driver.CreateVKBuffer(vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 	m_VertexBuffer->Map();
 
 	// Index buffer
 
 	VkDeviceSize indexBufferSize = m_MaxIndexCount * sizeof(ImDrawIdx);
-	m_IndexBuffer = driver.CreateVulkanBuffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	m_IndexBuffer = driver.CreateVKBuffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 	m_IndexBuffer->Map();
 
 	// DescriptorSet
@@ -71,7 +71,7 @@ Imgui::Imgui()
 
 	DesUpdateInfos infos(1);
 	infos[0].binding = 0;
-	infos[0].info.image = { m_Sampler->GetSampler(), m_FontImage->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+	infos[0].info.image = { m_Sampler->sampler, m_FontImage->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 	descriptorSetMgr.UpdateDescriptorSet(m_DescriptorSet, infos);
 
 	// pipeline
@@ -80,19 +80,19 @@ Imgui::Imgui()
 
 	m_PipelineLayout = driver.CreateVKPipelineLayout(descriptorSetLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 4);
 
-	m_RenderPass = driver.CreateVulkanRenderPass(driver.GetSwapChainFormat(), driver.GetDepthFormat());
+	m_RenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat(), driver.GetSupportedDepthFormat());
 
-	VulkanShaderModule* shaderVert = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/imgui/shader.vert.spv");
-	VulkanShaderModule* shaderFrag = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/imgui/shader.frag.spv");
+	VKShaderModule* shaderVert = driver.CreateVKShaderModule(global::AssetPath + "shaders/imgui/shader.vert.spv");
+	VKShaderModule* shaderFrag = driver.CreateVKShaderModule(global::AssetPath + "shaders/imgui/shader.frag.spv");
 
-	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = shaderVert->m_ShaderModule;
-	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = shaderFrag->m_ShaderModule;
+	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = shaderVert->shaderModule;
+	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = shaderFrag->shaderModule;
 
 	std::vector<VkFormat> formats = { VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R8G8B8A8_UNORM };
 	pipelineCI.SetVertexInputState(formats);
 
-	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->GetLayout();
-	pipelineCI.pipelineCreateInfo.renderPass = m_RenderPass->m_RenderPass;
+	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->pipelineLayout;
+	pipelineCI.pipelineCreateInfo.renderPass = m_RenderPass->renderPass;
 
 	pipelineCI.rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_NONE;
 	pipelineCI.rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
@@ -109,7 +109,7 @@ Imgui::Imgui()
 	pipelineCI.depthStencilStateCreateInfo.depthTestEnable = VK_FALSE;
 	pipelineCI.depthStencilStateCreateInfo.depthWriteEnable = VK_FALSE;
 
-	m_VulkanPipeline = driver.CreateVulkanPipeline(pipelineCI);
+	m_VulkanPipeline = driver.CreateVKPipeline(pipelineCI);
 
 	RELEASE(shaderVert);
 	RELEASE(shaderFrag);
@@ -172,7 +172,7 @@ void Imgui::Tick()
 	m_IndexBuffer->Flush();
 }
 
-void Imgui::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
+void Imgui::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 {
 	ImDrawData* imDrawData = ImGui::GetDrawData();
 
@@ -182,10 +182,10 @@ void Imgui::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 
 	ImGuiIO& io = ImGui::GetIO();
 
-	vulkanCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline);
-	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, m_DescriptorSet);
-	vulkanCommandBuffer->BindVertexBuffer(0, m_VertexBuffer);
-	vulkanCommandBuffer->BindIndexBuffer(m_IndexBuffer, VK_INDEX_TYPE_UINT16);
+	vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline);
+	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, m_DescriptorSet);
+	vkCommandBuffer->BindVertexBuffer(0, m_VertexBuffer);
+	vkCommandBuffer->BindIndexBuffer(m_IndexBuffer, VK_INDEX_TYPE_UINT16);
 
 	VkViewport viewport = {};
 	viewport.x = 0.0f;
@@ -194,7 +194,7 @@ void Imgui::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	viewport.height = static_cast<float>(global::windowHeight);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
-	vulkanCommandBuffer->SetViewport(viewport);
+	vkCommandBuffer->SetViewport(viewport);
 
 	// pushConstant
 	float scale[2];
@@ -203,8 +203,8 @@ void Imgui::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 	float translate[2];
 	translate[0] = -1.0f - imDrawData->DisplayPos.x * scale[0];
 	translate[1] = -1.0f - imDrawData->DisplayPos.y * scale[1];
-	vulkanCommandBuffer->PushConstants(m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 0, sizeof(float) * 2, scale);
-	vulkanCommandBuffer->PushConstants(m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 2, sizeof(float) * 2, translate);
+	vkCommandBuffer->PushConstants(m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 0, sizeof(float) * 2, scale);
+	vkCommandBuffer->PushConstants(m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 2, sizeof(float) * 2, translate);
 
 	int vertexOffset = 0;
 	int indexOffset = 0;
@@ -222,9 +222,9 @@ void Imgui::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 			scissorRect.extent.width = (uint32_t)(pcmd->ClipRect.z - pcmd->ClipRect.x);
 			scissorRect.extent.height = (uint32_t)(pcmd->ClipRect.w - pcmd->ClipRect.y);
 
-			vulkanCommandBuffer->SetScissor(scissorRect);
+			vkCommandBuffer->SetScissor(scissorRect);
 
-			vulkanCommandBuffer->DrawIndexed(pcmd->ElemCount, 1, pcmd->IdxOffset + indexOffset, pcmd->VtxOffset + vertexOffset, 0);
+			vkCommandBuffer->DrawIndexed(pcmd->ElemCount, 1, pcmd->IdxOffset + indexOffset, pcmd->VtxOffset + vertexOffset, 0);
 		}
 		vertexOffset += cmd_list->VtxBuffer.Size;
 		indexOffset += cmd_list->IdxBuffer.Size;

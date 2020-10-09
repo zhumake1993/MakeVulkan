@@ -1,9 +1,12 @@
-#include "VulkanRenderPass.h"
-#include "VulkanDevice.h"
+#include "VKRenderPass.h"
+
+#include "DeviceProperties.h"
 #include "Tools.h"
 
-VulkanRenderPass::VulkanRenderPass(VulkanDevice * vulkanDevice, VkFormat colorFormat, VkFormat depthFormat):
-	m_VulkanDevice(vulkanDevice)
+#include "VKDevice.h"
+
+VKRenderPass::VKRenderPass(VKDevice * vkDevice, VkFormat colorFormat, VkFormat depthFormat) :
+	device(vkDevice->device)
 {
 	std::vector<VkAttachmentDescription> attachmentDescriptions(2);
 
@@ -76,13 +79,13 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice * vulkanDevice, VkFormat colorFo
 	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 	renderPassInfo.pDependencies = dependencies.data();
 
-	VK_CHECK_RESULT(vkCreateRenderPass(m_VulkanDevice->m_LogicalDevice, &renderPassInfo, nullptr, &m_RenderPass));
+	VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass));
 }
 
-VulkanRenderPass::~VulkanRenderPass()
+VKRenderPass::~VKRenderPass()
 {
-	if (m_VulkanDevice && m_VulkanDevice->m_LogicalDevice != VK_NULL_HANDLE && m_RenderPass != VK_NULL_HANDLE) {
-		vkDestroyRenderPass(m_VulkanDevice->m_LogicalDevice, m_RenderPass, nullptr);
-		m_RenderPass = VK_NULL_HANDLE;
+	if (device != VK_NULL_HANDLE && renderPass != VK_NULL_HANDLE) {
+		vkDestroyRenderPass(device, renderPass, nullptr);
+		renderPass = VK_NULL_HANDLE;
 	}
 }

@@ -2,22 +2,22 @@
 
 #include "VulkanDriver.h"
 
-#include "VulkanCommandPool.h"
+#include "VKCommandPool.h"
 
-#include "VulkanCommandBuffer.h"
-#include "VulkanSemaphore.h"
-#include "VulkanFence.h"
-#include "VulkanFramebuffer.h"
+#include "VKCommandBuffer.h"
+#include "VKSemaphore.h"
+#include "VKFence.h"
+#include "VKFramebuffer.h"
 
-#include "VulkanBuffer.h"
+#include "VKBuffer.h"
 #include "VKImage.h"
 
 #include "DescriptorSetMgr.h"
 
-#include "VulkanShaderModule.h"
+#include "VKShaderModule.h"
 #include "VKPipelineLayout.h"
-#include "VulkanPipeline.h"
-#include "VulkanRenderPass.h"
+#include "VKPipeline.h"
+#include "VKRenderPass.h"
 
 #include "Tools.h"
 #include "InputManager.h"
@@ -33,7 +33,7 @@ Engine::~Engine()
 void Engine::CleanUpEngine()
 {
 	auto& driver = GetVulkanDriver();
-	driver.WaitIdle();
+	driver.DeviceWaitIdle();
 
 	// 先清理子类
 
@@ -56,7 +56,7 @@ void Engine::CleanUpEngine()
 		RELEASE(m_ObjectUniformBuffers[i]);
 	}
 
-	RELEASE(m_VulkanCommandPool);
+	RELEASE(m_VKCommandPool);
 
 	// 最后清理Driver
 
@@ -73,24 +73,24 @@ void Engine::InitEngine()
 
 	// 再初始化父类
 
-	m_VulkanCommandPool = driver.CreateVulkanCommandPool();
+	m_VKCommandPool = driver.CreateVKCommandPool();
 
 	m_FrameResources.resize(global::frameResourcesCount);
 	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
 		m_FrameResources[i].framebuffer = nullptr; // 动态创建framebuffer
-		m_FrameResources[i].commandBuffer = m_VulkanCommandPool->AllocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-		m_FrameResources[i].imageAvailableSemaphore = driver.CreateVulkanSemaphore();
-		m_FrameResources[i].finishedRenderingSemaphore = driver.CreateVulkanSemaphore();
-		m_FrameResources[i].fence = driver.CreateVulkanFence(true);
+		m_FrameResources[i].commandBuffer = driver.CreateVKCommandBuffer(m_VKCommandPool);
+		m_FrameResources[i].imageAvailableSemaphore = driver.CreateVKSemaphore();
+		m_FrameResources[i].finishedRenderingSemaphore = driver.CreateVKSemaphore();
+		m_FrameResources[i].fence = driver.CreateVKFence(true);
 	}
 
 	m_PassUniformBuffers.resize(global::frameResourcesCount);
 	m_ObjectUniformBuffers.resize(global::frameResourcesCount);
 	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
-		m_PassUniformBuffers[i] = driver.CreateVulkanBuffer(sizeof(PassUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		m_PassUniformBuffers[i] = driver.CreateVKBuffer(sizeof(PassUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		m_PassUniformBuffers[i]->Map();
 
-		m_ObjectUniformBuffers[i] = driver.CreateVulkanBuffer(sizeof(ObjectUniform) * m_ObjectUniformNum, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		m_ObjectUniformBuffers[i] = driver.CreateVKBuffer(sizeof(ObjectUniform) * m_ObjectUniformNum, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		m_ObjectUniformBuffers[i]->Map();
 	}
 
@@ -136,13 +136,13 @@ void Engine::TickEngine()
 	Present();
 }
 
-VulkanFramebuffer * Engine::RebuildFramebuffer(VulkanRenderPass * vulkanRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height)
+VKFramebuffer * Engine::RebuildFramebuffer(VKRenderPass * vkRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height)
 {
 	auto& driver = GetVulkanDriver();
 
 	RELEASE(m_FrameResources[m_CurrFrameIndex].framebuffer);
 
-	m_FrameResources[m_CurrFrameIndex].framebuffer = driver.CreateFramebuffer(vulkanRenderPass, color, depth, width, height);
+	m_FrameResources[m_CurrFrameIndex].framebuffer = driver.CreateVKFramebuffer(vkRenderPass, color, depth, width, height);
 
 	return m_FrameResources[m_CurrFrameIndex].framebuffer;
 }
@@ -157,12 +157,12 @@ void Engine::UpdateObjectUniformBuffer(void * data, uint32_t index)
 	m_ObjectUniformBuffers[m_CurrFrameIndex]->Copy(data, sizeof(ObjectUniform) * index, sizeof(ObjectUniform));
 }
 
-VulkanBuffer * Engine::GetCurrPassUniformBuffer()
+VKBuffer * Engine::GetCurrPassUniformBuffer()
 {
 	return m_PassUniformBuffers[m_CurrFrameIndex];
 }
 
-VulkanBuffer * Engine::GetCurrObjectUniformBuffer()
+VKBuffer * Engine::GetCurrObjectUniformBuffer()
 {
 	return m_ObjectUniformBuffers[m_CurrFrameIndex];
 }
@@ -190,12 +190,12 @@ void Engine::Present()
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.pNext = nullptr;
 	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = &currFrameResource.imageAvailableSemaphore->m_Semaphore;
+	submitInfo.pWaitSemaphores = &currFrameResource.imageAvailableSemaphore->semaphore;
 	submitInfo.pWaitDstStageMask = &waitDstStageMask;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &currFrameResource.commandBuffer->m_CommandBuffer;
+	submitInfo.pCommandBuffers = &currFrameResource.commandBuffer->commandBuffer;
 	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = &currFrameResource.finishedRenderingSemaphore->m_Semaphore;
+	submitInfo.pSignalSemaphores = &currFrameResource.finishedRenderingSemaphore->semaphore;
 
 	driver.QueueSubmit(submitInfo, currFrameResource.fence);
 	driver.QueuePresent(currFrameResource.finishedRenderingSemaphore);

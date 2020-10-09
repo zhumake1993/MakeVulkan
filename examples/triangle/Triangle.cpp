@@ -1,22 +1,24 @@
 #include "Triangle.h"
 
+#include "Tools.h"
+
 #include "DeviceProperties.h"
 
 #include "VulkanDriver.h"
 
-#include "VulkanBuffer.h"
+#include "VKBuffer.h"
 #include "VKImage.h"
 #include "VKSampler.h"
 
 #include "DescriptorSetMgr.h"
 
-#include "VulkanShaderModule.h"
+#include "VKShaderModule.h"
 #include "VKPipelineLayout.h"
-#include "VulkanPipeline.h"
+#include "VKPipeline.h"
 
-#include "VulkanRenderPass.h"
+#include "VKRenderPass.h"
 
-#include "VulkanCommandBuffer.h"
+#include "VKCommandBuffer.h"
 
 #include "Application.h"
 #include "Camera.h"
@@ -74,7 +76,7 @@ void Triangle::CleanUp()
 	RELEASE(m_TexPipeline);
 	RELEASE(m_ColorPipeline);
 	RELEASE(m_PipelineLayout);
-	RELEASE(m_VulkanRenderPass);
+	RELEASE(m_VKRenderPass);
 
 	RELEASE(m_Camera);
 
@@ -87,7 +89,7 @@ void Triangle::Init()
 
 	auto& driver = GetVulkanDriver();
 
-	m_DepthFormat = driver.GetDepthFormat();
+	m_DepthFormat = driver.GetSupportedDepthFormat();
 
 	VKImageCI(imageCI);
 	imageCI.format = m_DepthFormat;
@@ -197,7 +199,7 @@ void Triangle::TickUI()
 	//}
 }
 
-void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
+void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 {
 	auto& driver = GetVulkanDriver();
 
@@ -225,53 +227,53 @@ void Triangle::RecordCommandBuffer(VulkanCommandBuffer * vulkanCommandBuffer)
 
 	DesUpdateInfos infos(3);
 	infos[0].binding = 0;
-	infos[0].info.buffer = { GetCurrPassUniformBuffer()->m_Buffer,0,sizeof(PassUniform) };
+	infos[0].info.buffer = { GetCurrPassUniformBuffer()->buffer,0,sizeof(PassUniform) };
 	infos[1].binding = 1;
-	infos[1].info.buffer = { GetCurrObjectUniformBuffer()->m_Buffer,0,sizeof(ObjectUniform) };
+	infos[1].info.buffer = { GetCurrObjectUniformBuffer()->buffer,0,sizeof(ObjectUniform) };
 	infos[2].binding = 2;
-	infos[2].info.image = { m_Sampler->GetSampler(),m_Image->GetView(),VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+	infos[2].info.image = { m_Sampler->sampler, m_Image->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 	descriptorSetMgr.UpdateDescriptorSet(descriptorSet, infos);
 
 	//
 
-	VulkanFramebuffer* vulkanFramebuffer = RebuildFramebuffer(m_VulkanRenderPass, driver.GetSwapChainCurrImageView(), m_DepthImage->GetView(), driver.GetSwapChainWidth(), driver.GetSwapChainHeight());
+	VKFramebuffer* vkFramebuffer = RebuildFramebuffer(m_VKRenderPass, driver.GetSwapChainCurrImageView(), m_DepthImage->view, driver.GetSwapChainWidth(), driver.GetSwapChainHeight());
 
-	vulkanCommandBuffer->Begin();
+	vkCommandBuffer->Begin();
 
-	vulkanCommandBuffer->BeginRenderPass(m_VulkanRenderPass, vulkanFramebuffer, area, clearValues);
+	vkCommandBuffer->BeginRenderPass(m_VKRenderPass, vkFramebuffer, area, clearValues);
 
-	vulkanCommandBuffer->SetViewport(viewport);
+	vkCommandBuffer->SetViewport(viewport);
 
-	vulkanCommandBuffer->SetScissor(area);
+	vkCommandBuffer->SetScissor(area);
 
-	vulkanCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_TexPipeline);
+	vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_TexPipeline);
 
 	// home
-	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 0 * sizeof(ObjectUniform));
-	vulkanCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
-	vulkanCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
-	vulkanCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
+	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 0 * sizeof(ObjectUniform));
+	vkCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
+	vkCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+	vkCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
 
-	vulkanCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_ColorPipeline);
+	vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_ColorPipeline);
 
 	// cube1
-	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 1 * sizeof(ObjectUniform));
-	vulkanCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
-	vulkanCommandBuffer->BindIndexBuffer(m_CubeNode1->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
-	vulkanCommandBuffer->DrawIndexed(m_CubeNode1->GetIndexCount(), 1, 0, 0, 1);
+	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 1 * sizeof(ObjectUniform));
+	vkCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
+	vkCommandBuffer->BindIndexBuffer(m_CubeNode1->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+	vkCommandBuffer->DrawIndexed(m_CubeNode1->GetIndexCount(), 1, 0, 0, 1);
 
 	// cube2
-	vulkanCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 2 * sizeof(ObjectUniform));
-	vulkanCommandBuffer->BindVertexBuffer(0, m_CubeNode2->GetVertexBuffer());
-	vulkanCommandBuffer->BindIndexBuffer(m_CubeNode2->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
-	vulkanCommandBuffer->DrawIndexed(m_CubeNode2->GetIndexCount(), 1, 0, 0, 1);
+	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 2 * sizeof(ObjectUniform));
+	vkCommandBuffer->BindVertexBuffer(0, m_CubeNode2->GetVertexBuffer());
+	vkCommandBuffer->BindIndexBuffer(m_CubeNode2->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+	vkCommandBuffer->DrawIndexed(m_CubeNode2->GetIndexCount(), 1, 0, 0, 1);
 
 	// todo
-	m_Imgui->RecordCommandBuffer(vulkanCommandBuffer);
+	m_Imgui->RecordCommandBuffer(vkCommandBuffer);
 
-	vulkanCommandBuffer->EndRenderPass();
+	vkCommandBuffer->EndRenderPass();
 
-	vulkanCommandBuffer->End();
+	vkCommandBuffer->End();
 }
 
 void Triangle::PrepareResources()
@@ -355,33 +357,33 @@ void Triangle::CreatePipeline()
 	auto& driver = GetVulkanDriver();
 
 	m_PipelineLayout = driver.CreateVKPipelineLayout(m_DescriptorSetLayout);
-	m_VulkanRenderPass = driver.CreateVulkanRenderPass(driver.GetSwapChainFormat(), m_DepthFormat);
+	m_VKRenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat(), m_DepthFormat);
 
-	VulkanShaderModule* shaderModuleVert = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/triangle/shader.vert.spv");
-	VulkanShaderModule* shaderModuleFrag = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/triangle/shader.frag.spv");
+	VKShaderModule* shaderModuleVert = driver.CreateVKShaderModule(global::AssetPath + "shaders/triangle/shader.vert.spv");
+	VKShaderModule* shaderModuleFrag = driver.CreateVKShaderModule(global::AssetPath + "shaders/triangle/shader.frag.spv");
 
-	VulkanShaderModule* simpleColorVert = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/triangle/simpleColor.vert.spv");
-	VulkanShaderModule* simpleColorFrag = driver.CreateVulkanShaderModule(global::AssetPath + "shaders/triangle/simpleColor.frag.spv");
+	VKShaderModule* simpleColorVert = driver.CreateVKShaderModule(global::AssetPath + "shaders/triangle/simpleColor.vert.spv");
+	VKShaderModule* simpleColorFrag = driver.CreateVKShaderModule(global::AssetPath + "shaders/triangle/simpleColor.frag.spv");
 
 	PipelineCI pipelineCI;
-	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->GetLayout();
-	pipelineCI.pipelineCreateInfo.renderPass = m_VulkanRenderPass->m_RenderPass;
+	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->pipelineLayout;
+	pipelineCI.pipelineCreateInfo.renderPass = m_VKRenderPass->renderPass;
 
 	// tex
 
-	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = shaderModuleVert->m_ShaderModule;
-	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = shaderModuleFrag->m_ShaderModule;
+	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = shaderModuleVert->shaderModule;
+	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = shaderModuleFrag->shaderModule;
 	pipelineCI.SetVertexInputState(m_Home->GetVertexFormats());
 
-	m_TexPipeline = driver.CreateVulkanPipeline(pipelineCI);
+	m_TexPipeline = driver.CreateVKPipeline(pipelineCI);
 
 	// color
 
-	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = simpleColorVert->m_ShaderModule;
-	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = simpleColorFrag->m_ShaderModule;
+	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = simpleColorVert->shaderModule;
+	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = simpleColorFrag->shaderModule;
 	pipelineCI.SetVertexInputState(m_Cube->GetVertexFormats());
 
-	m_ColorPipeline = driver.CreateVulkanPipeline(pipelineCI);
+	m_ColorPipeline = driver.CreateVKPipeline(pipelineCI);
 
 	RELEASE(shaderModuleVert);
 	RELEASE(shaderModuleFrag);

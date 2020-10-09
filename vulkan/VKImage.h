@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.h"
+#include "NonCopyable.h"
 
 #define VKImageCI(ci) \
 VkImageCreateInfo ci = {}; \
@@ -44,36 +45,25 @@ VkImageViewCreateInfo ci = {}; \
 	ci.subresourceRange.layerCount = 1; \
 }
 
-class VKImage
+struct VKDevice;
+
+struct VKImage : public NonCopyable
 {
-
-public:
-	VKImage(VkDevice device, VkImageCreateInfo& imageCI, VkImageViewCreateInfo& viewCI);
+	VKImage(VKDevice* vkDevice, VkImageCreateInfo& imageCI, VkImageViewCreateInfo& viewCI);
 	~VKImage();
-
-	VkImage GetImage();
-	VkDeviceMemory GetMemory();
-	VkImageView GetView();
 
 	uint32_t GetWidth();
 	uint32_t GetHeight();
 
-private:
-
-	//
-
-public:
-
-	//
+	VkImage image = VK_NULL_HANDLE;
+	VkImageView view = VK_NULL_HANDLE;
 
 private:
 
-	uint32_t m_Width;
-	uint32_t m_Height;
+	uint32_t width;
+	uint32_t height;
 
-	VkImage m_Image = VK_NULL_HANDLE;
-	VkDeviceMemory m_Memory = VK_NULL_HANDLE;
-	VkImageView m_View = VK_NULL_HANDLE;
+	VkDeviceMemory memory = VK_NULL_HANDLE;
 
-	VkDevice m_Device = VK_NULL_HANDLE;
+	VkDevice device = VK_NULL_HANDLE;
 };

@@ -3,7 +3,7 @@
 #include "Common.h"
 #include "NonCopyable.h"
 
-class VKDevice;
+struct VKDevice;
 
 struct VKCommandPool : public NonCopyable
 {

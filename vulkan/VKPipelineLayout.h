@@ -1,28 +1,18 @@
 #pragma once
 
 #include "Common.h"
+#include "NonCopyable.h"
 
-class VKPipelineLayout
+struct VKDevice;
+
+struct VKPipelineLayout : public NonCopyable
 {
-
-public:
-
-	VKPipelineLayout(VkDevice device, VkDescriptorSetLayout descriptorSetLayout, VkShaderStageFlags pcStage, uint32_t pcSize);
+	VKPipelineLayout(VKDevice* vkDevice, VkDescriptorSetLayout descriptorSetLayout, VkShaderStageFlags pcStage, uint32_t pcSize);
 	~VKPipelineLayout();
 
-	VkPipelineLayout GetLayout();
+	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 
 private:
 
-	//
-
-public:
-
-	//
-
-private:
-
-	VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
-
-	VkDevice m_Device = VK_NULL_HANDLE;
+	VkDevice device = VK_NULL_HANDLE;
 };

@@ -275,6 +275,4 @@ VKSwapChain::~VKSwapChain()
 		vkDestroySwapchainKHR(device, swapChain, nullptr);
 		swapChain = VK_NULL_HANDLE;
 	}
-
-	device == VK_NULL_HANDLE
 }

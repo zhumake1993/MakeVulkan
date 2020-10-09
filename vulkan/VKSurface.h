@@ -3,16 +3,16 @@
 #include "Common.h"
 #include "NonCopyable.h"
 
-class VKInstance;
+struct VKInstance;
 
-struct VKSurfacce : public NonCopyable
+struct VKSurface : public NonCopyable
 {
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
-	VKSurfacce(VKInstance* vkInstance, HINSTANCE windowInstance, HWND windowHandle);
+	VKSurface(VKInstance* vkInstance, HINSTANCE windowInstance, HWND windowHandle);
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	VKSurfacce(VKInstance* vkInstance, ANativeWindow* window);
+	VKSurface(VKInstance* vkInstance, ANativeWindow* window);
 #endif
-	~VKSurfacce();
+	~VKSurface();
 
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
 

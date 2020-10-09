@@ -13,7 +13,7 @@ public:
 
 	void Prepare(float deltaTime);
 	void Tick();
-	void RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer);
+	void RecordCommandBuffer(VKCommandBuffer* vkCommandBuffer);
 
 private:
 
@@ -30,12 +30,12 @@ private:
 
 	uint32_t m_MaxVertexCount = 65536;
 	uint32_t m_MaxIndexCount = 65536;
-	VulkanBuffer* m_VertexBuffer;
-	VulkanBuffer* m_IndexBuffer;
+	VKBuffer* m_VertexBuffer;
+	VKBuffer* m_IndexBuffer;
 
 	VkDescriptorSet m_DescriptorSet;
 	VKPipelineLayout* m_PipelineLayout;
-	VulkanPipeline* m_VulkanPipeline;
+	VKPipeline* m_VulkanPipeline;
 
-	VulkanRenderPass* m_RenderPass;
+	VKRenderPass* m_RenderPass;
 };

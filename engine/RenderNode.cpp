@@ -1,13 +1,13 @@
 #include "RenderNode.h"
 #include "Mesh.h"
-#include "VulkanBuffer.h"
+#include "VKBuffer.h"
 
-VulkanBuffer * RenderNode::GetVertexBuffer()
+VKBuffer * RenderNode::GetVertexBuffer()
 {
 	return m_Mesh->GetVertexBuffer();
 }
 
-VulkanBuffer * RenderNode::GetIndexBuffer()
+VKBuffer * RenderNode::GetIndexBuffer()
 {
 	return m_Mesh->GetIndexBuffer();
 }

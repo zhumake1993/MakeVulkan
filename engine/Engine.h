@@ -25,13 +25,13 @@ protected:
 	virtual void Init() = 0;
 	virtual void Tick(float deltaTime) = 0;
 	virtual void TickUI() = 0;
-	virtual void RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer) = 0;
+	virtual void RecordCommandBuffer(VKCommandBuffer* vkCommandBuffer) = 0;
 
-	VulkanFramebuffer* RebuildFramebuffer(VulkanRenderPass* vulkanRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height);
+	VKFramebuffer* RebuildFramebuffer(VKRenderPass* vkRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height);
 	void UpdatePassUniformBuffer(void* data);
 	void UpdateObjectUniformBuffer(void* data, uint32_t index);
-	VulkanBuffer* GetCurrPassUniformBuffer();
-	VulkanBuffer* GetCurrObjectUniformBuffer();
+	VKBuffer* GetCurrPassUniformBuffer();
+	VKBuffer* GetCurrObjectUniformBuffer();
 
 private:
 
@@ -45,11 +45,11 @@ protected:
 private:
 
 	struct FrameResource {
-		VulkanFramebuffer* framebuffer;
-		VulkanCommandBuffer* commandBuffer;
-		VulkanSemaphore* imageAvailableSemaphore;
-		VulkanSemaphore* finishedRenderingSemaphore;
-		VulkanFence* fence;
+		VKFramebuffer* framebuffer;
+		VKCommandBuffer* commandBuffer;
+		VKSemaphore* imageAvailableSemaphore;
+		VKSemaphore* finishedRenderingSemaphore;
+		VKFence* fence;
 
 		FrameResource() :
 			framebuffer(nullptr),
@@ -60,13 +60,13 @@ private:
 		}
 	};
 
-	VulkanCommandPool* m_VulkanCommandPool;
+	VKCommandPool* m_VKCommandPool;
 
 	size_t m_CurrFrameIndex = 0;
 	std::vector<FrameResource> m_FrameResources;
-	std::vector<VulkanBuffer*> m_PassUniformBuffers;
+	std::vector<VKBuffer*> m_PassUniformBuffers;
 	const uint32_t m_ObjectUniformNum = 100;
-	std::vector<VulkanBuffer*> m_ObjectUniformBuffers;
+	std::vector<VKBuffer*> m_ObjectUniformBuffers;
 
 	TimeMgr m_TimeMgr;
 };

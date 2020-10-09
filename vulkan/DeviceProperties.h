@@ -6,6 +6,7 @@
 struct DeviceProperties : public NonCopyable
 {
 	DeviceProperties();
+	~DeviceProperties();
 
 	void Log();
 
@@ -38,3 +39,4 @@ struct DeviceProperties : public NonCopyable
 };
 
 DeviceProperties& GetDeviceProperties();
+void ReleaseDeviceProperties();

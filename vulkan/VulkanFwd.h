@@ -1,24 +1,26 @@
 #pragma once
 
-class VKInstance;
-class VKSurface;
-class VKDevice;
-class VKSwapChain;
+struct VKInstance;
+struct VKSurface;
+struct VKDevice;
+struct VKSwapChain;
 
-class VKCommandPool;
-class VKCommandBuffer;
-class VulkanSemaphore;
-class VulkanFence;
-class VulkanFramebuffer;
-class VulkanRenderPass;
+struct VKCommandPool;
+struct VKCommandBuffer;
+
+struct VKSemaphore;
+struct VKFence;
+
+struct VKFramebuffer;
+struct VKRenderPass;
 
 // resource
-class VulkanBuffer;
-class VKImage;
-class VKSampler;
+struct VKBuffer;
+struct VKImage;
+struct VKSampler;
 
 // render state
-class VulkanShaderModule;
-class PipelineCI;
-class VKPipelineLayout;
-class VulkanPipeline;
+struct VKShaderModule;
+struct PipelineCI;
+struct VKPipelineLayout;
+struct VKPipeline;

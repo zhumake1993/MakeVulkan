@@ -1,9 +1,9 @@
-#include "VulkanPipeline.h"
-#include "VulkanDevice.h"
-#include "VulkanShaderModule.h"
-#include "VKPipelineLayout.h"
-#include "VulkanRenderPass.h"
+#include "VKPipeline.h"
+
+#include "DeviceProperties.h"
 #include "Tools.h"
+
+#include "VKDevice.h"
 
 uint32_t VkFormatToSize(VkFormat format) {
 	switch (format)
@@ -249,17 +249,17 @@ void PipelineCI::ConfigDynamicStateCreateInfo()
 	pipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
 }
 
-VulkanPipeline::VulkanPipeline(VulkanDevice * vulkanDevice, PipelineCI& pipelineCI) :
-	m_VulkanDevice(vulkanDevice)
+VKPipeline::VKPipeline(VKDevice * vkDevice, PipelineCI & pipelineCI) :
+	device(vkDevice->device)
 {
-	VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_VulkanDevice->m_LogicalDevice, m_PipelineCache, 1, &pipelineCI.pipelineCreateInfo, nullptr, &m_Pipeline));
+	VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCI.pipelineCreateInfo, nullptr, &pipeline));
 }
 
-VulkanPipeline::~VulkanPipeline()
+VKPipeline::~VKPipeline()
 {
-	if (m_VulkanDevice && m_VulkanDevice->m_LogicalDevice != VK_NULL_HANDLE && m_Pipeline != VK_NULL_HANDLE) {
-		vkDestroyPipeline(m_VulkanDevice->m_LogicalDevice, m_Pipeline, nullptr);
-		m_Pipeline = VK_NULL_HANDLE;
+	if (device != VK_NULL_HANDLE && pipeline != VK_NULL_HANDLE) {
+		vkDestroyPipeline(device, pipeline, nullptr);
+		pipeline = VK_NULL_HANDLE;
 	}
 
 	//vkDestroyPipelineCache

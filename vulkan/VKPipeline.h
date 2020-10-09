@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Common.h"
-#include "Tools.h"
+#include "NonCopyable.h"
 
-class VulkanShaderModule;
-class VulkanDevice;
-class VulkanPipelineLayout;
-class VulkanRenderPass;
+struct VKDevice;
+struct VKShaderModule;
+struct VKPipelineLayout;
+struct VKKRenderPass;
 
 enum VKShaderType
 {
@@ -15,10 +15,8 @@ enum VKShaderType
 	kVKShaderCount
 };
 
-class PipelineCI
+struct PipelineCI
 {
-
-public:
 
 	PipelineCI();
 
@@ -63,24 +61,15 @@ private:
 	void ConfigDynamicStateCreateInfo();
 };
 
-class VulkanPipeline
+struct VKPipeline : public NonCopyable
 {
+	VKPipeline(VKDevice* vkDevice, PipelineCI& pipelineCI);
+	~VKPipeline();
 
-public:
-
-	VulkanPipeline(VulkanDevice* vulkanDevice, PipelineCI& pipelineCI);
-	~VulkanPipeline();
-
-private:
-
-	//
-
-public:
-
-	VkPipeline m_Pipeline = VK_NULL_HANDLE;
-	VkPipelineCache m_PipelineCache = VK_NULL_HANDLE;
+	VkPipeline pipeline = VK_NULL_HANDLE;
 
 private:
 
-	VulkanDevice* m_VulkanDevice = nullptr;
+	VkPipelineCache pipelineCache = VK_NULL_HANDLE;
+	VkDevice device = VK_NULL_HANDLE;
 };

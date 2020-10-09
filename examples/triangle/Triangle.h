@@ -18,7 +18,7 @@ protected:
 	void Init() override;
 	void Tick(float deltaTime) override;
 	void TickUI() override;
-	void RecordCommandBuffer(VulkanCommandBuffer* vulkanCommandBuffer) override;
+	void RecordCommandBuffer(VKCommandBuffer* vkCommandBuffer) override;
 
 private:
 
@@ -45,10 +45,10 @@ private:
 	VkDescriptorSetLayout m_DescriptorSetLayout;
 
 	// Render Status
-	VulkanPipeline* m_TexPipeline;
-	VulkanPipeline* m_ColorPipeline;
+	VKPipeline* m_TexPipeline;
+	VKPipeline* m_ColorPipeline;
 	VKPipelineLayout* m_PipelineLayout;
-	VulkanRenderPass* m_VulkanRenderPass;
+	VKRenderPass* m_VKRenderPass;
 
 	// Uniform Buffer
 	PassUniform m_PassUniform;

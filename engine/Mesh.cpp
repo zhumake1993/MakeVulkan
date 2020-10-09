@@ -3,7 +3,7 @@
 #include "obj/tiny_obj_loader.h"
 #include <sstream>
 #include "VulkanDriver.h"
-#include "VulkanBuffer.h"
+#include "VKBuffer.h"
 
 VkFormat VertexChannelToVkFormat[kVertexChannelCount] = {
 	VK_FORMAT_R32G32B32_SFLOAT,
@@ -130,13 +130,13 @@ void Mesh::UploadToGPU()
 
 	// Vertex buffer
 	uint32_t vertexBufferSize = static_cast<uint32_t>(m_Vertices.size()) * sizeof(m_Vertices[0]);
-	m_VertexBuffer = driver.CreateVulkanBuffer(vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	driver.UploadVulkanBuffer(m_VertexBuffer, m_Vertices.data(), vertexBufferSize);
+	m_VertexBuffer = driver.CreateVKBuffer(vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	driver.UploadVKBuffer(m_VertexBuffer, m_Vertices.data(), vertexBufferSize);
 
 	// Index buffer
 	uint32_t indexBufferSize = static_cast<uint32_t>(m_Indices.size()) * sizeof(uint32_t);
-	m_IndexBuffer = driver.CreateVulkanBuffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	driver.UploadVulkanBuffer(m_IndexBuffer, m_Indices.data(), indexBufferSize);
+	m_IndexBuffer = driver.CreateVKBuffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	driver.UploadVKBuffer(m_IndexBuffer, m_Indices.data(), indexBufferSize);
 }
 
 std::vector<VkFormat> Mesh::GetVertexFormats()
@@ -152,12 +152,12 @@ std::vector<VkFormat> Mesh::GetVertexFormats()
 	return vertexFormats;
 }
 
-VulkanBuffer * Mesh::GetVertexBuffer()
+VKBuffer * Mesh::GetVertexBuffer()
 {
 	return m_VertexBuffer;
 }
 
-VulkanBuffer * Mesh::GetIndexBuffer()
+VKBuffer * Mesh::GetIndexBuffer()
 {
 	return m_IndexBuffer;
 }

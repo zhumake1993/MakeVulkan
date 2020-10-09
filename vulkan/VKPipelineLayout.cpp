@@ -1,8 +1,12 @@
 #include "VKPipelineLayout.h"
+
+#include "DeviceProperties.h"
 #include "Tools.h"
 
-VKPipelineLayout::VKPipelineLayout(VkDevice device, VkDescriptorSetLayout descriptorSetLayout, VkShaderStageFlags pcStage, uint32_t pcSize):
-	m_Device(device)
+#include "VKDevice.h"
+
+VKPipelineLayout::VKPipelineLayout(VKDevice* vkDevice, VkDescriptorSetLayout descriptorSetLayout, VkShaderStageFlags pcStage, uint32_t pcSize):
+	device(vkDevice->device)
 {
 	VkPushConstantRange pushConstantRange = {};
 	VkPipelineLayoutCreateInfo pipelineLayoutCI = {};
@@ -24,18 +28,13 @@ VKPipelineLayout::VKPipelineLayout(VkDevice device, VkDescriptorSetLayout descri
 		pipelineLayoutCI.pPushConstantRanges = nullptr;
 	}
 
-	VK_CHECK_RESULT(vkCreatePipelineLayout(m_Device, &pipelineLayoutCI, nullptr, &m_PipelineLayout));
+	VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutCI, nullptr, &pipelineLayout));
 }
 
 VKPipelineLayout::~VKPipelineLayout()
 {
-	if (m_Device != VK_NULL_HANDLE && m_PipelineLayout != VK_NULL_HANDLE) {
-		vkDestroyPipelineLayout(m_Device, m_PipelineLayout, nullptr);
-		m_PipelineLayout = VK_NULL_HANDLE;
+	if (device != VK_NULL_HANDLE && pipelineLayout != VK_NULL_HANDLE) {
+		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+		pipelineLayout = VK_NULL_HANDLE;
 	}
-}
-
-VkPipelineLayout VKPipelineLayout::GetLayout()
-{
-	return m_PipelineLayout;
 }

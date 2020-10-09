@@ -1,23 +1,22 @@
 #include "VKSampler.h"
+
+#include "DeviceProperties.h"
 #include "Tools.h"
 
-VKSampler::VKSampler(VkDevice device, VkSamplerCreateInfo & ci):
-	m_Device(device)
+#include "VKDevice.h"
+
+VKSampler::VKSampler(VKDevice* vkDevice, VkSamplerCreateInfo& ci) :
+	device(vkDevice->device)
 {
-	VK_CHECK_RESULT(vkCreateSampler(m_Device, &ci, nullptr, &m_Sampler));
+	VK_CHECK_RESULT(vkCreateSampler(device, &ci, nullptr, &sampler));
 }
 
 VKSampler::~VKSampler()
 {
-	if (m_Device != VK_NULL_HANDLE) {
-		if (m_Sampler != VK_NULL_HANDLE) {
-			vkDestroySampler(m_Device, m_Sampler, nullptr);
-			m_Sampler = VK_NULL_HANDLE;
+	if (device != VK_NULL_HANDLE) {
+		if (sampler != VK_NULL_HANDLE) {
+			vkDestroySampler(device, sampler, nullptr);
+			sampler = VK_NULL_HANDLE;
 		}
 	}
-}
-
-VkSampler VKSampler::GetSampler()
-{
-	return m_Sampler;
 }

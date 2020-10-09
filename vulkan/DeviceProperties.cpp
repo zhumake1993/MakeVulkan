@@ -1,16 +1,24 @@
 #include "DeviceProperties.h"
 #include "Tools.h"
 
-DeviceProperties* deviceProperties;
+DeviceProperties* deviceProperties = nullptr;
 
 DeviceProperties & GetDeviceProperties()
 {
+	if (!deviceProperties) {
+		deviceProperties = new DeviceProperties();
+	}
 	return *deviceProperties;
+}
+
+void ReleaseDeviceProperties()
+{
+	RELEASE(deviceProperties);
 }
 
 DeviceProperties::DeviceProperties()
 {
-	memset(this, 0, sizeof(DeviceProperties));
+	//memset(this, 0, sizeof(DeviceProperties));
 
 	// Instance
 	applicationName = "Application Name";
@@ -21,8 +29,17 @@ DeviceProperties::DeviceProperties()
 
 	// Device
 	selectedPhysicalDeviceIndex = 0; // 默认选择第一个物理设备
+	memset(&enabledDeviceFeatures, 0, sizeof(VkPhysicalDeviceFeatures));
 
 	// SwapChain
+}
+
+DeviceProperties::~DeviceProperties()
+{
+	availableInstanceLayers.clear();
+	availableInstanceExtensions.clear();
+	enabledInstanceLayers.clear();
+	enabledInstanceExtensions.clear();
 }
 
 void DeviceProperties::Log()
@@ -39,7 +56,7 @@ void DeviceProperties::Log()
 	}
 	LOG("\n");
 
-	for (size_t i = 0; i < availableInstanceExtensions.size; i++) {
+	for (size_t i = 0; i < availableInstanceExtensions.size(); i++) {
 		LOG(" %s", availableInstanceExtensions[i].extensionName);
 	}
 	LOG("\n");

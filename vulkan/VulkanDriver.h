@@ -19,12 +19,12 @@ public:
 	void DeviceWaitIdle();
 	uint32_t GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties);
 	VkFormat GetSupportedDepthFormat();
-	void QueueSubmit(VkSubmitInfo& submitInfo, VulkanFence* fence);
+	void QueueSubmit(VkSubmitInfo& submitInfo, VKFence* vkFence);
 
 	// SwapChain
-	uint32_t AcquireNextImage(VulkanSemaphore* vulkanSemaphore);
-	void QueuePresent(VulkanSemaphore* vulkanSemaphore, uint32_t imageIndex);
-	VkImageView GetSwapChainImageView(uint32_t imageIndex);
+	void AcquireNextImage(VKSemaphore* vkSemaphore);
+	void QueuePresent(VKSemaphore* vkSemaphore);
+	VkImageView GetSwapChainCurrImageView();
 	uint32_t GetSwapChainWidth();
 	uint32_t GetSwapChainHeight();
 	VkFormat GetSwapChainFormat();
@@ -34,27 +34,27 @@ public:
 	VKCommandBuffer* CreateVKCommandBuffer(VKCommandPool* vkCommandPool);
 
 	// Semaphore
-	VulkanSemaphore* CreateVulkanSemaphore();
-	VulkanFence* CreateVulkanFence(bool signaled);
+	VKSemaphore* CreateVKSemaphore();
+	VKFence* CreateVKFence(bool signaled);
 
 	// Resource
-	VulkanBuffer* CreateVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty);
+	VKBuffer* CreateVKBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty);
 	VKImage* CreateVKImage(VkImageCreateInfo& imageCI, VkImageViewCreateInfo& viewCI);
 	VKSampler* CreateVKSampler(VkSamplerCreateInfo& ci);
-	void UploadVulkanBuffer(VulkanBuffer* vertexBuffer, void* data, VkDeviceSize size);
+	void UploadVKBuffer(VKBuffer* vkBuffer, void* data, VkDeviceSize size);
 	void UploadVKImage(VKImage* image, void* data, VkDeviceSize size);
 
 	// DescriptorSetMgr
 	DescriptorSetMgr& GetDescriptorSetMgr();
 
 	// Render Status
-	VulkanShaderModule* CreateVulkanShaderModule(const std::string& filename);
+	VKShaderModule* CreateVKShaderModule(const std::string& filename);
 	VKPipelineLayout* CreateVKPipelineLayout(VkDescriptorSetLayout layout, VkShaderStageFlags pcStage = VK_SHADER_STAGE_VERTEX_BIT, uint32_t pcSize = 0);
-	VulkanPipeline* CreateVulkanPipeline(PipelineCI& pipelineCI);
-	VulkanRenderPass* CreateVulkanRenderPass(VkFormat colorFormat, VkFormat depthFormat);
+	VKPipeline* CreateVKPipeline(PipelineCI& pipelineCI);
+	VKRenderPass* CreateVKRenderPass(VkFormat colorFormat, VkFormat depthFormat);
 
 	// Framebuffer
-	VulkanFramebuffer* CreateFramebuffer(VulkanRenderPass* vulkanRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height);
+	VKFramebuffer* CreateVKFramebuffer(VKRenderPass* vkRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height);
 
 private:
 
@@ -70,9 +70,11 @@ private:
 	VKCommandPool* m_VKCommandPool;
 	VKCommandBuffer* m_UploadVKCommandBuffer;
 	const uint32_t m_StagingBufferSize = 10000000;
-	VulkanBuffer* m_StagingBuffer;
+	VKBuffer* m_StagingBuffer;
 
 	DescriptorSetMgr* m_DescriptorSetMgr;
+
+	uint32_t m_ImageIndex;
 };
 
 void CreateVulkanDriver();

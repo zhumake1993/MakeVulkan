@@ -3,7 +3,7 @@
 #include "Common.h"
 
 class Mesh;
-class VulkanBuffer;
+struct VKBuffer;
 
 class RenderNode 
 {
@@ -17,7 +17,7 @@ public:
 
 public:
 
-	VulkanBuffer* GetVertexBuffer();
-	VulkanBuffer* GetIndexBuffer();
+	VKBuffer* GetVertexBuffer();
+	VKBuffer* GetIndexBuffer();
 	uint32_t GetIndexCount();
 };

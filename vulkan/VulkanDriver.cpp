@@ -10,21 +10,20 @@
 #include "VKCommandPool.h"
 #include "VKCommandBuffer.h"
 
-#include "VulkanSemaphore.h"
-#include "VulkanFence.h"
+#include "VKSemaphore.h"
+#include "VKFence.h"
 
-#include "VulkanBuffer.h"
+#include "VKBuffer.h"
 #include "VKImage.h"
 #include "VKSampler.h"
 
 #include "DescriptorSetMgr.h"
 
-#include "VulkanShaderModule.h"
+#include "VKShaderModule.h"
 #include "VKPipelineLayout.h"
-#include "VulkanPipeline.h"
-#include "VulkanRenderPass.h"
-
-#include "VulkanFramebuffer.h"
+#include "VKPipeline.h"
+#include "VKRenderPass.h"
+#include "VKFramebuffer.h"
 
 #include "Tools.h"
 
@@ -58,6 +57,8 @@ VulkanDriver::~VulkanDriver()
 
 void VulkanDriver::CleanUp()
 {
+	ReleaseDeviceProperties();
+
 	RELEASE(m_DescriptorSetMgr);
 
 	RELEASE(m_UploadVKCommandBuffer);
@@ -85,7 +86,7 @@ void VulkanDriver::Init()
 
 	m_VKCommandPool = CreateVKCommandPool();
 	m_UploadVKCommandBuffer = CreateVKCommandBuffer(m_VKCommandPool);
-	m_StagingBuffer = CreateVulkanBuffer(m_StagingBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	m_StagingBuffer = CreateVKBuffer(m_StagingBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 	m_StagingBuffer->Map();
 
 	m_DescriptorSetMgr = new DescriptorSetMgr(m_VKDevice->device);
@@ -144,15 +145,14 @@ VkFormat VulkanDriver::GetSupportedDepthFormat()
 	return VK_FORMAT_UNDEFINED;
 }
 
-void VulkanDriver::QueueSubmit(VkSubmitInfo & submitInfo, VulkanFence * fence)
+void VulkanDriver::QueueSubmit(VkSubmitInfo & submitInfo, VKFence * vkFence)
 {
-	VK_CHECK_RESULT(vkQueueSubmit(m_VKDevice->queue, 1, &submitInfo, fence->m_Fence));
+	VK_CHECK_RESULT(vkQueueSubmit(m_VKDevice->queue, 1, &submitInfo, vkFence->fence));
 }
 
-uint32_t VulkanDriver::AcquireNextImage(VulkanSemaphore * vulkanSemaphore)
+void VulkanDriver::AcquireNextImage(VKSemaphore * vkSemaphore)
 {
-	uint32_t imageIndex;
-	VkResult result = vkAcquireNextImageKHR(m_VKDevice->device, m_VKSwapChain->swapChain, UINT64_MAX, vulkanSemaphore->m_Semaphore, VK_NULL_HANDLE, &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(m_VKDevice->device, m_VKSwapChain->swapChain, UINT64_MAX, vkSemaphore->semaphore, VK_NULL_HANDLE, &m_ImageIndex);
 
 	switch (result) {
 	case VK_SUCCESS:
@@ -167,20 +167,18 @@ uint32_t VulkanDriver::AcquireNextImage(VulkanSemaphore * vulkanSemaphore)
 		LOG("Problem occurred during swap chain image acquisition!\n");
 		assert(false);
 	}
-
-	return imageIndex;
 }
 
-void VulkanDriver::QueuePresent(VulkanSemaphore * vulkanSemaphore, uint32_t imageIndex)
+void VulkanDriver::QueuePresent(VKSemaphore * vkSemaphore)
 {
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfo.pNext = NULL;
 	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = &vulkanSemaphore->m_Semaphore;
+	presentInfo.pWaitSemaphores = &vkSemaphore->semaphore;
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = &m_VKSwapChain->swapChain;
-	presentInfo.pImageIndices = &imageIndex;
+	presentInfo.pImageIndices = &m_ImageIndex;
 	presentInfo.pResults = nullptr;
 
 	VkResult result = vkQueuePresentKHR(m_VKDevice->queue, &presentInfo);
@@ -200,9 +198,9 @@ void VulkanDriver::QueuePresent(VulkanSemaphore * vulkanSemaphore, uint32_t imag
 	}
 }
 
-VkImageView VulkanDriver::GetSwapChainImageView(uint32_t imageIndex)
+VkImageView VulkanDriver::GetSwapChainCurrImageView()
 {
-	return m_VKSwapChain->swapChainImageViews[imageIndex];
+	return m_VKSwapChain->swapChainImageViews[m_ImageIndex];
 }
 
 uint32_t VulkanDriver::GetSwapChainWidth()
@@ -229,51 +227,94 @@ VKCommandPool * VulkanDriver::CreateVKCommandPool()
 
 VKCommandBuffer * VulkanDriver::CreateVKCommandBuffer(VKCommandPool * vkCommandPool)
 {
-	VkCommandBufferAllocateInfo cmdBufferAllocInfo = {};
-	cmdBufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	cmdBufferAllocInfo.pNext = nullptr;
-	cmdBufferAllocInfo.commandPool = vkCommandPool->commandPool;
-	cmdBufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	cmdBufferAllocInfo.commandBufferCount = 1;
-
-	VKCommandBuffer* vkCommandBuffer = new VKCommandBuffer(m_VKDevice, vkCommandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-	VK_CHECK_RESULT(vkAllocateCommandBuffers(m_VKDevice->device, &cmdBufferAllocInfo, &vkCommandBuffer->commandBuffer));
-	return vkCommandBuffer;
+	return new VKCommandBuffer(m_VKDevice, vkCommandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 }
 
-VulkanSemaphore * VulkanDriver::CreateVulkanSemaphore()
+VKSemaphore * VulkanDriver::CreateVKSemaphore()
 {
-	return new VulkanSemaphore(m_VKDevice->device);
+	return new VKSemaphore(m_VKDevice);
 }
 
-VulkanFence * VulkanDriver::CreateVulkanFence(bool signaled)
+VKFence * VulkanDriver::CreateVKFence(bool signaled)
 {
-	return new VulkanFence(m_VKDevice->device, signaled);
+	return new VKFence(m_VKDevice, signaled);
 }
 
-VulkanBuffer * VulkanDriver::CreateVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty)
+VKBuffer * VulkanDriver::CreateVKBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty)
 {
-	return new VulkanBuffer(m_VKDevice->device, size, usage, memoryProperty);
+	return new VKBuffer(m_VKDevice, size, usage, memoryProperty);
 }
 
 VKImage * VulkanDriver::CreateVKImage(VkImageCreateInfo& imageCI, VkImageViewCreateInfo& viewCI)
 {
-	return new VKImage(m_VKDevice->device, imageCI, viewCI);
+	return new VKImage(m_VKDevice, imageCI, viewCI);
 }
 
 VKSampler * VulkanDriver::CreateVKSampler(VkSamplerCreateInfo & ci)
 {
-	return new VKSampler(m_VKDevice->device, ci);
+	return new VKSampler(m_VKDevice, ci);
 }
 
-void VulkanDriver::UploadVulkanBuffer(VulkanBuffer * vertexBuffer, void * data, VkDeviceSize size)
+void VulkanDriver::UploadVKBuffer(VKBuffer * vkBuffer, void * data, VkDeviceSize size)
 {
-	m_UploadVulkanCommandBuffer->UploadVulkanBuffer(vertexBuffer, data, size, m_StagingBuffer);
+	m_StagingBuffer->Copy(data, 0, size);
+
+	m_UploadVKCommandBuffer->Begin();
+
+	VkBufferCopy bufferCopyInfo = {};
+	bufferCopyInfo.srcOffset = 0;
+	bufferCopyInfo.dstOffset = 0;
+	bufferCopyInfo.size = size;
+	m_UploadVKCommandBuffer->CopyVKBuffer(m_StagingBuffer, vkBuffer, bufferCopyInfo);
+
+	// 经测试发现没有这一步也没问题（许多教程也的确没有这一步）
+	// 个人认为是因为调用了WaitIdle
+	//vkCmdPipelineBarrier
+
+	m_UploadVKCommandBuffer->End();
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = nullptr;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = nullptr;
+	submitInfo.pWaitDstStageMask = nullptr;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &m_UploadVKCommandBuffer->commandBuffer;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = nullptr;
+	VK_CHECK_RESULT(vkQueueSubmit(m_VKDevice->queue, 1, &submitInfo, VK_NULL_HANDLE));
+
+	DeviceWaitIdle();
 }
 
 void VulkanDriver::UploadVKImage(VKImage * image, void * data, VkDeviceSize size)
 {
-	m_UploadVulkanCommandBuffer->UploadVKImage(image, data, size, m_StagingBuffer);
+	m_StagingBuffer->Copy(data, 0, size);
+
+	m_UploadVKCommandBuffer->Begin();
+
+	m_UploadVKCommandBuffer->ImageMemoryBarrier(image, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+	m_UploadVKCommandBuffer->CopyVKBufferToVKImage(m_StagingBuffer, image);
+
+	m_UploadVKCommandBuffer->ImageMemoryBarrier(image, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+	m_UploadVKCommandBuffer->End();
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = nullptr;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = nullptr;
+	submitInfo.pWaitDstStageMask = nullptr;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &m_UploadVKCommandBuffer->commandBuffer;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = nullptr;
+	VK_CHECK_RESULT(vkQueueSubmit(m_VKDevice->queue, 1, &submitInfo, VK_NULL_HANDLE));
+
+	DeviceWaitIdle();
 }
 
 DescriptorSetMgr& VulkanDriver::GetDescriptorSetMgr()
@@ -281,27 +322,27 @@ DescriptorSetMgr& VulkanDriver::GetDescriptorSetMgr()
 	return *m_DescriptorSetMgr;
 }
 
-VulkanShaderModule * VulkanDriver::CreateVulkanShaderModule(const std::string & filename)
+VKShaderModule * VulkanDriver::CreateVKShaderModule(const std::string & filename)
 {
-	return new VulkanShaderModule(m_VKDevice->device, filename);
+	return new VKShaderModule(m_VKDevice, filename);
 }
 
 VKPipelineLayout * VulkanDriver::CreateVKPipelineLayout(VkDescriptorSetLayout layout, VkShaderStageFlags pcStage, uint32_t pcSize)
 {
-	return new VKPipelineLayout(m_VKDevice->device, layout, pcStage, pcSize);
+	return new VKPipelineLayout(m_VKDevice, layout, pcStage, pcSize);
 }
 
-VulkanPipeline * VulkanDriver::CreateVulkanPipeline(PipelineCI & pipelineCI)
+VKPipeline * VulkanDriver::CreateVKPipeline(PipelineCI & pipelineCI)
 {
-	return new VulkanPipeline(m_VKDevice->device, pipelineCI);;
+	return new VKPipeline(m_VKDevice, pipelineCI);;
 }
 
-VulkanRenderPass * VulkanDriver::CreateVulkanRenderPass(VkFormat colorFormat, VkFormat depthFormat)
+VKRenderPass * VulkanDriver::CreateVKRenderPass(VkFormat colorFormat, VkFormat depthFormat)
 {
-	return new VulkanRenderPass(m_VKDevice->device, colorFormat, depthFormat);
+	return new VKRenderPass(m_VKDevice, colorFormat, depthFormat);
 }
 
-VulkanFramebuffer* VulkanDriver::CreateFramebuffer(VulkanRenderPass* vulkanRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height)
+VKFramebuffer* VulkanDriver::CreateVKFramebuffer(VKRenderPass* vkRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height)
 {
-	return new VulkanFramebuffer(m_VKDevice->device, vulkanRenderPass, color, depth, width, height);
+	return new VKFramebuffer(m_VKDevice, vkRenderPass, color, depth, width, height);
 }

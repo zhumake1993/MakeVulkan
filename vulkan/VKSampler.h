@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.h"
+#include "NonCopyable.h"
 
 #define VKSamplerCI(ci) \
 VkSamplerCreateInfo ci = {}; \
@@ -25,26 +26,16 @@ VkSamplerCreateInfo ci = {}; \
 	ci.unnormalizedCoordinates = VK_FALSE; \
 }
 
-class VKSampler
-{
+struct VKDevice;
 
-public:
-	VKSampler(VkDevice device, VkSamplerCreateInfo& ci);
+struct VKSampler : public NonCopyable
+{
+	VKSampler(VKDevice* vkDevice, VkSamplerCreateInfo& ci);
 	~VKSampler();
 
-	VkSampler GetSampler();
+	VkSampler sampler = VK_NULL_HANDLE;
 
 private:
 
-	//
-
-public:
-
-	//
-
-private:
-
-	VkSampler m_Sampler = VK_NULL_HANDLE;
-
-	VkDevice m_Device = VK_NULL_HANDLE;
+	VkDevice device = VK_NULL_HANDLE;
 };

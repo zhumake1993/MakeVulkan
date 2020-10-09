@@ -3,8 +3,8 @@
 #include "Common.h"
 #include "NonCopyable.h"
 
-class VKInstance;
-class VKSurface;
+struct VKInstance;
+struct VKSurface;
 
 struct VKDevice : public NonCopyable
 {
