@@ -201,7 +201,7 @@ void Application::SetupWindow()
 	SetForegroundWindow(global::windowHandle);
 	SetFocus(global::windowHandle);
 
-	LOG("SetupWindow success");
+	LOG("SetupWindow success\n");
 }
 
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)

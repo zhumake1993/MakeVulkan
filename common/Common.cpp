@@ -22,10 +22,6 @@ namespace global
 	uint32_t windowWidth = 1280;
 	uint32_t windowHeight = 720;
 
-	// Vulkan Device
-	VkPhysicalDeviceFeatures enabledDeviceFeatures = {};
-	std::vector<const char*> enabledDeviceExtensions;
-
 	// Frame
 	uint32_t frameResourcesCount = 3;
 

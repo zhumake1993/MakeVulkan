@@ -9,10 +9,6 @@ void ConfigInstanceLayers()
 
 	uint32_t layersCount = 0;
 	VK_CHECK_RESULT(vkEnumerateInstanceLayerProperties(&layersCount, nullptr));
-	// 移动设备上layersCount有可能是0
-	//assert(layersCount > 0);
-	LOG("available instance layers ( %d ):", layersCount);
-
 	dp.availableInstanceLayers.resize(layersCount);
 	VK_CHECK_RESULT(vkEnumerateInstanceLayerProperties(&layersCount, dp.availableInstanceLayers.data()));
 
@@ -30,9 +26,6 @@ void ConfigInstanceExtensions()
 
 	uint32_t extensionsCount = 0;
 	VK_CHECK_RESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, nullptr));
-	assert(extensionsCount > 0);
-	LOG("available instance extensions ( %d ):", extensionsCount);
-
 	dp.availableInstanceExtensions.resize(extensionsCount);
 	VK_CHECK_RESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, dp.availableInstanceExtensions.data()));
 

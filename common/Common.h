@@ -36,7 +36,7 @@ extern android_app* androidApp;
 
 // 使用Visual Leak Detector（仅限PC）
 #ifdef _WIN32
-#define USE_VISUAL_LEAK_DETECTOR 1
+#define USE_VISUAL_LEAK_DETECTOR 0
 #endif
 
 namespace global

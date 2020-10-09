@@ -155,48 +155,18 @@ void Triangle::Tick(float deltaTime)
 
 void Triangle::TickUI()
 {
-	//ImGui::Text("Hello from another window!");
-	bool show_demo_window = true;
-	ImGui::ShowDemoWindow(&show_demo_window);
-	//ImGui::Text("Hello from another window!");
+	//bool show_demo_window = true;
+	//ImGui::ShowDemoWindow(&show_demo_window);
 
-	// example
-	//// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-	//if (show_demo_window)
-	//	ImGui::ShowDemoWindow(&show_demo_window);
+	auto& dp = GetDeviceProperties();
 
-	//// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-	//{
-	//	static float f = 0.0f;
-	//	static int counter = 0;
+	float fps = m_TimeMgr.GetFPS();
 
-	//	ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-	//	ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-	//	ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-	//	ImGui::Checkbox("Another Window", &show_another_window);
-
-	//	ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-	//	ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-	//	if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-	//		counter++;
-	//	ImGui::SameLine();
-	//	ImGui::Text("counter = %d", counter);
-
-	//	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	//	ImGui::End();
-	//}
-
-	//// 3. Show another simple window.
-	//if (show_another_window)
-	//{
-	//	ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-	//	ImGui::Text("Hello from another window!");
-	//	if (ImGui::Button("Close Me"))
-	//		show_another_window = false;
-	//	ImGui::End();
-	//}
+	ImGui::SetNextWindowPos(ImVec2(10, 10));
+	ImGui::Begin("MakeVulkan", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+	ImGui::TextUnformatted(dp.deviceProperties.deviceName);
+	ImGui::Text("%.2f ms/frame (%.2f fps)", (1000.0f / fps), fps);
+	ImGui::End();
 }
 
 void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
@@ -229,7 +199,7 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 	infos[0].binding = 0;
 	infos[0].info.buffer = { GetCurrPassUniformBuffer()->buffer,0,sizeof(PassUniform) };
 	infos[1].binding = 1;
-	infos[1].info.buffer = { GetCurrObjectUniformBuffer()->buffer,0,sizeof(ObjectUniform) };
+	infos[1].info.buffer = { GetCurrObjectUniformBuffer()->buffer,0,VK_WHOLE_SIZE };
 	infos[2].binding = 2;
 	infos[2].info.image = { m_Sampler->sampler, m_Image->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 	descriptorSetMgr.UpdateDescriptorSet(descriptorSet, infos);
@@ -249,7 +219,7 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 	vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_TexPipeline);
 
 	// home
-	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 0 * sizeof(ObjectUniform));
+	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 0 * GetUBODynamicAlignment());
 	vkCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
 	vkCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 	vkCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
@@ -257,13 +227,13 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 	vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_ColorPipeline);
 
 	// cube1
-	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 1 * sizeof(ObjectUniform));
+	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 1 * GetUBODynamicAlignment());
 	vkCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
 	vkCommandBuffer->BindIndexBuffer(m_CubeNode1->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 	vkCommandBuffer->DrawIndexed(m_CubeNode1->GetIndexCount(), 1, 0, 0, 1);
 
 	// cube2
-	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 2 * sizeof(ObjectUniform));
+	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 2 * GetUBODynamicAlignment());
 	vkCommandBuffer->BindVertexBuffer(0, m_CubeNode2->GetVertexBuffer());
 	vkCommandBuffer->BindIndexBuffer(m_CubeNode2->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 	vkCommandBuffer->DrawIndexed(m_CubeNode2->GetIndexCount(), 1, 0, 0, 1);

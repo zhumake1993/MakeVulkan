@@ -6,39 +6,20 @@
 #include "VKInstance.h"
 #include "VKSurface.h"
 
-std::string PhysicalDeviceTypeString(VkPhysicalDeviceType type)
-{
-	switch (type)
-	{
-#define STR(r) case VK_PHYSICAL_DEVICE_TYPE_##r: return #r
-		STR(OTHER);
-		STR(INTEGRATED_GPU);
-		STR(DISCRETE_GPU);
-		STR(VIRTUAL_GPU);
-#undef STR
-	default: return "UNKNOWN_DEVICE_TYPE";
-	}
-}
-
 VkPhysicalDevice SelectPhysicalDevice(VkInstance instance)
 {
 	auto& dp = GetDeviceProperties();
 
 	uint32_t deviceNum = 0;
 	VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &deviceNum, nullptr));
-	assert(deviceNum > 0);
-	LOG("available physical devices: %d\n", deviceNum);
-
-	std::vector<VkPhysicalDevice> physicalDevices(deviceNum);
-	VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &deviceNum, physicalDevices.data()));
+	dp.physicalDevices.resize(deviceNum);
+	VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &deviceNum, dp.physicalDevices.data()));
 	for (uint32_t i = 0; i < deviceNum; i++) {
-		VkPhysicalDeviceProperties deviceProperties;
-		vkGetPhysicalDeviceProperties(physicalDevices[i], &deviceProperties);
-		LOG("Device [%d] : %s, Type : %s\n", i, deviceProperties.deviceName, PhysicalDeviceTypeString(deviceProperties.deviceType).c_str());
+		// 默认选择第一个物理设备
+		//vkGetPhysicalDeviceProperties
 	}
 
-	VkPhysicalDevice physicalDevice = physicalDevices[dp.selectedPhysicalDeviceIndex];
-	LOG("selected physical device: %d\n", dp.selectedPhysicalDeviceIndex);
+	VkPhysicalDevice physicalDevice = dp.physicalDevices[dp.selectedPhysicalDeviceIndex];
 
 	return physicalDevice;
 }
@@ -66,9 +47,6 @@ void ConfigExtensions(VkPhysicalDevice physicalDevice)
 
 	uint32_t extensionsCount = 0;
 	VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionsCount, nullptr));
-	assert(extensionsCount > 0);
-	LOG("available device extensions ( %d ):", extensionsCount);
-
 	dp.availableDeviceExtensions.resize(extensionsCount);
 	VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionsCount, dp.availableDeviceExtensions.data()));
 
@@ -86,14 +64,8 @@ void ConfigQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 
 	uint32_t queueFamiliesCount;
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamiliesCount, nullptr);
-	assert(queueFamiliesCount > 0);
-	LOG("available queue families ( %d ):\n", queueFamiliesCount);
-
 	dp.queueFamilyProperties.resize(queueFamiliesCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamiliesCount, dp.queueFamilyProperties.data());
-	for (size_t i = 0; i < queueFamiliesCount; i++) {
-		LOG("queueFlags: %d, queueCount: %d, timestampValidBits: %d\n", dp.queueFamilyProperties[i].queueFlags, dp.queueFamilyProperties[i].queueCount, dp.queueFamilyProperties[i].timestampValidBits);
-	}
 
 	// 找到一个支持所有操作的万能QueueFamily
 

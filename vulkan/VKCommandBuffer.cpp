@@ -130,6 +130,8 @@ void VKCommandBuffer::BindPipeline(VkPipelineBindPoint bindPoint, VKPipeline * v
 
 void VKCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VKPipelineLayout * pipelineLayout, VkDescriptorSet set, uint32_t offset)
 {
+	// Each element of pDynamicOffsets which corresponds to a descriptor binding with type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
+	// must be a multiple of VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment
 	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout->pipelineLayout, 0, 1, &set, offset == -1 ? 0 : 1, &offset);
 }
 

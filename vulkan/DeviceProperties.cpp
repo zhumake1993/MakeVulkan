@@ -1,19 +1,33 @@
 #include "DeviceProperties.h"
 #include "Tools.h"
 
-DeviceProperties* deviceProperties = nullptr;
+DeviceProperties* gDeviceProperties = nullptr;
 
 DeviceProperties & GetDeviceProperties()
 {
-	if (!deviceProperties) {
-		deviceProperties = new DeviceProperties();
+	if (!gDeviceProperties) {
+		gDeviceProperties = new DeviceProperties();
 	}
-	return *deviceProperties;
+	return *gDeviceProperties;
 }
 
 void ReleaseDeviceProperties()
 {
-	RELEASE(deviceProperties);
+	RELEASE(gDeviceProperties);
+}
+
+std::string PhysicalDeviceTypeString(VkPhysicalDeviceType type)
+{
+	switch (type)
+	{
+#define STR(r) case VK_PHYSICAL_DEVICE_TYPE_##r: return #r
+		STR(OTHER);
+		STR(INTEGRATED_GPU);
+		STR(DISCRETE_GPU);
+		STR(VIRTUAL_GPU);
+#undef STR
+	default: return "UNKNOWN_DEVICE_TYPE";
+	}
 }
 
 DeviceProperties::DeviceProperties()
@@ -36,15 +50,13 @@ DeviceProperties::DeviceProperties()
 
 DeviceProperties::~DeviceProperties()
 {
-	availableInstanceLayers.clear();
-	availableInstanceExtensions.clear();
-	enabledInstanceLayers.clear();
-	enabledInstanceExtensions.clear();
 }
 
 void DeviceProperties::Log()
 {
 	// Instance
+
+	LOG("available instance layers ( %d ):", static_cast<int>(availableInstanceLayers.size()));
 	for (size_t i = 0; i < availableInstanceLayers.size(); i++) {
 		LOG(" %s", availableInstanceLayers[i].layerName);
 	}
@@ -56,6 +68,7 @@ void DeviceProperties::Log()
 	}
 	LOG("\n");
 
+	LOG("available instance extensions ( %d ):", static_cast<int>(availableInstanceExtensions.size()));
 	for (size_t i = 0; i < availableInstanceExtensions.size(); i++) {
 		LOG(" %s", availableInstanceExtensions[i].extensionName);
 	}
@@ -68,6 +81,13 @@ void DeviceProperties::Log()
 	LOG("\n");
 
 	// Device
+
+	LOG("available physical devices: %d\n", static_cast<int>(physicalDevices.size()));
+	LOG("selected physical device: %d\n", selectedPhysicalDeviceIndex);
+	LOG("Device : %s, Type : %s\n", deviceProperties.deviceName, PhysicalDeviceTypeString(deviceProperties.deviceType).c_str());
+	LOG("VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment : %d\n", static_cast<int>(deviceProperties.limits.minUniformBufferOffsetAlignment));
+
+	LOG("available device extensions ( %d ):", static_cast<int>(availableDeviceExtensions.size()));
 	for (size_t i = 0; i < availableDeviceExtensions.size(); i++) {
 		LOG(" %s(%d)", availableDeviceExtensions[i].extensionName, availableDeviceExtensions[i].specVersion);
 	}
@@ -78,6 +98,13 @@ void DeviceProperties::Log()
 		LOG(" %s", enabledDeviceExtensions[i]);
 	}
 	LOG("\n");
+
+	LOG("available queue families ( %d ):\n", static_cast<int>(queueFamilyProperties.size()));
+	for (size_t i = 0; i < queueFamilyProperties.size(); i++) {
+		LOG("queueFlags: %d, queueCount: %d, timestampValidBits: %d\n", queueFamilyProperties[i].queueFlags, queueFamilyProperties[i].queueCount, queueFamilyProperties[i].timestampValidBits);
+	}
+
+	LOG("selected queue family: %d\n", selectedQueueFamilyIndex);
 
 	// SwapChain
 	for (size_t i = 0; i < surfaceFormats.size(); i++) {

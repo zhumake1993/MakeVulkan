@@ -32,6 +32,7 @@ protected:
 	void UpdateObjectUniformBuffer(void* data, uint32_t index);
 	VKBuffer* GetCurrPassUniformBuffer();
 	VKBuffer* GetCurrObjectUniformBuffer();
+	uint32_t GetUBODynamicAlignment();
 
 private:
 
@@ -41,6 +42,7 @@ private:
 protected:
 
 	Imgui* m_Imgui;
+	TimeMgr m_TimeMgr;
 
 private:
 
@@ -67,6 +69,5 @@ private:
 	std::vector<VKBuffer*> m_PassUniformBuffers;
 	const uint32_t m_ObjectUniformNum = 100;
 	std::vector<VKBuffer*> m_ObjectUniformBuffers;
-
-	TimeMgr m_TimeMgr;
+	uint32_t m_UBODynamicAlignment;
 };

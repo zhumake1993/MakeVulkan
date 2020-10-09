@@ -22,6 +22,7 @@ struct DeviceProperties : public NonCopyable
 	std::vector<const char*>				enabledInstanceExtensions;
 
 	// Device
+	std::vector<VkPhysicalDevice>			physicalDevices;
 	uint32_t								selectedPhysicalDeviceIndex;
 	VkPhysicalDeviceProperties				deviceProperties;
 	VkPhysicalDeviceFeatures				deviceFeatures;

@@ -84,6 +84,9 @@ void VulkanDriver::Init()
 	m_VKDevice = new VKDevice(m_VKInstance, m_VKSurface);
 	m_VKSwapChain = new VKSwapChain(m_VKDevice, m_VKSurface);
 
+	auto& dp = GetDeviceProperties();
+	dp.Log();
+
 	m_VKCommandPool = CreateVKCommandPool();
 	m_UploadVKCommandBuffer = CreateVKCommandBuffer(m_VKCommandPool);
 	m_StagingBuffer = CreateVKBuffer(m_StagingBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
@@ -160,6 +163,8 @@ void VulkanDriver::AcquireNextImage(VKSemaphore * vkSemaphore)
 		break;
 	case VK_ERROR_OUT_OF_DATE_KHR:
 		LOG("recreate swapchain\n");
+		// ???
+		//DeviceWaitIdle();
 		RELEASE(m_VKSwapChain);
 		m_VKSwapChain = new VKSwapChain(m_VKDevice, m_VKSurface);
 		break;
@@ -189,6 +194,8 @@ void VulkanDriver::QueuePresent(VKSemaphore * vkSemaphore)
 		break;
 	case VK_ERROR_OUT_OF_DATE_KHR:
 		LOG("recreate swapchain\n");
+		// ???
+		//DeviceWaitIdle();
 		RELEASE(m_VKSwapChain);
 		m_VKSwapChain = new VKSwapChain(m_VKDevice, m_VKSurface);
 		break;

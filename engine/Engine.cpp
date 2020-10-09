@@ -1,6 +1,7 @@
 #include "Engine.h"
 
 #include "VulkanDriver.h"
+#include "DeviceProperties.h"
 
 #include "VKCommandPool.h"
 
@@ -84,13 +85,17 @@ void Engine::InitEngine()
 		m_FrameResources[i].fence = driver.CreateVKFence(true);
 	}
 
+	auto& dp = GetDeviceProperties();
+	uint32_t minUboAlignment = static_cast<uint32_t>(dp.deviceProperties.limits.minUniformBufferOffsetAlignment);
+	m_UBODynamicAlignment = ((sizeof(ObjectUniform) + minUboAlignment - 1) / minUboAlignment) * minUboAlignment;
+
 	m_PassUniformBuffers.resize(global::frameResourcesCount);
 	m_ObjectUniformBuffers.resize(global::frameResourcesCount);
 	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
 		m_PassUniformBuffers[i] = driver.CreateVKBuffer(sizeof(PassUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		m_PassUniformBuffers[i]->Map();
 
-		m_ObjectUniformBuffers[i] = driver.CreateVKBuffer(sizeof(ObjectUniform) * m_ObjectUniformNum, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		m_ObjectUniformBuffers[i] = driver.CreateVKBuffer(m_UBODynamicAlignment * m_ObjectUniformNum, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		m_ObjectUniformBuffers[i]->Map();
 	}
 
@@ -154,7 +159,7 @@ void Engine::UpdatePassUniformBuffer(void * data)
 
 void Engine::UpdateObjectUniformBuffer(void * data, uint32_t index)
 {
-	m_ObjectUniformBuffers[m_CurrFrameIndex]->Copy(data, sizeof(ObjectUniform) * index, sizeof(ObjectUniform));
+	m_ObjectUniformBuffers[m_CurrFrameIndex]->Copy(data, m_UBODynamicAlignment * index, m_UBODynamicAlignment);
 }
 
 VKBuffer * Engine::GetCurrPassUniformBuffer()
@@ -165,6 +170,11 @@ VKBuffer * Engine::GetCurrPassUniformBuffer()
 VKBuffer * Engine::GetCurrObjectUniformBuffer()
 {
 	return m_ObjectUniformBuffers[m_CurrFrameIndex];
+}
+
+uint32_t Engine::GetUBODynamicAlignment()
+{
+	return m_UBODynamicAlignment;
 }
 
 void Engine::WaitForPresent()

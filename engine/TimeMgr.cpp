@@ -36,7 +36,7 @@ void TimeMgr::Tick()
 	// fps
 	m_AccumulateCounter++;
 	m_AccumulateTime += m_DeltaTime;
-	if (m_AccumulateTime >= 0.5f) {
+	if (m_AccumulateTime >= 1.0f) {
 		m_FPS = m_AccumulateCounter / m_AccumulateTime;
 		m_AccumulateCounter = 0;
 		m_AccumulateTime = 0;
