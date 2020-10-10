@@ -1,6 +1,7 @@
 #include "DescriptorSetMgr.h"
 #include "VulkanDriver.h"
 #include "Tools.h"
+#include "ProfilerMgr.h"
 
 DescriptorSetMgr::DescriptorSetMgr(VkDevice device):
 	m_Device(device)
@@ -133,6 +134,8 @@ void DescriptorSetMgr::UpdateDescriptorSet(VkDescriptorSet set, DesUpdateInfos &
 
 void DescriptorSetMgr::Tick()
 {
+	PROFILER(DescriptorSetMgr_Tick);
+
 	for (auto& pair : m_SetCaches) {
 		auto& cache = pair.second;
 

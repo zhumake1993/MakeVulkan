@@ -5,7 +5,6 @@
 #include "VulkanFwd.h"
 #include "DescriptorSetTypes.h"
 #include "Gui.h"
-#include "TimeMgr.h"
 
 class Engine : public NonCopyable
 {
@@ -23,7 +22,7 @@ protected:
 
 	virtual void CleanUp() = 0;
 	virtual void Init() = 0;
-	virtual void Tick(float deltaTime) = 0;
+	virtual void Tick() = 0;
 	virtual void TickUI() = 0;
 	virtual void RecordCommandBuffer(VKCommandBuffer* vkCommandBuffer) = 0;
 
@@ -42,7 +41,6 @@ private:
 protected:
 
 	Imgui* m_Imgui;
-	TimeMgr m_TimeMgr;
 
 private:
 

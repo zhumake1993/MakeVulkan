@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Common.h" 
+#include "NonCopyable.h"
 
-class TimeMgr
+class TimeMgr : public NonCopyable
 {
 
 public:
@@ -35,3 +36,7 @@ private:
 	float m_FPS = 0;
 
 };
+
+void CreateTimeMgr();
+TimeMgr& GetTimeMgr();
+void ReleaseTimeMgr();

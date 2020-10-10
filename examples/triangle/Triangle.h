@@ -16,7 +16,7 @@ protected:
 
 	void CleanUp() override;
 	void Init() override;
-	void Tick(float deltaTime) override;
+	void Tick() override;
 	void TickUI() override;
 	void RecordCommandBuffer(VKCommandBuffer* vkCommandBuffer) override;
 

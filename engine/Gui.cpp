@@ -14,6 +14,8 @@
 #include "VKCommandBuffer.h"
 
 #include "InputManager.h"
+#include "TimeMgr.h"
+#include "ProfilerMgr.h"
 
 #include <algorithm>
 
@@ -127,8 +129,12 @@ Imgui::~Imgui()
 	RELEASE(m_RenderPass);
 }
 
-void Imgui::Prepare(float deltaTime)
+void Imgui::Prepare()
 {
+	PROFILER(Imgui_Prepare);
+
+	float deltaTime = GetTimeMgr().GetDeltaTime();
+
 	ImGuiIO& io = ImGui::GetIO();
 
 	io.DisplaySize = ImVec2(static_cast<float>(global::windowWidth), static_cast<float>(global::windowHeight));
@@ -147,6 +153,8 @@ void Imgui::Prepare(float deltaTime)
 
 void Imgui::Tick()
 {
+	PROFILER(Imgui_Tick);
+
 	ImDrawData* imDrawData = ImGui::GetDrawData();
 
 	if (!imDrawData) return;
@@ -174,6 +182,8 @@ void Imgui::Tick()
 
 void Imgui::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 {
+	PROFILER(Imgui_RecordCommandBuffer);
+
 	ImDrawData* imDrawData = ImGui::GetDrawData();
 
 	if ((!imDrawData) || (imDrawData->CmdListsCount == 0)) {

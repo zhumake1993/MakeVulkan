@@ -22,6 +22,8 @@
 
 #include "Tools.h"
 #include "InputManager.h"
+#include "TimeMgr.h"
+#include "ProfilerMgr.h"
 
 Engine::Engine()
 {
@@ -62,10 +64,18 @@ void Engine::CleanUpEngine()
 	// 最后清理Driver
 
 	ReleaseVulkanDriver();
+
+	//
+	ReleaseProfilerMgr();
+	ReleaseTimeMgr();
 }
 
 void Engine::InitEngine()
 {
+	//
+	CreateTimeMgr();
+	CreateProfilerMgr();
+
 	// 先初始化Driver
 
 	CreateVulkanDriver();
@@ -109,14 +119,16 @@ void Engine::InitEngine()
 void Engine::TickEngine()
 {
 	// 更新时间
-	m_TimeMgr.Tick();
-	float deltaTime = m_TimeMgr.GetDeltaTime();
+	auto& timeMgr = GetTimeMgr();
+	timeMgr.Tick();
+
+	PROFILER(Engine_TickEngine);
 
 	// 更新游戏逻辑
-	Tick(deltaTime);
+	Tick();
 
 	// 更新UI逻辑
-	m_Imgui->Prepare(deltaTime);
+	m_Imgui->Prepare();
 	TickUI();
 	ImGui::Render();
 
@@ -179,6 +191,8 @@ uint32_t Engine::GetUBODynamicAlignment()
 
 void Engine::WaitForPresent()
 {
+	PROFILER(Engine_WaitForPresent);
+
 	auto& driver = GetVulkanDriver();
 
 	auto& currFrameResource = m_FrameResources[m_CurrFrameIndex];
@@ -191,6 +205,8 @@ void Engine::WaitForPresent()
 
 void Engine::Present()
 {
+	PROFILER(Engine_Present);
+
 	auto& driver = GetVulkanDriver();
 
 	auto& currFrameResource = m_FrameResources[m_CurrFrameIndex];

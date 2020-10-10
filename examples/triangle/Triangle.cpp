@@ -25,6 +25,9 @@
 #include "Mesh.h"
 #include "RenderNode.h"
 
+#include "TimeMgr.h"
+#include "ProfilerMgr.h"
+
 void ConfigGlobalSettings() {
 
 	auto& dp = GetDeviceProperties();
@@ -55,6 +58,16 @@ void ConfigGlobalSettings() {
 
 Triangle::Triangle()
 {
+	//// test
+	//FILE* file = NULL;
+	//file = fopen("/data/data/com.example.MakeVulkan/hello.txt", "a");    //创建文件
+	////file = fopen("/mnt/sdcard/hello.txt", "a");
+	//if (file == NULL) {        //容错
+	//	LOG("fffffffffffffffffffffffffffff");
+	//}
+	//fwrite("1111", 3, 1, file);            //往文件中写文件
+
+	//fclose(file);                    //关闭文件
 }
 
 Triangle::~Triangle()
@@ -115,8 +128,12 @@ void Triangle::Init()
 	CreatePipeline();
 }
 
-void Triangle::Tick(float deltaTime)
+void Triangle::Tick()
 {
+	PROFILER(APP_Tick);
+
+	auto deltaTime = GetTimeMgr().GetDeltaTime();
+
 	auto& driver = GetVulkanDriver();
 
 	// 每帧的逻辑
@@ -155,22 +172,40 @@ void Triangle::Tick(float deltaTime)
 
 void Triangle::TickUI()
 {
-	//bool show_demo_window = true;
-	//ImGui::ShowDemoWindow(&show_demo_window);
+	PROFILER(APP_TickUI);
+
+	// UI样例，供学习用
+	bool show_demo_window = true;
+	ImGui::ShowDemoWindow(&show_demo_window);
 
 	auto& dp = GetDeviceProperties();
 
-	float fps = m_TimeMgr.GetFPS();
+	auto& timeMgr = GetTimeMgr();
+	float fps = timeMgr.GetFPS();
 
 	ImGui::SetNextWindowPos(ImVec2(10, 10));
 	ImGui::Begin("MakeVulkan", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 	ImGui::TextUnformatted(dp.deviceProperties.deviceName);
 	ImGui::Text("%.2f ms/frame (%.2f fps)", (1000.0f / fps), fps);
+
+	static float acTime = 0;
+	static std::string profiler = "";
+	acTime += timeMgr.GetDeltaTime();
+	if (acTime > 1.0f) {
+		auto& profilerMgr = GetProfilerMgr();
+		profiler = profilerMgr.Resolve(timeMgr.GetFrameIndex() - 1).ToString();
+
+		acTime = 0.0f;
+	}
+	ImGui::TextUnformatted(profiler.c_str());
+
 	ImGui::End();
 }
 
 void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 {
+	PROFILER(APP_RecordCommandBuffer);
+
 	auto& driver = GetVulkanDriver();
 
 	std::vector<VkClearValue> clearValues(2);

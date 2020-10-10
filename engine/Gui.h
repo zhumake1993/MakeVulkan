@@ -11,7 +11,7 @@ public:
 	Imgui();
 	~Imgui();
 
-	void Prepare(float deltaTime);
+	void Prepare();
 	void Tick();
 	void RecordCommandBuffer(VKCommandBuffer* vkCommandBuffer);
 

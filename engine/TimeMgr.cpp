@@ -1,4 +1,22 @@
 #include "TimeMgr.h"
+#include "Tools.h"
+
+TimeMgr* gTimeMgr;
+
+void CreateTimeMgr()
+{
+	gTimeMgr = new TimeMgr();
+}
+
+TimeMgr & GetTimeMgr()
+{
+	return *gTimeMgr;
+}
+
+void ReleaseTimeMgr()
+{
+	RELEASE(gTimeMgr);
+}
 
 TimeMgr::TimeMgr()
 {

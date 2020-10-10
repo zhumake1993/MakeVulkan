@@ -22,6 +22,7 @@ extern android_app* androidApp;
 #include <vector>
 #include <unordered_map>
 #include <forward_list>
+#include <list>
 #include <assert.h>
 #include <memory>
 #include <chrono>
