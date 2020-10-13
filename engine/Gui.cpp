@@ -77,7 +77,7 @@ Imgui::Imgui()
 	descriptorSetMgr.UpdateDescriptorSet(m_DescriptorSet, infos);
 
 	// pipeline
-
+	
 	PipelineCI pipelineCI;
 
 	m_PipelineLayout = driver.CreateVKPipelineLayout(descriptorSetLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 4);
@@ -107,7 +107,7 @@ Imgui::Imgui()
 	pipelineCI.colorBlendAttachmentState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 	pipelineCI.colorBlendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;
 	pipelineCI.colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	
+
 	pipelineCI.depthStencilStateCreateInfo.depthTestEnable = VK_FALSE;
 	pipelineCI.depthStencilStateCreateInfo.depthWriteEnable = VK_FALSE;
 

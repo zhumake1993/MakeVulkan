@@ -6,6 +6,7 @@ struct VKDevice;
 struct VKSwapChain;
 
 struct VKCommandPool;
+struct VKQueryPool;
 struct VKCommandBuffer;
 
 struct VKSemaphore;

@@ -22,8 +22,10 @@
 
 #include "Tools.h"
 #include "InputManager.h"
+#include "Gui.h"
 #include "TimeMgr.h"
 #include "ProfilerMgr.h"
+#include "GPUProfilerMgr.h"
 
 Engine::Engine()
 {
@@ -46,7 +48,7 @@ void Engine::CleanUpEngine()
 
 	RELEASE(m_Imgui);
 
-	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
+	for (size_t i = 0; i < FrameResourcesCount; ++i) {
 		RELEASE(m_FrameResources[i].framebuffer);
 		RELEASE(m_FrameResources[i].commandBuffer);
 		RELEASE(m_FrameResources[i].imageAvailableSemaphore);
@@ -54,41 +56,50 @@ void Engine::CleanUpEngine()
 		RELEASE(m_FrameResources[i].fence);
 	}
 
-	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
+	for (size_t i = 0; i < FrameResourcesCount; ++i) {
 		RELEASE(m_PassUniformBuffers[i]);
 		RELEASE(m_ObjectUniformBuffers[i]);
 	}
 
 	RELEASE(m_VKCommandPool);
 
+	// 清理各种mgr
+
+	m_GPUProfilerMgr->WriteToFile();
+	RELEASE(m_GPUProfilerMgr);
+
+	GetProfilerMgr().WriteToFile();
+
+	ReleaseProfilerMgr();
+
+	ReleaseTimeMgr();
+
 	// 最后清理Driver
 
 	ReleaseVulkanDriver();
-
-	//
-	GetProfilerMgr().WriteToFile();
-	ReleaseProfilerMgr();
-	ReleaseTimeMgr();
 }
 
 void Engine::InitEngine()
 {
-	//
-	CreateTimeMgr();
-	CreateProfilerMgr();
-
 	// 先初始化Driver
 
 	CreateVulkanDriver();
-
 	auto& driver = GetVulkanDriver();
+
+	// 初始化各种mgr
+
+	m_GPUProfilerMgr = driver.CreateGPUProfilerMgr();
+
+	CreateTimeMgr();
+
+	CreateProfilerMgr();
 
 	// 再初始化父类
 
 	m_VKCommandPool = driver.CreateVKCommandPool();
 
-	m_FrameResources.resize(global::frameResourcesCount);
-	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
+	m_FrameResources.resize(FrameResourcesCount);
+	for (size_t i = 0; i < FrameResourcesCount; ++i) {
 		m_FrameResources[i].framebuffer = nullptr; // 动态创建framebuffer
 		m_FrameResources[i].commandBuffer = driver.CreateVKCommandBuffer(m_VKCommandPool);
 		m_FrameResources[i].imageAvailableSemaphore = driver.CreateVKSemaphore();
@@ -100,9 +111,9 @@ void Engine::InitEngine()
 	uint32_t minUboAlignment = static_cast<uint32_t>(dp.deviceProperties.limits.minUniformBufferOffsetAlignment);
 	m_UBODynamicAlignment = ((sizeof(ObjectUniform) + minUboAlignment - 1) / minUboAlignment) * minUboAlignment;
 
-	m_PassUniformBuffers.resize(global::frameResourcesCount);
-	m_ObjectUniformBuffers.resize(global::frameResourcesCount);
-	for (size_t i = 0; i < global::frameResourcesCount; ++i) {
+	m_PassUniformBuffers.resize(FrameResourcesCount);
+	m_ObjectUniformBuffers.resize(FrameResourcesCount);
+	for (size_t i = 0; i < FrameResourcesCount; ++i) {
 		m_PassUniformBuffers[i] = driver.CreateVKBuffer(sizeof(PassUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		m_PassUniformBuffers[i]->Map();
 
@@ -150,6 +161,8 @@ void Engine::TickEngine()
 
 	// 提交UI draw call
 	//m_Imgui->RecordCommandBuffer(m_FrameResources[m_CurrFrameIndex].commandBuffer);
+
+	m_GPUProfilerMgr->Tick();
 
 	Present();
 }
@@ -227,5 +240,5 @@ void Engine::Present()
 	driver.QueueSubmit(submitInfo, currFrameResource.fence);
 	driver.QueuePresent(currFrameResource.finishedRenderingSemaphore);
 
-	m_CurrFrameIndex = (m_CurrFrameIndex + 1) % global::frameResourcesCount;
+	m_CurrFrameIndex = (m_CurrFrameIndex + 1) % FrameResourcesCount;
 }

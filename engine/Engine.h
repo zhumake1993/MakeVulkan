@@ -4,7 +4,9 @@
 #include "NonCopyable.h"
 #include "VulkanFwd.h"
 #include "DescriptorSetTypes.h"
-#include "Gui.h"
+
+class Imgui;
+class GPUProfilerMgr;
 
 class Engine : public NonCopyable
 {
@@ -41,6 +43,7 @@ private:
 protected:
 
 	Imgui* m_Imgui;
+	GPUProfilerMgr *m_GPUProfilerMgr;
 
 private:
 
@@ -62,7 +65,7 @@ private:
 
 	VKCommandPool* m_VKCommandPool;
 
-	size_t m_CurrFrameIndex = 0;
+	uint32_t m_CurrFrameIndex = 0;
 	std::vector<FrameResource> m_FrameResources;
 	std::vector<VKBuffer*> m_PassUniformBuffers;
 	const uint32_t m_ObjectUniformNum = 100;

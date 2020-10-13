@@ -8,6 +8,7 @@
 #include "VKSwapChain.h"
 
 #include "VKCommandPool.h"
+#include "VKQueryPool.h"
 #include "VKCommandBuffer.h"
 
 #include "VKSemaphore.h"
@@ -18,6 +19,7 @@
 #include "VKSampler.h"
 
 #include "DescriptorSetMgr.h"
+#include "GPUProfilerMgr.h"
 
 #include "VKShaderModule.h"
 #include "VKPipelineLayout.h"
@@ -232,6 +234,11 @@ VKCommandPool * VulkanDriver::CreateVKCommandPool()
 	return new VKCommandPool(m_VKDevice, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, dp.selectedQueueFamilyIndex);;
 }
 
+VKQueryPool * VulkanDriver::CreateVKQueryPool(VkQueryType queryType, uint32_t queryCount)
+{
+	return new VKQueryPool(m_VKDevice, queryType, queryCount);
+}
+
 VKCommandBuffer * VulkanDriver::CreateVKCommandBuffer(VKCommandPool * vkCommandPool)
 {
 	return new VKCommandBuffer(m_VKDevice, vkCommandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
@@ -327,6 +334,11 @@ void VulkanDriver::UploadVKImage(VKImage * image, void * data, VkDeviceSize size
 DescriptorSetMgr& VulkanDriver::GetDescriptorSetMgr()
 {
 	return *m_DescriptorSetMgr;
+}
+
+GPUProfilerMgr * VulkanDriver::CreateGPUProfilerMgr()
+{
+	return new GPUProfilerMgr(m_VKDevice);
 }
 
 VKShaderModule * VulkanDriver::CreateVKShaderModule(const std::string & filename)

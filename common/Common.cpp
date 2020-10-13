@@ -23,7 +23,7 @@ namespace global
 	uint32_t windowHeight = 720;
 
 	// Frame
-	uint32_t frameResourcesCount = 3;
+	//extern const uint32_t frameResourcesCount = 3;
 
 #if defined(_WIN32)
 	std::string AssetPath = "C:/Users/1/Desktop/MakeVulkan/data/";

@@ -40,6 +40,8 @@ extern android_app* androidApp;
 #define USE_VISUAL_LEAK_DETECTOR 0
 #endif
 
+#define FrameResourcesCount 3
+
 namespace global
 {
 
@@ -56,7 +58,7 @@ namespace global
 	extern uint32_t windowHeight;
 
 	// Frame
-	extern uint32_t frameResourcesCount;
+	//extern const uint32_t frameResourcesCount;
 
 	extern std::string AssetPath;
 

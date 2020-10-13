@@ -25,8 +25,10 @@
 #include "Mesh.h"
 #include "RenderNode.h"
 
+#include "Gui.h"
 #include "TimeMgr.h"
 #include "ProfilerMgr.h"
+#include "GPUProfilerMgr.h"
 
 void ConfigGlobalSettings() {
 
@@ -135,7 +137,7 @@ void Triangle::Tick()
 	m_PassUniform.eyePos = glm::vec4(m_Camera->GetPosition(), 0.0f);
 
 	m_CubeNode1->m_World = glm::rotate(glm::mat4(1.0f), deltaTime * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f)) * m_CubeNode1->m_World;
-	m_CubeNode1->m_NumFramesDirty = global::frameResourcesCount;
+	m_CubeNode1->m_NumFramesDirty = FrameResourcesCount;
 
 	m_PassUniform.lightPos = glm::rotate(glm::mat4(1.0f), deltaTime * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f)) * m_PassUniform.lightPos;
 
@@ -179,15 +181,23 @@ void Triangle::TickUI()
 	ImGui::Text("%.2f ms/frame (%.2f fps)", (1000.0f / fps), fps);
 
 	static float acTime = 0;
-	static std::string profiler = "";
+	static std::string cpuProfiler = "";
+	static std::string gpuProfiler = "";
 	acTime += timeMgr.GetDeltaTime();
 	if (acTime > 1.0f) {
 		auto& profilerMgr = GetProfilerMgr();
-		profiler = profilerMgr.Resolve(timeMgr.GetFrameIndex() - 1).ToString();
+		cpuProfiler = profilerMgr.Resolve(timeMgr.GetFrameIndex() - 1).ToString();
+
+		gpuProfiler = m_GPUProfilerMgr->GetLastFrameView().ToString();
 
 		acTime = 0.0f;
 	}
-	ImGui::TextUnformatted(profiler.c_str());
+
+	ImGui::TextUnformatted("CPU Profiler:\n");
+	ImGui::TextUnformatted(cpuProfiler.c_str());
+
+	ImGui::TextUnformatted("GPU Profiler:\n");
+	ImGui::TextUnformatted(gpuProfiler.c_str());
 
 	ImGui::End();
 }
@@ -235,6 +245,19 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 	vkCommandBuffer->Begin();
 
+	m_GPUProfilerMgr->SetVKCommandBuffer(vkCommandBuffer);
+	m_GPUProfilerMgr->Reset();
+
+	m_GPUProfilerMgr->WriteTimeStamp("Render");
+
+	// test!
+	m_GPUProfilerMgr->WriteTimeStamp("child");
+	m_GPUProfilerMgr->WriteTimeStamp("grandchild");
+	m_GPUProfilerMgr->WriteTimeStamp("grandchild");
+	m_GPUProfilerMgr->WriteTimeStamp("child");
+	m_GPUProfilerMgr->WriteTimeStamp("sibling");
+	m_GPUProfilerMgr->WriteTimeStamp("sibling");
+
 	vkCommandBuffer->BeginRenderPass(m_VKRenderPass, vkFramebuffer, area, clearValues);
 
 	vkCommandBuffer->SetViewport(viewport);
@@ -267,6 +290,8 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 	m_Imgui->RecordCommandBuffer(vkCommandBuffer);
 
 	vkCommandBuffer->EndRenderPass();
+
+	m_GPUProfilerMgr->WriteTimeStamp("Render");
 
 	vkCommandBuffer->End();
 }

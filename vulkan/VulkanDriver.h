@@ -5,6 +5,8 @@
 #include "VulkanFwd.h"
 #include "DescriptorSetMgr.h"
 
+class GPUProfilerMgr;
+
 class VulkanDriver : public NonCopyable
 {
 
@@ -31,6 +33,7 @@ public:
 
 	// Command
 	VKCommandPool* CreateVKCommandPool();
+	VKQueryPool* CreateVKQueryPool(VkQueryType queryType, uint32_t queryCount);
 	VKCommandBuffer* CreateVKCommandBuffer(VKCommandPool* vkCommandPool);
 
 	// Semaphore
@@ -46,6 +49,9 @@ public:
 
 	// DescriptorSetMgr
 	DescriptorSetMgr& GetDescriptorSetMgr();
+
+	// GPUProfilerMgr
+	GPUProfilerMgr* CreateGPUProfilerMgr();
 
 	// Render Status
 	VKShaderModule* CreateVKShaderModule(const std::string& filename);

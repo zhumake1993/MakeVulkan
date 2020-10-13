@@ -72,9 +72,10 @@ void ConfigQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 	dp.selectedQueueFamilyIndex = UINT32_MAX;
 	for (uint32_t i = 0; i < static_cast<uint32_t>(dp.queueFamilyProperties.size()); i++)
 	{
-		if ((dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) &&
-			(dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) &&
-			(dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_TRANSFER_BIT))
+		if ((dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) 
+			//&& (dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) 
+			//&& (dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
+			)
 		{
 			VkBool32 supportPresent;
 			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &supportPresent);
@@ -88,6 +89,7 @@ void ConfigQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 
 	if (dp.selectedQueueFamilyIndex == UINT32_MAX) {
 		LOG("Could not find a matching queue family index");
+		assert(false);
 	}
 }
 

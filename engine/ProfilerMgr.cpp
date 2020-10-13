@@ -74,9 +74,9 @@ ProfilerMgr::FrameTimeView ProfilerMgr::Resolve(uint32_t frameIndex)
 void ProfilerMgr::WriteToFile()
 {
 #if defined(_WIN32)
-	std::string filePath = "Profiler.txt";
+	std::string filePath = "CPUProfiler.txt";
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	std::string filePath = "/data/data/com.example.MakeVulkan/Profiler.txt";
+	std::string filePath = "/data/data/com.example.MakeVulkan/CPUProfiler.txt";
 #endif
 
 	std::ofstream outfile;

@@ -56,6 +56,8 @@ void DeviceProperties::Log()
 {
 	// Instance
 
+	LOG("\nInstance:\n");
+
 	LOG("available instance layers ( %d ):", static_cast<int>(availableInstanceLayers.size()));
 	for (size_t i = 0; i < availableInstanceLayers.size(); i++) {
 		LOG(" %s", availableInstanceLayers[i].layerName);
@@ -82,10 +84,13 @@ void DeviceProperties::Log()
 
 	// Device
 
+	LOG("\nDevice:\n");
+
 	LOG("available physical devices: %d\n", static_cast<int>(physicalDevices.size()));
 	LOG("selected physical device: %d\n", selectedPhysicalDeviceIndex);
 	LOG("Device : %s, Type : %s\n", deviceProperties.deviceName, PhysicalDeviceTypeString(deviceProperties.deviceType).c_str());
 	LOG("VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment : %d\n", static_cast<int>(deviceProperties.limits.minUniformBufferOffsetAlignment));
+	LOG("VkPhysicalDeviceLimits::timestampPeriod : %f\n", deviceProperties.limits.timestampPeriod);
 
 	LOG("available device extensions ( %d ):", static_cast<int>(availableDeviceExtensions.size()));
 	for (size_t i = 0; i < availableDeviceExtensions.size(); i++) {
@@ -107,11 +112,16 @@ void DeviceProperties::Log()
 	LOG("selected queue family: %d\n", selectedQueueFamilyIndex);
 
 	// SwapChain
+
+	LOG("\nSwapChain:\n");
+
+	LOG("surfaceFormats:\n");
 	for (size_t i = 0; i < surfaceFormats.size(); i++) {
 		LOG(" %d %d", surfaceFormats[i].format, surfaceFormats[i].colorSpace);
 	}
 	LOG("\n");
 
+	LOG("presentModes:\n");
 	for (size_t i = 0; i < presentModes.size(); i++) {
 		LOG(" %d", presentModes[i]);
 	}
