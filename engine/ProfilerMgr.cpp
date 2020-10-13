@@ -3,6 +3,7 @@
 #include "Tools.h"
 #include <stack>
 #include <algorithm>
+#include <fstream>
 #include <sstream>
 
 ProfilerMgr* gProfilerMgr;
@@ -68,6 +69,24 @@ ProfilerMgr::FrameTimeView ProfilerMgr::Resolve(uint32_t frameIndex)
 	assert(false);
 
 	return FrameTimeView(frameIndex);
+}
+
+void ProfilerMgr::WriteToFile()
+{
+#if defined(_WIN32)
+	std::string filePath = "Profiler.txt";
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+	std::string filePath = "/data/data/com.example.MakeVulkan/Profiler.txt";
+#endif
+
+	std::ofstream outfile;
+	outfile.open(filePath);
+
+	for (auto ir = m_FrameStamps.begin(); ir != m_FrameStamps.end(); ir++) {
+		outfile << Resolve(*ir).ToString() << std::endl;
+	}
+
+	outfile.close();
 }
 
 ProfilerMgr::FrameTimeView ProfilerMgr::Resolve(FrameStamp& frameStamp)

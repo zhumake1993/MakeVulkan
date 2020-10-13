@@ -66,6 +66,7 @@ void Engine::CleanUpEngine()
 	ReleaseVulkanDriver();
 
 	//
+	GetProfilerMgr().WriteToFile();
 	ReleaseProfilerMgr();
 	ReleaseTimeMgr();
 }

@@ -58,16 +58,6 @@ void ConfigGlobalSettings() {
 
 Triangle::Triangle()
 {
-	//// test
-	//FILE* file = NULL;
-	//file = fopen("/data/data/com.example.MakeVulkan/hello.txt", "a");    //创建文件
-	////file = fopen("/mnt/sdcard/hello.txt", "a");
-	//if (file == NULL) {        //容错
-	//	LOG("fffffffffffffffffffffffffffff");
-	//}
-	//fwrite("1111", 3, 1, file);            //往文件中写文件
-
-	//fclose(file);                    //关闭文件
 }
 
 Triangle::~Triangle()
@@ -175,8 +165,8 @@ void Triangle::TickUI()
 	PROFILER(APP_TickUI);
 
 	// UI样例，供学习用
-	bool show_demo_window = true;
-	ImGui::ShowDemoWindow(&show_demo_window);
+	//bool show_demo_window = true;
+	//ImGui::ShowDemoWindow(&show_demo_window);
 
 	auto& dp = GetDeviceProperties();
 

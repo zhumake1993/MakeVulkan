@@ -50,6 +50,7 @@ public:
 
 	void RecordTime(std::string name);
 	FrameTimeView Resolve(uint32_t frameIndex);
+	void WriteToFile();
 
 private:
 
