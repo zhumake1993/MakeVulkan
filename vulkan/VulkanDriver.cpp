@@ -351,9 +351,13 @@ VKPipelineLayout * VulkanDriver::CreateVKPipelineLayout(VkDescriptorSetLayout la
 	return new VKPipelineLayout(m_VKDevice, layout, pcStage, pcSize);
 }
 
-VKPipeline * VulkanDriver::CreateVKPipeline(PipelineCI & pipelineCI)
+VKPipeline * VulkanDriver::CreateVKPipeline(PipelineCI & pipelineCI, VKPipeline * parent)
 {
-	return new VKPipeline(m_VKDevice, pipelineCI);;
+	if (parent) {
+		pipelineCI.pipelineCreateInfo.basePipelineHandle = parent->pipeline;
+	}
+
+	return new VKPipeline(m_VKDevice, pipelineCI);
 }
 
 VKRenderPass * VulkanDriver::CreateVKRenderPass(VkFormat colorFormat, VkFormat depthFormat)

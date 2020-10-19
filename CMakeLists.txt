@@ -31,13 +31,16 @@ source_group("engine" FILES ${engine_sources})
 # external
 include_directories(external)
 
+# ktx
+include_directories(external/ktx/include)
+
 # external/glslang
 #add_subdirectory(external/glslang)
 #include_directories(external/glslang)
 
 # external/smolv
 file(GLOB smolv_sources external/smolv/*.h external/smolv/*.cpp)
-source_group("smolv" FILES ${vulkan_sources})
+source_group("smolv" FILES ${smolv_sources})
 
 # external/imgui
 # imgui需要包含cpp文件
@@ -49,6 +52,8 @@ add_library (base ${common_sources} ${vulkan_sources} ${engine_sources} ${imgui_
 
 # glslang需要额外链接
 #target_link_libraries(base glslang SPIRV)
+
+target_link_libraries(base C:/Users/1/Desktop/MakeVulkan/external/ktx/lib/ktx.lib)
 
 # 查找所有的example
 file(GLOB EXAMPLES RELATIVE ${PROJECT_SOURCE_DIR}/examples/ examples/*)

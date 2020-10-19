@@ -56,6 +56,10 @@ void ConfigGlobalSettings() {
 #endif
 
 	dp.enabledDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
+	// wireframe
+	//dp.enabledDeviceFeatures.fillModeNonSolid = VK_TRUE;
+	//dp.enabledDeviceFeatures.wideLines = VK_TRUE;
 }
 
 Triangle::Triangle()
@@ -71,7 +75,8 @@ void Triangle::CleanUp()
 	RELEASE(m_Home);
 	RELEASE(m_Cube);
 
-	RELEASE(m_Image);
+	RELEASE(m_HomeImage);
+	RELEASE(m_BrickImage);
 	RELEASE(m_Sampler);
 
 	RELEASE(m_HomeNode);
@@ -236,7 +241,7 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 	infos[1].binding = 1;
 	infos[1].info.buffer = { GetCurrObjectUniformBuffer()->buffer,0,VK_WHOLE_SIZE };
 	infos[2].binding = 2;
-	infos[2].info.image = { m_Sampler->sampler, m_Image->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+	infos[2].info.image = { m_Sampler->sampler, m_HomeImage->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 	descriptorSetMgr.UpdateDescriptorSet(descriptorSet, infos);
 
 	//
@@ -274,6 +279,10 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 	vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_ColorPipeline);
 
+	infos[2].binding = 2;
+	infos[2].info.image = { m_Sampler->sampler, m_BrickImage->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+	descriptorSetMgr.UpdateDescriptorSet(descriptorSet, infos);
+
 	// cube1
 	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 1 * GetUBODynamicAlignment());
 	vkCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
@@ -309,10 +318,9 @@ void Triangle::PrepareResources()
 		m_Home->LoadFromFile(global::AssetPath + "models/viking_room.obj");
 		m_Home->UploadToGPU();
 
-		std::vector<VertexChannel> simpleChannels = { kVertexPosition ,kVertexColor };
 		m_Cube = new Mesh();
-		m_Cube->SetVertexChannels(simpleChannels);
-		m_Cube->LoadFromGeo();
+		m_Cube->SetVertexChannels(channels);
+		m_Cube->LoadFromFile(global::AssetPath + "models/cube.obj");
 		m_Cube->UploadToGPU();
 	}
 
@@ -327,10 +335,26 @@ void Triangle::PrepareResources()
 		VKImageCI(imageCI);
 		imageCI.extent.width = width;
 		imageCI.extent.height = height;
-		VKImageViewCI(imageViewCI)
-		m_Image = driver.CreateVKImage(imageCI, imageViewCI);
+		VKImageViewCI(imageViewCI);
+		m_HomeImage = driver.CreateVKImage(imageCI, imageViewCI);
 
-		driver.UploadVKImage(m_Image, imageData.data(), dataSize);
+		driver.UploadVKImage(m_HomeImage, imageData.data(), dataSize);
+	}
+
+	{
+		uint32_t width = 0, height = 0, dataSize = 0;
+		std::vector<char> imageData = GetImageData(global::AssetPath + "textures/crate01_color_height_rgba.ktx", 4, &width, &height, nullptr, &dataSize);
+		if (imageData.size() == 0) {
+			assert(false);
+		}
+
+		VKImageCI(imageCI);
+		imageCI.extent.width = width;
+		imageCI.extent.height = height;
+		VKImageViewCI(imageViewCI);
+		m_BrickImage = driver.CreateVKImage(imageCI, imageViewCI);
+
+		driver.UploadVKImage(m_BrickImage, imageData.data(), dataSize);
 	}
 
 	// Sampler
@@ -352,12 +376,12 @@ void Triangle::PrepareResources()
 	m_CubeNode1 = new RenderNode();
 	m_CubeNode1->m_ObjectUBIndex = 1;
 	m_CubeNode1->m_Mesh = m_Cube;
-	m_CubeNode1->m_World = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.3f, 0.3f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 0.1f));
+	m_CubeNode1->m_World = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.3f, 0.3f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f));
 
 	m_CubeNode2 = new RenderNode();
 	m_CubeNode2->m_ObjectUBIndex = 2;
 	m_CubeNode2->m_Mesh = m_Cube;
-	m_CubeNode2->m_World = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.5f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 0.1f));
+	m_CubeNode2->m_World = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.5f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f));
 }
 
 void Triangle::PrepareDescriptorSet()
@@ -399,11 +423,11 @@ void Triangle::CreatePipeline()
 
 	// color
 
-	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = simpleColorVert->shaderModule;
-	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = simpleColorFrag->shaderModule;
+	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = shaderModuleVert->shaderModule;
+	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = shaderModuleFrag->shaderModule;
 	pipelineCI.SetVertexInputState(m_Cube->GetVertexFormats());
 
-	m_ColorPipeline = driver.CreateVKPipeline(pipelineCI);
+	m_ColorPipeline = driver.CreateVKPipeline(pipelineCI, m_TexPipeline);
 
 	RELEASE(shaderModuleVert);
 	RELEASE(shaderModuleFrag);

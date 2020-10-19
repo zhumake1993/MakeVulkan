@@ -135,6 +135,7 @@ void PipelineCI::ConfigInputAssemblyStateCreateInfo()
 
 void PipelineCI::ConfigTessellationStateCreateInfo()
 {
+	tessellationStateCreateInfo = {};
 	pipelineCreateInfo.pTessellationState = &tessellationStateCreateInfo;
 }
 

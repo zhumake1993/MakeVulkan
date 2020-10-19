@@ -57,9 +57,6 @@ namespace global
 	extern uint32_t windowWidth;
 	extern uint32_t windowHeight;
 
-	// Frame
-	//extern const uint32_t frameResourcesCount;
-
 	extern std::string AssetPath;
 
 }

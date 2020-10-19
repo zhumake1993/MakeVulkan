@@ -7,6 +7,9 @@
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include "obj/tiny_obj_loader.h"
 
+// test
+#include <ktxvulkan.h>
+
 std::string VulkanErrorToString(VkResult errorCode) {
 	switch (errorCode)
 	{
@@ -96,33 +99,62 @@ std::vector<char> GetImageData(std::string const &filename, int requestedCompone
 		return std::vector<char>();
 	}
 
-	int tmpWidth = 0, tmpHeight = 0, tmpComponents = 0;
-	unsigned char *imageData = stbi_load_from_memory(reinterpret_cast<unsigned char*>(&fileData[0]), static_cast<int>(fileData.size()), &tmpWidth, &tmpHeight, &tmpComponents, requestedComponents);
-	if ((imageData == nullptr) ||
-		(tmpWidth <= 0) ||
-		(tmpHeight <= 0) ||
-		(tmpComponents <= 0)) {
-		LOG("Could not read image data!");
-		return std::vector<char>();
-	}
+	size_t last = filename.find_last_of('.');
+	if (filename.substr(last + 1) == "ktx") {
 
-	int size = (tmpWidth) * (tmpHeight) * (requestedComponents <= 0 ? tmpComponents : requestedComponents);
-	if (dataSize) {
-		*dataSize = size;
-	}
-	if (width) {
-		*width = tmpWidth;
-	}
-	if (height) {
-		*height = tmpHeight;
-	}
-	if (components) {
-		*components = tmpComponents;
-	}
+		// ktx
 
-	std::vector<char> output(size);
-	memcpy(&output[0], imageData, size);
+		ktxTexture* ktxTexture;
+		ktxResult result = KTX_SUCCESS;
+		result = ktxTexture_CreateFromMemory(reinterpret_cast<ktx_uint8_t*>(&fileData[0]), static_cast<ktx_size_t>(fileData.size()), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture);
+		assert(result == KTX_SUCCESS);
 
-	stbi_image_free(imageData);
-	return output;
+		*width = ktxTexture->baseWidth;
+		*height = ktxTexture->baseHeight;
+		//mipLevels = ktxTexture->numLevels;
+
+		ktx_uint8_t *ktxTextureData = ktxTexture_GetData(ktxTexture);
+		*dataSize = static_cast<uint32_t>(ktxTexture_GetSize(ktxTexture));
+
+		std::vector<char> output(*dataSize);
+		memcpy(&output[0], ktxTextureData, *dataSize);
+
+		ktxTexture_Destroy(ktxTexture);
+
+		return output;
+	}
+	else {
+
+		// stb
+
+		int tmpWidth = 0, tmpHeight = 0, tmpComponents = 0;
+		unsigned char *imageData = stbi_load_from_memory(reinterpret_cast<unsigned char*>(&fileData[0]), static_cast<int>(fileData.size()), &tmpWidth, &tmpHeight, &tmpComponents, requestedComponents);
+		if ((imageData == nullptr) ||
+			(tmpWidth <= 0) ||
+			(tmpHeight <= 0) ||
+			(tmpComponents <= 0)) {
+			LOG("Could not read image data!");
+			return std::vector<char>();
+		}
+
+		int size = (tmpWidth) * (tmpHeight) * (requestedComponents <= 0 ? tmpComponents : requestedComponents);
+		if (dataSize) {
+			*dataSize = size;
+		}
+		if (width) {
+			*width = tmpWidth;
+		}
+		if (height) {
+			*height = tmpHeight;
+		}
+		if (components) {
+			*components = tmpComponents;
+		}
+
+		std::vector<char> output(size);
+		memcpy(&output[0], imageData, size);
+
+		stbi_image_free(imageData);
+		return output;
+	}
 }

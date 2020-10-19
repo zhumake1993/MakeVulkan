@@ -33,7 +33,8 @@ private:
 	Mesh* m_Cube;
 
 	// Texture
-	VKImage* m_Image;
+	VKImage* m_HomeImage;
+	VKImage* m_BrickImage;
 	VKSampler* m_Sampler;
 
 	// RenderNode
