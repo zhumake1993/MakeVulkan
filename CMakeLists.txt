@@ -35,12 +35,14 @@ include_directories(external)
 include_directories(external/ktx/include)
 
 # external/glslang
+# 用于运行时编译shader，目前不用
 #add_subdirectory(external/glslang)
 #include_directories(external/glslang)
 
 # external/smolv
-file(GLOB smolv_sources external/smolv/*.h external/smolv/*.cpp)
-source_group("smolv" FILES ${smolv_sources})
+# 用于压缩shader，目前不用
+#file(GLOB smolv_sources external/smolv/*.h external/smolv/*.cpp)
+#source_group("smolv" FILES ${smolv_sources})
 
 # external/imgui
 # imgui需要包含cpp文件
@@ -48,11 +50,12 @@ file(GLOB imgui_sources external/imgui/*.h external/imgui/*.cpp external/imgui/*
 source_group("imgui" FILES ${imgui_sources})
 
 # 生成链接库
-add_library (base ${common_sources} ${vulkan_sources} ${engine_sources} ${imgui_sources} ${smolv_sources})
+add_library (base ${common_sources} ${vulkan_sources} ${engine_sources} ${imgui_sources})
 
 # glslang需要额外链接
 #target_link_libraries(base glslang SPIRV)
 
+# ktx
 target_link_libraries(base C:/Users/1/Desktop/MakeVulkan/external/ktx/lib/ktx.lib)
 
 # 查找所有的example

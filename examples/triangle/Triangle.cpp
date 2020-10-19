@@ -199,11 +199,13 @@ void Triangle::TickUI()
 		acTime = 0.0f;
 	}
 
-	ImGui::TextUnformatted("CPU Profiler:\n");
-	ImGui::TextUnformatted(cpuProfiler.c_str());
+	if (ImGui::CollapsingHeader("CPU Profiler", ImGuiTreeNodeFlags_None)) {
+		ImGui::TextUnformatted(cpuProfiler.c_str());
+	}
 
-	ImGui::TextUnformatted("GPU Profiler:\n");
-	ImGui::TextUnformatted(gpuProfiler.c_str());
+	if (ImGui::CollapsingHeader("GPU Profiler", ImGuiTreeNodeFlags_None)) {
+		ImGui::TextUnformatted(gpuProfiler.c_str());
+	}
 
 	ImGui::End();
 }
@@ -319,7 +321,7 @@ void Triangle::PrepareResources()
 
 	// Mesh
 	{
-		std::vector<VertexChannel> channels = { kVertexPosition ,kVertexNormal, kVertexTexcoord };
+		std::vector<VertexChannel> channels = { kVertexPosition ,kVertexNormal, kVertexColor, kVertexTexcoord };
 
 		m_Home = new Mesh();
 		m_Home->SetVertexChannels(channels);

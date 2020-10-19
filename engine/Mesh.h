@@ -27,7 +27,7 @@ public:
 	void LoadFromFile(const std::string& filename);
 
 	// 目前默认是一个简单的立方体，只有pos,color,tex，其中tex全为0
-	void LoadFromGeo();
+	//void LoadFromGeo();
 	void UploadToGPU();
 
 	std::vector<VkFormat> GetVertexFormats();
