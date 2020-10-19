@@ -24,6 +24,7 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "RenderNode.h"
+#include "Texture.h"
 
 #include "Gui.h"
 #include "TimeMgr.h"
@@ -75,8 +76,8 @@ void Triangle::CleanUp()
 	RELEASE(m_Home);
 	RELEASE(m_Cube);
 
-	RELEASE(m_HomeImage);
-	RELEASE(m_BrickImage);
+	RELEASE(m_HomeTex);
+	RELEASE(m_CrateTex);
 	RELEASE(m_Sampler);
 
 	RELEASE(m_HomeNode);
@@ -233,7 +234,7 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 	// DescriptorSet
 	auto& descriptorSetMgr = driver.GetDescriptorSetMgr();
-	auto descriptorSet = descriptorSetMgr.GetDescriptorSet(m_DescriptorSetLayout);
+	auto descriptorSetHome = descriptorSetMgr.GetDescriptorSet(m_DescriptorSetLayout);
 
 	DesUpdateInfos infos(3);
 	infos[0].binding = 0;
@@ -241,8 +242,8 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 	infos[1].binding = 1;
 	infos[1].info.buffer = { GetCurrObjectUniformBuffer()->buffer,0,VK_WHOLE_SIZE };
 	infos[2].binding = 2;
-	infos[2].info.image = { m_Sampler->sampler, m_HomeImage->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-	descriptorSetMgr.UpdateDescriptorSet(descriptorSet, infos);
+	infos[2].info.image = { m_Sampler->sampler, m_HomeTex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+	descriptorSetMgr.UpdateDescriptorSet(descriptorSetHome, infos);
 
 	//
 
@@ -272,25 +273,32 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 	vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_TexPipeline);
 
 	// home
-	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 0 * GetUBODynamicAlignment());
+	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSetHome, 0 * GetUBODynamicAlignment());
 	vkCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
 	vkCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 	vkCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
 
 	vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_ColorPipeline);
 
-	infos[2].binding = 2;
-	infos[2].info.image = { m_Sampler->sampler, m_BrickImage->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-	descriptorSetMgr.UpdateDescriptorSet(descriptorSet, infos);
+	auto descriptorSetCube = descriptorSetMgr.GetDescriptorSet(m_DescriptorSetLayout);
+
+	DesUpdateInfos infos2(3);
+	infos2[0].binding = 0;
+	infos2[0].info.buffer = { GetCurrPassUniformBuffer()->buffer,0,sizeof(PassUniform) };
+	infos2[1].binding = 1;
+	infos2[1].info.buffer = { GetCurrObjectUniformBuffer()->buffer,0,VK_WHOLE_SIZE };
+	infos2[2].binding = 2;
+	infos2[2].info.image = { m_Sampler->sampler, m_CrateTex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+	descriptorSetMgr.UpdateDescriptorSet(descriptorSetCube, infos2);
 
 	// cube1
-	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 1 * GetUBODynamicAlignment());
+	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSetCube, 1 * GetUBODynamicAlignment());
 	vkCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
 	vkCommandBuffer->BindIndexBuffer(m_CubeNode1->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 	vkCommandBuffer->DrawIndexed(m_CubeNode1->GetIndexCount(), 1, 0, 0, 1);
 
 	// cube2
-	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSet, 2 * GetUBODynamicAlignment());
+	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSetCube, 2 * GetUBODynamicAlignment());
 	vkCommandBuffer->BindVertexBuffer(0, m_CubeNode2->GetVertexBuffer());
 	vkCommandBuffer->BindIndexBuffer(m_CubeNode2->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 	vkCommandBuffer->DrawIndexed(m_CubeNode2->GetIndexCount(), 1, 0, 0, 1);
@@ -325,37 +333,11 @@ void Triangle::PrepareResources()
 	}
 
 	// Texture
-	{
-		uint32_t width = 0, height = 0, dataSize = 0;
-		std::vector<char> imageData = GetImageData(global::AssetPath + "textures/viking_room.png", 4, &width, &height, nullptr, &dataSize);
-		if (imageData.size() == 0) {
-			assert(false);
-		}
+	m_HomeTex = new Texture();
+	m_HomeTex->LoadFromFile(global::AssetPath + "textures/viking_room.png");
 
-		VKImageCI(imageCI);
-		imageCI.extent.width = width;
-		imageCI.extent.height = height;
-		VKImageViewCI(imageViewCI);
-		m_HomeImage = driver.CreateVKImage(imageCI, imageViewCI);
-
-		driver.UploadVKImage(m_HomeImage, imageData.data(), dataSize);
-	}
-
-	{
-		uint32_t width = 0, height = 0, dataSize = 0;
-		std::vector<char> imageData = GetImageData(global::AssetPath + "textures/crate01_color_height_rgba.ktx", 4, &width, &height, nullptr, &dataSize);
-		if (imageData.size() == 0) {
-			assert(false);
-		}
-
-		VKImageCI(imageCI);
-		imageCI.extent.width = width;
-		imageCI.extent.height = height;
-		VKImageViewCI(imageViewCI);
-		m_BrickImage = driver.CreateVKImage(imageCI, imageViewCI);
-
-		driver.UploadVKImage(m_BrickImage, imageData.data(), dataSize);
-	}
+	m_CrateTex = new Texture();
+	m_CrateTex->LoadFromFile(global::AssetPath + "textures/crate01_color_height_rgba.ktx");
 
 	// Sampler
 	{
