@@ -41,6 +41,7 @@ extern android_app* androidApp;
 #endif
 
 #define FrameResourcesCount 3
+#define MaxObjectsCount 100
 
 namespace global
 {

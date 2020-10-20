@@ -21,7 +21,7 @@ layout(set=0, binding=0) uniform u_PassUniformBuffer {
 	vec4 lightPos;
 };
 
-layout(set=0, binding=1) uniform u_ObjectUniformBuffer {
+layout(set=1, binding=0) uniform u_ObjectUniformBuffer {
     mat4 world;
 };
 
@@ -84,8 +84,8 @@ void main() {
                               MemberDecorate 25(u_ObjectUniformBuffer) 0 Offset 0
                               MemberDecorate 25(u_ObjectUniformBuffer) 0 MatrixStride 16
                               Decorate 25(u_ObjectUniformBuffer) Block
-                              Decorate 27 DescriptorSet 0
-                              Decorate 27 Binding 1
+                              Decorate 27 DescriptorSet 1
+                              Decorate 27 Binding 0
                               Decorate 32(i_Position) Location 0
                               Decorate 37(v_Normal) Location 0
                               Decorate 38(i_Normal) Location 1

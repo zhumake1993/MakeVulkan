@@ -68,7 +68,7 @@ private:
 	uint32_t m_CurrFrameIndex = 0;
 	std::vector<FrameResource> m_FrameResources;
 	std::vector<VKBuffer*> m_PassUniformBuffers;
-	const uint32_t m_ObjectUniformNum = 100;
+	const uint32_t m_ObjectUniformNum = MaxObjectsCount;
 	std::vector<VKBuffer*> m_ObjectUniformBuffers;
 	uint32_t m_UBODynamicAlignment;
 };

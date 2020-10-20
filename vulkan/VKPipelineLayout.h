@@ -7,7 +7,7 @@ struct VKDevice;
 
 struct VKPipelineLayout : public NonCopyable
 {
-	VKPipelineLayout(VKDevice* vkDevice, VkDescriptorSetLayout descriptorSetLayout, VkShaderStageFlags pcStage, uint32_t pcSize);
+	VKPipelineLayout(VKDevice* vkDevice, const std::vector<VkDescriptorSetLayout>& descriptorSetLayouts, VkShaderStageFlags pcStage, uint32_t pcSize);
 	~VKPipelineLayout();
 
 	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;

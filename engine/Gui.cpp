@@ -80,7 +80,7 @@ Imgui::Imgui()
 	
 	PipelineCI pipelineCI;
 
-	m_PipelineLayout = driver.CreateVKPipelineLayout(descriptorSetLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 4);
+	m_PipelineLayout = driver.CreateVKPipelineLayout({ descriptorSetLayout }, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 4);
 
 	m_RenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat(), driver.GetSupportedDepthFormat());
 
@@ -193,7 +193,7 @@ void Imgui::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 	ImGuiIO& io = ImGui::GetIO();
 
 	vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline);
-	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, m_DescriptorSet);
+	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, m_DescriptorSet);
 	vkCommandBuffer->BindVertexBuffer(0, m_VertexBuffer);
 	vkCommandBuffer->BindIndexBuffer(m_IndexBuffer, VK_INDEX_TYPE_UINT16);
 

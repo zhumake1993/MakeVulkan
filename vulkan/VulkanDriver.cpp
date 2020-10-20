@@ -346,9 +346,9 @@ VKShaderModule * VulkanDriver::CreateVKShaderModule(const std::string & filename
 	return new VKShaderModule(m_VKDevice, filename);
 }
 
-VKPipelineLayout * VulkanDriver::CreateVKPipelineLayout(VkDescriptorSetLayout layout, VkShaderStageFlags pcStage, uint32_t pcSize)
+VKPipelineLayout * VulkanDriver::CreateVKPipelineLayout(const std::vector<VkDescriptorSetLayout>& layouts, VkShaderStageFlags pcStage, uint32_t pcSize)
 {
-	return new VKPipelineLayout(m_VKDevice, layout, pcStage, pcSize);
+	return new VKPipelineLayout(m_VKDevice, layouts, pcStage, pcSize);
 }
 
 VKPipeline * VulkanDriver::CreateVKPipeline(PipelineCI & pipelineCI, VKPipeline * parent)

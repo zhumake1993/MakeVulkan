@@ -31,7 +31,7 @@ struct VKCommandBuffer : public NonCopyable
 	void SetViewport(VkViewport& viewport);
 	void SetScissor(VkRect2D& area);
 	void BindPipeline(VkPipelineBindPoint bindPoint, VKPipeline* vkPipeline);
-	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VKPipelineLayout* pipelineLayout, VkDescriptorSet set, uint32_t offset = -1);
+	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VKPipelineLayout* pipelineLayout, uint32_t index, VkDescriptorSet set, uint32_t offset = -1);
 	void PushConstants(VKPipelineLayout* pipelineLayout, VkShaderStageFlags pcStage, uint32_t offset, uint32_t size, void* data);
 
 	void BindVertexBuffer(uint32_t bind, VKBuffer* vkBuffer);

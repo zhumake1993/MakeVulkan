@@ -236,16 +236,6 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 	// DescriptorSet
 	auto& descriptorSetMgr = driver.GetDescriptorSetMgr();
-	auto descriptorSetHome = descriptorSetMgr.GetDescriptorSet(m_DescriptorSetLayout);
-
-	DesUpdateInfos infos(3);
-	infos[0].binding = 0;
-	infos[0].info.buffer = { GetCurrPassUniformBuffer()->buffer,0,sizeof(PassUniform) };
-	infos[1].binding = 1;
-	infos[1].info.buffer = { GetCurrObjectUniformBuffer()->buffer,0,VK_WHOLE_SIZE };
-	infos[2].binding = 2;
-	infos[2].info.image = { m_Sampler->sampler, m_HomeTex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-	descriptorSetMgr.UpdateDescriptorSet(descriptorSetHome, infos);
 
 	//
 
@@ -272,38 +262,73 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 	vkCommandBuffer->SetScissor(area);
 
-	vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_TexPipeline);
+	//
+	auto dsPerDrawcall = descriptorSetMgr.GetDescriptorSet(m_DSLPerDrawcall);
+	DesUpdateInfos infosPerDrawcall(1);
+	infosPerDrawcall[0].binding = 0;
+	infosPerDrawcall[0].info.buffer = { GetCurrPassUniformBuffer()->buffer,0,sizeof(PassUniform) };
+	descriptorSetMgr.UpdateDescriptorSet(dsPerDrawcall, infosPerDrawcall);
+	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, dsPerDrawcall);
+
+	auto dsDynamicUBO = descriptorSetMgr.GetDescriptorSet(m_DSLDynamicUBO);
+	DesUpdateInfos infosDynamicUBO(1);
+	infosDynamicUBO[0].binding = 0;
+	infosDynamicUBO[0].info.buffer = { GetCurrObjectUniformBuffer()->buffer,0,VK_WHOLE_SIZE };
+	descriptorSetMgr.UpdateDescriptorSet(dsDynamicUBO, infosDynamicUBO);
 
 	// home
-	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSetHome, 0 * GetUBODynamicAlignment());
-	vkCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
-	vkCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
-	vkCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
+	{
+		vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_TexPipeline);
 
-	vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_ColorPipeline);
+		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsDynamicUBO, 0 * GetUBODynamicAlignment());
 
-	auto descriptorSetCube = descriptorSetMgr.GetDescriptorSet(m_DescriptorSetLayout);
+		auto dsHome = descriptorSetMgr.GetDescriptorSet(m_DSLHome);
+		DesUpdateInfos infosHome(1);
+		infosHome[0].binding = 0;
+		infosHome[0].info.image = { m_Sampler->sampler, m_HomeTex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+		descriptorSetMgr.UpdateDescriptorSet(dsHome, infosHome);
+		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsHome);
 
-	DesUpdateInfos infos2(3);
-	infos2[0].binding = 0;
-	infos2[0].info.buffer = { GetCurrPassUniformBuffer()->buffer,0,sizeof(PassUniform) };
-	infos2[1].binding = 1;
-	infos2[1].info.buffer = { GetCurrObjectUniformBuffer()->buffer,0,VK_WHOLE_SIZE };
-	infos2[2].binding = 2;
-	infos2[2].info.image = { m_Sampler->sampler, m_CrateTex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-	descriptorSetMgr.UpdateDescriptorSet(descriptorSetCube, infos2);
+		vkCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
+		vkCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+		vkCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
+	}
 
 	// cube1
-	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSetCube, 1 * GetUBODynamicAlignment());
-	vkCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
-	vkCommandBuffer->BindIndexBuffer(m_CubeNode1->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
-	vkCommandBuffer->DrawIndexed(m_CubeNode1->GetIndexCount(), 1, 0, 0, 1);
+	{
+		vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_ColorPipeline);
+
+		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsDynamicUBO, 1 * GetUBODynamicAlignment());
+
+		auto dsCube1 = descriptorSetMgr.GetDescriptorSet(m_DSLCube);
+		DesUpdateInfos infosCube1(1);
+		infosCube1[0].binding = 0;
+		infosCube1[0].info.image = { m_Sampler->sampler, m_CrateTex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+		descriptorSetMgr.UpdateDescriptorSet(dsCube1, infosCube1);
+		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsCube1);
+
+		vkCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
+		vkCommandBuffer->BindIndexBuffer(m_CubeNode1->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+		vkCommandBuffer->DrawIndexed(m_CubeNode1->GetIndexCount(), 1, 0, 0, 1);
+	}
 
 	// cube2
-	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, descriptorSetCube, 2 * GetUBODynamicAlignment());
-	vkCommandBuffer->BindVertexBuffer(0, m_CubeNode2->GetVertexBuffer());
-	vkCommandBuffer->BindIndexBuffer(m_CubeNode2->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
-	vkCommandBuffer->DrawIndexed(m_CubeNode2->GetIndexCount(), 1, 0, 0, 1);
+	{
+		vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_ColorPipeline);
+
+		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsDynamicUBO, 2 * GetUBODynamicAlignment());
+
+		auto dsCube2 = descriptorSetMgr.GetDescriptorSet(m_DSLCube);
+		DesUpdateInfos infosCube2(1);
+		infosCube2[0].binding = 0;
+		infosCube2[0].info.image = { m_Sampler->sampler, m_CrateTex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+		descriptorSetMgr.UpdateDescriptorSet(dsCube2, infosCube2);
+		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsCube2);
+
+		vkCommandBuffer->BindVertexBuffer(0, m_CubeNode2->GetVertexBuffer());
+		vkCommandBuffer->BindIndexBuffer(m_CubeNode2->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+		vkCommandBuffer->DrawIndexed(m_CubeNode2->GetIndexCount(), 1, 0, 0, 1);
+	}
 
 	// todo
 	m_Imgui->RecordCommandBuffer(vkCommandBuffer);
@@ -373,18 +398,25 @@ void Triangle::PrepareDescriptorSet()
 	auto& driver = GetVulkanDriver();
 	auto& descriptorSetMgr = driver.GetDescriptorSetMgr();
 
-	DSLBindings bindings(3);
-	bindings[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT };
-	bindings[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT };
-	bindings[2] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT };
-	m_DescriptorSetLayout = descriptorSetMgr.CreateDescriptorSetLayout(bindings);
+	DSLBindings perDrawcall(1);
+	perDrawcall[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT };
+	m_DSLPerDrawcall = descriptorSetMgr.CreateDescriptorSetLayout(perDrawcall);
+
+	DSLBindings dynamicUBO(1);
+	dynamicUBO[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT };
+	m_DSLDynamicUBO = descriptorSetMgr.CreateDescriptorSetLayout(dynamicUBO);
+
+	DSLBindings perObj(1);
+	perObj[0] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT };
+	m_DSLHome = descriptorSetMgr.CreateDescriptorSetLayout(perObj);
+	m_DSLCube = descriptorSetMgr.CreateDescriptorSetLayout(perObj);
 }
 
 void Triangle::CreatePipeline()
 {
 	auto& driver = GetVulkanDriver();
 
-	m_PipelineLayout = driver.CreateVKPipelineLayout(m_DescriptorSetLayout);
+	m_PipelineLayout = driver.CreateVKPipelineLayout({ m_DSLPerDrawcall, m_DSLDynamicUBO, m_DSLHome, m_DSLCube });
 	m_VKRenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat(), m_DepthFormat);
 
 	VKShaderModule* shaderModuleVert = driver.CreateVKShaderModule(global::AssetPath + "shaders/triangle/shader.vert.spv");

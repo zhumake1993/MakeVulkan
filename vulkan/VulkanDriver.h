@@ -55,7 +55,7 @@ public:
 
 	// Render Status
 	VKShaderModule* CreateVKShaderModule(const std::string& filename);
-	VKPipelineLayout* CreateVKPipelineLayout(VkDescriptorSetLayout layout, VkShaderStageFlags pcStage = VK_SHADER_STAGE_VERTEX_BIT, uint32_t pcSize = 0);
+	VKPipelineLayout* CreateVKPipelineLayout(const std::vector<VkDescriptorSetLayout>& layouts, VkShaderStageFlags pcStage = VK_SHADER_STAGE_VERTEX_BIT, uint32_t pcSize = 0);
 	VKPipeline* CreateVKPipeline(PipelineCI& pipelineCI, VKPipeline* parent = nullptr);
 	VKRenderPass* CreateVKRenderPass(VkFormat colorFormat, VkFormat depthFormat);
 

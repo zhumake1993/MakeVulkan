@@ -22,7 +22,7 @@ layout(set=0, binding=0) uniform u_PassUniformBuffer {
 	vec4 lightPos;
 };
 
-layout(set=0, binding=2) uniform sampler2D u_Texture;
+layout(set=2, binding=0) uniform sampler2D u_Texture;
 
 layout(location = 0) in vec4 v_Normal;
 layout(location = 1) in vec2 v_Texcoord;
@@ -59,8 +59,8 @@ void main() {
                               Name 52  "diffuse"
                               Name 60  "specular"
                               Name 71  "o_Color"
-                              Decorate 14(u_Texture) DescriptorSet 0
-                              Decorate 14(u_Texture) Binding 2
+                              Decorate 14(u_Texture) DescriptorSet 2
+                              Decorate 14(u_Texture) Binding 0
                               Decorate 18(v_Texcoord) Location 1
                               Decorate 23(v_Normal) Location 0
                               MemberDecorate 28(u_PassUniformBuffer) 0 ColMajor

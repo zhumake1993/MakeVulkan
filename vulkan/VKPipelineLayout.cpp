@@ -5,7 +5,7 @@
 
 #include "VKDevice.h"
 
-VKPipelineLayout::VKPipelineLayout(VKDevice* vkDevice, VkDescriptorSetLayout descriptorSetLayout, VkShaderStageFlags pcStage, uint32_t pcSize):
+VKPipelineLayout::VKPipelineLayout(VKDevice* vkDevice, const std::vector<VkDescriptorSetLayout>& descriptorSetLayouts, VkShaderStageFlags pcStage, uint32_t pcSize):
 	device(vkDevice->device)
 {
 	VkPushConstantRange pushConstantRange = {};
@@ -13,8 +13,8 @@ VKPipelineLayout::VKPipelineLayout(VKDevice* vkDevice, VkDescriptorSetLayout des
 	pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutCI.pNext = nullptr;
 	pipelineLayoutCI.flags = 0;
-	pipelineLayoutCI.setLayoutCount = 1;
-	pipelineLayoutCI.pSetLayouts = &descriptorSetLayout;
+	pipelineLayoutCI.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+	pipelineLayoutCI.pSetLayouts = descriptorSetLayouts.data();
 	if (pcSize > 0) {
 		pushConstantRange.stageFlags = pcStage;
 		pushConstantRange.offset = 0;
