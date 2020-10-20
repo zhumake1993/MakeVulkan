@@ -34,7 +34,8 @@ private:
 
 	// Texture
 	Texture* m_HomeTex;
-	Texture* m_CrateTex;
+	Texture* m_Crate01Tex;
+	Texture* m_Crate02Tex;
 	VKSampler* m_Sampler;
 
 	// RenderNode

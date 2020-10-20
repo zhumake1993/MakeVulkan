@@ -77,7 +77,8 @@ void Triangle::CleanUp()
 	RELEASE(m_Cube);
 
 	RELEASE(m_HomeTex);
-	RELEASE(m_CrateTex);
+	RELEASE(m_Crate01Tex);
+	RELEASE(m_Crate02Tex);
 	RELEASE(m_Sampler);
 
 	RELEASE(m_HomeNode);
@@ -303,7 +304,7 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 		auto dsCube1 = descriptorSetMgr.GetDescriptorSet(m_DSLCube);
 		DesUpdateInfos infosCube1(1);
 		infosCube1[0].binding = 0;
-		infosCube1[0].info.image = { m_Sampler->sampler, m_CrateTex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+		infosCube1[0].info.image = { m_Sampler->sampler, m_Crate01Tex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 		descriptorSetMgr.UpdateDescriptorSet(dsCube1, infosCube1);
 		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsCube1);
 
@@ -321,7 +322,7 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 		auto dsCube2 = descriptorSetMgr.GetDescriptorSet(m_DSLCube);
 		DesUpdateInfos infosCube2(1);
 		infosCube2[0].binding = 0;
-		infosCube2[0].info.image = { m_Sampler->sampler, m_CrateTex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+		infosCube2[0].info.image = { m_Sampler->sampler, m_Crate02Tex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 		descriptorSetMgr.UpdateDescriptorSet(dsCube2, infosCube2);
 		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsCube2);
 
@@ -363,8 +364,11 @@ void Triangle::PrepareResources()
 	m_HomeTex = new Texture();
 	m_HomeTex->LoadFromFile(global::AssetPath + "textures/viking_room.png");
 
-	m_CrateTex = new Texture();
-	m_CrateTex->LoadFromFile(global::AssetPath + "textures/crate01_color_height_rgba.ktx");
+	m_Crate01Tex = new Texture();
+	m_Crate01Tex->LoadFromFile(global::AssetPath + "textures/crate01_color_height_rgba.ktx");
+
+	m_Crate02Tex = new Texture();
+	m_Crate02Tex->LoadFromFile(global::AssetPath + "textures/crate02_color_height_rgba.ktx");
 
 	// Sampler
 	{
