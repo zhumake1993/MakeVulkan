@@ -5,36 +5,16 @@
 
 #include "VKDevice.h"
 
-uint32_t VkFormatToSize(VkFormat format) {
-	switch (format)
-	{
-	case VK_FORMAT_R32G32B32_SFLOAT:
-		return 3 * 4;
-		break;
-	case VK_FORMAT_R32G32_SFLOAT:
-		return 2 * 4;
-		break;
-	case VK_FORMAT_R8G8B8A8_UNORM:
-		return 4 * 1;
-		break;
-	default:
-		LOG("wrong VkFormat");
-		assert(false);
-		return 0;
-	}
-}
-
 PipelineCI::PipelineCI()
 {
+	dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT , VK_DYNAMIC_STATE_SCISSOR };
+
 	pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineCreateInfo.pNext = nullptr;
 	pipelineCreateInfo.flags = 0;
 
 	ConfigShaderStageCreateInfos();
-
-	vertexFormats = { VK_FORMAT_R32G32B32_SFLOAT };
 	ConfigVertexInputStateCreateInfo();
-
 	ConfigInputAssemblyStateCreateInfo();
 	ConfigTessellationStateCreateInfo();
 	ConfigViewportStateCreateInfo();
@@ -42,11 +22,8 @@ PipelineCI::PipelineCI()
 	ConfigMultisampleStateCreateInfo();
 	ConfigDepthStencilStateCreateInfo();
 	ConfigColorBlendStateCreateInfo();
-
-	dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT , VK_DYNAMIC_STATE_SCISSOR };
 	ConfigDynamicStateCreateInfo();
 
-	pipelineCreateInfo.pDynamicState = &dynamicStateCreateInfo;
 	pipelineCreateInfo.layout = VK_NULL_HANDLE;
 	pipelineCreateInfo.renderPass = VK_NULL_HANDLE;
 	pipelineCreateInfo.subpass = 0;
@@ -54,10 +31,9 @@ PipelineCI::PipelineCI()
 	pipelineCreateInfo.basePipelineIndex = -1;
 }
 
-void PipelineCI::SetVertexInputState(const std::vector<VkFormat>& formats)
+void PipelineCI::SetVertexInputState(const VertexDescription& vertexDes)
 {
-	vertexFormats = formats;
-	ConfigVertexInputStateCreateInfo();
+	ConfigVertexInputStateCreateInfo(vertexDes);
 }
 
 void PipelineCI::SetDynamicState(const std::vector<VkDynamicState>& states)
@@ -90,23 +66,24 @@ void PipelineCI::ConfigShaderStageCreateInfos()
 	pipelineCreateInfo.pStages = shaderStageCreateInfos;
 }
 
-void PipelineCI::ConfigVertexInputStateCreateInfo()
+void PipelineCI::ConfigVertexInputStateCreateInfo(const VertexDescription& vertexDes)
 {
+	if (vertexDes.formats.empty()) return;
+
 	// Inpute attribute bindings describe shader attribute locations and memory layouts
-	uint32_t num = static_cast<uint32_t>(vertexFormats.size());
-	uint32_t offset = 0;
+	uint32_t num = static_cast<uint32_t>(vertexDes.formats.size());
+	uint32_t stride = 0;
 	for (uint32_t i = 0; i < num; i++) {
 		vertexInputAttributs[i].binding = 0;
 		vertexInputAttributs[i].location = i;
-		vertexInputAttributs[i].format = vertexFormats[i];
-		vertexInputAttributs[i].offset = offset;
-		offset += VkFormatToSize(vertexFormats[i]);
+		vertexInputAttributs[i].format = vertexDes.formats[i];
+		vertexInputAttributs[i].offset = vertexDes.offsets[i];
 	}
 
 	// Vertex input binding
 	// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
 	vertexInputBindings[0].binding = 0;
-	vertexInputBindings[0].stride = offset;
+	vertexInputBindings[0].stride = vertexDes.offsets.back() + VkFormatToSize(vertexDes.formats.back());
 	vertexInputBindings[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 	// Vertex input state used for pipeline creation
@@ -247,7 +224,7 @@ void PipelineCI::ConfigDynamicStateCreateInfo()
 	dynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 	dynamicStateCreateInfo.pDynamicStates = dynamicStates.data();
 
-	pipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
+	pipelineCreateInfo.pDynamicState = &dynamicStateCreateInfo;
 }
 
 VKPipeline::VKPipeline(VKDevice * vkDevice, PipelineCI & pipelineCI) :

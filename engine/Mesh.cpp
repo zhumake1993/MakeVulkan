@@ -2,19 +2,24 @@
 #include "Tools.h"
 #include "obj/tiny_obj_loader.h"
 #include <sstream>
+#include <algorithm>
 #include "VulkanDriver.h"
 #include "VKBuffer.h"
 
-VkFormat VertexChannelToVkFormat[kVertexChannelCount] = {
-	VK_FORMAT_R32G32B32_SFLOAT,
-	VK_FORMAT_R32G32B32_SFLOAT,
-	VK_FORMAT_R32G32B32_SFLOAT,
-	VK_FORMAT_R32G32_SFLOAT
+// 载入模型的时候需要哪些channels
+std::vector<bool> gLoadModelWithChannels = {
+	true, // kVertexPosition
+	true, // kVertexNormal
+	true, // kVertexColor
+	true, // kVertexTexcoord
 };
 
 Mesh::Mesh()
 {
-	m_VertexChannels.resize(kVertexChannelCount);
+	m_VertexChannelFormats.resize(kVertexChannelCount);
+	for (int i = 0; i < kVertexChannelCount; i++) {
+		m_VertexChannelFormats[i] = VertexChannelToDefaultVkFormat(i);
+	}
 }
 
 Mesh::~Mesh()
@@ -25,9 +30,20 @@ Mesh::~Mesh()
 
 void Mesh::SetVertexChannels(std::vector<VertexChannel>& channels)
 {
-	for (auto& channel : channels) {
-		m_VertexChannels[channel] = true;
-	}
+	m_VertexChannels = channels;
+
+	// 保证channel的顺序
+	std::sort(m_VertexChannels.begin(), m_VertexChannels.end());
+}
+
+std::vector<VertexChannel>& Mesh::GetVertexChannels()
+{
+	return m_VertexChannels;
+}
+
+std::vector<VkFormat>& Mesh::GetVertexChannelFormats()
+{
+	return m_VertexChannelFormats;
 }
 
 void Mesh::LoadFromFile(const std::string & filename)
@@ -59,25 +75,25 @@ void Mesh::LoadFromFile(const std::string & filename)
 	for (const auto& shape : shapes) {
 		for (const auto& index : shape.mesh.indices) {
 
-			if (m_VertexChannels[kVertexPosition]) {
+			if (gLoadModelWithChannels[kVertexPosition]) {
 				m_Vertices.push_back(attrib.vertices[3 * index.vertex_index + 0]);
 				m_Vertices.push_back(attrib.vertices[3 * index.vertex_index + 1]);
 				m_Vertices.push_back(attrib.vertices[3 * index.vertex_index + 2]);
 			}
 			
-			if (m_VertexChannels[kVertexNormal]) {
+			if (gLoadModelWithChannels[kVertexNormal]) {
 				m_Vertices.push_back(attrib.normals[3 * index.normal_index + 0]);
 				m_Vertices.push_back(attrib.normals[3 * index.normal_index + 1]);
 				m_Vertices.push_back(attrib.normals[3 * index.normal_index + 2]);
 			}
 
-			if (m_VertexChannels[kVertexColor]) {
+			if (gLoadModelWithChannels[kVertexColor]) {
 				m_Vertices.push_back(attrib.colors[3 * index.vertex_index + 0]);
 				m_Vertices.push_back(attrib.colors[3 * index.vertex_index + 1]);
 				m_Vertices.push_back(attrib.colors[3 * index.vertex_index + 2]);
 			}
 
-			if (m_VertexChannels[kVertexTexcoord]) {
+			if (gLoadModelWithChannels[kVertexTexcoord]) {
 				// The OBJ format assumes a coordinate system where a vertical coordinate of 0 means the bottom of the image, 
 				// however we've uploaded our image into Vulkan in a top to bottom orientation where 0 means the top of the image.
 				// Solve this by flipping the vertical component of the texture coordinates
@@ -139,17 +155,20 @@ void Mesh::UploadToGPU()
 	driver.UploadVKBuffer(m_IndexBuffer, m_Indices.data(), indexBufferSize);
 }
 
-std::vector<VkFormat> Mesh::GetVertexFormats()
+VertexDescription Mesh::GetVertexDescription()
 {
-	std::vector<VkFormat> vertexFormats;
+	VertexDescription vd;
 
+	uint32_t offset = 0;
 	for (int i = 0; i < kVertexChannelCount; i++) {
-		if (m_VertexChannels[i]) {
-			vertexFormats.push_back(VertexChannelToVkFormat(static_cast<VertexChannel>(i)));
+		if (HasVertexChannel(i)) {
+			vd.formats.push_back(m_VertexChannelFormats[i]);
+			vd.offsets.push_back(offset);
 		}
+		offset += VkFormatToSize(m_VertexChannelFormats[i]);
 	}
 
-	return vertexFormats;
+	return vd;
 }
 
 VKBuffer * Mesh::GetVertexBuffer()
@@ -167,25 +186,12 @@ uint32_t Mesh::GetIndexCount()
 	return static_cast<uint32_t>(m_Indices.size());
 }
 
-VkFormat Mesh::VertexChannelToVkFormat(VertexChannel channel)
+bool Mesh::HasVertexChannel(int channel)
 {
-	switch (channel)
-	{
-	case kVertexPosition:
-		return VK_FORMAT_R32G32B32_SFLOAT;
-		break;
-	case kVertexNormal:
-		return VK_FORMAT_R32G32B32_SFLOAT;
-		break;
-	case kVertexColor:
-		return VK_FORMAT_R32G32B32_SFLOAT;
-		break;
-	case kVertexTexcoord:
-		return VK_FORMAT_R32G32_SFLOAT;
-		break;
-	default:
-		LOG("wrong vertex channel");
-		assert(false);
-		return VK_FORMAT_UNDEFINED;
+	if (std::find(m_VertexChannels.begin(), m_VertexChannels.end(), channel) != m_VertexChannels.end()) {
+		return true;
+	}
+	else {
+		return false;
 	}
 }

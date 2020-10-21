@@ -2,31 +2,24 @@
 
 #include "Common.h"
 #include "NonCopyable.h"
+#include "VKTypes.h"
 
 struct VKDevice;
 struct VKShaderModule;
 struct VKPipelineLayout;
 struct VKKRenderPass;
 
-enum VKShaderType
-{
-	kVKShaderVertex = 0,
-	kVKShaderFragment = 1,
-	kVKShaderCount
-};
-
 struct PipelineCI
 {
 
 	PipelineCI();
 
-	void SetVertexInputState(const std::vector<VkFormat>& formats);
+	void SetVertexInputState(const VertexDescription& vertexDes);
 	void SetDynamicState(const std::vector<VkDynamicState>& states);
 
 	// 只支持vs和ps
 	VkPipelineShaderStageCreateInfo shaderStageCreateInfos[kVKShaderCount];
 
-	std::vector<VkFormat> vertexFormats;
 	// 只支持一个绑定点0
 	VkVertexInputBindingDescription vertexInputBindings[1];
 	// 只支持最多4个顶点属性
@@ -41,8 +34,6 @@ struct PipelineCI
 	VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo;
 	VkPipelineColorBlendAttachmentState colorBlendAttachmentState;
 	VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo;
-
-	std::vector<VkDynamicState> dynamicStates;
 	VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo;
 
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo;
@@ -50,7 +41,7 @@ struct PipelineCI
 private:
 
 	void ConfigShaderStageCreateInfos();
-	void ConfigVertexInputStateCreateInfo();
+	void ConfigVertexInputStateCreateInfo(const VertexDescription& vertexDes = {});
 	void ConfigInputAssemblyStateCreateInfo();
 	void ConfigTessellationStateCreateInfo();
 	void ConfigViewportStateCreateInfo();
@@ -59,6 +50,8 @@ private:
 	void ConfigDepthStencilStateCreateInfo();
 	void ConfigColorBlendStateCreateInfo();
 	void ConfigDynamicStateCreateInfo();
+
+	std::vector<VkDynamicState> dynamicStates;
 };
 
 struct VKPipeline : public NonCopyable

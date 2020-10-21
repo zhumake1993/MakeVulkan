@@ -1,6 +1,7 @@
 #include "Gui.h"
 #include "Tools.h"
 #include "VulkanDriver.h"
+#include "VKTypes.h"
 
 #include "VKBuffer.h"
 #include "VKImage.h"
@@ -90,8 +91,10 @@ Imgui::Imgui()
 	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = shaderVert->shaderModule;
 	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = shaderFrag->shaderModule;
 
-	std::vector<VkFormat> formats = { VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R8G8B8A8_UNORM };
-	pipelineCI.SetVertexInputState(formats);
+	VertexDescription vertexDes;
+	vertexDes.formats = { VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R8G8B8A8_UNORM };
+	vertexDes.offsets = { 0, VkFormatToSize(VK_FORMAT_R32G32_SFLOAT),VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) };
+	pipelineCI.SetVertexInputState(vertexDes);
 
 	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->pipelineLayout;
 	pipelineCI.pipelineCreateInfo.renderPass = m_RenderPass->renderPass;

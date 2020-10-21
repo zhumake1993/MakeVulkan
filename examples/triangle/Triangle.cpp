@@ -437,15 +437,17 @@ void Triangle::CreatePipeline()
 
 	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = shaderModuleVert->shaderModule;
 	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = shaderModuleFrag->shaderModule;
-	pipelineCI.SetVertexInputState(m_Home->GetVertexFormats());
+	pipelineCI.SetVertexInputState(m_Home->GetVertexDescription());
 
 	m_TexPipeline = driver.CreateVKPipeline(pipelineCI);
 
 	// color
 
+	//pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = simpleColorVert->shaderModule;
+	//pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = simpleColorFrag->shaderModule;
 	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = shaderModuleVert->shaderModule;
 	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = shaderModuleFrag->shaderModule;
-	pipelineCI.SetVertexInputState(m_Cube->GetVertexFormats());
+	pipelineCI.SetVertexInputState(m_Cube->GetVertexDescription());
 
 	m_ColorPipeline = driver.CreateVKPipeline(pipelineCI, m_TexPipeline);
 
