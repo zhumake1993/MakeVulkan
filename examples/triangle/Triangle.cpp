@@ -12,7 +12,6 @@
 
 #include "DescriptorSetMgr.h"
 
-#include "VKShaderModule.h"
 #include "VKPipelineLayout.h"
 #include "VKPipeline.h"
 
@@ -25,6 +24,8 @@
 #include "Mesh.h"
 #include "RenderNode.h"
 #include "Texture.h"
+#include "Material.h"
+#include "Shader.h"
 
 #include "Gui.h"
 #include "TimeMgr.h"
@@ -80,6 +81,12 @@ void Triangle::CleanUp()
 	RELEASE(m_Crate01Tex);
 	RELEASE(m_Crate02Tex);
 	RELEASE(m_Sampler);
+
+	RELEASE(m_Shader);
+
+	RELEASE(m_HomeMat);
+	RELEASE(m_Crate01Mat);
+	RELEASE(m_Crate02Mat);
 
 	RELEASE(m_HomeNode);
 	RELEASE(m_CubeNode1);
@@ -143,27 +150,24 @@ void Triangle::Tick()
 	m_PassUniform.proj = m_Camera->GetProj();
 	m_PassUniform.eyePos = glm::vec4(m_Camera->GetPosition(), 0.0f);
 
-	m_CubeNode1->m_World = glm::rotate(glm::mat4(1.0f), deltaTime * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f)) * m_CubeNode1->m_World;
-	m_CubeNode1->m_NumFramesDirty = FrameResourcesCount;
+	m_CubeNode1->SetWorldMatrix(glm::rotate(glm::mat4(1.0f), deltaTime * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f)) * m_CubeNode1->GetWorldMatrix());
 
 	m_PassUniform.lightPos = glm::rotate(glm::mat4(1.0f), deltaTime * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f)) * m_PassUniform.lightPos;
 
-	{
-		UpdatePassUniformBuffer(&m_PassUniform);
-	}
+	UpdatePassUniformBuffer(&m_PassUniform);
 	{
 		if (m_HomeNode->m_NumFramesDirty > 0) {
-			UpdateObjectUniformBuffer(&m_HomeNode->m_World, m_HomeNode->m_ObjectUBIndex);
+			UpdateObjectUniformBuffer(&m_HomeNode->GetWorldMatrix(), m_HomeNode->GetObjectUBIndex());
 			m_HomeNode->m_NumFramesDirty--;
 		}
 
 		if (m_CubeNode1->m_NumFramesDirty > 0) {
-			UpdateObjectUniformBuffer(&m_CubeNode1->m_World, m_CubeNode1->m_ObjectUBIndex);
+			UpdateObjectUniformBuffer(&m_CubeNode1->GetWorldMatrix(), m_CubeNode1->GetObjectUBIndex());
 			m_CubeNode1->m_NumFramesDirty--;
 		}
 
 		if (m_CubeNode2->m_NumFramesDirty > 0) {
-			UpdateObjectUniformBuffer(&m_CubeNode2->m_World, m_CubeNode2->m_ObjectUBIndex);
+			UpdateObjectUniformBuffer(&m_CubeNode2->GetWorldMatrix(), m_CubeNode2->GetObjectUBIndex());
 			m_CubeNode2->m_NumFramesDirty--;
 		}
 	}
@@ -347,28 +351,49 @@ void Triangle::PrepareResources()
 
 	// Mesh
 	{
-		std::vector<VertexChannel> channels = { kVertexPosition ,kVertexNormal, kVertexColor, kVertexTexcoord };
-
 		m_Home = new Mesh();
-		m_Home->SetVertexChannels(channels);
 		m_Home->LoadFromFile(global::AssetPath + "models/viking_room.obj");
 		m_Home->UploadToGPU();
 
 		m_Cube = new Mesh();
-		m_Cube->SetVertexChannels(channels);
 		m_Cube->LoadFromFile(global::AssetPath + "models/cube.obj");
 		m_Cube->UploadToGPU();
 	}
 
 	// Texture
-	m_HomeTex = new Texture();
-	m_HomeTex->LoadFromFile(global::AssetPath + "textures/viking_room.png");
+	{
+		m_HomeTex = new Texture();
+		m_HomeTex->LoadFromFile(global::AssetPath + "textures/viking_room.png");
 
-	m_Crate01Tex = new Texture();
-	m_Crate01Tex->LoadFromFile(global::AssetPath + "textures/crate01_color_height_rgba.ktx");
+		m_Crate01Tex = new Texture();
+		m_Crate01Tex->LoadFromFile(global::AssetPath + "textures/crate01_color_height_rgba.ktx");
 
-	m_Crate02Tex = new Texture();
-	m_Crate02Tex->LoadFromFile(global::AssetPath + "textures/crate02_color_height_rgba.ktx");
+		m_Crate02Tex = new Texture();
+		m_Crate02Tex->LoadFromFile(global::AssetPath + "textures/crate02_color_height_rgba.ktx");
+	}
+
+	// Shader
+	{
+		m_Shader = new Shader();
+		m_Shader->LoadVertSPV(global::AssetPath + "shaders/triangle/shader.vert.spv");
+		m_Shader->LoadFragSPV(global::AssetPath + "shaders/triangle/shader.frag.spv");
+		m_Shader->SetVertexChannels({ kVertexPosition ,kVertexNormal, kVertexColor, kVertexTexcoord });
+	}
+
+	// Material
+	{
+		m_HomeMat = new Material();
+		m_HomeMat->SetShader(m_Shader);
+		m_HomeMat->SetTextures({ m_HomeTex });
+
+		m_Crate01Mat = new Material();
+		m_Crate01Mat->SetShader(m_Shader);
+		m_Crate01Mat->SetTextures({ m_Crate01Tex });
+
+		m_Crate02Mat = new Material();
+		m_Crate02Mat->SetShader(m_Shader);
+		m_Crate02Mat->SetTextures({ m_Crate02Tex });
+	}
 
 	// Sampler
 	{
@@ -377,24 +402,26 @@ void Triangle::PrepareResources()
 	}
 	
 	// RenderNode
-	m_HomeNode = new RenderNode();
-	m_HomeNode->m_ObjectUBIndex = 0;
-	m_HomeNode->m_Mesh = m_Home;
-	auto world = glm::mat4(1.0f);
-	world = glm::rotate(glm::mat4(1.0f), -1.57f, glm::vec3(1.0f, 0.0f, 0.0f)) * world;
-	world = glm::rotate(glm::mat4(1.0f), 1.57f, glm::vec3(0.0f, 1.0f, 0.0f)) * world;
-	world = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.3f, 0.3f)) * world;
-	m_HomeNode->m_World = world;
+	{
+		m_HomeNode = new RenderNode();
+		m_HomeNode->SetObjectUBIndex(0);
+		m_HomeNode->SetMesh(m_Home);
+		auto world = glm::mat4(1.0f);
+		world = glm::rotate(glm::mat4(1.0f), -1.57f, glm::vec3(1.0f, 0.0f, 0.0f)) * world;
+		world = glm::rotate(glm::mat4(1.0f), 1.57f, glm::vec3(0.0f, 1.0f, 0.0f)) * world;
+		world = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.3f, 0.3f)) * world;
+		m_HomeNode->SetWorldMatrix(world);
 
-	m_CubeNode1 = new RenderNode();
-	m_CubeNode1->m_ObjectUBIndex = 1;
-	m_CubeNode1->m_Mesh = m_Cube;
-	m_CubeNode1->m_World = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.3f, 0.3f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f));
+		m_CubeNode1 = new RenderNode();
+		m_CubeNode1->SetObjectUBIndex(1);
+		m_CubeNode1->SetMesh(m_Cube);
+		m_CubeNode1->SetWorldMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.3f, 0.3f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f)));
 
-	m_CubeNode2 = new RenderNode();
-	m_CubeNode2->m_ObjectUBIndex = 2;
-	m_CubeNode2->m_Mesh = m_Cube;
-	m_CubeNode2->m_World = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.5f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f));
+		m_CubeNode2 = new RenderNode();
+		m_CubeNode2->SetObjectUBIndex(2);
+		m_CubeNode2->SetMesh(m_Cube);
+		m_CubeNode2->SetWorldMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.5f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f)));
+	}
 }
 
 void Triangle::PrepareDescriptorSet()
@@ -423,11 +450,8 @@ void Triangle::CreatePipeline()
 	m_PipelineLayout = driver.CreateVKPipelineLayout({ m_DSLPerDrawcall, m_DSLDynamicUBO, m_DSLHome, m_DSLCube });
 	m_VKRenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat(), m_DepthFormat);
 
-	VKShaderModule* shaderModuleVert = driver.CreateVKShaderModule(global::AssetPath + "shaders/triangle/shader.vert.spv");
-	VKShaderModule* shaderModuleFrag = driver.CreateVKShaderModule(global::AssetPath + "shaders/triangle/shader.frag.spv");
-
-	VKShaderModule* simpleColorVert = driver.CreateVKShaderModule(global::AssetPath + "shaders/triangle/simpleColor.vert.spv");
-	VKShaderModule* simpleColorFrag = driver.CreateVKShaderModule(global::AssetPath + "shaders/triangle/simpleColor.frag.spv");
+	//VKShaderModule* simpleColorVert = driver.CreateVKShaderModule(global::AssetPath + "shaders/triangle/simpleColor.vert.spv");
+	//VKShaderModule* simpleColorFrag = driver.CreateVKShaderModule(global::AssetPath + "shaders/triangle/simpleColor.frag.spv");
 
 	PipelineCI pipelineCI;
 	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->pipelineLayout;
@@ -435,9 +459,9 @@ void Triangle::CreatePipeline()
 
 	// tex
 
-	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = shaderModuleVert->shaderModule;
-	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = shaderModuleFrag->shaderModule;
-	pipelineCI.SetVertexInputState(m_Home->GetVertexDescription());
+	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = m_HomeMat->GetShader()->GetVkShaderModuleVert();
+	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = m_HomeMat->GetShader()->GetVkShaderModuleFrag();
+	pipelineCI.SetVertexInputState(m_Home->GetVertexDescription(m_HomeMat->GetShader()->GetVertexChannels()));
 
 	m_TexPipeline = driver.CreateVKPipeline(pipelineCI);
 
@@ -445,16 +469,11 @@ void Triangle::CreatePipeline()
 
 	//pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = simpleColorVert->shaderModule;
 	//pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = simpleColorFrag->shaderModule;
-	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = shaderModuleVert->shaderModule;
-	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = shaderModuleFrag->shaderModule;
-	pipelineCI.SetVertexInputState(m_Cube->GetVertexDescription());
+	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = m_HomeMat->GetShader()->GetVkShaderModuleVert();
+	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = m_HomeMat->GetShader()->GetVkShaderModuleFrag();
+	pipelineCI.SetVertexInputState(m_Cube->GetVertexDescription(m_HomeMat->GetShader()->GetVertexChannels()));
 
 	m_ColorPipeline = driver.CreateVKPipeline(pipelineCI, m_TexPipeline);
-
-	RELEASE(shaderModuleVert);
-	RELEASE(shaderModuleFrag);
-	RELEASE(simpleColorVert);
-	RELEASE(simpleColorFrag);
 }
 
 // Èë¿Ú

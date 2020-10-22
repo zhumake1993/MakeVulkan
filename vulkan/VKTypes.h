@@ -20,7 +20,6 @@ enum VertexChannel {
 	kVertexChannelCount
 };
 
-VkFormat VertexChannelToDefaultVkFormat(int channel);
 uint32_t VkFormatToSize(VkFormat format);
 
 struct VertexDescription

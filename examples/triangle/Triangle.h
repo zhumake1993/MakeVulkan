@@ -38,6 +38,14 @@ private:
 	Texture* m_Crate02Tex;
 	VKSampler* m_Sampler;
 
+	// Shader
+	Shader* m_Shader;
+
+	// Material
+	Material* m_HomeMat;
+	Material* m_Crate01Mat;
+	Material* m_Crate02Mat;
+
 	// RenderNode
 	RenderNode* m_HomeNode;
 	RenderNode* m_CubeNode1;

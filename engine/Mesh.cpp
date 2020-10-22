@@ -2,7 +2,6 @@
 #include "Tools.h"
 #include "obj/tiny_obj_loader.h"
 #include <sstream>
-#include <algorithm>
 #include "VulkanDriver.h"
 #include "VKBuffer.h"
 
@@ -16,10 +15,12 @@ std::vector<bool> gLoadModelWithChannels = {
 
 Mesh::Mesh()
 {
-	m_VertexChannelFormats.resize(kVertexChannelCount);
-	for (int i = 0; i < kVertexChannelCount; i++) {
-		m_VertexChannelFormats[i] = VertexChannelToDefaultVkFormat(i);
-	}
+	m_VertexChannelFormats = {
+		VK_FORMAT_R32G32B32_SFLOAT, // kVertexPosition
+		VK_FORMAT_R32G32B32_SFLOAT, // kVertexNormal
+		VK_FORMAT_R32G32B32_SFLOAT, // kVertexColor
+		VK_FORMAT_R32G32_SFLOAT // kVertexTexcoord
+	};
 }
 
 Mesh::~Mesh()
@@ -28,22 +29,25 @@ Mesh::~Mesh()
 	RELEASE(m_IndexBuffer);
 }
 
-void Mesh::SetVertexChannels(std::vector<VertexChannel>& channels)
-{
-	m_VertexChannels = channels;
-
-	// ±£Ö¤channelµÄË³Ðò
-	std::sort(m_VertexChannels.begin(), m_VertexChannels.end());
-}
-
-std::vector<VertexChannel>& Mesh::GetVertexChannels()
-{
-	return m_VertexChannels;
-}
-
 std::vector<VkFormat>& Mesh::GetVertexChannelFormats()
 {
 	return m_VertexChannelFormats;
+}
+
+VertexDescription Mesh::GetVertexDescription(const std::vector<VertexChannel>& channels)
+{
+	VertexDescription vd;
+
+	uint32_t offset = 0;
+	for (int i = 0; i < kVertexChannelCount; i++) {
+		if (std::find(channels.begin(), channels.end(), i) != channels.end()) {
+			vd.formats.push_back(m_VertexChannelFormats[i]);
+			vd.offsets.push_back(offset);
+		}
+		offset += VkFormatToSize(m_VertexChannelFormats[i]);
+	}
+
+	return vd;
 }
 
 void Mesh::LoadFromFile(const std::string & filename)
@@ -155,22 +159,6 @@ void Mesh::UploadToGPU()
 	driver.UploadVKBuffer(m_IndexBuffer, m_Indices.data(), indexBufferSize);
 }
 
-VertexDescription Mesh::GetVertexDescription()
-{
-	VertexDescription vd;
-
-	uint32_t offset = 0;
-	for (int i = 0; i < kVertexChannelCount; i++) {
-		if (HasVertexChannel(i)) {
-			vd.formats.push_back(m_VertexChannelFormats[i]);
-			vd.offsets.push_back(offset);
-		}
-		offset += VkFormatToSize(m_VertexChannelFormats[i]);
-	}
-
-	return vd;
-}
-
 VKBuffer * Mesh::GetVertexBuffer()
 {
 	return m_VertexBuffer;
@@ -184,14 +172,4 @@ VKBuffer * Mesh::GetIndexBuffer()
 uint32_t Mesh::GetIndexCount()
 {
 	return static_cast<uint32_t>(m_Indices.size());
-}
-
-bool Mesh::HasVertexChannel(int channel)
-{
-	if (std::find(m_VertexChannels.begin(), m_VertexChannels.end(), channel) != m_VertexChannels.end()) {
-		return true;
-	}
-	else {
-		return false;
-	}
 }

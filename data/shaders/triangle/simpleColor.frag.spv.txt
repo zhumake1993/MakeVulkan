@@ -13,16 +13,6 @@ simpleColor.frag
 // OpModuleProcessed target-env vulkan1.0
 // OpModuleProcessed entry-point main
 #line 1
-// Copyright 2016 Intel Corporation All Rights Reserved
-// 
-// Intel makes no representations about the suitability of this software for any purpose.
-// THIS SOFTWARE IS PROVIDED ""AS IS."" INTEL SPECIFICALLY DISCLAIMS ALL WARRANTIES,
-// EXPRESS OR IMPLIED, AND ALL LIABILITY, INCLUDING CONSEQUENTIAL AND OTHER INDIRECT DAMAGES,
-// FOR THE USE OF THIS SOFTWARE, INCLUDING LIABILITY FOR INFRINGEMENT OF ANY PROPRIETARY
-// RIGHTS, AND INCLUDING THE WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-// Intel does not assume any responsibility for any errors which may appear in this software
-// nor any responsibility to update it.
-
 #version 450
 
 layout(location = 0) in vec4 v_Color;
@@ -48,7 +38,7 @@ void main() {
      12(v_Color):     11(ptr) Variable Input
          5(main):           3 Function None 4
                6:             Label
-                              Line 1 18 0
+                              Line 1 8 0
               13:    8(fvec4) Load 12(v_Color)
                               Store 10(o_Color) 13
                               Return

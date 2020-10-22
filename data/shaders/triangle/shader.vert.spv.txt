@@ -25,7 +25,7 @@ layout(set=1, binding=0) uniform u_ObjectUniformBuffer {
     mat4 world;
 };
 
-layout(location = 0) in vec4 i_Position;
+layout(location = 0) in mediump vec4 i_Position;
 layout(location = 1) in vec4 i_Normal;
 layout(location = 2) in vec4 i_Color;
 layout(location = 3) in vec2 i_Texcoord;
@@ -86,12 +86,15 @@ void main() {
                               Decorate 25(u_ObjectUniformBuffer) Block
                               Decorate 27 DescriptorSet 1
                               Decorate 27 Binding 0
+                              Decorate 32(i_Position) RelaxedPrecision
                               Decorate 32(i_Position) Location 0
+                              Decorate 33 RelaxedPrecision
                               Decorate 37(v_Normal) Location 0
                               Decorate 38(i_Normal) Location 1
                               Decorate 42(v_Texcoord) Location 1
                               Decorate 44(i_Texcoord) Location 3
                               Decorate 46(v_wPos) Location 2
+                              Decorate 49 RelaxedPrecision
                               Decorate 51(i_Color) Location 2
                3:             TypeVoid
                4:             TypeFunction 3

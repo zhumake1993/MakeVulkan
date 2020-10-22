@@ -17,10 +17,11 @@ simpleColor.vert
 layout(set=0, binding=0) uniform u_PassUniformBuffer {
     mat4 view;
     mat4 proj;
+	vec4 eyePos;
 	vec4 lightPos;
 };
 
-layout(set=0, binding=1) uniform u_ObjectUniformBuffer {
+layout(set=1, binding=0) uniform u_ObjectUniformBuffer {
     mat4 world;
 };
 
@@ -46,7 +47,8 @@ void main() {
                               Name 15  "u_PassUniformBuffer"
                               MemberName 15(u_PassUniformBuffer) 0  "view"
                               MemberName 15(u_PassUniformBuffer) 1  "proj"
-                              MemberName 15(u_PassUniformBuffer) 2  "lightPos"
+                              MemberName 15(u_PassUniformBuffer) 2  "eyePos"
+                              MemberName 15(u_PassUniformBuffer) 3  "lightPos"
                               Name 17  ""
                               Name 25  "u_ObjectUniformBuffer"
                               MemberName 25(u_ObjectUniformBuffer) 0  "world"
@@ -63,6 +65,7 @@ void main() {
                               MemberDecorate 15(u_PassUniformBuffer) 1 Offset 64
                               MemberDecorate 15(u_PassUniformBuffer) 1 MatrixStride 16
                               MemberDecorate 15(u_PassUniformBuffer) 2 Offset 128
+                              MemberDecorate 15(u_PassUniformBuffer) 3 Offset 144
                               Decorate 15(u_PassUniformBuffer) Block
                               Decorate 17 DescriptorSet 0
                               Decorate 17 Binding 0
@@ -70,8 +73,8 @@ void main() {
                               MemberDecorate 25(u_ObjectUniformBuffer) 0 Offset 0
                               MemberDecorate 25(u_ObjectUniformBuffer) 0 MatrixStride 16
                               Decorate 25(u_ObjectUniformBuffer) Block
-                              Decorate 27 DescriptorSet 0
-                              Decorate 27 Binding 1
+                              Decorate 27 DescriptorSet 1
+                              Decorate 27 Binding 0
                               Decorate 32(i_Position) Location 0
                               Decorate 37(v_Color) Location 0
                               Decorate 38(i_Color) Location 1
@@ -85,7 +88,7 @@ void main() {
               12:             TypeInt 32 1
               13:     12(int) Constant 0
               14:             TypeMatrix 8(fvec4) 4
-15(u_PassUniformBuffer):             TypeStruct 14 14 8(fvec4)
+15(u_PassUniformBuffer):             TypeStruct 14 14 8(fvec4) 8(fvec4)
               16:             TypePointer Uniform 15(u_PassUniformBuffer)
               17:     16(ptr) Variable Uniform
               18:     12(int) Constant 1
@@ -100,7 +103,7 @@ void main() {
      38(i_Color):     31(ptr) Variable Input
          5(main):           3 Function None 4
                6:             Label
-                              Line 1 24 0
+                              Line 1 25 0
               20:     19(ptr) AccessChain 17 18
               21:          14 Load 20
               22:     19(ptr) AccessChain 17 13
@@ -113,7 +116,7 @@ void main() {
               34:    8(fvec4) MatrixTimesVector 30 33
               36:     35(ptr) AccessChain 11 13
                               Store 36 34
-                              Line 1 25 0
+                              Line 1 26 0
               39:    8(fvec4) Load 38(i_Color)
                               Store 37(v_Color) 39
                               Return

@@ -1,19 +1,6 @@
 #include "VKTypes.h"
 #include "Tools.h"
 
-VkFormat VertexChannelVkFormats[kVertexChannelCount] = {
-	VK_FORMAT_R32G32B32_SFLOAT,
-	VK_FORMAT_R32G32B32_SFLOAT,
-	VK_FORMAT_R32G32B32_SFLOAT,
-	VK_FORMAT_R32G32_SFLOAT
-};
-
-VkFormat VertexChannelToDefaultVkFormat(int channel)
-{
-	assert(channel >= 0 && channel < kVertexChannelCount);
-	return VertexChannelVkFormats[channel];
-}
-
 uint32_t VkFormatToSize(VkFormat format) {
 	switch (format)
 	{
