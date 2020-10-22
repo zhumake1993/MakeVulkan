@@ -94,6 +94,7 @@ Imgui::Imgui()
 	VertexDescription vertexDes;
 	vertexDes.formats = { VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R8G8B8A8_UNORM };
 	vertexDes.offsets = { 0, VkFormatToSize(VK_FORMAT_R32G32_SFLOAT),VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) };
+	vertexDes.stride = VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R8G8B8A8_UNORM);
 	pipelineCI.SetVertexInputState(vertexDes);
 
 	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->pipelineLayout;

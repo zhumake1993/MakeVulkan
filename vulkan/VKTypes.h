@@ -26,8 +26,5 @@ struct VertexDescription
 {
 	std::vector<VkFormat> formats;
 	std::vector<uint32_t> offsets;
-
-	uint32_t GetStride() {
-		return offsets.back() + VkFormatToSize(formats.back());
-	}
+	uint32_t stride;
 };

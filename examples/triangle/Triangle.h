@@ -2,7 +2,6 @@
 
 #include "Engine.h"
 #include "VulkanFwd.h"
-#include "EngineFwd.h"
 
 class Triangle : public Engine
 {
@@ -40,16 +39,19 @@ private:
 
 	// Shader
 	Shader* m_Shader;
+	Shader* m_SimpleShader;
 
 	// Material
 	Material* m_HomeMat;
 	Material* m_Crate01Mat;
 	Material* m_Crate02Mat;
+	Material* m_SimpleColorMat;
 
 	// RenderNode
 	RenderNode* m_HomeNode;
 	RenderNode* m_CubeNode1;
 	RenderNode* m_CubeNode2;
+	RenderNode* m_ColorCubeNode;
 
 	// DescriptorSet
 	VkDescriptorSetLayout m_DSLPerDrawcall;

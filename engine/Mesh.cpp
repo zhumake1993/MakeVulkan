@@ -46,6 +46,7 @@ VertexDescription Mesh::GetVertexDescription(const std::vector<VertexChannel>& c
 		}
 		offset += VkFormatToSize(m_VertexChannelFormats[i]);
 	}
+	vd.stride = offset;
 
 	return vd;
 }

@@ -27,7 +27,11 @@
 #include "ProfilerMgr.h"
 #include "GPUProfilerMgr.h"
 
+#include "Mesh.h"
 #include "RenderNode.h"
+#include "Texture.h"
+#include "Material.h"
+#include "Shader.h"
 
 Engine::Engine()
 {
@@ -47,6 +51,12 @@ void Engine::CleanUpEngine()
 	CleanUp();
 
 	// 再清理父类
+
+	for (auto p : m_MeshContainer) { RELEASE(p); }
+	for (auto p : m_TextureContainer) { RELEASE(p); }
+	for (auto p : m_ShaderContainer) { RELEASE(p); }
+	for (auto p : m_MaterialContainer) { RELEASE(p); }
+	for (auto p : m_RenderNodeContainer) { RELEASE(p); }
 
 	RELEASE(m_Imgui);
 
@@ -140,6 +150,9 @@ void Engine::TickEngine()
 
 	// 更新游戏逻辑
 	Tick();
+	for (auto node : m_RenderNodeContainer) {
+		UpdateObjectUniformBuffer(node);
+	}
 
 	// 更新UI逻辑
 	m_Imgui->Prepare();
@@ -206,6 +219,46 @@ VKBuffer * Engine::GetCurrObjectUniformBuffer()
 uint32_t Engine::GetUBODynamicAlignment()
 {
 	return m_UBODynamicAlignment;
+}
+
+Mesh * Engine::CreateMesh()
+{
+	Mesh* mesh = new Mesh();
+	m_MeshContainer.push_back(mesh);
+
+	return mesh;
+}
+
+Texture * Engine::CreateTexture()
+{
+	Texture* texture = new Texture();
+	m_TextureContainer.push_back(texture);
+
+	return texture;
+}
+
+Shader * Engine::CreateShader()
+{
+	Shader* shader = new Shader();
+	m_ShaderContainer.push_back(shader);
+
+	return shader;
+}
+
+Material * Engine::CreateMaterial()
+{
+	Material* material = new Material();
+	m_MaterialContainer.push_back(material);
+
+	return material;
+}
+
+RenderNode * Engine::CreateRenderNode()
+{
+	RenderNode* renderNode = new RenderNode(static_cast<uint32_t>(m_RenderNodeContainer.size()));
+	m_RenderNodeContainer.push_back(renderNode);
+
+	return renderNode;
 }
 
 void Engine::WaitForPresent()

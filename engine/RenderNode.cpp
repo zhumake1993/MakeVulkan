@@ -2,6 +2,15 @@
 #include "Mesh.h"
 #include "VKBuffer.h"
 
+RenderNode::RenderNode(uint32_t objectUBIndex):
+	m_ObjectUBIndex(objectUBIndex)
+{
+}
+
+RenderNode::~RenderNode()
+{
+}
+
 void RenderNode::SetObjectUBIndex(uint32_t index)
 {
 	m_ObjectUBIndex = index;

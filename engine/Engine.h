@@ -47,6 +47,12 @@ protected:
 	VKBuffer* GetCurrObjectUniformBuffer();
 	uint32_t GetUBODynamicAlignment();
 
+	Mesh* CreateMesh();
+	Texture* CreateTexture();
+	Shader* CreateShader();
+	Material* CreateMaterial();
+	RenderNode* CreateRenderNode();
+
 private:
 
 	void WaitForPresent();
@@ -83,4 +89,10 @@ private:
 	const uint32_t m_ObjectUniformNum = MaxObjectsCount;
 	std::vector<VKBuffer*> m_ObjectUniformBuffers;
 	uint32_t m_UBODynamicAlignment;
+
+	std::vector<Mesh*> m_MeshContainer;
+	std::vector<Texture*> m_TextureContainer;
+	std::vector<Shader*> m_ShaderContainer;
+	std::vector<Material*> m_MaterialContainer;
+	std::vector<RenderNode*> m_RenderNodeContainer;
 };

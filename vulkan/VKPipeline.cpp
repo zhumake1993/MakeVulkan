@@ -83,7 +83,7 @@ void PipelineCI::ConfigVertexInputStateCreateInfo(const VertexDescription& verte
 	// Vertex input binding
 	// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
 	vertexInputBindings[0].binding = 0;
-	vertexInputBindings[0].stride = vertexDes.offsets.back() + VkFormatToSize(vertexDes.formats.back());
+	vertexInputBindings[0].stride = vertexDes.stride;
 	vertexInputBindings[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 	// Vertex input state used for pipeline creation

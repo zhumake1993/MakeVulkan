@@ -74,24 +74,6 @@ Triangle::~Triangle()
 
 void Triangle::CleanUp()
 {
-	RELEASE(m_Home);
-	RELEASE(m_Cube);
-
-	RELEASE(m_HomeTex);
-	RELEASE(m_Crate01Tex);
-	RELEASE(m_Crate02Tex);
-	RELEASE(m_Sampler);
-
-	RELEASE(m_Shader);
-
-	RELEASE(m_HomeMat);
-	RELEASE(m_Crate01Mat);
-	RELEASE(m_Crate02Mat);
-
-	RELEASE(m_HomeNode);
-	RELEASE(m_CubeNode1);
-	RELEASE(m_CubeNode2);
-
 	RELEASE(m_TexPipeline);
 	RELEASE(m_ColorPipeline);
 	RELEASE(m_PipelineLayout);
@@ -150,6 +132,7 @@ void Triangle::Tick()
 	m_PassUniform.proj = m_Camera->GetProj();
 	m_PassUniform.eyePos = glm::vec4(m_Camera->GetPosition(), 0.0f);
 
+	//m_CubeNode1->GetTransform().RotateLocal(deltaTime * 0.5f);
 	m_CubeNode1->GetTransform().Rotate(deltaTime * 0.5f, 0.0f, 1.0f, 0.0f);
 	m_CubeNode1->SetDirty();
 
@@ -159,9 +142,6 @@ void Triangle::Tick()
 	m_PassUniform.lightPos = glm::rotate(glm::mat4(1.0f), deltaTime * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f)) * m_PassUniform.lightPos;
 
 	UpdatePassUniformBuffer(&m_PassUniform);
-	UpdateObjectUniformBuffer(m_HomeNode);
-	UpdateObjectUniformBuffer(m_CubeNode1);
-	UpdateObjectUniformBuffer(m_CubeNode2);
 }
 
 void Triangle::TickUI()
@@ -272,58 +252,79 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 	infosDynamicUBO[0].info.buffer = { GetCurrObjectUniformBuffer()->buffer,0,VK_WHOLE_SIZE };
 	descriptorSetMgr.UpdateDescriptorSet(dsDynamicUBO, infosDynamicUBO);
 
-	// home
+	// m_TexPipeline
 	{
 		vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_TexPipeline);
 
-		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsDynamicUBO, 0 * GetUBODynamicAlignment());
+		// m_HomeMat
+		{
+			auto dsHome = descriptorSetMgr.GetDescriptorSet(m_DSLHome);
+			DesUpdateInfos infosHome(1);
+			infosHome[0].binding = 0;
+			infosHome[0].info.image = { m_Sampler->sampler, m_HomeTex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+			descriptorSetMgr.UpdateDescriptorSet(dsHome, infosHome);
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsHome);
 
-		auto dsHome = descriptorSetMgr.GetDescriptorSet(m_DSLHome);
-		DesUpdateInfos infosHome(1);
-		infosHome[0].binding = 0;
-		infosHome[0].info.image = { m_Sampler->sampler, m_HomeTex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-		descriptorSetMgr.UpdateDescriptorSet(dsHome, infosHome);
-		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsHome);
+			// drawcall
+			{
+				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsDynamicUBO, m_HomeNode->GetObjectUBIndex() * GetUBODynamicAlignment());
+				vkCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
+				vkCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+				vkCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
+			}
+		}
 
-		vkCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
-		vkCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
-		vkCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
+		// m_Crate01Mat
+		{
+			auto dsCube1 = descriptorSetMgr.GetDescriptorSet(m_DSLCube);
+			DesUpdateInfos infosCube1(1);
+			infosCube1[0].binding = 0;
+			infosCube1[0].info.image = { m_Sampler->sampler, m_Crate01Tex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+			descriptorSetMgr.UpdateDescriptorSet(dsCube1, infosCube1);
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsCube1);
+
+			// drawcall
+			{
+				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsDynamicUBO, m_CubeNode1->GetObjectUBIndex() * GetUBODynamicAlignment());
+				vkCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
+				vkCommandBuffer->BindIndexBuffer(m_CubeNode1->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+				vkCommandBuffer->DrawIndexed(m_CubeNode1->GetIndexCount(), 1, 0, 0, 1);
+			}
+		}
+
+		// m_Crate02Mat
+		{
+			auto dsCube2 = descriptorSetMgr.GetDescriptorSet(m_DSLCube);
+			DesUpdateInfos infosCube2(1);
+			infosCube2[0].binding = 0;
+			infosCube2[0].info.image = { m_Sampler->sampler, m_Crate02Tex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+			descriptorSetMgr.UpdateDescriptorSet(dsCube2, infosCube2);
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsCube2);
+
+			// drawcall
+			{
+				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsDynamicUBO, m_CubeNode2->GetObjectUBIndex() * GetUBODynamicAlignment());
+				vkCommandBuffer->BindVertexBuffer(0, m_CubeNode2->GetVertexBuffer());
+				vkCommandBuffer->BindIndexBuffer(m_CubeNode2->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+				vkCommandBuffer->DrawIndexed(m_CubeNode2->GetIndexCount(), 1, 0, 0, 1);
+			}
+		}
 	}
 
-	// cube1
+	// m_ColorPipeline
 	{
 		vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_ColorPipeline);
 
-		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsDynamicUBO, 1 * GetUBODynamicAlignment());
-
-		auto dsCube1 = descriptorSetMgr.GetDescriptorSet(m_DSLCube);
-		DesUpdateInfos infosCube1(1);
-		infosCube1[0].binding = 0;
-		infosCube1[0].info.image = { m_Sampler->sampler, m_Crate01Tex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-		descriptorSetMgr.UpdateDescriptorSet(dsCube1, infosCube1);
-		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsCube1);
-
-		vkCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
-		vkCommandBuffer->BindIndexBuffer(m_CubeNode1->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
-		vkCommandBuffer->DrawIndexed(m_CubeNode1->GetIndexCount(), 1, 0, 0, 1);
-	}
-
-	// cube2
-	{
-		vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_ColorPipeline);
-
-		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsDynamicUBO, 2 * GetUBODynamicAlignment());
-
-		auto dsCube2 = descriptorSetMgr.GetDescriptorSet(m_DSLCube);
-		DesUpdateInfos infosCube2(1);
-		infosCube2[0].binding = 0;
-		infosCube2[0].info.image = { m_Sampler->sampler, m_Crate02Tex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-		descriptorSetMgr.UpdateDescriptorSet(dsCube2, infosCube2);
-		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsCube2);
-
-		vkCommandBuffer->BindVertexBuffer(0, m_CubeNode2->GetVertexBuffer());
-		vkCommandBuffer->BindIndexBuffer(m_CubeNode2->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
-		vkCommandBuffer->DrawIndexed(m_CubeNode2->GetIndexCount(), 1, 0, 0, 1);
+		// m_SimpleColorMat
+		{
+			// drawcall
+			{
+				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsDynamicUBO, m_ColorCubeNode->GetObjectUBIndex() * GetUBODynamicAlignment());
+				vkCommandBuffer->BindVertexBuffer(0, m_ColorCubeNode->GetVertexBuffer());
+				vkCommandBuffer->BindIndexBuffer(m_ColorCubeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+				vkCommandBuffer->DrawIndexed(m_ColorCubeNode->GetIndexCount(), 1, 0, 0, 1);
+			}
+		}
 	}
 
 	// todo
@@ -342,48 +343,56 @@ void Triangle::PrepareResources()
 
 	// Mesh
 	{
-		m_Home = new Mesh();
+		m_Home = CreateMesh();
 		m_Home->LoadFromFile(global::AssetPath + "models/viking_room.obj");
 		m_Home->UploadToGPU();
 
-		m_Cube = new Mesh();
+		m_Cube = CreateMesh();
 		m_Cube->LoadFromFile(global::AssetPath + "models/cube.obj");
 		m_Cube->UploadToGPU();
 	}
 
 	// Texture
 	{
-		m_HomeTex = new Texture();
+		m_HomeTex = CreateTexture();
 		m_HomeTex->LoadFromFile(global::AssetPath + "textures/viking_room.png");
 
-		m_Crate01Tex = new Texture();
+		m_Crate01Tex = CreateTexture();
 		m_Crate01Tex->LoadFromFile(global::AssetPath + "textures/crate01_color_height_rgba.ktx");
 
-		m_Crate02Tex = new Texture();
+		m_Crate02Tex = CreateTexture();
 		m_Crate02Tex->LoadFromFile(global::AssetPath + "textures/crate02_color_height_rgba.ktx");
 	}
 
 	// Shader
 	{
-		m_Shader = new Shader();
+		m_Shader = CreateShader();
 		m_Shader->LoadVertSPV(global::AssetPath + "shaders/triangle/shader.vert.spv");
 		m_Shader->LoadFragSPV(global::AssetPath + "shaders/triangle/shader.frag.spv");
 		m_Shader->SetVertexChannels({ kVertexPosition ,kVertexNormal, kVertexColor, kVertexTexcoord });
+
+		m_SimpleShader = CreateShader();
+		m_SimpleShader->LoadVertSPV(global::AssetPath + "shaders/triangle/simpleColor.vert.spv");
+		m_SimpleShader->LoadFragSPV(global::AssetPath + "shaders/triangle/simpleColor.frag.spv");
+		m_SimpleShader->SetVertexChannels({ kVertexPosition, kVertexColor });
 	}
 
 	// Material
 	{
-		m_HomeMat = new Material();
+		m_HomeMat = CreateMaterial();
 		m_HomeMat->SetShader(m_Shader);
 		m_HomeMat->SetTextures({ m_HomeTex });
 
-		m_Crate01Mat = new Material();
+		m_Crate01Mat = CreateMaterial();
 		m_Crate01Mat->SetShader(m_Shader);
 		m_Crate01Mat->SetTextures({ m_Crate01Tex });
 
-		m_Crate02Mat = new Material();
+		m_Crate02Mat = CreateMaterial();
 		m_Crate02Mat->SetShader(m_Shader);
 		m_Crate02Mat->SetTextures({ m_Crate02Tex });
+
+		m_SimpleColorMat = CreateMaterial();
+		m_SimpleColorMat->SetShader(m_SimpleShader);
 	}
 
 	// Sampler
@@ -394,20 +403,21 @@ void Triangle::PrepareResources()
 	
 	// RenderNode
 	{
-		m_HomeNode = new RenderNode();
-		m_HomeNode->SetObjectUBIndex(0);
+		m_HomeNode = CreateRenderNode();
 		m_HomeNode->SetMesh(m_Home);
 		m_HomeNode->GetTransform().Rotate(-1.57f, 1.0f, 0.0f, 0.0f).Rotate(1.57f, 0.0f, 1.0f, 0.0f).Translate(0.0f, -0.3f, 0.3f);
 
-		m_CubeNode1 = new RenderNode();
-		m_CubeNode1->SetObjectUBIndex(1);
+		m_CubeNode1 = CreateRenderNode();
 		m_CubeNode1->SetMesh(m_Cube);
 		m_CubeNode1->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.3f, 0.3f);
 
-		m_CubeNode2 = new RenderNode();
-		m_CubeNode2->SetObjectUBIndex(2);
+		m_CubeNode2 = CreateRenderNode();
 		m_CubeNode2->SetMesh(m_Cube);
 		m_CubeNode2->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.3f, 0.0f);
+
+		m_ColorCubeNode = CreateRenderNode();
+		m_ColorCubeNode->SetMesh(m_Cube);
+		m_ColorCubeNode->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.6f, 0.0f);
 	}
 }
 
@@ -437,9 +447,6 @@ void Triangle::CreatePipeline()
 	m_PipelineLayout = driver.CreateVKPipelineLayout({ m_DSLPerDrawcall, m_DSLDynamicUBO, m_DSLHome, m_DSLCube });
 	m_VKRenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat(), m_DepthFormat);
 
-	//VKShaderModule* simpleColorVert = driver.CreateVKShaderModule(global::AssetPath + "shaders/triangle/simpleColor.vert.spv");
-	//VKShaderModule* simpleColorFrag = driver.CreateVKShaderModule(global::AssetPath + "shaders/triangle/simpleColor.frag.spv");
-
 	PipelineCI pipelineCI;
 	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->pipelineLayout;
 	pipelineCI.pipelineCreateInfo.renderPass = m_VKRenderPass->renderPass;
@@ -454,11 +461,9 @@ void Triangle::CreatePipeline()
 
 	// color
 
-	//pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = simpleColorVert->shaderModule;
-	//pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = simpleColorFrag->shaderModule;
-	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = m_HomeMat->GetShader()->GetVkShaderModuleVert();
-	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = m_HomeMat->GetShader()->GetVkShaderModuleFrag();
-	pipelineCI.SetVertexInputState(m_Cube->GetVertexDescription(m_HomeMat->GetShader()->GetVertexChannels()));
+	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = m_SimpleColorMat->GetShader()->GetVkShaderModuleVert();
+	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = m_SimpleColorMat->GetShader()->GetVkShaderModuleFrag();
+	pipelineCI.SetVertexInputState(m_Cube->GetVertexDescription(m_SimpleColorMat->GetShader()->GetVertexChannels()));
 
 	m_ColorPipeline = driver.CreateVKPipeline(pipelineCI, m_TexPipeline);
 }
