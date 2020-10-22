@@ -12,16 +12,19 @@ uint32_t RenderNode::GetObjectUBIndex()
 	return m_ObjectUBIndex;
 }
 
-void RenderNode::SetWorldMatrix(glm::mat4 world)
+Transform & RenderNode::GetTransform()
 {
-	m_WorldMatrix = world;
+	return m_Transform;
+}
 
-	m_NumFramesDirty = FrameResourcesCount;
+void RenderNode::SetWorldMatrix(glm::mat4& world)
+{
+	m_Transform.SetMatrix(world);
 }
 
 glm::mat4 RenderNode::GetWorldMatrix()
 {
-	return m_WorldMatrix;
+	return m_Transform.GetMatrix();
 }
 
 void RenderNode::SetMesh(Mesh * mesh)
@@ -47,4 +50,21 @@ VKBuffer * RenderNode::GetIndexBuffer()
 uint32_t RenderNode::GetIndexCount()
 {
 	return m_Mesh->GetIndexCount();
+}
+
+void RenderNode::SetDirty()
+{
+	m_NumFramesDirty = FrameResourcesCount;
+}
+
+bool RenderNode::IsDirty()
+{
+	return m_NumFramesDirty > 0;
+}
+
+void RenderNode::Clean()
+{
+	if (m_NumFramesDirty > 0) {
+		m_NumFramesDirty--;
+	}
 }

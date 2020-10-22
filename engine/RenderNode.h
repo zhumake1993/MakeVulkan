@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.h"
+#include "Transform.h"
 
 class Mesh;
 struct VKBuffer;
@@ -13,7 +14,9 @@ public:
 	void SetObjectUBIndex(uint32_t index);
 	uint32_t GetObjectUBIndex();
 
-	void SetWorldMatrix(glm::mat4 world);
+	Transform& GetTransform();
+
+	void SetWorldMatrix(glm::mat4& world);
 	glm::mat4 GetWorldMatrix();
 
 	void SetMesh(Mesh* mesh);
@@ -23,14 +26,15 @@ public:
 	VKBuffer* GetIndexBuffer();
 	uint32_t GetIndexCount();
 
-	// todo
-	uint32_t m_NumFramesDirty = FrameResourcesCount;
+	void SetDirty();
+	bool IsDirty();
+	void Clean();
 
 private:
 
 	uint32_t m_ObjectUBIndex = -1;
-	glm::mat4 m_WorldMatrix;
+	Transform m_Transform;
 	Mesh* m_Mesh;
 
-	//uint32_t m_NumFramesDirty = FrameResourcesCount;
+	uint32_t m_NumFramesDirty = FrameResourcesCount;
 };

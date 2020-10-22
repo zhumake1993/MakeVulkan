@@ -150,27 +150,18 @@ void Triangle::Tick()
 	m_PassUniform.proj = m_Camera->GetProj();
 	m_PassUniform.eyePos = glm::vec4(m_Camera->GetPosition(), 0.0f);
 
-	m_CubeNode1->SetWorldMatrix(glm::rotate(glm::mat4(1.0f), deltaTime * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f)) * m_CubeNode1->GetWorldMatrix());
+	m_CubeNode1->GetTransform().Rotate(deltaTime * 0.5f, 0.0f, 1.0f, 0.0f);
+	m_CubeNode1->SetDirty();
+
+	m_CubeNode2->GetTransform().Rotate(-deltaTime * 0.5f, 0.0f, 1.0f, 0.0f);
+	m_CubeNode2->SetDirty();
 
 	m_PassUniform.lightPos = glm::rotate(glm::mat4(1.0f), deltaTime * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f)) * m_PassUniform.lightPos;
 
 	UpdatePassUniformBuffer(&m_PassUniform);
-	{
-		if (m_HomeNode->m_NumFramesDirty > 0) {
-			UpdateObjectUniformBuffer(&m_HomeNode->GetWorldMatrix(), m_HomeNode->GetObjectUBIndex());
-			m_HomeNode->m_NumFramesDirty--;
-		}
-
-		if (m_CubeNode1->m_NumFramesDirty > 0) {
-			UpdateObjectUniformBuffer(&m_CubeNode1->GetWorldMatrix(), m_CubeNode1->GetObjectUBIndex());
-			m_CubeNode1->m_NumFramesDirty--;
-		}
-
-		if (m_CubeNode2->m_NumFramesDirty > 0) {
-			UpdateObjectUniformBuffer(&m_CubeNode2->GetWorldMatrix(), m_CubeNode2->GetObjectUBIndex());
-			m_CubeNode2->m_NumFramesDirty--;
-		}
-	}
+	UpdateObjectUniformBuffer(m_HomeNode);
+	UpdateObjectUniformBuffer(m_CubeNode1);
+	UpdateObjectUniformBuffer(m_CubeNode2);
 }
 
 void Triangle::TickUI()
@@ -406,21 +397,17 @@ void Triangle::PrepareResources()
 		m_HomeNode = new RenderNode();
 		m_HomeNode->SetObjectUBIndex(0);
 		m_HomeNode->SetMesh(m_Home);
-		auto world = glm::mat4(1.0f);
-		world = glm::rotate(glm::mat4(1.0f), -1.57f, glm::vec3(1.0f, 0.0f, 0.0f)) * world;
-		world = glm::rotate(glm::mat4(1.0f), 1.57f, glm::vec3(0.0f, 1.0f, 0.0f)) * world;
-		world = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.3f, 0.3f)) * world;
-		m_HomeNode->SetWorldMatrix(world);
+		m_HomeNode->GetTransform().Rotate(-1.57f, 1.0f, 0.0f, 0.0f).Rotate(1.57f, 0.0f, 1.0f, 0.0f).Translate(0.0f, -0.3f, 0.3f);
 
 		m_CubeNode1 = new RenderNode();
 		m_CubeNode1->SetObjectUBIndex(1);
 		m_CubeNode1->SetMesh(m_Cube);
-		m_CubeNode1->SetWorldMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.3f, 0.3f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f)));
+		m_CubeNode1->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.3f, 0.3f);
 
 		m_CubeNode2 = new RenderNode();
 		m_CubeNode2->SetObjectUBIndex(2);
 		m_CubeNode2->SetMesh(m_Cube);
-		m_CubeNode2->SetWorldMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.5f)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f)));
+		m_CubeNode2->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.3f, 0.0f);
 	}
 }
 

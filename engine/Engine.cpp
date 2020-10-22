@@ -27,6 +27,8 @@
 #include "ProfilerMgr.h"
 #include "GPUProfilerMgr.h"
 
+#include "RenderNode.h"
+
 Engine::Engine()
 {
 }
@@ -183,9 +185,12 @@ void Engine::UpdatePassUniformBuffer(void * data)
 	m_PassUniformBuffers[m_CurrFrameIndex]->Copy(data, 0, sizeof(PassUniform));
 }
 
-void Engine::UpdateObjectUniformBuffer(void * data, uint32_t index)
+void Engine::UpdateObjectUniformBuffer(RenderNode* node)
 {
-	m_ObjectUniformBuffers[m_CurrFrameIndex]->Copy(data, m_UBODynamicAlignment * index, m_UBODynamicAlignment);
+	if (node->IsDirty()) {
+		m_ObjectUniformBuffers[m_CurrFrameIndex]->Copy(&node->GetWorldMatrix(), m_UBODynamicAlignment * node->GetObjectUBIndex(), m_UBODynamicAlignment);
+		node->Clean();
+	}
 }
 
 VKBuffer * Engine::GetCurrPassUniformBuffer()

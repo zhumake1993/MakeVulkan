@@ -3,6 +3,7 @@
 #include "Common.h"
 #include "NonCopyable.h"
 #include "VulkanFwd.h"
+#include "EngineFwd.h"
 #include "DescriptorSetTypes.h"
 
 class Imgui;
@@ -41,7 +42,7 @@ protected:
 
 	VKFramebuffer* RebuildFramebuffer(VKRenderPass* vkRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height);
 	void UpdatePassUniformBuffer(void* data);
-	void UpdateObjectUniformBuffer(void* data, uint32_t index);
+	void UpdateObjectUniformBuffer(RenderNode* node);
 	VKBuffer* GetCurrPassUniformBuffer();
 	VKBuffer* GetCurrObjectUniformBuffer();
 	uint32_t GetUBODynamicAlignment();
