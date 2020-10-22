@@ -132,7 +132,6 @@ void Triangle::Tick()
 	m_PassUniform.proj = m_Camera->GetProj();
 	m_PassUniform.eyePos = glm::vec4(m_Camera->GetPosition(), 0.0f);
 
-	//m_CubeNode1->GetTransform().RotateLocal(deltaTime * 0.5f);
 	m_CubeNode1->GetTransform().Rotate(deltaTime * 0.5f, 0.0f, 1.0f, 0.0f);
 	m_CubeNode1->SetDirty();
 
@@ -350,6 +349,25 @@ void Triangle::PrepareResources()
 		m_Cube = CreateMesh();
 		m_Cube->LoadFromFile(global::AssetPath + "models/cube.obj");
 		m_Cube->UploadToGPU();
+
+		m_SimpleCube = CreateMesh();
+		m_SimpleCube->SetVertexChannels({ kVertexPosition, kVertexColor });
+		std::vector<float> vertices = {
+			-1.0f, -1.0f,  1.0f , 1.0f, 0.0f, 0.0f  ,
+			1.0f, -1.0f,  1.0f , 0.0f, 1.0f, 0.0f  ,
+			1.0f,  1.0f,  1.0f , 0.0f, 0.0f, 1.0f  ,
+			-1.0f,  1.0f,  1.0f , 0.0f, 0.0f, 0.0f  ,
+			-1.0f, -1.0f, -1.0f , 1.0f, 0.0f, 0.0f  ,
+			1.0f, -1.0f, -1.0f , 0.0f, 1.0f, 0.0f  ,
+			1.0f,  1.0f, -1.0f , 0.0f, 0.0f, 1.0f  ,
+			-1.0f,  1.0f, -1.0f , 0.0f, 0.0f, 0.0f  ,
+		};
+		std::vector<uint32_t> indices = {
+			0,1,2, 2,3,0, 1,5,6, 6,2,1, 7,6,5, 5,4,7, 4,0,3, 3,7,4, 4,5,1, 1,0,4, 3,2,6, 6,7,3,
+		};
+		m_SimpleCube->SetVertices(vertices);
+		m_SimpleCube->SetIndices(indices);
+		m_SimpleCube->UploadToGPU();
 	}
 
 	// Texture
@@ -416,8 +434,8 @@ void Triangle::PrepareResources()
 		m_CubeNode2->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.3f, 0.0f);
 
 		m_ColorCubeNode = CreateRenderNode();
-		m_ColorCubeNode->SetMesh(m_Cube);
-		m_ColorCubeNode->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.6f, 0.0f);
+		m_ColorCubeNode->SetMesh(m_SimpleCube);
+		m_ColorCubeNode->GetTransform().Scale(0.1f, 0.1f, 0.1f).Translate(0.0f, 0.6f, 0.0f);
 	}
 }
 
@@ -463,7 +481,7 @@ void Triangle::CreatePipeline()
 
 	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = m_SimpleColorMat->GetShader()->GetVkShaderModuleVert();
 	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = m_SimpleColorMat->GetShader()->GetVkShaderModuleFrag();
-	pipelineCI.SetVertexInputState(m_Cube->GetVertexDescription(m_SimpleColorMat->GetShader()->GetVertexChannels()));
+	pipelineCI.SetVertexInputState(m_SimpleCube->GetVertexDescription(m_SimpleColorMat->GetShader()->GetVertexChannels()));
 
 	m_ColorPipeline = driver.CreateVKPipeline(pipelineCI, m_TexPipeline);
 }

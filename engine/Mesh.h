@@ -13,10 +13,16 @@ public:
 	Mesh();
 	~Mesh();
 
+	void SetVertexChannels(const std::vector<VertexChannel>& channels);
+	std::vector<VertexChannel>& GetVertexChannels();
+
 	std::vector<VkFormat>& GetVertexChannelFormats();
-	VertexDescription GetVertexDescription(const std::vector<VertexChannel>& channels);
+	VertexDescription GetVertexDescription(const std::vector<VertexChannel>& shaderChannels);
 
 	void LoadFromFile(const std::string& filename);
+
+	void SetVertices(std::vector<float>& vertices);
+	void SetIndices(std::vector<uint32_t>& indices);
 
 	void UploadToGPU();
 
@@ -26,7 +32,7 @@ public:
 
 private:
 
-	//
+	bool HasVertexChannel(VertexChannel channel);
 
 public:
 
@@ -34,6 +40,7 @@ public:
 
 private:
 
+	std::vector<VertexChannel> m_VertexChannels;
 	std::vector<VkFormat> m_VertexChannelFormats;
 
 	std::vector<float> m_Vertices;

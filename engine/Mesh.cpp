@@ -2,19 +2,19 @@
 #include "Tools.h"
 #include "obj/tiny_obj_loader.h"
 #include <sstream>
+#include <algorithm>
 #include "VulkanDriver.h"
 #include "VKBuffer.h"
 
-// 载入模型的时候需要哪些channels
-std::vector<bool> gLoadModelWithChannels = {
-	true, // kVertexPosition
-	true, // kVertexNormal
-	true, // kVertexColor
-	true, // kVertexTexcoord
-};
-
 Mesh::Mesh()
 {
+	m_VertexChannels = {
+		kVertexPosition,
+		kVertexNormal,
+		kVertexColor,
+		kVertexTexcoord
+	};
+
 	m_VertexChannelFormats = {
 		VK_FORMAT_R32G32B32_SFLOAT, // kVertexPosition
 		VK_FORMAT_R32G32B32_SFLOAT, // kVertexNormal
@@ -29,22 +29,39 @@ Mesh::~Mesh()
 	RELEASE(m_IndexBuffer);
 }
 
+void Mesh::SetVertexChannels(const std::vector<VertexChannel>& channels)
+{
+	m_VertexChannels = channels;
+
+	// 保证channel的顺序
+	std::sort(m_VertexChannels.begin(), m_VertexChannels.end());
+}
+
+std::vector<VertexChannel>& Mesh::GetVertexChannels()
+{
+	return m_VertexChannels;
+}
+
 std::vector<VkFormat>& Mesh::GetVertexChannelFormats()
 {
 	return m_VertexChannelFormats;
 }
 
-VertexDescription Mesh::GetVertexDescription(const std::vector<VertexChannel>& channels)
+VertexDescription Mesh::GetVertexDescription(const std::vector<VertexChannel>& shaderChannels)
 {
+	for (auto channel : shaderChannels) {
+		assert(HasVertexChannel(channel));
+	}
+
 	VertexDescription vd;
 
 	uint32_t offset = 0;
-	for (int i = 0; i < kVertexChannelCount; i++) {
-		if (std::find(channels.begin(), channels.end(), i) != channels.end()) {
-			vd.formats.push_back(m_VertexChannelFormats[i]);
+	for (auto channel : m_VertexChannels) {
+		if (std::find(shaderChannels.begin(), shaderChannels.end(), channel) != shaderChannels.end()) {
+			vd.formats.push_back(m_VertexChannelFormats[channel]);
 			vd.offsets.push_back(offset);
 		}
-		offset += VkFormatToSize(m_VertexChannelFormats[i]);
+		offset += VkFormatToSize(m_VertexChannelFormats[channel]);
 	}
 	vd.stride = offset;
 
@@ -80,25 +97,25 @@ void Mesh::LoadFromFile(const std::string & filename)
 	for (const auto& shape : shapes) {
 		for (const auto& index : shape.mesh.indices) {
 
-			if (gLoadModelWithChannels[kVertexPosition]) {
+			if (HasVertexChannel(kVertexPosition)) {
 				m_Vertices.push_back(attrib.vertices[3 * index.vertex_index + 0]);
 				m_Vertices.push_back(attrib.vertices[3 * index.vertex_index + 1]);
 				m_Vertices.push_back(attrib.vertices[3 * index.vertex_index + 2]);
 			}
 			
-			if (gLoadModelWithChannels[kVertexNormal]) {
+			if (HasVertexChannel(kVertexNormal)) {
 				m_Vertices.push_back(attrib.normals[3 * index.normal_index + 0]);
 				m_Vertices.push_back(attrib.normals[3 * index.normal_index + 1]);
 				m_Vertices.push_back(attrib.normals[3 * index.normal_index + 2]);
 			}
 
-			if (gLoadModelWithChannels[kVertexColor]) {
+			if (HasVertexChannel(kVertexColor)) {
 				m_Vertices.push_back(attrib.colors[3 * index.vertex_index + 0]);
 				m_Vertices.push_back(attrib.colors[3 * index.vertex_index + 1]);
 				m_Vertices.push_back(attrib.colors[3 * index.vertex_index + 2]);
 			}
 
-			if (gLoadModelWithChannels[kVertexTexcoord]) {
+			if (HasVertexChannel(kVertexTexcoord)) {
 				// The OBJ format assumes a coordinate system where a vertical coordinate of 0 means the bottom of the image, 
 				// however we've uploaded our image into Vulkan in a top to bottom orientation where 0 means the top of the image.
 				// Solve this by flipping the vertical component of the texture coordinates
@@ -111,39 +128,15 @@ void Mesh::LoadFromFile(const std::string & filename)
 	}
 }
 
-//void Mesh::LoadFromGeo()
-//{
-//	m_Vertices = {
-//			  -1.0f, -1.0f,  1.0f , 1.0f, 0.0f, 0.0f  , //0.0f, 0.0f,
-//			   1.0f, -1.0f,  1.0f , 0.0f, 1.0f, 0.0f  , //0.0f, 0.0f,
-//			   1.0f,  1.0f,  1.0f , 0.0f, 0.0f, 1.0f  , //0.0f, 0.0f,
-//			  -1.0f,  1.0f,  1.0f , 0.0f, 0.0f, 0.0f  , //0.0f, 0.0f,
-//			  -1.0f, -1.0f, -1.0f , 1.0f, 0.0f, 0.0f  , //0.0f, 0.0f,
-//			   1.0f, -1.0f, -1.0f , 0.0f, 1.0f, 0.0f  , //0.0f, 0.0f,
-//			   1.0f,  1.0f, -1.0f , 0.0f, 0.0f, 1.0f  , //0.0f, 0.0f,
-//			  -1.0f,  1.0f, -1.0f , 0.0f, 0.0f, 0.0f  , //0.0f, 0.0f,
-//	};
-//
-//	m_Indices = {
-//		0,1,2, 
-//		2,3,0, 
-//
-//		1,5,6, 
-//		6,2,1, 
-//
-//		7,6,5, 
-//		5,4,7, 
-//
-//		4,0,3, 
-//		3,7,4, 
-//
-//		4,5,1, 
-//		1,0,4, 
-//
-//		3,2,6, 
-//		6,7,3,
-//	};
-//}
+void Mesh::SetVertices(std::vector<float>& vertices)
+{
+	m_Vertices = vertices;
+}
+
+void Mesh::SetIndices(std::vector<uint32_t>& indices)
+{
+	m_Indices = indices;
+}
 
 void Mesh::UploadToGPU()
 {
@@ -173,4 +166,9 @@ VKBuffer * Mesh::GetIndexBuffer()
 uint32_t Mesh::GetIndexCount()
 {
 	return static_cast<uint32_t>(m_Indices.size());
+}
+
+bool Mesh::HasVertexChannel(VertexChannel channel)
+{
+	return std::find(m_VertexChannels.begin(), m_VertexChannels.end(), channel) != m_VertexChannels.end();
 }

@@ -30,6 +30,7 @@ private:
 	// Mesh
 	Mesh* m_Home;
 	Mesh* m_Cube;
+	Mesh* m_SimpleCube;
 
 	// Texture
 	Texture* m_HomeTex;
