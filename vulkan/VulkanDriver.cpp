@@ -348,6 +348,7 @@ VKShaderModule * VulkanDriver::CreateVKShaderModule(const std::string & filename
 
 VKPipelineLayout * VulkanDriver::CreateVKPipelineLayout(const std::vector<VkDescriptorSetLayout>& layouts, VkShaderStageFlags pcStage, uint32_t pcSize)
 {
+	// check maxPushConstantsSize
 	return new VKPipelineLayout(m_VKDevice, layouts, pcStage, pcSize);
 }
 

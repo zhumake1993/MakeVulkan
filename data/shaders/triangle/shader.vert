@@ -13,7 +13,7 @@ layout(set=1, binding=0) uniform u_ObjectUniformBuffer {
 
 layout(location = 0) in mediump vec4 i_Position;
 layout(location = 1) in vec4 i_Normal;
-layout(location = 2) in vec4 i_Color;
+//layout(location = 2) in vec4 i_Color;
 layout(location = 3) in vec2 i_Texcoord;
 
 out gl_PerVertex

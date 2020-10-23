@@ -387,12 +387,10 @@ void Triangle::PrepareResources()
 		m_Shader = CreateShader();
 		m_Shader->LoadVertSPV(global::AssetPath + "shaders/triangle/shader.vert.spv");
 		m_Shader->LoadFragSPV(global::AssetPath + "shaders/triangle/shader.frag.spv");
-		m_Shader->SetVertexChannels({ kVertexPosition ,kVertexNormal, kVertexColor, kVertexTexcoord });
 
 		m_SimpleShader = CreateShader();
 		m_SimpleShader->LoadVertSPV(global::AssetPath + "shaders/triangle/simpleColor.vert.spv");
 		m_SimpleShader->LoadFragSPV(global::AssetPath + "shaders/triangle/simpleColor.frag.spv");
-		m_SimpleShader->SetVertexChannels({ kVertexPosition, kVertexColor });
 	}
 
 	// Material
@@ -473,7 +471,7 @@ void Triangle::CreatePipeline()
 
 	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = m_HomeMat->GetShader()->GetVkShaderModuleVert();
 	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = m_HomeMat->GetShader()->GetVkShaderModuleFrag();
-	pipelineCI.SetVertexInputState(m_Home->GetVertexDescription(m_HomeMat->GetShader()->GetVertexChannels()));
+	pipelineCI.SetVertexInputState(m_Home->GetVertexDescription());
 
 	m_TexPipeline = driver.CreateVKPipeline(pipelineCI);
 
@@ -481,7 +479,7 @@ void Triangle::CreatePipeline()
 
 	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = m_SimpleColorMat->GetShader()->GetVkShaderModuleVert();
 	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = m_SimpleColorMat->GetShader()->GetVkShaderModuleFrag();
-	pipelineCI.SetVertexInputState(m_SimpleCube->GetVertexDescription(m_SimpleColorMat->GetShader()->GetVertexChannels()));
+	pipelineCI.SetVertexInputState(m_SimpleCube->GetVertexDescription());
 
 	m_ColorPipeline = driver.CreateVKPipeline(pipelineCI, m_TexPipeline);
 }

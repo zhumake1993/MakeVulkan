@@ -47,20 +47,14 @@ std::vector<VkFormat>& Mesh::GetVertexChannelFormats()
 	return m_VertexChannelFormats;
 }
 
-VertexDescription Mesh::GetVertexDescription(const std::vector<VertexChannel>& shaderChannels)
+VertexDescription Mesh::GetVertexDescription()
 {
-	for (auto channel : shaderChannels) {
-		assert(HasVertexChannel(channel));
-	}
-
 	VertexDescription vd;
 
 	uint32_t offset = 0;
 	for (auto channel : m_VertexChannels) {
-		if (std::find(shaderChannels.begin(), shaderChannels.end(), channel) != shaderChannels.end()) {
-			vd.formats.push_back(m_VertexChannelFormats[channel]);
-			vd.offsets.push_back(offset);
-		}
+		vd.formats.push_back(m_VertexChannelFormats[channel]);
+		vd.offsets.push_back(offset);
 		offset += VkFormatToSize(m_VertexChannelFormats[channel]);
 	}
 	vd.stride = offset;

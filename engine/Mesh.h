@@ -17,7 +17,8 @@ public:
 	std::vector<VertexChannel>& GetVertexChannels();
 
 	std::vector<VkFormat>& GetVertexChannelFormats();
-	VertexDescription GetVertexDescription(const std::vector<VertexChannel>& shaderChannels);
+
+	VertexDescription GetVertexDescription();
 
 	void LoadFromFile(const std::string& filename);
 

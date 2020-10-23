@@ -24,19 +24,6 @@ void Shader::LoadFragSPV(const std::string& filename)
 	m_ShaderModuleFrag = LoadSPV(filename);
 }
 
-void Shader::SetVertexChannels(const std::vector<VertexChannel>& channels)
-{
-	m_VertexChannels = channels;
-
-	// ±£Ö¤channelµÄË³Ðò
-	std::sort(m_VertexChannels.begin(), m_VertexChannels.end());
-}
-
-std::vector<VertexChannel>& Shader::GetVertexChannels()
-{
-	return m_VertexChannels;
-}
-
 VkShaderModule Shader::GetVkShaderModuleVert()
 {
 	return m_ShaderModuleVert->shaderModule;
