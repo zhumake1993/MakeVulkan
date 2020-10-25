@@ -74,6 +74,8 @@ Triangle::~Triangle()
 
 void Triangle::CleanUp()
 {
+	RELEASE(m_Sampler);
+
 	RELEASE(m_TexPipeline);
 	RELEASE(m_ColorPipeline);
 	RELEASE(m_PipelineLayout);
@@ -238,18 +240,24 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 	vkCommandBuffer->SetScissor(area);
 
 	//
-	auto dsPerDrawcall = descriptorSetMgr.GetDescriptorSet(m_DSLPerDrawcall);
+	auto dsPerDrawcall = descriptorSetMgr.GetDescriptorSet(m_DSLPassUniform);
 	DesUpdateInfos infosPerDrawcall(1);
 	infosPerDrawcall[0].binding = 0;
 	infosPerDrawcall[0].info.buffer = { GetCurrPassUniformBuffer()->buffer,0,sizeof(PassUniform) };
 	descriptorSetMgr.UpdateDescriptorSet(dsPerDrawcall, infosPerDrawcall);
 	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, dsPerDrawcall);
 
-	auto dsDynamicUBO = descriptorSetMgr.GetDescriptorSet(m_DSLDynamicUBO);
-	DesUpdateInfos infosDynamicUBO(1);
-	infosDynamicUBO[0].binding = 0;
-	infosDynamicUBO[0].info.buffer = { GetCurrObjectUniformBuffer()->buffer,0,VK_WHOLE_SIZE };
-	descriptorSetMgr.UpdateDescriptorSet(dsDynamicUBO, infosDynamicUBO);
+	auto dsObjectDUB = descriptorSetMgr.GetDescriptorSet(m_DSLObjectDUB);
+	DesUpdateInfos infosObjectDUB(1);
+	infosObjectDUB[0].binding = 0;
+	infosObjectDUB[0].info.buffer = { GetCurrObjectUniformBuffer()->buffer,0,VK_WHOLE_SIZE };
+	descriptorSetMgr.UpdateDescriptorSet(dsObjectDUB, infosObjectDUB);
+
+	auto dsMaterialDUB = descriptorSetMgr.GetDescriptorSet(m_DSLMaterialDUB);
+	DesUpdateInfos infosMaterialDUB(1);
+	infosMaterialDUB[0].binding = 0;
+	infosMaterialDUB[0].info.buffer = { GetCurrMaterialUniformBuffer()->buffer,0,VK_WHOLE_SIZE };
+	descriptorSetMgr.UpdateDescriptorSet(dsMaterialDUB, infosMaterialDUB);
 
 	// m_TexPipeline
 	{
@@ -257,16 +265,18 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 		// m_HomeMat
 		{
-			auto dsHome = descriptorSetMgr.GetDescriptorSet(m_DSLHome);
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_HomeMat->GetDUBIndex() * GetMaterialUBODynamicAlignment());
+
+			auto dsHome = descriptorSetMgr.GetDescriptorSet(m_DSLOneTex);
 			DesUpdateInfos infosHome(1);
 			infosHome[0].binding = 0;
 			infosHome[0].info.image = { m_Sampler->sampler, m_HomeTex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 			descriptorSetMgr.UpdateDescriptorSet(dsHome, infosHome);
-			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsHome);
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 3, dsHome);
 
 			// drawcall
 			{
-				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsDynamicUBO, m_HomeNode->GetObjectUBIndex() * GetUBODynamicAlignment());
+				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_HomeNode->GetDUBIndex() * GetObjectUBODynamicAlignment());
 				vkCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
 				vkCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 				vkCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
@@ -275,16 +285,18 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 		// m_Crate01Mat
 		{
-			auto dsCube1 = descriptorSetMgr.GetDescriptorSet(m_DSLCube);
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_Crate01Mat->GetDUBIndex() * GetMaterialUBODynamicAlignment());
+
+			auto dsCube1 = descriptorSetMgr.GetDescriptorSet(m_DSLOneTex);
 			DesUpdateInfos infosCube1(1);
 			infosCube1[0].binding = 0;
 			infosCube1[0].info.image = { m_Sampler->sampler, m_Crate01Tex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 			descriptorSetMgr.UpdateDescriptorSet(dsCube1, infosCube1);
-			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsCube1);
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 3, dsCube1);
 
 			// drawcall
 			{
-				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsDynamicUBO, m_CubeNode1->GetObjectUBIndex() * GetUBODynamicAlignment());
+				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_CubeNode1->GetDUBIndex() * GetObjectUBODynamicAlignment());
 				vkCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
 				vkCommandBuffer->BindIndexBuffer(m_CubeNode1->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 				vkCommandBuffer->DrawIndexed(m_CubeNode1->GetIndexCount(), 1, 0, 0, 1);
@@ -293,16 +305,18 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 		// m_Crate02Mat
 		{
-			auto dsCube2 = descriptorSetMgr.GetDescriptorSet(m_DSLCube);
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_Crate02Mat->GetDUBIndex() * GetMaterialUBODynamicAlignment());
+
+			auto dsCube2 = descriptorSetMgr.GetDescriptorSet(m_DSLOneTex);
 			DesUpdateInfos infosCube2(1);
 			infosCube2[0].binding = 0;
 			infosCube2[0].info.image = { m_Sampler->sampler, m_Crate02Tex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 			descriptorSetMgr.UpdateDescriptorSet(dsCube2, infosCube2);
-			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsCube2);
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 3, dsCube2);
 
 			// drawcall
 			{
-				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsDynamicUBO, m_CubeNode2->GetObjectUBIndex() * GetUBODynamicAlignment());
+				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_CubeNode2->GetDUBIndex() * GetObjectUBODynamicAlignment());
 				vkCommandBuffer->BindVertexBuffer(0, m_CubeNode2->GetVertexBuffer());
 				vkCommandBuffer->BindIndexBuffer(m_CubeNode2->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 				vkCommandBuffer->DrawIndexed(m_CubeNode2->GetIndexCount(), 1, 0, 0, 1);
@@ -316,9 +330,11 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 		// m_SimpleColorMat
 		{
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_SimpleColorMat->GetDUBIndex() * GetMaterialUBODynamicAlignment());
+
 			// drawcall
 			{
-				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsDynamicUBO, m_ColorCubeNode->GetObjectUBIndex() * GetUBODynamicAlignment());
+				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_ColorCubeNode->GetDUBIndex() * GetObjectUBODynamicAlignment());
 				vkCommandBuffer->BindVertexBuffer(0, m_ColorCubeNode->GetVertexBuffer());
 				vkCommandBuffer->BindIndexBuffer(m_ColorCubeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 				vkCommandBuffer->DrawIndexed(m_ColorCubeNode->GetIndexCount(), 1, 0, 0, 1);
@@ -396,18 +412,30 @@ void Triangle::PrepareResources()
 	// Material
 	{
 		m_HomeMat = CreateMaterial();
+		m_HomeMat->SetDiffuseAlbedo(0.3f, 0.3f, 0.3f, 0.3f);
+		m_HomeMat->SetFresnelR0(0.3f, 0.3f, 0.3f);
+		m_HomeMat->SetRoughness(0.3f);
 		m_HomeMat->SetShader(m_Shader);
 		m_HomeMat->SetTextures({ m_HomeTex });
 
 		m_Crate01Mat = CreateMaterial();
+		m_Crate01Mat->SetDiffuseAlbedo(0.3f, 0.3f, 0.3f, 0.3f);
+		m_Crate01Mat->SetFresnelR0(0.3f, 0.3f, 0.3f);
+		m_Crate01Mat->SetRoughness(0.3f);
 		m_Crate01Mat->SetShader(m_Shader);
 		m_Crate01Mat->SetTextures({ m_Crate01Tex });
 
 		m_Crate02Mat = CreateMaterial();
+		m_Crate02Mat->SetDiffuseAlbedo(0.3f, 0.3f, 0.3f, 0.3f);
+		m_Crate02Mat->SetFresnelR0(0.3f, 0.3f, 0.3f);
+		m_Crate02Mat->SetRoughness(0.3f);
 		m_Crate02Mat->SetShader(m_Shader);
 		m_Crate02Mat->SetTextures({ m_Crate02Tex });
 
 		m_SimpleColorMat = CreateMaterial();
+		m_SimpleColorMat->SetDiffuseAlbedo(0.3f, 0.3f, 0.3f, 0.3f);
+		m_SimpleColorMat->SetFresnelR0(0.3f, 0.3f, 0.3f);
+		m_SimpleColorMat->SetRoughness(0.3f);
 		m_SimpleColorMat->SetShader(m_SimpleShader);
 	}
 
@@ -442,25 +470,36 @@ void Triangle::PrepareDescriptorSet()
 	auto& driver = GetVulkanDriver();
 	auto& descriptorSetMgr = driver.GetDescriptorSetMgr();
 
-	DSLBindings perDrawcall(1);
-	perDrawcall[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT };
-	m_DSLPerDrawcall = descriptorSetMgr.CreateDescriptorSetLayout(perDrawcall);
+	{
+		DSLBindings bindings(1);
+		bindings[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT };
+		m_DSLPassUniform = descriptorSetMgr.CreateDescriptorSetLayout(bindings);
+	}
 
-	DSLBindings dynamicUBO(1);
-	dynamicUBO[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT };
-	m_DSLDynamicUBO = descriptorSetMgr.CreateDescriptorSetLayout(dynamicUBO);
+	{
+		DSLBindings bindings(1);
+		bindings[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT };
+		m_DSLObjectDUB = descriptorSetMgr.CreateDescriptorSetLayout(bindings);
+	}
 
-	DSLBindings perObj(1);
-	perObj[0] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT };
-	m_DSLHome = descriptorSetMgr.CreateDescriptorSetLayout(perObj);
-	m_DSLCube = descriptorSetMgr.CreateDescriptorSetLayout(perObj);
+	{
+		DSLBindings bindings(1);
+		bindings[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_FRAGMENT_BIT };
+		m_DSLMaterialDUB = descriptorSetMgr.CreateDescriptorSetLayout(bindings);
+	}
+	
+	{
+		DSLBindings bindings(1);
+		bindings[0] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT };
+		m_DSLOneTex = descriptorSetMgr.CreateDescriptorSetLayout(bindings);
+	}
 }
 
 void Triangle::CreatePipeline()
 {
 	auto& driver = GetVulkanDriver();
 
-	m_PipelineLayout = driver.CreateVKPipelineLayout({ m_DSLPerDrawcall, m_DSLDynamicUBO, m_DSLHome, m_DSLCube });
+	m_PipelineLayout = driver.CreateVKPipelineLayout({ m_DSLPassUniform, m_DSLObjectDUB, m_DSLMaterialDUB, m_DSLOneTex });
 	m_VKRenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat(), m_DepthFormat);
 
 	PipelineCI pipelineCI;

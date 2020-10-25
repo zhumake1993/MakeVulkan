@@ -11,7 +11,7 @@ Mesh::Mesh()
 	m_VertexChannels = {
 		kVertexPosition,
 		kVertexNormal,
-		kVertexColor,
+		//kVertexColor,
 		kVertexTexcoord
 	};
 

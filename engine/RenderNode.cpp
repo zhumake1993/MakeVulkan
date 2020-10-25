@@ -2,8 +2,8 @@
 #include "Mesh.h"
 #include "VKBuffer.h"
 
-RenderNode::RenderNode(uint32_t objectUBIndex):
-	m_ObjectUBIndex(objectUBIndex)
+RenderNode::RenderNode(uint32_t index):
+	m_DUBIndex(index)
 {
 }
 
@@ -11,14 +11,14 @@ RenderNode::~RenderNode()
 {
 }
 
-void RenderNode::SetObjectUBIndex(uint32_t index)
+void RenderNode::SetDUBIndex(uint32_t index)
 {
-	m_ObjectUBIndex = index;
+	m_DUBIndex = index;
 }
 
-uint32_t RenderNode::GetObjectUBIndex()
+uint32_t RenderNode::GetDUBIndex()
 {
-	return m_ObjectUBIndex;
+	return m_DUBIndex;
 }
 
 Transform & RenderNode::GetTransform()

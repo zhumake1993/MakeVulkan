@@ -11,11 +11,11 @@ class RenderNode
 
 public:
 
-	RenderNode(uint32_t objectUBIndex);
+	RenderNode(uint32_t index);
 	~RenderNode();
 
-	void SetObjectUBIndex(uint32_t index);
-	uint32_t GetObjectUBIndex();
+	void SetDUBIndex(uint32_t index);
+	uint32_t GetDUBIndex();
 
 	Transform& GetTransform();
 
@@ -35,7 +35,7 @@ public:
 
 private:
 
-	uint32_t m_ObjectUBIndex;
+	uint32_t m_DUBIndex;
 	Transform m_Transform;
 	Mesh* m_Mesh;
 

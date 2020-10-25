@@ -71,6 +71,7 @@ void Engine::CleanUpEngine()
 	for (size_t i = 0; i < FrameResourcesCount; ++i) {
 		RELEASE(m_PassUniformBuffers[i]);
 		RELEASE(m_ObjectUniformBuffers[i]);
+		RELEASE(m_MaterialUniformBuffers[i]);
 	}
 
 	RELEASE(m_VKCommandPool);
@@ -121,16 +122,21 @@ void Engine::InitEngine()
 
 	auto& dp = GetDeviceProperties();
 	uint32_t minUboAlignment = static_cast<uint32_t>(dp.deviceProperties.limits.minUniformBufferOffsetAlignment);
-	m_UBODynamicAlignment = ((sizeof(ObjectUniform) + minUboAlignment - 1) / minUboAlignment) * minUboAlignment;
+	m_ObjectUBODynamicAlignment = ((sizeof(ObjectUniform) + minUboAlignment - 1) / minUboAlignment) * minUboAlignment;
+	m_MaterialUBODynamicAlignment = ((sizeof(MaterialUniform) + minUboAlignment - 1) / minUboAlignment) * minUboAlignment;
 
 	m_PassUniformBuffers.resize(FrameResourcesCount);
 	m_ObjectUniformBuffers.resize(FrameResourcesCount);
+	m_MaterialUniformBuffers.resize(FrameResourcesCount);
 	for (size_t i = 0; i < FrameResourcesCount; ++i) {
 		m_PassUniformBuffers[i] = driver.CreateVKBuffer(sizeof(PassUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		m_PassUniformBuffers[i]->Map();
 
-		m_ObjectUniformBuffers[i] = driver.CreateVKBuffer(m_UBODynamicAlignment * m_ObjectUniformNum, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		m_ObjectUniformBuffers[i] = driver.CreateVKBuffer(m_ObjectUBODynamicAlignment * m_ObjectUniformNum, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		m_ObjectUniformBuffers[i]->Map();
+
+		m_MaterialUniformBuffers[i] = driver.CreateVKBuffer(m_MaterialUBODynamicAlignment * m_MaterialUniformNum, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		m_MaterialUniformBuffers[i]->Map();
 	}
 
 	m_Imgui = new Imgui();
@@ -152,6 +158,9 @@ void Engine::TickEngine()
 	Tick();
 	for (auto node : m_RenderNodeContainer) {
 		UpdateObjectUniformBuffer(node);
+	}
+	for (auto mat : m_MaterialContainer) {
+		UpdateMaterialUniformBuffer(mat);
 	}
 
 	// ¸üÐÂUIÂß¼­
@@ -201,8 +210,22 @@ void Engine::UpdatePassUniformBuffer(void * data)
 void Engine::UpdateObjectUniformBuffer(RenderNode* node)
 {
 	if (node->IsDirty()) {
-		m_ObjectUniformBuffers[m_CurrFrameIndex]->Copy(&node->GetWorldMatrix(), m_UBODynamicAlignment * node->GetObjectUBIndex(), m_UBODynamicAlignment);
+		m_ObjectUniformBuffers[m_CurrFrameIndex]->Copy(&node->GetWorldMatrix(), m_ObjectUBODynamicAlignment * node->GetDUBIndex(), m_ObjectUBODynamicAlignment);
 		node->Clean();
+	}
+}
+
+void Engine::UpdateMaterialUniformBuffer(Material * material)
+{
+	MaterialUniform matUniform;
+	matUniform.diffuseAlbedo = material->GetDiffuseAlbedo();
+	matUniform.fresnelR0 = material->GetFresnelR0();
+	matUniform.roughness = material->GetRoughness();
+	matUniform.matTransform = material->GetMatTransform();
+
+	if (material->IsDirty()) {
+		m_MaterialUniformBuffers[m_CurrFrameIndex]->Copy(&matUniform, m_MaterialUBODynamicAlignment * material->GetDUBIndex(), m_MaterialUBODynamicAlignment);
+		material->Clean();
 	}
 }
 
@@ -216,9 +239,19 @@ VKBuffer * Engine::GetCurrObjectUniformBuffer()
 	return m_ObjectUniformBuffers[m_CurrFrameIndex];
 }
 
-uint32_t Engine::GetUBODynamicAlignment()
+VKBuffer * Engine::GetCurrMaterialUniformBuffer()
 {
-	return m_UBODynamicAlignment;
+	return m_MaterialUniformBuffers[m_CurrFrameIndex];
+}
+
+uint32_t Engine::GetObjectUBODynamicAlignment()
+{
+	return m_ObjectUBODynamicAlignment;
+}
+
+uint32_t Engine::GetMaterialUBODynamicAlignment()
+{
+	return m_MaterialUBODynamicAlignment;
 }
 
 Mesh * Engine::CreateMesh()
@@ -247,7 +280,7 @@ Shader * Engine::CreateShader()
 
 Material * Engine::CreateMaterial()
 {
-	Material* material = new Material();
+	Material* material = new Material(static_cast<uint32_t>(m_MaterialContainer.size()));
 	m_MaterialContainer.push_back(material);
 
 	return material;

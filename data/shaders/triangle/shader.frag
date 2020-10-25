@@ -7,7 +7,14 @@ layout(set=0, binding=0) uniform u_PassUniformBuffer {
 	vec4 lightPos;
 };
 
-layout(set=2, binding=0) uniform sampler2D u_Texture;
+layout(set=2, binding=0) uniform u_MaterialUniformBuffer {
+    vec4 diffuseAlbedo;
+	vec3 fresnelR0;
+	float roughness;
+	mat4 matTransform;
+};
+
+layout(set=3, binding=0) uniform sampler2D u_Texture;
 
 layout(location = 0) in vec4 v_Normal;
 layout(location = 1) in vec2 v_Texcoord;

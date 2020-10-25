@@ -55,10 +55,10 @@ private:
 	RenderNode* m_ColorCubeNode;
 
 	// DescriptorSet
-	VkDescriptorSetLayout m_DSLPerDrawcall;
-	VkDescriptorSetLayout m_DSLDynamicUBO;
-	VkDescriptorSetLayout m_DSLHome;
-	VkDescriptorSetLayout m_DSLCube;
+	VkDescriptorSetLayout m_DSLPassUniform;
+	VkDescriptorSetLayout m_DSLObjectDUB;
+	VkDescriptorSetLayout m_DSLMaterialDUB;
+	VkDescriptorSetLayout m_DSLOneTex;
 
 	// Render Status
 	VKPipeline* m_TexPipeline;
