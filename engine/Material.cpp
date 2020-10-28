@@ -5,6 +5,7 @@
 Material::Material(uint32_t index) :
 	m_DUBIndex(index)
 {
+	m_DiffuseAlbedo = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 Material::~Material()

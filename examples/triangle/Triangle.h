@@ -27,10 +27,14 @@ private:
 
 private:
 
+	// Test
+	float m_Temp=0;
+
 	// Mesh
 	Mesh* m_Home;
 	Mesh* m_Cube;
 	Mesh* m_SimpleCube;
+	Mesh* m_Sphere;
 
 	// Texture
 	Texture* m_HomeTex;
@@ -51,7 +55,7 @@ private:
 	// RenderNode
 	RenderNode* m_HomeNode;
 	RenderNode* m_CubeNode1;
-	RenderNode* m_CubeNode2;
+	RenderNode* m_SphereNode;
 	RenderNode* m_ColorCubeNode;
 
 	// DescriptorSet

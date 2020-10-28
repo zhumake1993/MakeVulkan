@@ -88,8 +88,6 @@ void Triangle::CleanUp()
 
 void Triangle::Init()
 {
-	m_PassUniform.lightPos = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
-
 	auto& driver = GetVulkanDriver();
 
 	m_DepthFormat = driver.GetSupportedDepthFormat();
@@ -132,15 +130,23 @@ void Triangle::Tick()
 
 	m_PassUniform.view = m_Camera->GetView();
 	m_PassUniform.proj = m_Camera->GetProj();
-	m_PassUniform.eyePos = glm::vec4(m_Camera->GetPosition(), 0.0f);
+	m_PassUniform.eyePos = glm::vec4(m_Camera->GetPosition(), 1.0f);
 
 	m_CubeNode1->GetTransform().Rotate(deltaTime * 0.5f, 0.0f, 1.0f, 0.0f);
 	m_CubeNode1->SetDirty();
 
-	m_CubeNode2->GetTransform().Rotate(-deltaTime * 0.5f, 0.0f, 1.0f, 0.0f);
-	m_CubeNode2->SetDirty();
+	m_SphereNode->GetTransform().Rotate(-deltaTime * 0.5f, 0.0f, 1.0f, 0.0f);
+	m_SphereNode->SetDirty();
 
-	m_PassUniform.lightPos = glm::rotate(glm::mat4(1.0f), deltaTime * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f)) * m_PassUniform.lightPos;
+	m_PassUniform.ambientLight = glm::vec4(0.2f, 0.2f, 0.2f, 0.0f);
+
+	m_PassUniform.lights[0].strength = glm::vec3(0.9f, 0.9f, 0.9f);
+	m_PassUniform.lights[0].direction = glm::vec3(1.0f, 0.0f, 0.0f);
+
+	m_PassUniform.lights[1].strength = glm::vec3(0.3f, 0.3f, 0.3f);
+	m_PassUniform.lights[1].falloffStart = 0.1f;
+	m_PassUniform.lights[1].falloffEnd = 1.0f;
+	m_PassUniform.lights[1].position = m_CubeNode1->GetTransform().GetMatrix() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 	UpdatePassUniformBuffer(&m_PassUniform);
 }
@@ -174,6 +180,10 @@ void Triangle::TickUI()
 		gpuProfiler = m_GPUProfilerMgr->GetLastFrameView().ToString();
 
 		acTime = 0.0f;
+	}
+
+	if (ImGui::CollapsingHeader("Test", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::SliderFloat("Slider", &m_Temp, 0, 1);
 	}
 
 	if (ImGui::CollapsingHeader("CPU Profiler", ImGuiTreeNodeFlags_None)) {
@@ -316,10 +326,10 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 			// drawcall
 			{
-				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_CubeNode2->GetDUBIndex() * GetObjectUBODynamicAlignment());
-				vkCommandBuffer->BindVertexBuffer(0, m_CubeNode2->GetVertexBuffer());
-				vkCommandBuffer->BindIndexBuffer(m_CubeNode2->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
-				vkCommandBuffer->DrawIndexed(m_CubeNode2->GetIndexCount(), 1, 0, 0, 1);
+				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_SphereNode->GetDUBIndex() * GetObjectUBODynamicAlignment());
+				vkCommandBuffer->BindVertexBuffer(0, m_SphereNode->GetVertexBuffer());
+				vkCommandBuffer->BindIndexBuffer(m_SphereNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+				vkCommandBuffer->DrawIndexed(m_SphereNode->GetIndexCount(), 1, 0, 0, 1);
 			}
 		}
 	}
@@ -384,6 +394,10 @@ void Triangle::PrepareResources()
 		m_SimpleCube->SetVertices(vertices);
 		m_SimpleCube->SetIndices(indices);
 		m_SimpleCube->UploadToGPU();
+
+		m_Sphere = CreateMesh();
+		m_Sphere->LoadFromFile(global::AssetPath + "models/sphere.obj");
+		m_Sphere->UploadToGPU();
 	}
 
 	// Texture
@@ -412,28 +426,28 @@ void Triangle::PrepareResources()
 	// Material
 	{
 		m_HomeMat = CreateMaterial();
-		m_HomeMat->SetDiffuseAlbedo(0.3f, 0.3f, 0.3f, 0.3f);
+		//m_HomeMat->SetDiffuseAlbedo(0.5f, 0.5f, 0.5f, 0.0f);
 		m_HomeMat->SetFresnelR0(0.3f, 0.3f, 0.3f);
 		m_HomeMat->SetRoughness(0.3f);
 		m_HomeMat->SetShader(m_Shader);
 		m_HomeMat->SetTextures({ m_HomeTex });
 
 		m_Crate01Mat = CreateMaterial();
-		m_Crate01Mat->SetDiffuseAlbedo(0.3f, 0.3f, 0.3f, 0.3f);
+		//m_Crate01Mat->SetDiffuseAlbedo(0.3f, 0.3f, 0.3f, 0.3f);
 		m_Crate01Mat->SetFresnelR0(0.3f, 0.3f, 0.3f);
 		m_Crate01Mat->SetRoughness(0.3f);
 		m_Crate01Mat->SetShader(m_Shader);
 		m_Crate01Mat->SetTextures({ m_Crate01Tex });
 
 		m_Crate02Mat = CreateMaterial();
-		m_Crate02Mat->SetDiffuseAlbedo(0.3f, 0.3f, 0.3f, 0.3f);
+		//m_Crate02Mat->SetDiffuseAlbedo(0.3f, 0.3f, 0.3f, 0.3f);
 		m_Crate02Mat->SetFresnelR0(0.3f, 0.3f, 0.3f);
 		m_Crate02Mat->SetRoughness(0.3f);
 		m_Crate02Mat->SetShader(m_Shader);
 		m_Crate02Mat->SetTextures({ m_Crate02Tex });
 
 		m_SimpleColorMat = CreateMaterial();
-		m_SimpleColorMat->SetDiffuseAlbedo(0.3f, 0.3f, 0.3f, 0.3f);
+		//m_SimpleColorMat->SetDiffuseAlbedo(0.3f, 0.3f, 0.3f, 0.3f);
 		m_SimpleColorMat->SetFresnelR0(0.3f, 0.3f, 0.3f);
 		m_SimpleColorMat->SetRoughness(0.3f);
 		m_SimpleColorMat->SetShader(m_SimpleShader);
@@ -455,9 +469,9 @@ void Triangle::PrepareResources()
 		m_CubeNode1->SetMesh(m_Cube);
 		m_CubeNode1->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.3f, 0.3f);
 
-		m_CubeNode2 = CreateRenderNode();
-		m_CubeNode2->SetMesh(m_Cube);
-		m_CubeNode2->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.3f, 0.0f);
+		m_SphereNode = CreateRenderNode();
+		m_SphereNode->SetMesh(m_Sphere);
+		m_SphereNode->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.3f, 0.0f);
 
 		m_ColorCubeNode = CreateRenderNode();
 		m_ColorCubeNode->SetMesh(m_SimpleCube);
