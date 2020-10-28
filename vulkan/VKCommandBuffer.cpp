@@ -155,3 +155,8 @@ void VKCommandBuffer::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, u
 {
 	vkCmdDrawIndexed(commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 }
+
+void VKCommandBuffer::WriteTimeStamp(std::string name)
+{
+
+}

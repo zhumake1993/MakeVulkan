@@ -8,11 +8,17 @@ class DescriptorSetMgr : public NonCopyable
 {
 	using SetList = std::forward_list<VkDescriptorSet>;
 
+	// 缓存ds
 	struct SetCache {
-		SetList set0;
-		SetList set1;
-		SetList set2;
-		SetList set3;
+		//SetList set0; // 空闲的ds的list
+		//SetList set1;
+		//SetList set2;
+		//SetList set3;
+		std::vector<SetList> sets; // sets[0]是空闲的ds的list
+
+		SetCache() {
+			sets.resize(FrameResourcesCount + 1);
+		}
 	};
 
 public:
@@ -21,7 +27,9 @@ public:
 	~DescriptorSetMgr();
 
 	VkDescriptorSetLayout CreateDescriptorSetLayout(DSLBindings& bindings);
-	VkDescriptorSet GetDescriptorSet(VkDescriptorSetLayout layout, bool persistent = false);
+
+	// persistent：用于gui，待修改
+	VkDescriptorSet GetDescriptorSet(VkDescriptorSetLayout layout, bool persistent);
 	void UpdateDescriptorSet(VkDescriptorSet set, DesUpdateInfos& infos);
 	void Tick();
 
@@ -36,9 +44,10 @@ public:
 
 private:
 
+	std::unordered_map<VkDescriptorSetLayout, std::vector<VkDescriptorType>> m_LayoutToBindingType;
+	std::unordered_map<VkDescriptorSetLayout, SetCache> m_LayoutToSetCache;
+	std::unordered_map<VkDescriptorSet, VkDescriptorSetLayout> m_SetToLayout;
+
 	VkDevice m_Device = VK_NULL_HANDLE;
 	VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
-	std::unordered_map<VkDescriptorSetLayout, std::vector<VkDescriptorType>> m_LayoutBindingTypes;
-	std::unordered_map<VkDescriptorSetLayout, SetCache> m_SetCaches;
-	std::unordered_map<VkDescriptorSet, VkDescriptorSetLayout> m_SetToLayout;
 };

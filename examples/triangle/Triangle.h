@@ -75,8 +75,4 @@ private:
 
 	// camera
 	Camera* m_Camera;
-
-	// depth
-	VkFormat m_DepthFormat;
-	VKImage* m_DepthImage;
 };

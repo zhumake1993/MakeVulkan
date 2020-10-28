@@ -32,7 +32,7 @@ DescriptorSetMgr::DescriptorSetMgr(VkDevice device):
 
 DescriptorSetMgr::~DescriptorSetMgr()
 {
-	for (auto& pair : m_LayoutBindingTypes) {
+	for (auto& pair : m_LayoutToBindingType) {
 		vkDestroyDescriptorSetLayout(m_Device, pair.first, nullptr);
 	}
 
@@ -70,7 +70,7 @@ VkDescriptorSetLayout DescriptorSetMgr::CreateDescriptorSetLayout(DSLBindings & 
 
 	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout));
 
-	m_LayoutBindingTypes[descriptorSetLayout] = bindingTypes;
+	m_LayoutToBindingType[descriptorSetLayout] = bindingTypes;
 
 	return descriptorSetLayout;
 }
@@ -83,27 +83,27 @@ VkDescriptorSet DescriptorSetMgr::GetDescriptorSet(VkDescriptorSetLayout layout,
 		return set;
 	}
 	else {
-		if (m_SetCaches.find(layout) == m_SetCaches.end()) {
-			m_SetCaches[layout] = SetCache();
+		if (m_LayoutToSetCache.find(layout) == m_LayoutToSetCache.end()) {
+			m_LayoutToSetCache[layout] = SetCache();
 
 			auto set = AllocateDescriptorSet(layout);
-			m_SetCaches[layout].set3.push_front(set);
+			m_LayoutToSetCache[layout].sets[FrameResourcesCount].push_front(set);
 
 			return set;
 		}
 		else {
-			auto& cache = m_SetCaches[layout];
+			auto& cache = m_LayoutToSetCache[layout];
 
-			if (cache.set0.empty()) {
+			if (cache.sets[0].empty()) {
 				auto set = AllocateDescriptorSet(layout);
-				cache.set3.push_front(set);
+				cache.sets[FrameResourcesCount].push_front(set);
 
 				return set;
 			}
 			else {
-				auto set = cache.set0.front();
-				cache.set0.pop_front();
-				cache.set3.push_front(set);
+				auto set = cache.sets[0].front();
+				cache.sets[0].pop_front();
+				cache.sets[FrameResourcesCount].push_front(set);
 
 				return set;
 			}
@@ -136,13 +136,16 @@ void DescriptorSetMgr::Tick()
 {
 	PROFILER(DescriptorSetMgr_Tick);
 
-	for (auto& pair : m_SetCaches) {
+	for (auto& pair : m_LayoutToSetCache) {
 		auto& cache = pair.second;
 
-		cache.set0.splice_after(cache.set0.before_begin(), cache.set1);
-		cache.set1 = cache.set2;
-		cache.set2 = cache.set3;
-		cache.set3 = SetList();
+		cache.sets[0].splice_after(cache.sets[0].before_begin(), cache.sets[1]);
+
+		for (int i = 1; i < FrameResourcesCount; i++) {
+			cache.sets[i] = cache.sets[i + 1];
+		}
+
+		cache.sets[FrameResourcesCount] = SetList();
 	}
 }
 
@@ -166,5 +169,5 @@ VkDescriptorSet DescriptorSetMgr::AllocateDescriptorSet(VkDescriptorSetLayout la
 
 VkDescriptorType DescriptorSetMgr::GetBindingType(VkDescriptorSet set, uint32_t binding)
 {
-	return m_LayoutBindingTypes[m_SetToLayout[set]][binding];
+	return m_LayoutToBindingType[m_SetToLayout[set]][binding];
 }

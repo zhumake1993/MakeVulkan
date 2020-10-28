@@ -52,9 +52,9 @@ private:
 
 	uint32_t m_DUBIndex;
 
-	glm::vec4 m_DiffuseAlbedo;
-	glm::vec3 m_FresnelR0;
-	float m_Roughness;
+	glm::vec4 m_DiffuseAlbedo = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	glm::vec3 m_FresnelR0 = glm::vec3(0.0f, 0.0f, 0.0);
+	float m_Roughness = 0.0f;
 	glm::mat4 m_MatTransform = glm::mat4(1.0f);
 
 	Shader* m_Shader;

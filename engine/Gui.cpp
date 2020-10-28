@@ -64,18 +64,16 @@ Imgui::Imgui()
 
 	// DescriptorSet
 
-	auto& descriptorSetMgr = driver.GetDescriptorSetMgr();
-
 	DSLBindings bindings(1);
 	bindings[0] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT };
-	auto descriptorSetLayout = descriptorSetMgr.CreateDescriptorSetLayout(bindings);
+	auto descriptorSetLayout = driver.CreateDescriptorSetLayout(bindings);
 
-	m_DescriptorSet = descriptorSetMgr.GetDescriptorSet(descriptorSetLayout, true);
+	m_DescriptorSet = driver.GetDescriptorSet(descriptorSetLayout, true);
 
 	DesUpdateInfos infos(1);
 	infos[0].binding = 0;
 	infos[0].info.image = { m_Sampler->sampler, m_FontImage->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-	descriptorSetMgr.UpdateDescriptorSet(m_DescriptorSet, infos);
+	driver.UpdateDescriptorSet(m_DescriptorSet, infos);
 
 	// pipeline
 	

@@ -38,6 +38,9 @@ struct VKCommandBuffer : public NonCopyable
 	void BindIndexBuffer(VKBuffer* vkBuffer, VkIndexType indexType);
 	
 	void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance);
+
+	// TimeStamp
+	void WriteTimeStamp(std::string name);
 	
 
 	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
