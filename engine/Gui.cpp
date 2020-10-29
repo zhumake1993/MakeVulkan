@@ -81,7 +81,7 @@ Imgui::Imgui()
 
 	m_PipelineLayout = driver.CreateVKPipelineLayout({ descriptorSetLayout }, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 4);
 
-	m_RenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat(), driver.GetSupportedDepthFormat());
+	m_RenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat());
 
 	VKShaderModule* shaderVert = driver.CreateVKShaderModule(global::AssetPath + "shaders/imgui/shader.vert.spv");
 	VKShaderModule* shaderFrag = driver.CreateVKShaderModule(global::AssetPath + "shaders/imgui/shader.frag.spv");

@@ -70,9 +70,6 @@ private:
 	VKPipelineLayout* m_PipelineLayout;
 	VKRenderPass* m_VKRenderPass;
 
-	// Uniform Buffer
-	PassUniform m_PassUniform;
-
 	// camera
 	Camera* m_Camera;
 };

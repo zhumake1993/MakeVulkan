@@ -81,12 +81,6 @@ void VulkanDriver::CleanUp()
 		RELEASE(m_FrameResources[i].fence);
 	}
 
-	for (size_t i = 0; i < FrameResourcesCount; ++i) {
-		RELEASE(m_PassUniformBuffers[i]);
-		RELEASE(m_ObjectUniformBuffers[i]);
-		RELEASE(m_MaterialUniformBuffers[i]);
-	}
-
 	RELEASE(m_UploadVKCommandBuffer);
 	RELEASE(m_VKCommandPool);
 	RELEASE(m_StagingBuffer);
@@ -124,33 +118,13 @@ void VulkanDriver::Init()
 		m_FrameResources[i].fence = CreateVKFence(true);
 	}
 
-	auto& dp = GetDeviceProperties();
-	uint32_t minUboAlignment = static_cast<uint32_t>(dp.deviceProperties.limits.minUniformBufferOffsetAlignment);
-	m_ObjectUBODynamicAlignment = ((sizeof(ObjectUniform) + minUboAlignment - 1) / minUboAlignment) * minUboAlignment;
-	m_MaterialUBODynamicAlignment = ((sizeof(MaterialUniform) + minUboAlignment - 1) / minUboAlignment) * minUboAlignment;
-
 	m_UniformBufferMgr = new UniformBufferMgr();
-
-	m_PassUniformBuffers.resize(FrameResourcesCount);
-	m_ObjectUniformBuffers.resize(FrameResourcesCount);
-	m_MaterialUniformBuffers.resize(FrameResourcesCount);
-	for (size_t i = 0; i < FrameResourcesCount; ++i) {
-		m_PassUniformBuffers[i] = CreateVKBuffer(sizeof(PassUniform), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		m_PassUniformBuffers[i]->Map();
-
-		m_ObjectUniformBuffers[i] = CreateVKBuffer(m_ObjectUBODynamicAlignment * m_ObjectUniformNum, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		m_ObjectUniformBuffers[i]->Map();
-
-		m_MaterialUniformBuffers[i] = CreateVKBuffer(m_MaterialUBODynamicAlignment * m_MaterialUniformNum, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		m_MaterialUniformBuffers[i]->Map();
-	}
 
 	m_UploadVKCommandBuffer = CreateVKCommandBuffer(m_VKCommandPool);
 	m_StagingBuffer = CreateVKBuffer(m_StagingBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 	m_StagingBuffer->Map();
 
 	m_DescriptorSetMgr = new DescriptorSetMgr(m_VKDevice->device);
-
 
 	m_GPUProfilerMgr = new GPUProfilerMgr(m_VKDevice);
 
@@ -176,6 +150,9 @@ void VulkanDriver::Tick()
 
 	m_GPUProfilerMgr->Tick();
 	m_GPUProfilerMgr->SetVKCommandBuffer(m_FrameResources[m_CurrFrameIndex].commandBuffer);
+
+	m_FrameResources[m_CurrFrameIndex].commandBuffer->Begin();
+
 	m_GPUProfilerMgr->Reset();
 }
 
@@ -231,21 +208,6 @@ VkFormat VulkanDriver::GetSupportedDepthFormat()
 	LOG("Can not find supported depth format");
 	return VK_FORMAT_UNDEFINED;
 }
-
-//VkImageView VulkanDriver::GetSwapChainCurrImageView()
-//{
-//	return m_VKSwapChain->swapChainImageViews[m_ImageIndex];
-//}
-//
-//uint32_t VulkanDriver::GetSwapChainWidth()
-//{
-//	return m_VKSwapChain->extent.width;
-//}
-//
-//uint32_t VulkanDriver::GetSwapChainHeight()
-//{
-//	return m_VKSwapChain->extent.height;
-//}
 
 VkFormat VulkanDriver::GetSwapChainFormat()
 {
@@ -314,6 +276,16 @@ VKSemaphore * VulkanDriver::CreateVKSemaphore()
 VKFence * VulkanDriver::CreateVKFence(bool signaled)
 {
 	return new VKFence(m_VKDevice, signaled);
+}
+
+void VulkanDriver::CreateUniformBuffer(std::string name, VkDeviceSize size)
+{
+	m_UniformBufferMgr->CreateUniformBuffer(name, size);
+}
+
+VKBuffer * VulkanDriver::GetUniformBuffer(std::string name)
+{
+	return m_UniformBufferMgr->GetUniformBuffer(name);
 }
 
 VKBuffer * VulkanDriver::CreateVKBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty)
@@ -433,9 +405,9 @@ VKPipeline * VulkanDriver::CreateVKPipeline(PipelineCI & pipelineCI, VKPipeline 
 	return new VKPipeline(m_VKDevice, pipelineCI);
 }
 
-VKRenderPass * VulkanDriver::CreateVKRenderPass(VkFormat colorFormat, VkFormat depthFormat)
+VKRenderPass * VulkanDriver::CreateVKRenderPass(VkFormat colorFormat)
 {
-	return new VKRenderPass(m_VKDevice, colorFormat, depthFormat);
+	return new VKRenderPass(m_VKDevice, colorFormat, m_DepthFormat);
 }
 
 VKFramebuffer* VulkanDriver::CreateVKFramebuffer(VKRenderPass* vkRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height)
@@ -452,29 +424,9 @@ VKFramebuffer * VulkanDriver::RebuildFramebuffer(VKRenderPass * vkRenderPass)
 	return m_FrameResources[m_CurrFrameIndex].framebuffer;
 }
 
-VKBuffer * VulkanDriver::GetCurrPassUniformBuffer()
+VKCommandBuffer * VulkanDriver::GetCurrVKCommandBuffer()
 {
-	return nullptr;
-}
-
-VKBuffer * VulkanDriver::GetCurrObjectUniformBuffer()
-{
-	return nullptr;
-}
-
-VKBuffer * VulkanDriver::GetCurrMaterialUniformBuffer()
-{
-	return nullptr;
-}
-
-uint32_t VulkanDriver::GetObjectUBODynamicAlignment()
-{
-	return uint32_t();
-}
-
-uint32_t VulkanDriver::GetMaterialUBODynamicAlignment()
-{
-	return uint32_t();
+	return m_FrameResources[m_CurrFrameIndex].commandBuffer;
 }
 
 void VulkanDriver::AcquireNextImage(VKSemaphore * vkSemaphore)

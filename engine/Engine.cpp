@@ -88,6 +88,16 @@ void Engine::InitEngine()
 
 	// 再初始化父类
 
+	auto& dp = GetDeviceProperties();
+
+	uint32_t minUboAlignment = static_cast<uint32_t>(dp.deviceProperties.limits.minUniformBufferOffsetAlignment);
+	m_ObjectUBAlignment = ((sizeof(ObjectUniform) + minUboAlignment - 1) / minUboAlignment) * minUboAlignment;
+	m_MaterialUBAlignment = ((sizeof(MaterialUniform) + minUboAlignment - 1) / minUboAlignment) * minUboAlignment;
+
+	driver.CreateUniformBuffer("PassUniform", sizeof(PassUniform));
+	driver.CreateUniformBuffer("ObjectUniform", m_ObjectUBAlignment * MaxObjectsCount);
+	driver.CreateUniformBuffer("MaterialUniform", m_MaterialUBAlignment * MaxMaterialsCount);
+
 	m_Imgui = new Imgui();
 
 	// 最后初始化子类
@@ -97,6 +107,8 @@ void Engine::InitEngine()
 
 void Engine::TickEngine()
 {
+	// 顺序很重要！！！
+
 	// 更新时间
 	auto& timeMgr = GetTimeMgr();
 	timeMgr.Tick();
@@ -105,12 +117,6 @@ void Engine::TickEngine()
 
 	// 更新游戏逻辑
 	Tick();
-	for (auto node : m_RenderNodeContainer) {
-		UpdateObjectUniformBuffer(node);
-	}
-	for (auto mat : m_MaterialContainer) {
-		UpdateMaterialUniformBuffer(mat);
-	}
 
 	// 更新UI逻辑
 	m_Imgui->Prepare();
@@ -127,10 +133,19 @@ void Engine::TickEngine()
 
 	driver.WaitForPresent();
 
+	UpdatePassUniformBuffer(&m_PassUniform);
+
+	for (auto node : m_RenderNodeContainer) {
+		UpdateObjectUniformBuffer(node);
+	}
+	for (auto mat : m_MaterialContainer) {
+		UpdateMaterialUniformBuffer(mat);
+	}
+
 	driver.Tick();
 
 	// 提交draw call
-	RecordCommandBuffer(m_FrameResources[m_CurrFrameIndex].commandBuffer);
+	RecordCommandBuffer(driver.GetCurrVKCommandBuffer());
 
 	// 提交UI draw call,todo
 	//m_Imgui->RecordCommandBuffer(m_FrameResources[m_CurrFrameIndex].commandBuffer);
@@ -140,19 +155,29 @@ void Engine::TickEngine()
 
 void Engine::UpdatePassUniformBuffer(void * data)
 {
-	m_PassUniformBuffers[m_CurrFrameIndex]->Copy(data, 0, sizeof(PassUniform));
+	auto buffer = GetVulkanDriver().GetUniformBuffer("PassUniform");
+
+	buffer->Copy(data, 0, sizeof(PassUniform));
 }
 
 void Engine::UpdateObjectUniformBuffer(RenderNode* node)
 {
+	auto& driver = GetVulkanDriver();
+
+	auto buffer = driver.GetUniformBuffer("ObjectUniform");
+
 	if (node->IsDirty()) {
-		m_ObjectUniformBuffers[m_CurrFrameIndex]->Copy(&node->GetWorldMatrix(), m_ObjectUBODynamicAlignment * node->GetDUBIndex(), m_ObjectUBODynamicAlignment);
+		buffer->Copy(&node->GetWorldMatrix(), m_ObjectUBAlignment * node->GetDUBIndex(), m_ObjectUBAlignment);
 		node->Clean();
 	}
 }
 
 void Engine::UpdateMaterialUniformBuffer(Material * material)
 {
+	auto& driver = GetVulkanDriver();
+
+	auto buffer = driver.GetUniformBuffer("MaterialUniform");
+
 	MaterialUniform matUniform;
 	matUniform.diffuseAlbedo = material->GetDiffuseAlbedo();
 	matUniform.fresnelR0 = material->GetFresnelR0();
@@ -160,34 +185,9 @@ void Engine::UpdateMaterialUniformBuffer(Material * material)
 	matUniform.matTransform = material->GetMatTransform();
 
 	if (material->IsDirty()) {
-		m_MaterialUniformBuffers[m_CurrFrameIndex]->Copy(&matUniform, m_MaterialUBODynamicAlignment * material->GetDUBIndex(), m_MaterialUBODynamicAlignment);
+		buffer->Copy(&matUniform, m_MaterialUBAlignment * material->GetDUBIndex(), m_MaterialUBAlignment);
 		material->Clean();
 	}
-}
-
-VKBuffer * Engine::GetCurrPassUniformBuffer()
-{
-	return m_PassUniformBuffers[m_CurrFrameIndex];
-}
-
-VKBuffer * Engine::GetCurrObjectUniformBuffer()
-{
-	return m_ObjectUniformBuffers[m_CurrFrameIndex];
-}
-
-VKBuffer * Engine::GetCurrMaterialUniformBuffer()
-{
-	return m_MaterialUniformBuffers[m_CurrFrameIndex];
-}
-
-uint32_t Engine::GetObjectUBODynamicAlignment()
-{
-	return m_ObjectUBODynamicAlignment;
-}
-
-uint32_t Engine::GetMaterialUBODynamicAlignment()
-{
-	return m_MaterialUBODynamicAlignment;
 }
 
 Mesh * Engine::CreateMesh()

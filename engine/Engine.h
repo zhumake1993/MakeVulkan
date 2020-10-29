@@ -9,6 +9,36 @@
 class Imgui;
 class GPUProfilerMgr;
 
+struct Light
+{
+	alignas(16) glm::vec3 strength; // light color
+	float falloffStart; // point/spot light only
+	alignas(16) glm::vec3 direction;// directional/spot lightonly
+	float falloffEnd; // point/spot light only
+	alignas(16) glm::vec3 position; // point/spot light only
+	float spotPower; // spot light only
+};
+
+struct PassUniform {
+	alignas(16) glm::mat4 view;
+	alignas(16) glm::mat4 proj;
+	alignas(16) glm::vec4 eyePos;
+
+	alignas(16) glm::vec4 ambientLight;
+	alignas(16) Light lights[16];
+};
+
+struct ObjectUniform {
+	alignas(16) glm::mat4 world;
+};
+
+struct MaterialUniform {
+	alignas(16) glm::vec4 diffuseAlbedo;
+	alignas(16) glm::vec3 fresnelR0;
+	float roughness;
+	alignas(16) glm::mat4 matTransform = glm::mat4(1.0f);
+};
+
 class Engine : public NonCopyable
 {
 
@@ -45,7 +75,13 @@ private:
 
 protected:
 
+	// Uniform Buffer
+	PassUniform m_PassUniform;
+
 	Imgui* m_Imgui;
+
+	uint32_t m_ObjectUBAlignment;
+	uint32_t m_MaterialUBAlignment;
 
 private:
 

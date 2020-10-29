@@ -134,8 +134,6 @@ void Triangle::Tick()
 	m_PassUniform.lights[1].falloffStart = 0.1f;
 	m_PassUniform.lights[1].falloffEnd = 1.0f;
 	m_PassUniform.lights[1].position = m_CubeNode1->GetTransform().GetMatrix() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-	UpdatePassUniformBuffer(&m_PassUniform);
 }
 
 void Triangle::TickUI()
@@ -212,7 +210,7 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 	VKFramebuffer* vkFramebuffer = driver.RebuildFramebuffer(m_VKRenderPass);
 
-	vkCommandBuffer->Begin();
+	//vkCommandBuffer->Begin();
 
 	// test!
 	vkCommandBuffer->WriteTimeStamp("child");
@@ -229,24 +227,28 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 	vkCommandBuffer->SetScissor(area);
 
 	//
+	auto passBuffer = driver.GetUniformBuffer("PassUniform");
+	auto objectUniform = driver.GetUniformBuffer("ObjectUniform");
+	auto materialUniform = driver.GetUniformBuffer("MaterialUniform");
+
 	auto dsPerDrawcall = driver.GetDescriptorSet(m_DSLPassUniform);
 	DesUpdateInfos infosPerDrawcall(1);
 	infosPerDrawcall[0].binding = 0;
-	infosPerDrawcall[0].info.buffer = { GetCurrPassUniformBuffer()->buffer,0,sizeof(PassUniform) };
+	infosPerDrawcall[0].info.buffer = { passBuffer->buffer,0,sizeof(PassUniform) };
 	driver.UpdateDescriptorSet(dsPerDrawcall, infosPerDrawcall);
 	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, dsPerDrawcall);
 
 	auto dsObjectDUB = driver.GetDescriptorSet(m_DSLObjectDUB);
 	DesUpdateInfos infosObjectDUB(1);
 	infosObjectDUB[0].binding = 0;
-	infosObjectDUB[0].info.buffer = { GetCurrObjectUniformBuffer()->buffer,0,VK_WHOLE_SIZE };
+	infosObjectDUB[0].info.buffer = { objectUniform->buffer,0,VK_WHOLE_SIZE };
 	driver.UpdateDescriptorSet(dsObjectDUB, infosObjectDUB);
 	
 
 	auto dsMaterialDUB = driver.GetDescriptorSet(m_DSLMaterialDUB);
 	DesUpdateInfos infosMaterialDUB(1);
 	infosMaterialDUB[0].binding = 0;
-	infosMaterialDUB[0].info.buffer = { GetCurrMaterialUniformBuffer()->buffer,0,VK_WHOLE_SIZE };
+	infosMaterialDUB[0].info.buffer = { materialUniform->buffer,0,VK_WHOLE_SIZE };
 	driver.UpdateDescriptorSet(dsMaterialDUB, infosMaterialDUB);
 
 	// m_TexPipeline
@@ -255,7 +257,7 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 		// m_HomeMat
 		{
-			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_HomeMat->GetDUBIndex() * GetMaterialUBODynamicAlignment());
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_HomeMat->GetDUBIndex() * m_MaterialUBAlignment);
 
 			auto dsHome = driver.GetDescriptorSet(m_DSLOneTex);
 			DesUpdateInfos infosHome(1);
@@ -266,7 +268,7 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 			// drawcall
 			{
-				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_HomeNode->GetDUBIndex() * GetObjectUBODynamicAlignment());
+				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_HomeNode->GetDUBIndex() * m_ObjectUBAlignment);
 				vkCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
 				vkCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 				vkCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
@@ -275,7 +277,7 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 		// m_Crate01Mat
 		{
-			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_Crate01Mat->GetDUBIndex() * GetMaterialUBODynamicAlignment());
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_Crate01Mat->GetDUBIndex() * m_MaterialUBAlignment);
 
 			auto dsCube1 = driver.GetDescriptorSet(m_DSLOneTex);
 			DesUpdateInfos infosCube1(1);
@@ -286,7 +288,7 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 			// drawcall
 			{
-				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_CubeNode1->GetDUBIndex() * GetObjectUBODynamicAlignment());
+				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_CubeNode1->GetDUBIndex() * m_ObjectUBAlignment);
 				vkCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
 				vkCommandBuffer->BindIndexBuffer(m_CubeNode1->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 				vkCommandBuffer->DrawIndexed(m_CubeNode1->GetIndexCount(), 1, 0, 0, 1);
@@ -295,7 +297,7 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 		// m_Crate02Mat
 		{
-			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_Crate02Mat->GetDUBIndex() * GetMaterialUBODynamicAlignment());
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_Crate02Mat->GetDUBIndex() * m_MaterialUBAlignment);
 
 			auto dsCube2 = driver.GetDescriptorSet(m_DSLOneTex);
 			DesUpdateInfos infosCube2(1);
@@ -306,7 +308,7 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 			// drawcall
 			{
-				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_SphereNode->GetDUBIndex() * GetObjectUBODynamicAlignment());
+				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_SphereNode->GetDUBIndex() * m_ObjectUBAlignment);
 				vkCommandBuffer->BindVertexBuffer(0, m_SphereNode->GetVertexBuffer());
 				vkCommandBuffer->BindIndexBuffer(m_SphereNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 				vkCommandBuffer->DrawIndexed(m_SphereNode->GetIndexCount(), 1, 0, 0, 1);
@@ -320,11 +322,11 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 		// m_SimpleColorMat
 		{
-			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_SimpleColorMat->GetDUBIndex() * GetMaterialUBODynamicAlignment());
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_SimpleColorMat->GetDUBIndex() * m_MaterialUBAlignment);
 
 			// drawcall
 			{
-				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_ColorCubeNode->GetDUBIndex() * GetObjectUBODynamicAlignment());
+				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_ColorCubeNode->GetDUBIndex() * m_ObjectUBAlignment);
 				vkCommandBuffer->BindVertexBuffer(0, m_ColorCubeNode->GetVertexBuffer());
 				vkCommandBuffer->BindIndexBuffer(m_ColorCubeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 				vkCommandBuffer->DrawIndexed(m_ColorCubeNode->GetIndexCount(), 1, 0, 0, 1);
@@ -493,7 +495,7 @@ void Triangle::CreatePipeline()
 	auto& driver = GetVulkanDriver();
 
 	m_PipelineLayout = driver.CreateVKPipelineLayout({ m_DSLPassUniform, m_DSLObjectDUB, m_DSLMaterialDUB, m_DSLOneTex });
-	m_VKRenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat(), m_DepthFormat);
+	m_VKRenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat());
 
 	PipelineCI pipelineCI;
 	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->pipelineLayout;

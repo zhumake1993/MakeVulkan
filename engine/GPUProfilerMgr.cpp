@@ -74,9 +74,12 @@ void GPUProfilerMgr::Tick()
 	std::vector<uint64_t> timeStamps(queryResource.timeStampCount);
 	std::vector<float> timeResults(queryResource.timeStampCount);
 
-	// 使用VK_QUERY_RESULT_WAIT_BIT的情况下，如果查询的query没有写入timeStamp的话，会报错
-	VK_CHECK_RESULT(vkGetQueryPoolResults(device, m_QueryPool->queryPool, 0, queryResource.timeStampCount, 
-		sizeof(uint64_t) * queryResource.timeStampCount, timeStamps.data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT));
+	// parameter dataSize must be greater than 0
+	if (queryResource.timeStampCount > 0) {
+		// 使用VK_QUERY_RESULT_WAIT_BIT的情况下，如果查询的query没有写入timeStamp的话，会报错
+		VK_CHECK_RESULT(vkGetQueryPoolResults(device, m_QueryPool->queryPool, 0, queryResource.timeStampCount,
+			sizeof(uint64_t) * queryResource.timeStampCount, timeStamps.data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT));
+	}
 
 	for (uint32_t i = 0; i < queryResource.timeStampCount; i++) {
 		timeResults[i] = timeStamps[i] * dp.deviceProperties.limits.timestampPeriod / 1000000.0f;

@@ -9,36 +9,6 @@ class GPUProfilerMgr;
 class UniformBufferMgr;
 class Engine;
 
-struct Light
-{
-	alignas(16) glm::vec3 strength; // light color
-	float falloffStart; // point/spot light only
-	alignas(16) glm::vec3 direction;// directional/spot lightonly
-	float falloffEnd; // point/spot light only
-	alignas(16) glm::vec3 position; // point/spot light only
-	float spotPower; // spot light only
-};
-
-struct PassUniform {
-	alignas(16) glm::mat4 view;
-	alignas(16) glm::mat4 proj;
-	alignas(16) glm::vec4 eyePos;
-
-	alignas(16) glm::vec4 ambientLight;
-	alignas(16) Light lights[16];
-};
-
-struct ObjectUniform {
-	alignas(16) glm::mat4 world;
-};
-
-struct MaterialUniform {
-	alignas(16) glm::vec4 diffuseAlbedo;
-	alignas(16) glm::vec3 fresnelR0;
-	float roughness;
-	alignas(16) glm::mat4 matTransform = glm::mat4(1.0f);
-};
-
 class VulkanDriver : public NonCopyable
 {
 
@@ -73,9 +43,6 @@ public:
 	VkFormat GetSupportedDepthFormat();
 
 	// SwapChain
-	//VkImageView GetSwapChainCurrImageView();
-	//uint32_t GetSwapChainWidth();
-	//uint32_t GetSwapChainHeight();
 	VkFormat GetSwapChainFormat();
 
 	//
@@ -90,6 +57,10 @@ public:
 	// Semaphore
 	VKSemaphore* CreateVKSemaphore();
 	VKFence* CreateVKFence(bool signaled);
+
+	// Uniform Buffer
+	void CreateUniformBuffer(std::string name, VkDeviceSize size);
+	VKBuffer* GetUniformBuffer(std::string name);
 
 	// Resource
 	VKBuffer* CreateVKBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty);
@@ -111,19 +82,14 @@ public:
 	VKShaderModule* CreateVKShaderModule(const std::string& filename);
 	VKPipelineLayout* CreateVKPipelineLayout(const std::vector<VkDescriptorSetLayout>& layouts, VkShaderStageFlags pcStage = VK_SHADER_STAGE_VERTEX_BIT, uint32_t pcSize = 0);
 	VKPipeline* CreateVKPipeline(PipelineCI& pipelineCI, VKPipeline* parent = nullptr);
-	VKRenderPass* CreateVKRenderPass(VkFormat colorFormat, VkFormat depthFormat);
+	VKRenderPass* CreateVKRenderPass(VkFormat colorFormat);
 
 	// Framebuffer
 	VKFramebuffer* CreateVKFramebuffer(VKRenderPass* vkRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height);
 	VKFramebuffer* RebuildFramebuffer(VKRenderPass* vkRenderPass);
 
 	// todo
-	VKBuffer* GetCurrPassUniformBuffer();
-	VKBuffer* GetCurrObjectUniformBuffer();
-	VKBuffer* GetCurrMaterialUniformBuffer();
-
-	uint32_t GetObjectUBODynamicAlignment();
-	uint32_t GetMaterialUBODynamicAlignment();
+	VKCommandBuffer* GetCurrVKCommandBuffer();
 
 private:
 
@@ -147,23 +113,11 @@ private:
 	// uniform buffer
 	UniformBufferMgr* m_UniformBufferMgr;
 
-	//std::vector<VKBuffer*> m_PassUniformBuffers;
-
-	//const uint32_t m_ObjectUniformNum = MaxObjectsCount;
-	//std::vector<VKBuffer*> m_ObjectUniformBuffers;
-	uint32_t m_ObjectUBODynamicAlignment;
-
-	//const uint32_t m_MaterialUniformNum = MaxMaterialsCount;
-	//std::vector<VKBuffer*> m_MaterialUniformBuffers;
-	uint32_t m_MaterialUBODynamicAlignment;
-
 	VKCommandBuffer* m_UploadVKCommandBuffer;
 	const uint32_t m_StagingBufferSize = 10000000;
 	VKBuffer* m_StagingBuffer;
 
 	DescriptorSetMgr* m_DescriptorSetMgr;
-
-	
 
 	GPUProfilerMgr *m_GPUProfilerMgr;
 
