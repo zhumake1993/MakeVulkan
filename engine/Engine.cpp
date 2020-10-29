@@ -16,7 +16,6 @@
 #include "DescriptorSetMgr.h"
 
 #include "VKShaderModule.h"
-#include "VKPipelineLayout.h"
 #include "VKPipeline.h"
 #include "VKRenderPass.h"
 
@@ -98,6 +97,12 @@ void Engine::InitEngine()
 
 	m_Imgui = new Imgui();
 
+	DSLBindings bindings(1);
+	bindings[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT };
+	m_DSLPassUniform = driver.CreateDescriptorSetLayout(bindings);
+	bindings[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT };
+	m_DSLObjectDUB = driver.CreateDescriptorSetLayout(bindings);
+
 	// 最后初始化子类
 
 	Init();
@@ -131,14 +136,7 @@ void Engine::TickEngine()
 
 	driver.WaitForPresent();
 
-	UpdatePassUniformBuffer(&m_PassUniform);
-
-	for (auto node : m_RenderNodeContainer) {
-		UpdateObjectUniformBuffer(node);
-	}
-	for (auto mat : m_MaterialContainer) {
-		UpdateMaterialUniformBuffer(mat);
-	}
+	UpdateUniformBuffer();
 
 	auto cb = driver.GetCurrVKCommandBuffer();
 
@@ -153,39 +151,6 @@ void Engine::TickEngine()
 	//m_Imgui->RecordCommandBuffer(m_FrameResources[m_CurrFrameIndex].commandBuffer);
 
 	driver.Present();
-}
-
-void Engine::UpdatePassUniformBuffer(void * data)
-{
-	auto buffer = GetVulkanDriver().GetUniformBuffer("PassUniform");
-
-	buffer->Copy(data, 0, sizeof(PassUniform));
-}
-
-void Engine::UpdateObjectUniformBuffer(RenderNode* node)
-{
-	auto& driver = GetVulkanDriver();
-
-	auto buffer = driver.GetUniformBuffer("ObjectUniform");
-
-	if (node->IsDirty()) {
-		buffer->Copy(&node->GetWorldMatrix(), m_ObjectUBAlignment * node->GetDUBIndex(), m_ObjectUBAlignment);
-		node->Clean();
-	}
-}
-
-void Engine::UpdateMaterialUniformBuffer(Material * material)
-{
-	if (material->GetUniformDataSize() == 0) {
-		return;
-	}
-
-	auto buffer = GetVulkanDriver().GetUniformBuffer(material->GetName());
-
-	if (material->IsDirty()) {
-		buffer->Copy(material->GetUniformData(), 0, material->GetUniformDataSize());
-		material->Clean();
-	}
 }
 
 Mesh * Engine::CreateMesh()
@@ -226,4 +191,37 @@ RenderNode * Engine::CreateRenderNode()
 	m_RenderNodeContainer.push_back(renderNode);
 
 	return renderNode;
+}
+
+void Engine::UpdateUniformBuffer()
+{
+	auto& driver = GetVulkanDriver();
+
+	// Pass Uniform
+	auto buffer = driver.GetUniformBuffer("PassUniform");
+	buffer->Copy(&m_PassUniform, 0, sizeof(PassUniform));
+
+	// Object Uniform
+	for (auto node : m_RenderNodeContainer) {
+		auto buffer = driver.GetUniformBuffer("ObjectUniform");
+
+		if (node->IsDirty()) {
+			buffer->Copy(&node->GetWorldMatrix(), m_ObjectUBAlignment * node->GetDUBIndex(), m_ObjectUBAlignment);
+			node->Clean();
+		}
+	}
+
+	// Material Uniform
+	for (auto material : m_MaterialContainer) {
+		if (material->GetUniformDataSize() == 0) {
+			return;
+		}
+
+		auto buffer = GetVulkanDriver().GetUniformBuffer(material->GetName());
+
+		if (material->IsDirty()) {
+			buffer->Copy(material->GetUniformData(), 0, material->GetUniformDataSize());
+			material->Clean();
+		}
+	}
 }

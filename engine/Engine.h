@@ -52,10 +52,6 @@ protected:
 	virtual void Tick() = 0;
 	virtual void TickUI() = 0;
 
-	void UpdatePassUniformBuffer(void* data);
-	void UpdateObjectUniformBuffer(RenderNode* node);
-	void UpdateMaterialUniformBuffer(Material* material);
-
 	Mesh* CreateMesh();
 	Texture* CreateTexture();
 	Shader* CreateShader();
@@ -64,7 +60,7 @@ protected:
 
 private:
 
-	//
+	void UpdateUniformBuffer();
 
 protected:
 
@@ -74,6 +70,10 @@ protected:
 	Imgui* m_Imgui;
 
 	uint32_t m_ObjectUBAlignment;
+
+	// DescriptorSet
+	VkDescriptorSetLayout m_DSLPassUniform;
+	VkDescriptorSetLayout m_DSLObjectDUB;
 
 private:
 

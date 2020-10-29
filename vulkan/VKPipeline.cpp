@@ -230,6 +230,7 @@ void PipelineCI::ConfigDynamicStateCreateInfo()
 VKPipeline::VKPipeline(VKDevice * vkDevice, PipelineCI & pipelineCI) :
 	device(vkDevice->device)
 {
+	pipelineLayout = pipelineCI.pipelineCreateInfo.layout;
 	VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCI.pipelineCreateInfo, nullptr, &pipeline));
 }
 
@@ -238,6 +239,11 @@ VKPipeline::~VKPipeline()
 	if (device != VK_NULL_HANDLE && pipeline != VK_NULL_HANDLE) {
 		vkDestroyPipeline(device, pipeline, nullptr);
 		pipeline = VK_NULL_HANDLE;
+	}
+
+	if (device != VK_NULL_HANDLE && pipelineLayout != VK_NULL_HANDLE) {
+		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+		pipelineLayout = VK_NULL_HANDLE;
 	}
 
 	//vkDestroyPipelineCache

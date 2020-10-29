@@ -23,5 +23,4 @@ struct VKSampler;
 // render state
 struct VKShaderModule;
 struct PipelineCI;
-struct VKPipelineLayout;
 struct VKPipeline;

@@ -6,7 +6,6 @@
 
 struct VKDevice;
 struct VKShaderModule;
-struct VKPipelineLayout;
 struct VKKRenderPass;
 
 struct PipelineCI
@@ -60,6 +59,7 @@ struct VKPipeline : public NonCopyable
 	~VKPipeline();
 
 	VkPipeline pipeline = VK_NULL_HANDLE;
+	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 
 private:
 

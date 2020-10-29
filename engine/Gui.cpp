@@ -8,7 +8,6 @@
 #include "VKSampler.h"
 
 #include "VKShaderModule.h"
-#include "VKPipelineLayout.h"
 #include "VKPipeline.h"
 #include "VKRenderPass.h"
 
@@ -79,8 +78,6 @@ Imgui::Imgui()
 	
 	PipelineCI pipelineCI;
 
-	m_PipelineLayout = driver.CreateVKPipelineLayout({ descriptorSetLayout }, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 4);
-
 	m_RenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat());
 
 	VKShaderModule* shaderVert = driver.CreateVKShaderModule(global::AssetPath + "shaders/imgui/shader.vert.spv");
@@ -95,7 +92,7 @@ Imgui::Imgui()
 	vertexDes.stride = VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R8G8B8A8_UNORM);
 	pipelineCI.SetVertexInputState(vertexDes);
 
-	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->pipelineLayout;
+	pipelineCI.pipelineCreateInfo.layout = driver.CreateVkPipelineLayout({ descriptorSetLayout }, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 4);
 	pipelineCI.pipelineCreateInfo.renderPass = m_RenderPass->renderPass;
 
 	pipelineCI.rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_NONE;
@@ -126,7 +123,6 @@ Imgui::~Imgui()
 	RELEASE(m_Sampler);
 	RELEASE(m_VertexBuffer);
 	RELEASE(m_IndexBuffer);
-	RELEASE(m_PipelineLayout);
 	RELEASE(m_VulkanPipeline);
 	RELEASE(m_RenderPass);
 }
@@ -195,7 +191,7 @@ void Imgui::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 	ImGuiIO& io = ImGui::GetIO();
 
 	vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline);
-	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, m_DescriptorSet);
+	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline->pipelineLayout, 0, m_DescriptorSet);
 	vkCommandBuffer->BindVertexBuffer(0, m_VertexBuffer);
 	vkCommandBuffer->BindIndexBuffer(m_IndexBuffer, VK_INDEX_TYPE_UINT16);
 
@@ -215,8 +211,8 @@ void Imgui::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 	float translate[2];
 	translate[0] = -1.0f - imDrawData->DisplayPos.x * scale[0];
 	translate[1] = -1.0f - imDrawData->DisplayPos.y * scale[1];
-	vkCommandBuffer->PushConstants(m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 0, sizeof(float) * 2, scale);
-	vkCommandBuffer->PushConstants(m_PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 2, sizeof(float) * 2, translate);
+	vkCommandBuffer->PushConstants(m_VulkanPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 0, sizeof(float) * 2, scale);
+	vkCommandBuffer->PushConstants(m_VulkanPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 2, sizeof(float) * 2, translate);
 
 	int vertexOffset = 0;
 	int indexOffset = 0;

@@ -22,7 +22,6 @@ protected:
 private:
 
 	void PrepareResources();
-	void PrepareDescriptorSet();
 	void CreatePipeline();
 
 private:
@@ -40,6 +39,7 @@ private:
 	Texture* m_HomeTex;
 	Texture* m_Crate01Tex;
 	Texture* m_Crate02Tex;
+
 	VKSampler* m_Sampler;
 
 	// Shader
@@ -58,16 +58,12 @@ private:
 	RenderNode* m_SphereNode;
 	RenderNode* m_ColorCubeNode;
 
-	// DescriptorSet
-	VkDescriptorSetLayout m_DSLPassUniform;
-	VkDescriptorSetLayout m_DSLObjectDUB;
-
 	// Render Status
 	VKPipeline* m_HomeMatPipeline;
 	VKPipeline* m_Crate01MatPipeline;
 	VKPipeline* m_Crate02MatPipeline;
 	VKPipeline* m_SimpleColorMatPipeline;
-	VKPipelineLayout* m_PipelineLayout;
+
 	VKRenderPass* m_VKRenderPass;
 
 	// camera

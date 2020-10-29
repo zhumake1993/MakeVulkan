@@ -13,7 +13,6 @@
 #include "VKRenderPass.h"
 
 #include "VKPipeline.h"
-#include "VKPipelineLayout.h"
 
 VKCommandBuffer::VKCommandBuffer(VKDevice * vkDevice, VKCommandPool * vkCommandPool, VkCommandBufferLevel level) :
 	device(vkDevice->device),
@@ -128,16 +127,16 @@ void VKCommandBuffer::BindPipeline(VkPipelineBindPoint bindPoint, VKPipeline * v
 	vkCmdBindPipeline(commandBuffer, bindPoint, vkPipeline->pipeline);
 }
 
-void VKCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VKPipelineLayout * pipelineLayout, uint32_t index, VkDescriptorSet set, uint32_t offset)
+void VKCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set, uint32_t offset)
 {
 	// Each element of pDynamicOffsets which corresponds to a descriptor binding with type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
 	// must be a multiple of VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment
-	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout->pipelineLayout, index, 1, &set, offset == -1 ? 0 : 1, &offset);
+	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, index, 1, &set, offset == -1 ? 0 : 1, &offset);
 }
 
-void VKCommandBuffer::PushConstants(VKPipelineLayout * pipelineLayout, VkShaderStageFlags pcStage, uint32_t offset, uint32_t size, void * data)
+void VKCommandBuffer::PushConstants(VkPipelineLayout pipelineLayout, VkShaderStageFlags pcStage, uint32_t offset, uint32_t size, void * data)
 {
-	vkCmdPushConstants(commandBuffer, pipelineLayout->pipelineLayout, pcStage, offset, size, data);
+	vkCmdPushConstants(commandBuffer, pipelineLayout, pcStage, offset, size, data);
 }
 
 void VKCommandBuffer::BindVertexBuffer(uint32_t bind, VKBuffer * vkBuffer)

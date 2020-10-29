@@ -25,7 +25,6 @@
 #include "UniformBufferMgr.h"
 
 #include "VKShaderModule.h"
-#include "VKPipelineLayout.h"
 #include "VKPipeline.h"
 #include "VKRenderPass.h"
 #include "VKFramebuffer.h"
@@ -387,10 +386,34 @@ VKShaderModule * VulkanDriver::CreateVKShaderModule(const std::string & filename
 	return new VKShaderModule(m_VKDevice, filename);
 }
 
-VKPipelineLayout * VulkanDriver::CreateVKPipelineLayout(const std::vector<VkDescriptorSetLayout>& layouts, VkShaderStageFlags pcStage, uint32_t pcSize)
+VkPipelineLayout VulkanDriver::CreateVkPipelineLayout(const std::vector<VkDescriptorSetLayout>& layouts, VkShaderStageFlags pcStage, uint32_t pcSize)
 {
-	// check maxPushConstantsSize
-	return new VKPipelineLayout(m_VKDevice, layouts, pcStage, pcSize);
+	// todo: check maxPushConstantsSize
+
+	VkPushConstantRange pushConstantRange = {};
+	VkPipelineLayoutCreateInfo pipelineLayoutCI = {};
+	pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutCI.pNext = nullptr;
+	pipelineLayoutCI.flags = 0;
+	pipelineLayoutCI.setLayoutCount = static_cast<uint32_t>(layouts.size());
+	pipelineLayoutCI.pSetLayouts = layouts.data();
+	if (pcSize > 0) {
+		pushConstantRange.stageFlags = pcStage;
+		pushConstantRange.offset = 0;
+		pushConstantRange.size = pcSize;
+
+		pipelineLayoutCI.pushConstantRangeCount = 1;
+		pipelineLayoutCI.pPushConstantRanges = &pushConstantRange;
+	}
+	else {
+		pipelineLayoutCI.pushConstantRangeCount = 0;
+		pipelineLayoutCI.pPushConstantRanges = nullptr;
+	}
+
+	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+	VK_CHECK_RESULT(vkCreatePipelineLayout(m_VKDevice->device, &pipelineLayoutCI, nullptr, &pipelineLayout));
+
+	return pipelineLayout;
 }
 
 VKPipeline * VulkanDriver::CreateVKPipeline(PipelineCI & pipelineCI, VKPipeline * parent)

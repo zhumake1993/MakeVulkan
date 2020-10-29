@@ -34,7 +34,6 @@ private:
 	VKBuffer* m_IndexBuffer;
 
 	VkDescriptorSet m_DescriptorSet;
-	VKPipelineLayout* m_PipelineLayout;
 	VKPipeline* m_VulkanPipeline;
 
 	VKRenderPass* m_RenderPass;
