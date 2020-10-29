@@ -11,34 +11,33 @@ class Material
 
 public:
 
-	Material(uint32_t index);
+	Material(std::string name);
 	~Material();
 
-	void SetDUBIndex(uint32_t index);
-	uint32_t GetDUBIndex();
-
-	void SetDiffuseAlbedo(float r, float g, float b, float a);
-	void SetDiffuseAlbedo(glm::vec4& diffuseAlbedo);
-	glm::vec4 GetDiffuseAlbedo();
-
-	void SetFresnelR0(float r, float g, float b);
-	void SetFresnelR0(glm::vec3& fresnelR0);
-	glm::vec3 GetFresnelR0();
-
-	void SetRoughness(float roughness);
-	float GetRoughness();
-
-	void SetMatTransform(glm::mat4& matTransform);
-	glm::mat4 GetMatTransform();
+	std::string GetName();
 
 	void SetShader(Shader* shader);
 	Shader* GetShader();
 
-	void SetTextures(const std::vector<Texture*> textures);
+	void SetFloat4(std::string name, float x, float y, float z, float w);
+	void SetFloat3(std::string name, float x, float y, float z);
+	void SetFloat2(std::string name, float x, float y);
+	void SetFloat(std::string name, float x);
+	void SetFloat4x4(std::string name, glm::mat4& mat);
+
+	void SetTextures(std::string name, Texture* texture);
+
+	char* GetUniformData();
+	uint32_t GetUniformDataSize();
+
+	std::vector<Texture*>& GetTextures();
 
 	void SetDirty();
 	bool IsDirty();
 	void Clean();
+
+	// todo
+	VkDescriptorSetLayout GetVkDescriptorSetLayout() { return m_DescriptorSetLayout; }
 
 private:
 
@@ -50,16 +49,14 @@ public:
 
 private:
 
-	uint32_t m_DUBIndex;
+	std::string m_Name = "";
 
-	glm::vec4 m_DiffuseAlbedo = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	glm::vec3 m_FresnelR0 = glm::vec3(0.0f, 0.0f, 0.0);
-	float m_Roughness = 0.0f;
-	glm::mat4 m_MatTransform = glm::mat4(1.0f);
+	Shader* m_Shader = nullptr;
 
-	Shader* m_Shader;
-
+	char* m_UniformData = nullptr;
 	std::vector<Texture*> m_Textures;
+
+	VkDescriptorSetLayout m_DescriptorSetLayout = VK_NULL_HANDLE;
 
 	uint32_t m_NumFramesDirty = FrameResourcesCount;
 };

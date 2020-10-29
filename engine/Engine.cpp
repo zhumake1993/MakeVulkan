@@ -92,11 +92,9 @@ void Engine::InitEngine()
 
 	uint32_t minUboAlignment = static_cast<uint32_t>(dp.deviceProperties.limits.minUniformBufferOffsetAlignment);
 	m_ObjectUBAlignment = ((sizeof(ObjectUniform) + minUboAlignment - 1) / minUboAlignment) * minUboAlignment;
-	m_MaterialUBAlignment = ((sizeof(MaterialUniform) + minUboAlignment - 1) / minUboAlignment) * minUboAlignment;
 
 	driver.CreateUniformBuffer("PassUniform", sizeof(PassUniform));
 	driver.CreateUniformBuffer("ObjectUniform", m_ObjectUBAlignment * MaxObjectsCount);
-	driver.CreateUniformBuffer("MaterialUniform", m_MaterialUBAlignment * MaxMaterialsCount);
 
 	m_Imgui = new Imgui();
 
@@ -142,10 +140,14 @@ void Engine::TickEngine()
 		UpdateMaterialUniformBuffer(mat);
 	}
 
+	auto cb = driver.GetCurrVKCommandBuffer();
+
+	cb->Begin();
+
 	driver.Tick();
 
 	// 提交draw call
-	RecordCommandBuffer(driver.GetCurrVKCommandBuffer());
+	RecordCommandBuffer(cb);
 
 	// 提交UI draw call,todo
 	//m_Imgui->RecordCommandBuffer(m_FrameResources[m_CurrFrameIndex].commandBuffer);
@@ -174,18 +176,14 @@ void Engine::UpdateObjectUniformBuffer(RenderNode* node)
 
 void Engine::UpdateMaterialUniformBuffer(Material * material)
 {
-	auto& driver = GetVulkanDriver();
+	if (material->GetUniformDataSize() == 0) {
+		return;
+	}
 
-	auto buffer = driver.GetUniformBuffer("MaterialUniform");
-
-	MaterialUniform matUniform;
-	matUniform.diffuseAlbedo = material->GetDiffuseAlbedo();
-	matUniform.fresnelR0 = material->GetFresnelR0();
-	matUniform.roughness = material->GetRoughness();
-	matUniform.matTransform = material->GetMatTransform();
+	auto buffer = GetVulkanDriver().GetUniformBuffer(material->GetName());
 
 	if (material->IsDirty()) {
-		buffer->Copy(&matUniform, m_MaterialUBAlignment * material->GetDUBIndex(), m_MaterialUBAlignment);
+		buffer->Copy(material->GetUniformData(), 0, material->GetUniformDataSize());
 		material->Clean();
 	}
 }
@@ -214,9 +212,9 @@ Shader * Engine::CreateShader()
 	return shader;
 }
 
-Material * Engine::CreateMaterial()
+Material * Engine::CreateMaterial(std::string name)
 {
-	Material* material = new Material(static_cast<uint32_t>(m_MaterialContainer.size()));
+	Material* material = new Material(name);
 	m_MaterialContainer.push_back(material);
 
 	return material;

@@ -28,3 +28,20 @@ struct VertexDescription
 	std::vector<uint32_t> offsets;
 	uint32_t stride;
 };
+
+enum UniformType {
+	float1,
+	float2,
+	float3,
+	float4,
+
+	float4x4
+};
+
+uint32_t UniformTypeToSize(UniformType type);
+
+struct UniformElement
+{
+	UniformType type;
+	uint32_t offset;
+};

@@ -110,14 +110,13 @@ private:
 	uint32_t m_CurrFrameIndex = 0;
 	std::vector<FrameResource> m_FrameResources;
 
-	// uniform buffer
-	UniformBufferMgr* m_UniformBufferMgr;
-
 	VKCommandBuffer* m_UploadVKCommandBuffer;
 	const uint32_t m_StagingBufferSize = 10000000;
 	VKBuffer* m_StagingBuffer;
 
 	DescriptorSetMgr* m_DescriptorSetMgr;
+
+	UniformBufferMgr* m_UniformBufferMgr;
 
 	GPUProfilerMgr *m_GPUProfilerMgr;
 

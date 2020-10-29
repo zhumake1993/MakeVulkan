@@ -76,8 +76,11 @@ void Triangle::CleanUp()
 {
 	RELEASE(m_Sampler);
 
-	RELEASE(m_TexPipeline);
-	RELEASE(m_ColorPipeline);
+	RELEASE(m_HomeMatPipeline);
+	RELEASE(m_Crate01MatPipeline);
+	RELEASE(m_Crate02MatPipeline);
+	RELEASE(m_SimpleColorMatPipeline);
+
 	RELEASE(m_PipelineLayout);
 	RELEASE(m_VKRenderPass);
 
@@ -210,8 +213,6 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 
 	VKFramebuffer* vkFramebuffer = driver.RebuildFramebuffer(m_VKRenderPass);
 
-	//vkCommandBuffer->Begin();
-
 	// test!
 	vkCommandBuffer->WriteTimeStamp("child");
 	vkCommandBuffer->WriteTimeStamp("grandchild");
@@ -229,7 +230,6 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 	//
 	auto passBuffer = driver.GetUniformBuffer("PassUniform");
 	auto objectUniform = driver.GetUniformBuffer("ObjectUniform");
-	auto materialUniform = driver.GetUniformBuffer("MaterialUniform");
 
 	auto dsPerDrawcall = driver.GetDescriptorSet(m_DSLPassUniform);
 	DesUpdateInfos infosPerDrawcall(1);
@@ -243,94 +243,92 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 	infosObjectDUB[0].binding = 0;
 	infosObjectDUB[0].info.buffer = { objectUniform->buffer,0,VK_WHOLE_SIZE };
 	driver.UpdateDescriptorSet(dsObjectDUB, infosObjectDUB);
-	
 
-	auto dsMaterialDUB = driver.GetDescriptorSet(m_DSLMaterialDUB);
-	DesUpdateInfos infosMaterialDUB(1);
-	infosMaterialDUB[0].binding = 0;
-	infosMaterialDUB[0].info.buffer = { materialUniform->buffer,0,VK_WHOLE_SIZE };
-	driver.UpdateDescriptorSet(dsMaterialDUB, infosMaterialDUB);
-
-	// m_TexPipeline
+	// m_HomeMat
 	{
-		vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_TexPipeline);
+		vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_HomeMatPipeline);
 
-		// m_HomeMat
+		auto descriptorSet = driver.GetDescriptorSet(m_HomeMat->GetVkDescriptorSetLayout());
+		DesUpdateInfos infos(2);
+		infos[0].binding = 0;
+		infos[0].info.buffer = { driver.GetUniformBuffer("m_HomeMat")->buffer,0,m_HomeMat->GetUniformDataSize() };
+		infos[1].binding = 1;
+		infos[1].info.image = { m_Sampler->sampler, m_HomeMat->GetTextures()[0]->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+		driver.UpdateDescriptorSet(descriptorSet, infos);
+		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, descriptorSet);
+
+		// drawcall
 		{
-			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_HomeMat->GetDUBIndex() * m_MaterialUBAlignment);
-
-			auto dsHome = driver.GetDescriptorSet(m_DSLOneTex);
-			DesUpdateInfos infosHome(1);
-			infosHome[0].binding = 0;
-			infosHome[0].info.image = { m_Sampler->sampler, m_HomeTex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-			driver.UpdateDescriptorSet(dsHome, infosHome);
-			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 3, dsHome);
-
-			// drawcall
-			{
-				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_HomeNode->GetDUBIndex() * m_ObjectUBAlignment);
-				vkCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
-				vkCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
-				vkCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
-			}
-		}
-
-		// m_Crate01Mat
-		{
-			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_Crate01Mat->GetDUBIndex() * m_MaterialUBAlignment);
-
-			auto dsCube1 = driver.GetDescriptorSet(m_DSLOneTex);
-			DesUpdateInfos infosCube1(1);
-			infosCube1[0].binding = 0;
-			infosCube1[0].info.image = { m_Sampler->sampler, m_Crate01Tex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-			driver.UpdateDescriptorSet(dsCube1, infosCube1);
-			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 3, dsCube1);
-
-			// drawcall
-			{
-				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_CubeNode1->GetDUBIndex() * m_ObjectUBAlignment);
-				vkCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
-				vkCommandBuffer->BindIndexBuffer(m_CubeNode1->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
-				vkCommandBuffer->DrawIndexed(m_CubeNode1->GetIndexCount(), 1, 0, 0, 1);
-			}
-		}
-
-		// m_Crate02Mat
-		{
-			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_Crate02Mat->GetDUBIndex() * m_MaterialUBAlignment);
-
-			auto dsCube2 = driver.GetDescriptorSet(m_DSLOneTex);
-			DesUpdateInfos infosCube2(1);
-			infosCube2[0].binding = 0;
-			infosCube2[0].info.image = { m_Sampler->sampler, m_Crate02Tex->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-			driver.UpdateDescriptorSet(dsCube2, infosCube2);
-			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 3, dsCube2);
-
-			// drawcall
-			{
-				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_SphereNode->GetDUBIndex() * m_ObjectUBAlignment);
-				vkCommandBuffer->BindVertexBuffer(0, m_SphereNode->GetVertexBuffer());
-				vkCommandBuffer->BindIndexBuffer(m_SphereNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
-				vkCommandBuffer->DrawIndexed(m_SphereNode->GetIndexCount(), 1, 0, 0, 1);
-			}
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_HomeNode->GetDUBIndex() * m_ObjectUBAlignment);
+			vkCommandBuffer->BindVertexBuffer(0, m_HomeNode->GetVertexBuffer());
+			vkCommandBuffer->BindIndexBuffer(m_HomeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+			vkCommandBuffer->DrawIndexed(m_HomeNode->GetIndexCount(), 1, 0, 0, 1);
 		}
 	}
 
-	// m_ColorPipeline
+	// m_Crate01Mat
 	{
-		vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_ColorPipeline);
+		vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_Crate01MatPipeline);
 
-		// m_SimpleColorMat
+		auto descriptorSet = driver.GetDescriptorSet(m_Crate01Mat->GetVkDescriptorSetLayout());
+		DesUpdateInfos infos(2);
+		infos[0].binding = 0;
+		infos[0].info.buffer = { driver.GetUniformBuffer("m_Crate01Mat")->buffer,0,m_Crate01Mat->GetUniformDataSize() };
+		infos[1].binding = 1;
+		infos[1].info.image = { m_Sampler->sampler, m_Crate01Mat->GetTextures()[0]->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+		driver.UpdateDescriptorSet(descriptorSet, infos);
+		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, descriptorSet);
+
+		// drawcall
 		{
-			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, dsMaterialDUB, m_SimpleColorMat->GetDUBIndex() * m_MaterialUBAlignment);
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_CubeNode1->GetDUBIndex() * m_ObjectUBAlignment);
+			vkCommandBuffer->BindVertexBuffer(0, m_CubeNode1->GetVertexBuffer());
+			vkCommandBuffer->BindIndexBuffer(m_CubeNode1->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+			vkCommandBuffer->DrawIndexed(m_CubeNode1->GetIndexCount(), 1, 0, 0, 1);
+		}
+	}
 
-			// drawcall
-			{
-				vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_ColorCubeNode->GetDUBIndex() * m_ObjectUBAlignment);
-				vkCommandBuffer->BindVertexBuffer(0, m_ColorCubeNode->GetVertexBuffer());
-				vkCommandBuffer->BindIndexBuffer(m_ColorCubeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
-				vkCommandBuffer->DrawIndexed(m_ColorCubeNode->GetIndexCount(), 1, 0, 0, 1);
-			}
+	// m_Crate02Mat
+	{
+		vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_Crate02MatPipeline);
+
+		auto descriptorSet = driver.GetDescriptorSet(m_Crate02Mat->GetVkDescriptorSetLayout());
+		DesUpdateInfos infos(2);
+		infos[0].binding = 0;
+		infos[0].info.buffer = { driver.GetUniformBuffer("m_Crate01Mat")->buffer,0,m_Crate02Mat->GetUniformDataSize() };
+		infos[1].binding = 1;
+		infos[1].info.image = { m_Sampler->sampler, m_Crate02Mat->GetTextures()[0]->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+		driver.UpdateDescriptorSet(descriptorSet, infos);
+		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, descriptorSet);
+
+		// drawcall
+		{
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_SphereNode->GetDUBIndex() * m_ObjectUBAlignment);
+			vkCommandBuffer->BindVertexBuffer(0, m_SphereNode->GetVertexBuffer());
+			vkCommandBuffer->BindIndexBuffer(m_SphereNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+			vkCommandBuffer->DrawIndexed(m_SphereNode->GetIndexCount(), 1, 0, 0, 1);
+		}
+	}
+
+	// m_SimpleColorMat
+	{
+		vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_SimpleColorMatPipeline);
+
+		//auto descriptorSet = driver.GetDescriptorSet(m_SimpleColorMat->GetVkDescriptorSetLayout());
+		//DesUpdateInfos infos(2);
+		//infos[0].binding = 0;
+		//infos[0].info.buffer = { driver.GetUniformBuffer("m_Crate01Mat")->buffer,0,m_SimpleColorMat->GetUniformDataSize() };
+		//infos[1].binding = 1;
+		//infos[1].info.image = { m_Sampler->sampler, m_SimpleColorMat->GetTextures()[0]->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+		//driver.UpdateDescriptorSet(descriptorSet, infos);
+		//vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 2, descriptorSet);
+
+		// drawcall
+		{
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 1, dsObjectDUB, m_ColorCubeNode->GetDUBIndex() * m_ObjectUBAlignment);
+			vkCommandBuffer->BindVertexBuffer(0, m_ColorCubeNode->GetVertexBuffer());
+			vkCommandBuffer->BindIndexBuffer(m_ColorCubeNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+			vkCommandBuffer->DrawIndexed(m_ColorCubeNode->GetIndexCount(), 1, 0, 0, 1);
 		}
 	}
 
@@ -399,6 +397,13 @@ void Triangle::PrepareResources()
 		m_Shader = CreateShader();
 		m_Shader->LoadVertSPV(global::AssetPath + "shaders/triangle/shader.vert.spv");
 		m_Shader->LoadFragSPV(global::AssetPath + "shaders/triangle/shader.frag.spv");
+		m_Shader->SetUniformLayout({ 
+			{float4,"diffuseAlbedo"},
+			{float3,"fresnelR0"},
+			{float1,"roughness"},
+			{float4x4,"matTransform"} 
+		});
+		m_Shader->SetTextureLayout({ "baseTexture" });
 
 		m_SimpleShader = CreateShader();
 		m_SimpleShader->LoadVertSPV(global::AssetPath + "shaders/triangle/simpleColor.vert.spv");
@@ -407,31 +412,28 @@ void Triangle::PrepareResources()
 
 	// Material
 	{
-		m_HomeMat = CreateMaterial();
-		//m_HomeMat->SetDiffuseAlbedo(1.0f, 1.0f, 1.0f, 1.0f);
-		m_HomeMat->SetFresnelR0(0.3f, 0.3f, 0.3f);
-		m_HomeMat->SetRoughness(0.3f);
+		m_HomeMat = CreateMaterial("m_HomeMat");
 		m_HomeMat->SetShader(m_Shader);
-		m_HomeMat->SetTextures({ m_HomeTex });
+		m_HomeMat->SetFloat4("diffuseAlbedo", 1.0f, 1.0f, 1.0f, 1.0f);
+		m_HomeMat->SetFloat3("fresnelR0", 0.3f, 0.3f, 0.3f);
+		m_HomeMat->SetFloat("roughness", 0.3f);
+		m_HomeMat->SetTextures("baseTexture", m_HomeTex);
 
-		m_Crate01Mat = CreateMaterial();
-		//m_Crate01Mat->SetDiffuseAlbedo(1.0f, 1.0f, 1.0f, 1.0f);
-		m_Crate01Mat->SetFresnelR0(0.3f, 0.3f, 0.3f);
-		m_Crate01Mat->SetRoughness(0.3f);
+		m_Crate01Mat = CreateMaterial("m_Crate01Mat");
 		m_Crate01Mat->SetShader(m_Shader);
-		m_Crate01Mat->SetTextures({ m_Crate01Tex });
+		m_Crate01Mat->SetFloat4("diffuseAlbedo", 1.0f, 1.0f, 1.0f, 1.0f);
+		m_Crate01Mat->SetFloat3("fresnelR0", 0.3f, 0.3f, 0.3f);
+		m_Crate01Mat->SetFloat("roughness", 0.3f);
+		m_Crate01Mat->SetTextures("baseTexture", m_Crate01Tex);
 
-		m_Crate02Mat = CreateMaterial();
-		//m_Crate02Mat->SetDiffuseAlbedo(1.0f, 1.0f, 1.0f, 1.0f);
-		m_Crate02Mat->SetFresnelR0(0.3f, 0.3f, 0.3f);
-		m_Crate02Mat->SetRoughness(0.3f);
+		m_Crate02Mat = CreateMaterial("m_Crate02Mat");
 		m_Crate02Mat->SetShader(m_Shader);
-		m_Crate02Mat->SetTextures({ m_Crate02Tex });
+		m_Crate02Mat->SetFloat4("diffuseAlbedo", 1.0f, 1.0f, 1.0f, 1.0f);
+		m_Crate02Mat->SetFloat3("fresnelR0", 0.3f, 0.3f, 0.3f);
+		m_Crate02Mat->SetFloat("roughness", 0.3f);
+		m_Crate02Mat->SetTextures("baseTexture", m_Crate02Tex);
 
-		m_SimpleColorMat = CreateMaterial();
-		//m_SimpleColorMat->SetDiffuseAlbedo(1.0f, 1.0f, 1.0f, 1.0f);
-		m_SimpleColorMat->SetFresnelR0(0.3f, 0.3f, 0.3f);
-		m_SimpleColorMat->SetRoughness(0.3f);
+		m_SimpleColorMat = CreateMaterial("m_SimpleColorMat");
 		m_SimpleColorMat->SetShader(m_SimpleShader);
 	}
 
@@ -476,46 +478,44 @@ void Triangle::PrepareDescriptorSet()
 		bindings[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT };
 		m_DSLObjectDUB = driver.CreateDescriptorSetLayout(bindings);
 	}
-
-	{
-		DSLBindings bindings(1);
-		bindings[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_FRAGMENT_BIT };
-		m_DSLMaterialDUB = driver.CreateDescriptorSetLayout(bindings);
-	}
-	
-	{
-		DSLBindings bindings(1);
-		bindings[0] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT };
-		m_DSLOneTex = driver.CreateDescriptorSetLayout(bindings);
-	}
 }
 
 void Triangle::CreatePipeline()
 {
 	auto& driver = GetVulkanDriver();
 
-	m_PipelineLayout = driver.CreateVKPipelineLayout({ m_DSLPassUniform, m_DSLObjectDUB, m_DSLMaterialDUB, m_DSLOneTex });
-	m_VKRenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat());
+	// 目前手动构造pso
 
 	PipelineCI pipelineCI;
-	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->pipelineLayout;
+
+	m_VKRenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat());
 	pipelineCI.pipelineCreateInfo.renderPass = m_VKRenderPass->renderPass;
 
-	// tex
+	m_PipelineLayout = driver.CreateVKPipelineLayout({ m_DSLPassUniform, m_DSLObjectDUB, 
+		m_HomeMat->GetVkDescriptorSetLayout(),m_Crate01Mat->GetVkDescriptorSetLayout(),m_Crate02Mat->GetVkDescriptorSetLayout(),m_SimpleColorMat->GetVkDescriptorSetLayout() });
+	pipelineCI.pipelineCreateInfo.layout = m_PipelineLayout->pipelineLayout;
 
+	// m_HomeMat
 	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = m_HomeMat->GetShader()->GetVkShaderModuleVert();
 	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = m_HomeMat->GetShader()->GetVkShaderModuleFrag();
 	pipelineCI.SetVertexInputState(m_Home->GetVertexDescription());
+	m_HomeMatPipeline = driver.CreateVKPipeline(pipelineCI);
 
-	m_TexPipeline = driver.CreateVKPipeline(pipelineCI);
+	// m_Crate01Mat
+	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = m_Crate01Mat->GetShader()->GetVkShaderModuleVert();
+	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = m_Crate01Mat->GetShader()->GetVkShaderModuleFrag();
+	m_Crate01MatPipeline = driver.CreateVKPipeline(pipelineCI);
 
-	// color
+	// m_Crate02Mat
+	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = m_Crate02Mat->GetShader()->GetVkShaderModuleVert();
+	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = m_Crate02Mat->GetShader()->GetVkShaderModuleFrag();
+	m_Crate02MatPipeline = driver.CreateVKPipeline(pipelineCI);
 
+	// m_SimpleColorMat
 	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = m_SimpleColorMat->GetShader()->GetVkShaderModuleVert();
 	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = m_SimpleColorMat->GetShader()->GetVkShaderModuleFrag();
 	pipelineCI.SetVertexInputState(m_SimpleCube->GetVertexDescription());
-
-	m_ColorPipeline = driver.CreateVKPipeline(pipelineCI, m_TexPipeline);
+	m_SimpleColorMatPipeline = driver.CreateVKPipeline(pipelineCI);
 }
 
 // 入口

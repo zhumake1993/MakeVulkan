@@ -118,13 +118,13 @@ void VulkanDriver::Init()
 		m_FrameResources[i].fence = CreateVKFence(true);
 	}
 
-	m_UniformBufferMgr = new UniformBufferMgr();
-
 	m_UploadVKCommandBuffer = CreateVKCommandBuffer(m_VKCommandPool);
 	m_StagingBuffer = CreateVKBuffer(m_StagingBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 	m_StagingBuffer->Map();
 
 	m_DescriptorSetMgr = new DescriptorSetMgr(m_VKDevice->device);
+
+	m_UniformBufferMgr = new UniformBufferMgr();
 
 	m_GPUProfilerMgr = new GPUProfilerMgr(m_VKDevice);
 
@@ -150,9 +150,6 @@ void VulkanDriver::Tick()
 
 	m_GPUProfilerMgr->Tick();
 	m_GPUProfilerMgr->SetVKCommandBuffer(m_FrameResources[m_CurrFrameIndex].commandBuffer);
-
-	m_FrameResources[m_CurrFrameIndex].commandBuffer->Begin();
-
 	m_GPUProfilerMgr->Reset();
 }
 

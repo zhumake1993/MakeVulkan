@@ -32,13 +32,6 @@ struct ObjectUniform {
 	alignas(16) glm::mat4 world;
 };
 
-struct MaterialUniform {
-	alignas(16) glm::vec4 diffuseAlbedo;
-	alignas(16) glm::vec3 fresnelR0;
-	float roughness;
-	alignas(16) glm::mat4 matTransform = glm::mat4(1.0f);
-};
-
 class Engine : public NonCopyable
 {
 
@@ -66,7 +59,7 @@ protected:
 	Mesh* CreateMesh();
 	Texture* CreateTexture();
 	Shader* CreateShader();
-	Material* CreateMaterial();
+	Material* CreateMaterial(std::string name);
 	RenderNode* CreateRenderNode();
 
 private:
@@ -81,7 +74,6 @@ protected:
 	Imgui* m_Imgui;
 
 	uint32_t m_ObjectUBAlignment;
-	uint32_t m_MaterialUBAlignment;
 
 private:
 

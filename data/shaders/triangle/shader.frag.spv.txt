@@ -196,7 +196,7 @@ layout(set=2, binding=0) uniform u_MaterialUniformBuffer{
 	Material gMaterial;
 };
 
-layout(set=3, binding=0) uniform sampler2D u_Texture;
+layout(set=2, binding=1) uniform sampler2D baseTexture;
 
 layout(location = 0) in vec3 v_Normal;
 layout(location = 1) in vec2 v_Texcoord;
@@ -218,7 +218,7 @@ void main() {
 	
 	// Material
 	Material mat = gMaterial;
-	mat.diffuseAlbedo = mat.diffuseAlbedo * texture(u_Texture, v_Texcoord);
+	mat.diffuseAlbedo = mat.diffuseAlbedo * texture(baseTexture, v_Texcoord);
 	
 	// Indirect lighting.
 	vec4 ambient = ambientLight * mat.diffuseAlbedo;
@@ -349,7 +349,7 @@ void main() {
                               Name 328  "u_MaterialUniformBuffer"
                               MemberName 328(u_MaterialUniformBuffer) 0  "gMaterial"
                               Name 330  ""
-                              Name 348  "u_Texture"
+                              Name 348  "baseTexture"
                               Name 352  "v_Texcoord"
                               Name 357  "ambient"
                               Name 363  "shadowFactor"
@@ -393,8 +393,8 @@ void main() {
                               Decorate 328(u_MaterialUniformBuffer) Block
                               Decorate 330 DescriptorSet 2
                               Decorate 330 Binding 0
-                              Decorate 348(u_Texture) DescriptorSet 3
-                              Decorate 348(u_Texture) Binding 0
+                              Decorate 348(baseTexture) DescriptorSet 2
+                              Decorate 348(baseTexture) Binding 1
                               Decorate 352(v_Texcoord) Location 1
                               Decorate 627(o_Color) Location 0
                3:             TypeVoid
@@ -452,7 +452,7 @@ void main() {
              345:             TypeImage 7(float) 2D sampled format:Unknown
              346:             TypeSampledImage 345
              347:             TypePointer UniformConstant 346
-  348(u_Texture):    347(ptr) Variable UniformConstant
+348(baseTexture):    347(ptr) Variable UniformConstant
              350:             TypeVector 7(float) 2
              351:             TypePointer Input 350(fvec2)
  352(v_Texcoord):    351(ptr) Variable Input
@@ -516,7 +516,7 @@ void main() {
                               Line 1 206 0
              343:    151(ptr) AccessChain 326(mat) 150
              344:   23(fvec4) Load 343
-             349:         346 Load 348(u_Texture)
+             349:         346 Load 348(baseTexture)
              353:  350(fvec2) Load 352(v_Texcoord)
              354:   23(fvec4) ImageSampleImplicitLod 349 353
              355:   23(fvec4) FMul 344 354

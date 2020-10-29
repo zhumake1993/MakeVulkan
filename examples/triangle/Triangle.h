@@ -61,12 +61,12 @@ private:
 	// DescriptorSet
 	VkDescriptorSetLayout m_DSLPassUniform;
 	VkDescriptorSetLayout m_DSLObjectDUB;
-	VkDescriptorSetLayout m_DSLMaterialDUB;
-	VkDescriptorSetLayout m_DSLOneTex;
 
 	// Render Status
-	VKPipeline* m_TexPipeline;
-	VKPipeline* m_ColorPipeline;
+	VKPipeline* m_HomeMatPipeline;
+	VKPipeline* m_Crate01MatPipeline;
+	VKPipeline* m_Crate02MatPipeline;
+	VKPipeline* m_SimpleColorMatPipeline;
 	VKPipelineLayout* m_PipelineLayout;
 	VKRenderPass* m_VKRenderPass;
 

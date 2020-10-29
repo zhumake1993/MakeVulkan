@@ -181,7 +181,7 @@ layout(set=2, binding=0) uniform u_MaterialUniformBuffer{
 	Material gMaterial;
 };
 
-layout(set=3, binding=0) uniform sampler2D u_Texture;
+layout(set=2, binding=1) uniform sampler2D baseTexture;
 
 layout(location = 0) in vec3 v_Normal;
 layout(location = 1) in vec2 v_Texcoord;
@@ -203,7 +203,7 @@ void main() {
 	
 	// Material
 	Material mat = gMaterial;
-	mat.diffuseAlbedo = mat.diffuseAlbedo * texture(u_Texture, v_Texcoord);
+	mat.diffuseAlbedo = mat.diffuseAlbedo * texture(baseTexture, v_Texcoord);
 	
 	// Indirect lighting.
 	vec4 ambient = ambientLight * mat.diffuseAlbedo;
