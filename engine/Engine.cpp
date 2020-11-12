@@ -214,7 +214,7 @@ void Engine::UpdateUniformBuffer()
 	// Material Uniform
 	for (auto material : m_MaterialContainer) {
 		if (material->GetUniformDataSize() == 0) {
-			return;
+			continue;
 		}
 
 		auto buffer = GetVulkanDriver().GetUniformBuffer(material->GetName());

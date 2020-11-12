@@ -4,6 +4,7 @@
 #include "Tools.h"
 
 #include "VKDevice.h"
+#include "VKSpecializationConstant.h"
 
 PipelineCI::PipelineCI()
 {
@@ -42,9 +43,9 @@ void PipelineCI::SetDynamicState(const std::vector<VkDynamicState>& states)
 	ConfigDynamicStateCreateInfo();
 }
 
-void PipelineCI::SetSpecializationConstant(VKShaderType shaderType, VkSpecializationInfo& specializationInfo)
+void PipelineCI::SetSpecializationConstant(VKShaderType shaderType, VKSpecializationConstant* vkSpecializationConstant)
 {
-	shaderStageCreateInfos[shaderType].pSpecializationInfo = &specializationInfo;
+	shaderStageCreateInfos[shaderType].pSpecializationInfo = vkSpecializationConstant->GetVkSpecializationInfoPtr();
 }
 
 void PipelineCI::ConfigShaderStageCreateInfos()

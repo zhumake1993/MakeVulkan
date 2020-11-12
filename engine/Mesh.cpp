@@ -122,12 +122,12 @@ void Mesh::LoadFromFile(const std::string & filename)
 	}
 }
 
-void Mesh::SetVertices(std::vector<float>& vertices)
+void Mesh::SetVertices(const std::vector<float>& vertices)
 {
 	m_Vertices = vertices;
 }
 
-void Mesh::SetIndices(std::vector<uint32_t>& indices)
+void Mesh::SetIndices(const std::vector<uint32_t>& indices)
 {
 	m_Indices = indices;
 }

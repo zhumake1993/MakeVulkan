@@ -31,6 +31,9 @@
 #include "ProfilerMgr.h"
 #include "GPUProfilerMgr.h"
 
+// todo
+#include "VKSpecializationConstant.h"
+
 void ConfigGlobalSettings() {
 
 	auto& dp = GetDeviceProperties();
@@ -61,6 +64,7 @@ void ConfigGlobalSettings() {
 	// wireframe
 	//dp.enabledDeviceFeatures.fillModeNonSolid = VK_TRUE;
 	//dp.enabledDeviceFeatures.wideLines = VK_TRUE;
+	dp.enabledDeviceFeatures.samplerAnisotropy = VK_TRUE;
 }
 
 Triangle::Triangle()
@@ -79,6 +83,7 @@ void Triangle::CleanUp()
 	RELEASE(m_Crate01MatPipeline);
 	RELEASE(m_Crate02MatPipeline);
 	RELEASE(m_SimpleColorMatPipeline);
+	RELEASE(m_MetalplateMatPipeline);
 
 	RELEASE(m_VKRenderPass);
 
@@ -292,7 +297,7 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 		auto descriptorSet = driver.GetDescriptorSet(m_Crate02Mat->GetVkDescriptorSetLayout());
 		DesUpdateInfos infos(2);
 		infos[0].binding = 0;
-		infos[0].info.buffer = { driver.GetUniformBuffer("m_Crate01Mat")->buffer,0,m_Crate02Mat->GetUniformDataSize() };
+		infos[0].info.buffer = { driver.GetUniformBuffer("m_Crate02Mat")->buffer,0,m_Crate02Mat->GetUniformDataSize() };
 		infos[1].binding = 1;
 		infos[1].info.image = { m_Sampler->sampler, m_Crate02Mat->GetTextures()[0]->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 		driver.UpdateDescriptorSet(descriptorSet, infos);
@@ -304,6 +309,28 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
 			vkCommandBuffer->BindVertexBuffer(0, m_SphereNode->GetVertexBuffer());
 			vkCommandBuffer->BindIndexBuffer(m_SphereNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
 			vkCommandBuffer->DrawIndexed(m_SphereNode->GetIndexCount(), 1, 0, 0, 1);
+		}
+	}
+
+	// m_MetalplateMat
+	{
+		vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_MetalplateMatPipeline);
+
+		auto descriptorSet = driver.GetDescriptorSet(m_MetalplateMat->GetVkDescriptorSetLayout());
+		DesUpdateInfos infos(2);
+		infos[0].binding = 0;
+		infos[0].info.buffer = { driver.GetUniformBuffer("m_MetalplateMat")->buffer,0,m_MetalplateMat->GetUniformDataSize() };
+		infos[1].binding = 1;
+		infos[1].info.image = { m_Sampler->sampler, m_MetalplateMat->GetTextures()[0]->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+		driver.UpdateDescriptorSet(descriptorSet, infos);
+		vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_MetalplateMatPipeline->pipelineLayout, 2, descriptorSet);
+
+		// drawcall
+		{
+			vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_MetalplateMatPipeline->pipelineLayout, 1, dsObjectDUB, m_QuadNode->GetDUBIndex() * m_ObjectUBAlignment);
+			vkCommandBuffer->BindVertexBuffer(0, m_QuadNode->GetVertexBuffer());
+			vkCommandBuffer->BindIndexBuffer(m_QuadNode->GetIndexBuffer(), VK_INDEX_TYPE_UINT32);
+			vkCommandBuffer->DrawIndexed(m_QuadNode->GetIndexCount(), 1, 0, 0, 1);
 		}
 	}
 
@@ -366,6 +393,19 @@ void Triangle::PrepareResources()
 		m_Sphere = CreateMesh();
 		m_Sphere->LoadFromFile(global::AssetPath + "models/sphere.obj");
 		m_Sphere->UploadToGPU();
+
+		m_Quad = CreateMesh();
+		m_Quad->SetVertexChannels({ kVertexPosition, kVertexNormal, kVertexTexcoord });
+		m_Quad->SetVertices({
+			  1.0f,  1.0f, 0.0f , 0.0f, 0.0f, -1.0f , 1.0f, 1.0f ,
+			 -1.0f,  1.0f, 0.0f , 0.0f, 0.0f, -1.0f , 0.0f, 1.0f ,
+			 -1.0f, -1.0f, 0.0f , 0.0f, 0.0f, -1.0f , 0.0f, 0.0f ,
+			  1.0f, -1.0f, 0.0f , 0.0f, 0.0f, -1.0f , 1.0f, 0.0f ,
+			});
+		m_Quad->SetIndices({
+			0,2,1, 0,3,2
+			});
+		m_Quad->UploadToGPU();
 	}
 
 	// Texture
@@ -378,6 +418,9 @@ void Triangle::PrepareResources()
 
 		m_Crate02Tex = CreateTexture();
 		m_Crate02Tex->LoadFromFile(global::AssetPath + "textures/crate02_color_height_rgba.ktx");
+
+		m_Metalplate = CreateTexture();
+		m_Metalplate->LoadFromFile(global::AssetPath + "textures/metalplate_nomips_rgba.ktx");
 	}
 
 	// Shader
@@ -421,8 +464,18 @@ void Triangle::PrepareResources()
 		m_Crate02Mat->SetFloat("roughness", 0.3f);
 		m_Crate02Mat->SetTextures("baseTexture", m_Crate02Tex);
 
+		
+	
+
 		m_SimpleColorMat = CreateMaterial("m_SimpleColorMat");
 		m_SimpleColorMat->SetShader(m_SimpleShader);
+
+		m_MetalplateMat = CreateMaterial("m_MetalplateMat");
+		m_MetalplateMat->SetShader(m_Shader);
+		m_MetalplateMat->SetFloat4("diffuseAlbedo", 1.0f, 1.0f, 1.0f, 1.0f);
+		m_MetalplateMat->SetFloat3("fresnelR0", 0.3f, 0.3f, 0.3f);
+		m_MetalplateMat->SetFloat("roughness", 0.3f);
+		m_MetalplateMat->SetTextures("baseTexture", m_Metalplate);
 	}
 
 	// Sampler
@@ -448,6 +501,10 @@ void Triangle::PrepareResources()
 		m_ColorCubeNode = CreateRenderNode();
 		m_ColorCubeNode->SetMesh(m_SimpleCube);
 		m_ColorCubeNode->GetTransform().Scale(0.1f, 0.1f, 0.1f).Translate(0.0f, 0.6f, 0.0f);
+
+		m_QuadNode = CreateRenderNode();
+		m_QuadNode->SetMesh(m_Quad);
+		m_QuadNode->GetTransform().Scale(0.1f, 0.1f, 0.1f).Rotate(0.57f, 0.0f, 1.0f, 0.0f).Translate(0.0f, -0.6f, 0.0f);
 	}
 }
 
@@ -462,32 +519,12 @@ void Triangle::CreatePipeline()
 	m_VKRenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat());
 	pipelineCI.pipelineCreateInfo.renderPass = m_VKRenderPass->renderPass;
 
-	// Specialization Constant
-	m_SpecializationData.numDirLights = 1;
-	m_SpecializationData.numPointLights = 1;
-	m_SpecializationData.numSpotLights = 0;
+	VKSpecializationConstant sc;
+	sc.Add(0, 1);
+	sc.Add(1, 1);
+	sc.Add(2, 0);
 
-	std::vector<VkSpecializationMapEntry> specializationMapEntries(3);
-
-	specializationMapEntries[0].constantID = 0;
-	specializationMapEntries[0].size = sizeof(m_SpecializationData.numDirLights);
-	specializationMapEntries[0].offset = offsetof(SpecializationData, numDirLights);
-
-	specializationMapEntries[1].constantID = 1;
-	specializationMapEntries[1].size = sizeof(m_SpecializationData.numPointLights);
-	specializationMapEntries[1].offset = offsetof(SpecializationData, numPointLights);
-
-	specializationMapEntries[2].constantID = 2;
-	specializationMapEntries[2].size = sizeof(m_SpecializationData.numSpotLights);
-	specializationMapEntries[2].offset = offsetof(SpecializationData, numSpotLights);
-
-	VkSpecializationInfo specializationInfo = {};
-	specializationInfo.dataSize = sizeof(m_SpecializationData);
-	specializationInfo.mapEntryCount = static_cast<uint32_t>(specializationMapEntries.size());
-	specializationInfo.pMapEntries = specializationMapEntries.data();
-	specializationInfo.pData = &m_SpecializationData;
-
-	pipelineCI.SetSpecializationConstant(kVKShaderFragment, specializationInfo);
+	pipelineCI.SetSpecializationConstant(kVKShaderFragment, &sc);
 
 	// m_HomeMat
 	pipelineCI.pipelineCreateInfo.layout = driver.CreateVkPipelineLayout({ m_DSLPassUniform, m_DSLObjectDUB,m_HomeMat->GetVkDescriptorSetLayout() });
@@ -516,6 +553,13 @@ void Triangle::CreatePipeline()
 	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = m_SimpleColorMat->GetShader()->GetVkShaderModuleFrag();
 	pipelineCI.SetVertexInputState(m_SimpleCube->GetVertexDescription());
 	m_SimpleColorMatPipeline = driver.CreateVKPipeline(pipelineCI);
+
+	// m_MetalplateMatPipeline
+	pipelineCI.pipelineCreateInfo.layout = driver.CreateVkPipelineLayout({ m_DSLPassUniform, m_DSLObjectDUB,m_MetalplateMat->GetVkDescriptorSetLayout() });
+	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = m_MetalplateMat->GetShader()->GetVkShaderModuleVert();
+	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = m_MetalplateMat->GetShader()->GetVkShaderModuleFrag();
+	pipelineCI.SetVertexInputState(m_Quad->GetVertexDescription());
+	m_MetalplateMatPipeline = driver.CreateVKPipeline(pipelineCI);
 }
 
 // Èë¿Ú

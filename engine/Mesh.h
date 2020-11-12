@@ -22,8 +22,8 @@ public:
 
 	void LoadFromFile(const std::string& filename);
 
-	void SetVertices(std::vector<float>& vertices);
-	void SetIndices(std::vector<uint32_t>& indices);
+	void SetVertices(const std::vector<float>& vertices);
+	void SetIndices(const std::vector<uint32_t>& indices);
 
 	void UploadToGPU();
 

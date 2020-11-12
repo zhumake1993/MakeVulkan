@@ -7,6 +7,7 @@
 struct VKDevice;
 struct VKShaderModule;
 struct VKKRenderPass;
+class VKSpecializationConstant;
 
 struct PipelineCI
 {
@@ -15,7 +16,7 @@ struct PipelineCI
 
 	void SetVertexInputState(const VertexDescription& vertexDes);
 	void SetDynamicState(const std::vector<VkDynamicState>& states);
-	void SetSpecializationConstant(VKShaderType shaderType, VkSpecializationInfo& specializationInfo);
+	void SetSpecializationConstant(VKShaderType shaderType, VKSpecializationConstant* vkSpecializationConstant);
 
 	// 只支持vs和ps
 	VkPipelineShaderStageCreateInfo shaderStageCreateInfos[kVKShaderCount];
