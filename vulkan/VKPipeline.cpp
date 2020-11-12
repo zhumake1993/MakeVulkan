@@ -42,6 +42,11 @@ void PipelineCI::SetDynamicState(const std::vector<VkDynamicState>& states)
 	ConfigDynamicStateCreateInfo();
 }
 
+void PipelineCI::SetSpecializationConstant(VKShaderType shaderType, VkSpecializationInfo& specializationInfo)
+{
+	shaderStageCreateInfos[shaderType].pSpecializationInfo = &specializationInfo;
+}
+
 void PipelineCI::ConfigShaderStageCreateInfos()
 {
 	// Vertex shader

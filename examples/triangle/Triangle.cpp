@@ -462,6 +462,33 @@ void Triangle::CreatePipeline()
 	m_VKRenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat());
 	pipelineCI.pipelineCreateInfo.renderPass = m_VKRenderPass->renderPass;
 
+	// Specialization Constant
+	m_SpecializationData.numDirLights = 1;
+	m_SpecializationData.numPointLights = 1;
+	m_SpecializationData.numSpotLights = 0;
+
+	std::vector<VkSpecializationMapEntry> specializationMapEntries(3);
+
+	specializationMapEntries[0].constantID = 0;
+	specializationMapEntries[0].size = sizeof(m_SpecializationData.numDirLights);
+	specializationMapEntries[0].offset = offsetof(SpecializationData, numDirLights);
+
+	specializationMapEntries[1].constantID = 1;
+	specializationMapEntries[1].size = sizeof(m_SpecializationData.numPointLights);
+	specializationMapEntries[1].offset = offsetof(SpecializationData, numPointLights);
+
+	specializationMapEntries[2].constantID = 2;
+	specializationMapEntries[2].size = sizeof(m_SpecializationData.numSpotLights);
+	specializationMapEntries[2].offset = offsetof(SpecializationData, numSpotLights);
+
+	VkSpecializationInfo specializationInfo = {};
+	specializationInfo.dataSize = sizeof(m_SpecializationData);
+	specializationInfo.mapEntryCount = static_cast<uint32_t>(specializationMapEntries.size());
+	specializationInfo.pMapEntries = specializationMapEntries.data();
+	specializationInfo.pData = &m_SpecializationData;
+
+	pipelineCI.SetSpecializationConstant(kVKShaderFragment, specializationInfo);
+
 	// m_HomeMat
 	pipelineCI.pipelineCreateInfo.layout = driver.CreateVkPipelineLayout({ m_DSLPassUniform, m_DSLObjectDUB,m_HomeMat->GetVkDescriptorSetLayout() });
 	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = m_HomeMat->GetShader()->GetVkShaderModuleVert();

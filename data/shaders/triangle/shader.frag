@@ -5,9 +5,9 @@
 /////////////////////////////////////////////////////
 
 #define MaxLights 16
-#define NUM_DIR_LIGHTS 1
-#define NUM_POINT_LIGHTS 1
-#define NUM_SPOT_LIGHTS 0
+layout (constant_id = 0) const int NUM_DIR_LIGHTS = 0;
+layout (constant_id = 1) const int NUM_POINT_LIGHTS = 0;
+layout (constant_id = 2) const int NUM_SPOT_LIGHTS = 0;
 
 struct Light
 {
@@ -134,27 +134,27 @@ vec4 ComputeLighting(Light gLights[MaxLights], Material mat, vec3 pos, vec3 norm
 	vec3 result = vec3(0.0f, 0.0f, 0.0f);
 	int i = 0;
 	
-	#if (NUM_DIR_LIGHTS > 0)
+	//#if (NUM_DIR_LIGHTS > 0)
 		for(i = 0; i < NUM_DIR_LIGHTS; ++i)
 		{
 			result += shadowFactor[i] * ComputeDirectionalLight(gLights[i], mat, normal, toEye);
 		}
-	#endif
+	//#endif
 	
-	#if (NUM_POINT_LIGHTS > 0)
+	//#if (NUM_POINT_LIGHTS > 0)
 		for(i = NUM_DIR_LIGHTS; i < NUM_DIR_LIGHTS+NUM_POINT_LIGHTS; ++i)
 		{
 			result += ComputePointLight(gLights[i], mat, pos, normal, toEye);
 		}
-	#endif
+	//#endif
 	
-	#if (NUM_SPOT_LIGHTS > 0)
+	//#if (NUM_SPOT_LIGHTS > 0)
 		for(i = NUM_DIR_LIGHTS + NUM_POINT_LIGHTS; i < NUM_DIR_LIGHTS + NUM_POINT_LIGHTS + NUM_SPOT_LIGHTS; ++i)
 		{
 			result += ComputeSpotLight(gLights[i], mat, pos, normal, toEye);
 		}
-	#endif
-	
+	//#endif
+
 	return vec4(result, 0.0f);
 }
 

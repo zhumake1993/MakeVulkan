@@ -15,6 +15,7 @@ struct PipelineCI
 
 	void SetVertexInputState(const VertexDescription& vertexDes);
 	void SetDynamicState(const std::vector<VkDynamicState>& states);
+	void SetSpecializationConstant(VKShaderType shaderType, VkSpecializationInfo& specializationInfo);
 
 	// 只支持vs和ps
 	VkPipelineShaderStageCreateInfo shaderStageCreateInfos[kVKShaderCount];

@@ -4,6 +4,7 @@
 // Light
 /////////////////////////////////////////////////////
 
+/*
 #define MaxLights 16
 #define NUM_DIR_LIGHTS 1
 #define NUM_POINT_LIGHTS 1
@@ -18,6 +19,7 @@ struct Light
 	vec3 position; // point/spot light only
 	float spotPower; // spot light only
 };
+*/
 
 /////////////////////////////////////////////////////
 // Uniform
@@ -28,8 +30,8 @@ layout(set=0, binding=0) uniform u_PassUniformBuffer {
     mat4 proj;
 	vec4 eyePos;
 	
-	vec4 ambientLight;
-	Light lights[MaxLights];
+	//vec4 ambientLight;
+	//Light lights[MaxLights];
 };
 
 layout(set=1, binding=0) uniform u_ObjectUniformBuffer {

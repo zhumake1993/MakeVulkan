@@ -19,6 +19,13 @@ struct Light
 	float spotPower; // spot light only
 };
 
+struct SpecializationData
+{
+	uint32_t numDirLights = 0;
+	uint32_t numPointLights = 0;
+	uint32_t numSpotLights = 0;
+};
+
 struct PassUniform {
 	alignas(16) glm::mat4 view;
 	alignas(16) glm::mat4 proj;
@@ -66,6 +73,8 @@ protected:
 
 	// Uniform Buffer
 	PassUniform m_PassUniform;
+
+	SpecializationData m_SpecializationData;
 
 	Imgui* m_Imgui;
 
