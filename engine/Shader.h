@@ -4,6 +4,7 @@
 #include "VKTypes.h"
 
 struct VKShaderModule;
+class VKSpecializationConstant;
 
 class Shader
 {
@@ -22,6 +23,10 @@ public:
 	// 假设数据是紧密pack的，这样方便处理
 	void SetUniformLayout(std::vector<UniformPair> pairs);
 	void SetTextureLayout(const std::vector<std::string> names);
+
+	void AddSpecializationConstant(int id, uint32_t value);
+	void SetSpecializationConstant(int id, uint32_t value);
+	VKSpecializationConstant* GetVKSpecializationConstant();
 
 	VkShaderModule GetVkShaderModuleVert();
 	VkShaderModule GetVkShaderModuleFrag();
@@ -50,4 +55,6 @@ private:
 
 	std::unordered_map<std::string, uint32_t> m_TextureElements;
 	uint32_t m_TextureNum = 0;
+
+	VKSpecializationConstant* m_SpecializationConstant = nullptr;
 };

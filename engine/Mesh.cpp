@@ -35,6 +35,8 @@ void Mesh::SetVertexChannels(const std::vector<VertexChannel>& channels)
 
 	// ±£Ö¤channelµÄË³Ðò
 	std::sort(m_VertexChannels.begin(), m_VertexChannels.end());
+
+	m_IsVertexDescriptionCached = false;
 }
 
 std::vector<VertexChannel>& Mesh::GetVertexChannels()
@@ -49,17 +51,21 @@ std::vector<VkFormat>& Mesh::GetVertexChannelFormats()
 
 VertexDescription Mesh::GetVertexDescription()
 {
-	VertexDescription vd;
+	if (m_IsVertexDescriptionCached) {
+		return m_VertexDescriptionCache;
+	}
 
 	uint32_t offset = 0;
 	for (auto channel : m_VertexChannels) {
-		vd.formats.push_back(m_VertexChannelFormats[channel]);
-		vd.offsets.push_back(offset);
+		m_VertexDescriptionCache.formats.push_back(m_VertexChannelFormats[channel]);
+		m_VertexDescriptionCache.offsets.push_back(offset);
 		offset += VkFormatToSize(m_VertexChannelFormats[channel]);
 	}
-	vd.stride = offset;
+	m_VertexDescriptionCache.stride = offset;
 
-	return vd;
+	m_IsVertexDescriptionCached = true;
+
+	return m_VertexDescriptionCache;
 }
 
 void Mesh::LoadFromFile(const std::string & filename)

@@ -2,6 +2,7 @@
 #include "Tools.h"
 #include "VulkanDriver.h"
 #include "VKShaderModule.h"
+#include "VKSpecializationConstant.h"
 #include <algorithm>
 
 Shader::Shader()
@@ -49,6 +50,30 @@ void Shader::SetTextureLayout(const std::vector<std::string> names)
 	for (uint32_t i = 0; i < m_TextureNum; i++) {
 		m_TextureElements[names[i]] = i;
 	}
+}
+
+void Shader::AddSpecializationConstant(int id, uint32_t value)
+{
+	if (m_SpecializationConstant == nullptr) {
+		m_SpecializationConstant = new VKSpecializationConstant();
+	}
+
+	m_SpecializationConstant->Add(id, value);
+}
+
+void Shader::SetSpecializationConstant(int id, uint32_t value)
+{
+	if (m_SpecializationConstant == nullptr) {
+		LOG("m_SpecializationConstant is nullptr");
+		assert(false);
+	}
+
+	m_SpecializationConstant->Set(id, value);
+}
+
+VKSpecializationConstant * Shader::GetVKSpecializationConstant()
+{
+	return m_SpecializationConstant;
 }
 
 VkShaderModule Shader::GetVkShaderModuleVert()

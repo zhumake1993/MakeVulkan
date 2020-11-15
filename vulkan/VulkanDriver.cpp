@@ -430,6 +430,11 @@ VKRenderPass * VulkanDriver::CreateVKRenderPass(VkFormat colorFormat)
 	return new VKRenderPass(m_VKDevice, colorFormat, m_DepthFormat);
 }
 
+void VulkanDriver::ReleaseVkPipelineLayout(VkPipelineLayout pipelineLayout)
+{
+	vkDestroyPipelineLayout(m_VKDevice->device, pipelineLayout, nullptr);
+}
+
 VKFramebuffer* VulkanDriver::CreateVKFramebuffer(VKRenderPass* vkRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height)
 {
 	return new VKFramebuffer(m_VKDevice, vkRenderPass, color, depth, width, height);

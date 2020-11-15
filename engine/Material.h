@@ -5,6 +5,7 @@
 
 class Texture;
 class Shader;
+struct VKPipeline;
 
 class Material
 {
@@ -26,6 +27,9 @@ public:
 	void SetFloat4x4(std::string name, glm::mat4& mat);
 
 	void SetTextures(std::string name, Texture* texture);
+
+	void SetVKPipeline(VKPipeline* vkPipeline);
+	VKPipeline* GetVKPipeline();
 
 	char* GetUniformData();
 	uint32_t GetUniformDataSize();
@@ -55,6 +59,8 @@ private:
 
 	char* m_UniformData = nullptr;
 	std::vector<Texture*> m_Textures;
+
+	VKPipeline* m_VKPipeline = VK_NULL_HANDLE;
 
 	VkDescriptorSetLayout m_DescriptorSetLayout = VK_NULL_HANDLE;
 

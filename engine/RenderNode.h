@@ -5,6 +5,7 @@
 
 class Mesh;
 struct VKBuffer;
+class Material;
 
 class RenderNode 
 {
@@ -25,6 +26,9 @@ public:
 	void SetMesh(Mesh* mesh);
 	Mesh* GetMesh();
 
+	void SetMaterial(Material* material);
+	Material* GetMaterial();
+
 	VKBuffer* GetVertexBuffer();
 	VKBuffer* GetIndexBuffer();
 	uint32_t GetIndexCount();
@@ -37,7 +41,8 @@ private:
 
 	uint32_t m_DUBIndex;
 	Transform m_Transform;
-	Mesh* m_Mesh;
+	Mesh* m_Mesh = nullptr;
+	Material* m_Material = nullptr;
 
 	uint32_t m_NumFramesDirty = FrameResourcesCount;
 };

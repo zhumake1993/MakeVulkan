@@ -83,6 +83,8 @@ public:
 	VkPipelineLayout CreateVkPipelineLayout(const std::vector<VkDescriptorSetLayout>& layouts, VkShaderStageFlags pcStage = VK_SHADER_STAGE_VERTEX_BIT, uint32_t pcSize = 0);
 	VKPipeline* CreateVKPipeline(PipelineCI& pipelineCI, VKPipeline* parent = nullptr);
 	VKRenderPass* CreateVKRenderPass(VkFormat colorFormat);
+	// temp
+	void ReleaseVkPipelineLayout(VkPipelineLayout pipelineLayout);
 
 	// Framebuffer
 	VKFramebuffer* CreateVKFramebuffer(VKRenderPass* vkRenderPass, VkImageView color, VkImageView depth, uint32_t width, uint32_t height);

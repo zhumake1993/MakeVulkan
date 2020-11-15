@@ -46,6 +46,16 @@ Mesh * RenderNode::GetMesh()
 	return m_Mesh;
 }
 
+void RenderNode::SetMaterial(Material * material)
+{
+	m_Material = material;
+}
+
+Material * RenderNode::GetMaterial()
+{
+	return m_Material;
+}
+
 VKBuffer * RenderNode::GetVertexBuffer()
 {
 	return m_Mesh->GetVertexBuffer();

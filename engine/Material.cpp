@@ -112,6 +112,16 @@ void Material::SetTextures(std::string name, Texture * texture)
 	m_Textures[elements[name]] = texture;
 }
 
+void Material::SetVKPipeline(VKPipeline * vkPipeline)
+{
+	m_VKPipeline = vkPipeline;
+}
+
+VKPipeline * Material::GetVKPipeline()
+{
+	return m_VKPipeline;
+}
+
 char * Material::GetUniformData()
 {
 	return m_UniformData;

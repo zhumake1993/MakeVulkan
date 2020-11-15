@@ -45,7 +45,9 @@ void PipelineCI::SetDynamicState(const std::vector<VkDynamicState>& states)
 
 void PipelineCI::SetSpecializationConstant(VKShaderType shaderType, VKSpecializationConstant* vkSpecializationConstant)
 {
-	shaderStageCreateInfos[shaderType].pSpecializationInfo = vkSpecializationConstant->GetVkSpecializationInfoPtr();
+	if (vkSpecializationConstant != nullptr) {
+		shaderStageCreateInfos[shaderType].pSpecializationInfo = vkSpecializationConstant->GetVkSpecializationInfoPtr();
+	}
 }
 
 void PipelineCI::ConfigShaderStageCreateInfos()

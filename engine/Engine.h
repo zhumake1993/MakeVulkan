@@ -5,6 +5,7 @@
 #include "VulkanFwd.h"
 #include "EngineFwd.h"
 #include "DescriptorSetTypes.h"
+#include "VKTypes.h"
 
 class Imgui;
 class GPUProfilerMgr;
@@ -65,6 +66,10 @@ protected:
 	Material* CreateMaterial(std::string name);
 	RenderNode* CreateRenderNode();
 
+	void CreateVKPipeline(Material* mat, VertexDescription& vertexDescription);
+
+	void DrawRenderNode(VKCommandBuffer * cb, RenderNode* renderNode);
+
 private:
 
 	void UpdateUniformBuffer();
@@ -76,13 +81,17 @@ protected:
 
 	SpecializationData m_SpecializationData;
 
-	Imgui* m_Imgui;
+	Imgui* m_Imgui = nullptr;
 
 	uint32_t m_ObjectUBAlignment;
 
 	// DescriptorSet
 	VkDescriptorSetLayout m_DSLPassUniform;
 	VkDescriptorSetLayout m_DSLObjectDUB;
+
+	VKRenderPass* m_VKRenderPass = nullptr;
+
+	VKSampler* m_Sampler;
 
 private:
 
@@ -91,4 +100,12 @@ private:
 	std::vector<Shader*> m_ShaderContainer;
 	std::vector<Material*> m_MaterialContainer;
 	std::vector<RenderNode*> m_RenderNodeContainer;
+
+	std::vector<VKPipeline*> m_VKPipelineContainer;
+
+	Material* m_CurrMaterial = nullptr;
+
+	VkPipelineLayout m_BasePipelineLayout = VK_NULL_HANDLE;
+
+	VkDescriptorSet m_CurrDescriptorSetObjectDUB = VK_NULL_HANDLE;
 };

@@ -22,7 +22,6 @@ protected:
 private:
 
 	void PrepareResources();
-	void CreatePipeline();
 
 private:
 
@@ -42,8 +41,6 @@ private:
 	Texture* m_Crate02Tex;
 	Texture* m_Metalplate;
 
-	VKSampler* m_Sampler;
-
 	// Shader
 	Shader* m_Shader;
 	Shader* m_SimpleShader;
@@ -61,15 +58,6 @@ private:
 	RenderNode* m_SphereNode;
 	RenderNode* m_ColorCubeNode;
 	RenderNode* m_QuadNode;
-
-	// Render Status
-	VKPipeline* m_HomeMatPipeline;
-	VKPipeline* m_Crate01MatPipeline;
-	VKPipeline* m_Crate02MatPipeline;
-	VKPipeline* m_SimpleColorMatPipeline;
-	VKPipeline* m_MetalplateMatPipeline;
-
-	VKRenderPass* m_VKRenderPass;
 
 	// camera
 	Camera* m_Camera;

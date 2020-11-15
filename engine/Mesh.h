@@ -16,6 +16,7 @@ public:
 	void SetVertexChannels(const std::vector<VertexChannel>& channels);
 	std::vector<VertexChannel>& GetVertexChannels();
 
+	// 暂时固定每个顶点通道的格式
 	std::vector<VkFormat>& GetVertexChannelFormats();
 
 	VertexDescription GetVertexDescription();
@@ -43,6 +44,9 @@ private:
 
 	std::vector<VertexChannel> m_VertexChannels;
 	std::vector<VkFormat> m_VertexChannelFormats;
+
+	bool m_IsVertexDescriptionCached = false;
+	VertexDescription m_VertexDescriptionCache;
 
 	std::vector<float> m_Vertices;
 	std::vector<uint32_t> m_Indices;
