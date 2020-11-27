@@ -55,8 +55,9 @@ add_library (base ${common_sources} ${vulkan_sources} ${engine_sources} ${imgui_
 # glslang需要额外链接
 #target_link_libraries(base glslang SPIRV)
 
-# ktx
-target_link_libraries(base C:/Users/1/Desktop/MakeVulkan/external/ktx/lib/ktx.lib)
+# Khronos texture format (https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/)
+# 这里不能直接使用相对路径
+target_link_libraries(base ${PROJECT_SOURCE_DIR}/external/ktx/lib/ktx.lib)
 
 # 查找所有的example
 file(GLOB EXAMPLES RELATIVE ${PROJECT_SOURCE_DIR}/examples/ examples/*)

@@ -19,7 +19,7 @@ public:
 	// 暂时固定每个顶点通道的格式
 	std::vector<VkFormat>& GetVertexChannelFormats();
 
-	VertexDescription GetVertexDescription();
+	VertexDescription& GetVertexDescription();
 
 	void LoadFromFile(const std::string& filename);
 

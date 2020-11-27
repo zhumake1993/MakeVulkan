@@ -131,14 +131,16 @@ void VulkanDriver::Init()
 
 	m_DepthFormat = GetSupportedDepthFormat();
 
-	VKImageCI(imageCI);
-	imageCI.format = m_DepthFormat;
-	imageCI.extent.width = global::windowWidth;
-	imageCI.extent.height = global::windowHeight;
-	imageCI.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-	VKImageViewCI(imageViewCI);
-	imageViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-	m_DepthImage = CreateVKImage(imageCI, imageViewCI);
+	m_DepthImage = CreateVKImage();
+
+	m_DepthImage->format = m_DepthFormat;
+	m_DepthImage->width = global::windowWidth;
+	m_DepthImage->height = global::windowHeight;
+	m_DepthImage->usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+	m_DepthImage->CreateVkImage();
+
+	m_DepthImage->aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	m_DepthImage->CreateVkImageView();
 }
 
 void VulkanDriver::Tick()
@@ -155,27 +157,6 @@ void VulkanDriver::Tick()
 void VulkanDriver::DeviceWaitIdle()
 {
 	vkDeviceWaitIdle(m_VKDevice->device);
-}
-
-uint32_t VulkanDriver::GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties)
-{
-	auto& dp = GetDeviceProperties();
-
-	for (uint32_t i = 0; i < dp.deviceMemoryProperties.memoryTypeCount; i++)
-	{
-		if ((typeBits & 1) == 1)
-		{
-			if ((dp.deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
-			{
-				return i;
-			}
-		}
-		typeBits >>= 1;
-	}
-
-	LOG("Could not find a matching memory type");
-	assert(false);
-	return 0;
 }
 
 VkFormat VulkanDriver::GetSupportedDepthFormat()
@@ -289,9 +270,9 @@ VKBuffer * VulkanDriver::CreateVKBuffer(VkDeviceSize size, VkBufferUsageFlags us
 	return new VKBuffer(m_VKDevice, size, usage, memoryProperty);
 }
 
-VKImage * VulkanDriver::CreateVKImage(VkImageCreateInfo& imageCI, VkImageViewCreateInfo& viewCI)
+VKImage * VulkanDriver::CreateVKImage()
 {
-	return new VKImage(m_VKDevice, imageCI, viewCI);
+	return new VKImage(m_VKDevice);
 }
 
 VKSampler * VulkanDriver::CreateVKSampler(VkSamplerCreateInfo & ci)

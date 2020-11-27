@@ -9,6 +9,12 @@ android {
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
+
+        // 不然liblibktx.a编不过去
+        ndk {
+            abiFilters "armeabi-v7a"
+        }
+
     }
     // 指定cmake文件的路径
     externalNativeBuild {

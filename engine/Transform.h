@@ -10,7 +10,7 @@ public:
 	Transform();
 	~Transform();
 
-	glm::mat4 GetMatrix();
+	glm::mat4& GetMatrix();
 	void SetMatrix(glm::mat4& m);
 
 	Transform& Scale(float x, float y, float z);

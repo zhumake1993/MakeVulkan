@@ -31,6 +31,9 @@ include_directories(${top_dir}/engine)
 # external
 include_directories(${top_dir}/external)
 
+# ktx
+include_directories(${top_dir}/external/ktx/include)
+
 # external/imgui
 # imgui需要包含cpp文件
 file(GLOB imgui_sources ${top_dir}/external/imgui/*.h ${top_dir}/external/imgui/*.cpp)
@@ -38,6 +41,10 @@ file(GLOB imgui_sources ${top_dir}/external/imgui/*.h ${top_dir}/external/imgui/
 # 生成链接库
 add_library (base STATIC ${common_sources} ${vulkan_sources} ${engine_sources} ${imgui_sources})
 target_link_libraries(base vulkan_lib)
+
+# Khronos texture format (https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/)
+# 暂时用绝对路径吧
+target_link_libraries(base C:/Users/1/Desktop/MakeVulkan/external/ktx/lib/liblibktx.a)
 
 # 这里不能用test作为lib的名字，似乎跟重命名有关，原因不明
 file(GLOB main_sources ${top_dir}/examples/${name}/*.h ${top_dir}/examples/${name}/*.cpp)

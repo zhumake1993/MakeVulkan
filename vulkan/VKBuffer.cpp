@@ -25,7 +25,7 @@ VKBuffer::VKBuffer(VKDevice * vkDevice, VkDeviceSize size, VkBufferUsageFlags us
 
 	// Memory
 
-	auto& driver = GetVulkanDriver();
+	auto& dp = GetDeviceProperties();
 
 	VkMemoryRequirements memReqs;
 	vkGetBufferMemoryRequirements(device, buffer, &memReqs);
@@ -34,7 +34,7 @@ VKBuffer::VKBuffer(VKDevice * vkDevice, VkDeviceSize size, VkBufferUsageFlags us
 	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	memoryAllocateInfo.pNext = nullptr;
 	memoryAllocateInfo.allocationSize = memReqs.size;
-	memoryAllocateInfo.memoryTypeIndex = driver.GetMemoryTypeIndex(memReqs.memoryTypeBits, memoryProperty);
+	memoryAllocateInfo.memoryTypeIndex = dp.GetMemoryTypeIndex(memReqs.memoryTypeBits, memoryProperty);
 	VK_CHECK_RESULT(vkAllocateMemory(device, &memoryAllocateInfo, nullptr, &memory));
 
 	// Bind

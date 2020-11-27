@@ -21,7 +21,7 @@ public:
 	Transform& GetTransform();
 
 	void SetWorldMatrix(glm::mat4& world);
-	glm::mat4 GetWorldMatrix();
+	glm::mat4& GetWorldMatrix();
 
 	void SetMesh(Mesh* mesh);
 	Mesh* GetMesh();

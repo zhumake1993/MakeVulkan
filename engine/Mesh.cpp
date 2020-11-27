@@ -1,10 +1,12 @@
 #include "Mesh.h"
 #include "Tools.h"
-#include "obj/tiny_obj_loader.h"
 #include <sstream>
 #include <algorithm>
 #include "VulkanDriver.h"
 #include "VKBuffer.h"
+
+#define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
+#include "obj/tiny_obj_loader.h"
 
 Mesh::Mesh()
 {
@@ -49,7 +51,7 @@ std::vector<VkFormat>& Mesh::GetVertexChannelFormats()
 	return m_VertexChannelFormats;
 }
 
-VertexDescription Mesh::GetVertexDescription()
+VertexDescription& Mesh::GetVertexDescription()
 {
 	if (m_IsVertexDescriptionCached) {
 		return m_VertexDescriptionCache;

@@ -10,6 +10,8 @@ struct DeviceProperties : public NonCopyable
 
 	void Log();
 
+	uint32_t GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties);
+
 	// Instance
 	std::string								applicationName;
 	uint32_t								applicationVersion;

@@ -39,7 +39,6 @@ public:
 
 	// Device
 	void DeviceWaitIdle();
-	uint32_t GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties);
 	VkFormat GetSupportedDepthFormat();
 
 	// SwapChain
@@ -64,7 +63,7 @@ public:
 
 	// Resource
 	VKBuffer* CreateVKBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty);
-	VKImage* CreateVKImage(VkImageCreateInfo& imageCI, VkImageViewCreateInfo& viewCI);
+	VKImage* CreateVKImage();
 	VKSampler* CreateVKSampler(VkSamplerCreateInfo& ci);
 	void UploadVKBuffer(VKBuffer* vkBuffer, void* data, VkDeviceSize size);
 	void UploadVKImage(VKImage* image, void* data, VkDeviceSize size);

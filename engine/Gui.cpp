@@ -38,11 +38,11 @@ Imgui::Imgui()
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 	uint64_t dataSize = width * height * 4 * sizeof(char);
 
-	VKImageCI(imageCI);
-	imageCI.extent.width = width;
-	imageCI.extent.height = height;
-	VKImageViewCI(imageViewCI);
-	m_FontImage = driver.CreateVKImage(imageCI, imageViewCI);
+	m_FontImage = driver.CreateVKImage();
+	m_FontImage->width = width;
+	m_FontImage->height = height;
+	m_FontImage->CreateVkImage();
+	m_FontImage->CreateVkImageView();
 	driver.UploadVKImage(m_FontImage, pixels, dataSize);
 
 	// Sampler

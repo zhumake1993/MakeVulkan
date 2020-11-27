@@ -127,3 +127,22 @@ void DeviceProperties::Log()
 	}
 	LOG("\n");
 }
+
+uint32_t DeviceProperties::GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties)
+{
+	for (uint32_t i = 0; i < deviceMemoryProperties.memoryTypeCount; i++)
+	{
+		if ((typeBits & 1) == 1)
+		{
+			if ((deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+			{
+				return i;
+			}
+		}
+		typeBits >>= 1;
+	}
+
+	LOG("Could not find a matching memory type");
+	assert(false);
+	return 0;
+}

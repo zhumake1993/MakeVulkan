@@ -66,7 +66,7 @@ protected:
 	Material* CreateMaterial(std::string name);
 	RenderNode* CreateRenderNode();
 
-	void CreateVKPipeline(Material* mat, VertexDescription& vertexDescription);
+	void CreateVKPipeline(Material* mat, const VertexDescription& vertexDescription);
 
 	void DrawRenderNode(VKCommandBuffer * cb, RenderNode* renderNode);
 

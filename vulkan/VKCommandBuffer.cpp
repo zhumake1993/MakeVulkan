@@ -65,7 +65,7 @@ void VKCommandBuffer::CopyVKBufferToVKImage(VKBuffer * src, VKImage * dst)
 	bufferImageCopyInfo.bufferImageHeight = 0;
 	bufferImageCopyInfo.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT,0,0,1 };
 	bufferImageCopyInfo.imageOffset = { 0,0,0 };
-	bufferImageCopyInfo.imageExtent = { dst->GetWidth(),dst->GetHeight(),1 };
+	bufferImageCopyInfo.imageExtent = { dst->width,dst->height,1 };
 
 	vkCmdCopyBufferToImage(commandBuffer, src->buffer, dst->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
 }

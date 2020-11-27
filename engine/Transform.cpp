@@ -9,7 +9,7 @@ Transform::~Transform()
 {
 }
 
-glm::mat4 Transform::GetMatrix()
+glm::mat4& Transform::GetMatrix()
 {
 	return m_Matrix;
 }

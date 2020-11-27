@@ -180,6 +180,8 @@ void Engine::TickEngine()
 	infosObjectDUB[0].info.buffer = { currObjectUniform->buffer,0,VK_WHOLE_SIZE };
 	driver.UpdateDescriptorSet(m_CurrDescriptorSetObjectDUB, infosObjectDUB);
 
+	m_CurrMaterial = nullptr;
+
 	RecordCommandBuffer(cb);
 
 	// Ã·ΩªUI draw call,todo
@@ -228,7 +230,7 @@ RenderNode * Engine::CreateRenderNode()
 	return renderNode;
 }
 
-void Engine::CreateVKPipeline(Material * mat, VertexDescription& vertexDescription)
+void Engine::CreateVKPipeline(Material * mat, const VertexDescription& vertexDescription)
 {
 	auto& driver = GetVulkanDriver();
 
@@ -275,7 +277,7 @@ void Engine::DrawRenderNode(VKCommandBuffer * cb, RenderNode * renderNode)
 		for (int i = 0; i < textures.size(); i++) {
 			DescriptorUpdateInfo info;
 			info.binding = i + 1;
-			info.info.image = { m_Sampler->sampler, textures[0]->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+			info.info.image = { m_Sampler->sampler, textures[i]->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 			infos.push_back(info);
 		}
 

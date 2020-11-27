@@ -31,7 +31,7 @@ void RenderNode::SetWorldMatrix(glm::mat4& world)
 	m_Transform.SetMatrix(world);
 }
 
-glm::mat4 RenderNode::GetWorldMatrix()
+glm::mat4& RenderNode::GetWorldMatrix()
 {
 	return m_Transform.GetMatrix();
 }
