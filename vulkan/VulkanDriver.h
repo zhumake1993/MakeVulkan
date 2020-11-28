@@ -74,8 +74,7 @@ public:
 	void UpdateDescriptorSet(VkDescriptorSet set, DesUpdateInfos& infos);
 
 	// GPUProfilerMgr
-	void WriteTimeStamp(std::string name);
-	std::string GetLastFrameGPUProfilerResult();
+	GPUProfilerMgr* GetGPUProfilerMgr();
 
 	// Render Status
 	VKShaderModule* CreateVKShaderModule(const std::string& filename);

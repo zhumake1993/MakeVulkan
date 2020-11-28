@@ -152,7 +152,7 @@ void Triangle::TickUI()
 		auto& profilerMgr = GetProfilerMgr();
 		cpuProfiler = profilerMgr.Resolve(timeMgr.GetFrameIndex() - 1).ToString();
 
-		gpuProfiler = GetVulkanDriver().GetLastFrameGPUProfilerResult();
+		gpuProfiler = GetVulkanDriver().GetGPUProfilerMgr()->GetLastFrameView().ToString();
 
 		acTime = 0.0f;
 	}
@@ -200,13 +200,15 @@ void Triangle::RecordCommandBuffer(VKCommandBuffer * cb)
 
 	VKFramebuffer* vkFramebuffer = driver.RebuildFramebuffer(m_VKRenderPass);
 
-	// test!
-	//cb->WriteTimeStamp("child");
-	//cb->WriteTimeStamp("grandchild");
-	//cb->WriteTimeStamp("grandchild");
-	//cb->WriteTimeStamp("child");
-	//cb->WriteTimeStamp("sibling");
-	//cb->WriteTimeStamp("sibling");
+	// 测试TimeStamp
+	cb->WriteTimeStamp("child");
+	cb->WriteTimeStamp("grandchild");
+	cb->WriteTimeStamp("grandchild");
+	cb->WriteTimeStamp("child");
+	cb->WriteTimeStamp("sibling");
+	cb->WriteTimeStamp("sibling");
+
+	cb->WriteTimeStamp("Render");
 
 	cb->BeginRenderPass(m_VKRenderPass, vkFramebuffer, area, clearValues);
 
@@ -310,7 +312,8 @@ void Triangle::PrepareResources()
 		m_Shader->SetTextureLayout({ "baseTexture" });
 		m_Shader->AddSpecializationConstant(0, 1);
 		m_Shader->AddSpecializationConstant(1, 1);
-		m_Shader->AddSpecializationConstant(2, 0);
+		// todo, shader中 0<0 会有问题
+		m_Shader->AddSpecializationConstant(2, 1);
 
 		m_SimpleShader = CreateShader();
 		m_SimpleShader->LoadVertSPV(global::AssetPath + "shaders/triangle/simpleColor.vert.spv");

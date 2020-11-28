@@ -150,8 +150,7 @@ void VulkanDriver::Tick()
 	m_UniformBufferMgr->Tick();
 
 	m_GPUProfilerMgr->Tick();
-	m_GPUProfilerMgr->SetVKCommandBuffer(m_FrameResources[m_CurrFrameIndex].commandBuffer);
-	m_GPUProfilerMgr->Reset();
+	m_GPUProfilerMgr->Reset(m_FrameResources[m_CurrFrameIndex].commandBuffer);
 }
 
 void VulkanDriver::DeviceWaitIdle()
@@ -357,9 +356,9 @@ void VulkanDriver::UpdateDescriptorSet(VkDescriptorSet set, DesUpdateInfos & inf
 	m_DescriptorSetMgr->UpdateDescriptorSet(set, infos);
 }
 
-std::string VulkanDriver::GetLastFrameGPUProfilerResult()
+GPUProfilerMgr * VulkanDriver::GetGPUProfilerMgr()
 {
-	return m_GPUProfilerMgr->GetLastFrameView().ToString();
+	return m_GPUProfilerMgr;
 }
 
 VKShaderModule * VulkanDriver::CreateVKShaderModule(const std::string & filename)
