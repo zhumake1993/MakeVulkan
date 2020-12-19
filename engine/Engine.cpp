@@ -71,8 +71,6 @@ void Engine::CleanUpEngine()
 
 	// 清理各种mgr
 
-	GetProfilerMgr().WriteToFile();
-
 	ReleaseProfilerMgr();
 
 	ReleaseTimeMgr();

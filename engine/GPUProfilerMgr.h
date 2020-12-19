@@ -40,9 +40,8 @@ public:
 	GPUProfilerMgr(VKDevice* vkDevice);
 	~GPUProfilerMgr();
 
-	void SetVKCommandBuffer(VKCommandBuffer* vkCommandBuffer);
-	void Reset();
-	void WriteTimeStamp(std::string name);
+	void Reset(VKCommandBuffer* cb);
+	void WriteTimeStamp(VKCommandBuffer* cb, std::string name);
 	void Tick();
 	FrameGPUTimeStampView& GetLastFrameView();
 	void WriteToFile();
@@ -62,6 +61,5 @@ private:
 	std::list<FrameGPUTimeStampView> m_FrameGPUTimeStampViews;
 
 	VKQueryPool* m_QueryPool;
-	VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
 	VkDevice device = VK_NULL_HANDLE;
 };

@@ -24,25 +24,19 @@ GPUProfilerMgr::GPUProfilerMgr(VKDevice* vkDevice) :
 GPUProfilerMgr::~GPUProfilerMgr()
 {
 	RELEASE(m_QueryPool);
-	m_CommandBuffer = VK_NULL_HANDLE;
 }
 
-void GPUProfilerMgr::SetVKCommandBuffer(VKCommandBuffer * vkCommandBuffer)
-{
-	m_CommandBuffer = vkCommandBuffer->commandBuffer;
-}
-
-void GPUProfilerMgr::Reset()
+void GPUProfilerMgr::Reset(VKCommandBuffer* cb)
 {
 	QueryResource& queryResource = m_QueryResource[m_CurrFrameResourcesIndex];
 
 	queryResource.timeStampCount = 0;
 	queryResource.names.clear();
 
-	vkCmdResetQueryPool(m_CommandBuffer, m_QueryPool->queryPool, m_CurrFrameResourcesIndex * m_MaxQueryCount, m_MaxQueryCount);
+	vkCmdResetQueryPool(cb->commandBuffer, m_QueryPool->queryPool, m_CurrFrameResourcesIndex * m_MaxQueryCount, m_MaxQueryCount);
 }
 
-void GPUProfilerMgr::WriteTimeStamp(std::string name)
+void GPUProfilerMgr::WriteTimeStamp(VKCommandBuffer* cb, std::string name)
 {
 	QueryResource& queryResource = m_QueryResource[m_CurrFrameResourcesIndex];
 
@@ -52,7 +46,7 @@ void GPUProfilerMgr::WriteTimeStamp(std::string name)
 	}
 
 	queryResource.names.push_back(name);
-	vkCmdWriteTimestamp(m_CommandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_QueryPool->queryPool, m_CurrFrameResourcesIndex * m_MaxQueryCount + queryResource.timeStampCount);
+	vkCmdWriteTimestamp(cb->commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_QueryPool->queryPool, m_CurrFrameResourcesIndex * m_MaxQueryCount + queryResource.timeStampCount);
 	queryResource.timeStampCount++;
 }
 

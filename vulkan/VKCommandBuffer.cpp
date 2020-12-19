@@ -14,6 +14,9 @@
 
 #include "VKPipeline.h"
 
+#include "VulkanDriver.h"
+#include "GPUProfilerMgr.h"
+
 VKCommandBuffer::VKCommandBuffer(VKDevice * vkDevice, VKCommandPool * vkCommandPool, VkCommandBufferLevel level) :
 	device(vkDevice->device),
 	commandPool(vkCommandPool->commandPool)
@@ -157,5 +160,5 @@ void VKCommandBuffer::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, u
 
 void VKCommandBuffer::WriteTimeStamp(std::string name)
 {
-
+	GetVulkanDriver().GetGPUProfilerMgr()->WriteTimeStamp(this, name);
 }

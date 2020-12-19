@@ -8,7 +8,6 @@
 #include "VKTypes.h"
 
 class Imgui;
-class GPUProfilerMgr;
 
 struct Light
 {
