@@ -1,7 +1,9 @@
 #include "Env.h"
+#include "Settings.h"
 #include "Log.h"
 #include "Tools.h"
 #include "Application.h"
+#include "Triangle.h"
 
 #ifdef _WIN32
 
@@ -13,7 +15,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 {
 	windowInstance = hInstance;
 
-	application = new Application();
+	application = new Application(new Triangle());
 	application->Init();
 	application->Run();
 	application->Release();
@@ -30,7 +32,7 @@ void android_main(android_app* state)
 {
 	androidApp = state;
 
-	application = new Application();
+	application = new Application(new Triangle());
 	state->userData = application;
 	state->onAppCmd = HandleAppCommand;
 	state->onInputEvent = HandleAppInput;

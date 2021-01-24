@@ -4,13 +4,14 @@
 #include "NonCopyable.h"
 
 class Engine;
+class Example;
 
 class Application : public NonCopyable
 {
 
 public:
 
-	Application();
+	Application(Example* example);
 	~Application();
 
 	void Init();

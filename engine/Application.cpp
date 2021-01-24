@@ -7,8 +7,9 @@
 
 Application* application;
 
-Application::Application()
+Application::Application(Example* example)
 {
+	m_Engine = new Engine(example);
 }
 
 Application::~Application()
@@ -33,7 +34,6 @@ void Application::Init()
 
 #endif
 
-	m_Engine = new Engine();
 	m_Engine->Init();
 	m_CanRender = true;
 }
