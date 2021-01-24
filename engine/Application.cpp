@@ -1,13 +1,13 @@
 #include "Application.h"
-#include <iostream>
-#include "Tools.h"
+#include "Settings.h"
+#include "Log.h"
 #include "Engine.h"
-#include "InputManager.h"
+#include "Tools.h"
+#include "Input.h"
 
 Application* application;
 
-Application::Application(Engine* engine):
-	m_Engine(engine)
+Application::Application()
 {
 }
 
@@ -15,20 +15,14 @@ Application::~Application()
 {
 }
 
-void Application::CleanUp()
-{
-	m_Engine->CleanUpEngine();
-	RELEASE(m_Engine);
-}
-
 void Application::Init()
 {
 #if defined(_WIN32)
 
 	// VLD跟控制台输出有冲突
-	#if !(USE_VISUAL_LEAK_DETECTOR)
+#if !(USE_VISUAL_LEAK_DETECTOR)
 	SetupConsole();
-	#endif // !USE_VISUAL_LEAK_DETECTOR
+#endif // !USE_VISUAL_LEAK_DETECTOR
 
 	SetupWindow();
 
@@ -39,8 +33,15 @@ void Application::Init()
 
 #endif
 
-	m_Engine->InitEngine();
+	m_Engine = new Engine();
+	m_Engine->Init();
 	m_CanRender = true;
+}
+
+void Application::Release()
+{
+	m_Engine->Release();
+	RELEASE(m_Engine);
 }
 
 void Application::Run()
@@ -57,8 +58,8 @@ void Application::Run()
 				break;
 			}
 		}
-		if (m_CanRender && !IsIconic(global::windowHandle)) {
-			m_Engine->TickEngine();
+		if (m_CanRender && !IsIconic(windowHandle)) {
+			m_Engine->Update();
 		}
 	}
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
@@ -68,9 +69,9 @@ void Application::Run()
 		struct android_poll_source* source;
 		bool destroy = false;
 
-		m_Focused = true;
+		bool focused = true;
 
-		while (ALooper_pollAll(m_Focused ? 0 : -1, NULL, &events, (void**)&source) >= 0)
+		while (ALooper_pollAll(focused ? 0 : -1, NULL, &events, (void**)&source) >= 0)
 		{
 			if (source != NULL)
 			{
@@ -91,10 +92,15 @@ void Application::Run()
 		}
 
 		if (m_CanRender) {
-			m_Engine->TickEngine();
+			m_Engine->Update();
 		}
 	}
 #endif
+}
+
+void Application::Activate()
+{
+	m_CanRender = true;
 }
 
 void Application::DeActivate()
@@ -102,21 +108,9 @@ void Application::DeActivate()
 	m_CanRender = false;
 }
 
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-
-void Application::GainFocus()
-{
-	m_Focused = true;
-}
-
-void Application::LostFocus()
-{
-	m_Focused = false;
-}
-
-#endif
-
 #if defined(_WIN32)
+
+void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -131,7 +125,7 @@ void Application::SetupConsole()
 	FILE *stream;
 	freopen_s(&stream, "CONOUT$", "w+", stdout);
 	freopen_s(&stream, "CONOUT$", "w+", stderr);
-	SetConsoleTitle(TEXT(global::consoleTitle.c_str()));
+	SetConsoleTitle(TEXT(consoleTitle.c_str()));
 }
 
 void Application::SetupWindow()
@@ -142,17 +136,17 @@ void Application::SetupWindow()
 	wndClass.lpfnWndProc = WndProc;
 	wndClass.cbClsExtra = 0;
 	wndClass.cbWndExtra = 0;
-	wndClass.hInstance = global::windowInstance;
+	wndClass.hInstance = windowInstance;
 	wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wndClass.lpszMenuName = NULL;
-	wndClass.lpszClassName = global::windowClassName.c_str();
+	wndClass.lpszClassName = windowClassName.c_str();
 	wndClass.hIconSm = LoadIcon(NULL, IDI_WINLOGO);
 
 	if (!RegisterClassEx(&wndClass))
 	{
-		std::cout << "Could not register window class!\n";
+		LOG("Could not register window class!");
 		fflush(stdout);
 		exit(1);
 	}
@@ -166,14 +160,14 @@ void Application::SetupWindow()
 	RECT windowRect;
 	windowRect.left = 0L;
 	windowRect.top = 0L;
-	windowRect.right = global::windowWidth;
-	windowRect.bottom = global::windowHeight;
+	windowRect.right = windowWidth;
+	windowRect.bottom = windowHeight;
 
 	AdjustWindowRectEx(&windowRect, dwStyle, FALSE, dwExStyle);
 
-	global::windowHandle = CreateWindowEx(0,
-		global::windowClassName.c_str(),
-		global::windowTitleName.c_str(),
+	windowHandle = CreateWindowEx(0,
+		windowClassName.c_str(),
+		windowTitleName.c_str(),
 		dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 		0,
 		0,
@@ -181,12 +175,12 @@ void Application::SetupWindow()
 		windowRect.bottom - windowRect.top,
 		NULL,
 		NULL,
-		global::windowInstance,
+		windowInstance,
 		NULL);
 
-	if (!global::windowHandle)
+	if (!windowHandle)
 	{
-		std::cout << "Could not create window!\n";
+		LOG("Could not create window!");
 		fflush(stdout);
 		return;
 		exit(1);
@@ -195,11 +189,11 @@ void Application::SetupWindow()
 	// 居中
 	uint32_t x = (GetSystemMetrics(SM_CXSCREEN) - windowRect.right) / 2;
 	uint32_t y = (GetSystemMetrics(SM_CYSCREEN) - windowRect.bottom) / 2;
-	SetWindowPos(global::windowHandle, 0, x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+	SetWindowPos(windowHandle, 0, x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 
-	ShowWindow(global::windowHandle, SW_SHOW);
-	SetForegroundWindow(global::windowHandle);
-	SetFocus(global::windowHandle);
+	ShowWindow(windowHandle, SW_SHOW);
+	SetForegroundWindow(windowHandle);
+	SetFocus(windowHandle);
 
 	LOG("SetupWindow success\n");
 }
@@ -226,7 +220,7 @@ void Application::LoadVulkan()
 	if (!InitVulkan())
 	{
 		LOG("Vulkan is unavailable, install vulkan and re-start");
-		assert(false);
+		EXIT;
 	}
 	LOG("Vulkan Ready");
 }
@@ -245,7 +239,7 @@ void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		PostQuitMessage(0);
 		break;
 	case WM_PAINT:
-		ValidateRect(global::windowHandle, NULL);
+		ValidateRect(windowHandle, NULL);
 		break;
 	case WM_KEYDOWN:
 		switch (wParam)
@@ -455,15 +449,15 @@ void HandleAppCommand(android_app * app, int32_t cmd)
 		break;
 	case APP_CMD_LOST_FOCUS:
 		LOG("APP_CMD_LOST_FOCUS");
-		application->LostFocus();
+		application->DeActivate();
 		break;
 	case APP_CMD_GAINED_FOCUS:
 		LOG("APP_CMD_GAINED_FOCUS");
-		application->GainFocus();
+		application->Activate();
 		break;
 	case APP_CMD_TERM_WINDOW:
 		LOG("APP_CMD_TERM_WINDOW");
-		application->CleanUp();
+		application->Release();
 		break;
 	}
 }
