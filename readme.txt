@@ -1,5 +1,7 @@
 MakeVulkan！
 
+VulkanSDK: 1.2.131.2
+
 新增vs子工程
 复制startup
 改名字
