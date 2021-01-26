@@ -23,3 +23,5 @@ ConfigGlobalSettings();
 
 #define MaxObjectsCount 100
 #define MaxMaterialsCount 100
+
+tiny_obj_loader 的索引有点奇怪，0 1 2 3 4 5 6 。。。。。这样的，待验证

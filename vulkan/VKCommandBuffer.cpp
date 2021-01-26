@@ -1,5 +1,7 @@
 #include "VKCommandBuffer.h"
 #include "VulkanTools.h"
+#include "VKBuffer.h"
+#include "VKImage.h"
 
 VKCommandBuffer::VKCommandBuffer(VkDevice vkDevice, VkCommandPool vkCommandPool, VkCommandBufferLevel level) :
 	device(vkDevice),
@@ -68,48 +70,48 @@ void VKCommandBuffer::SetScissor(VkRect2D & area)
 	vkCmdSetScissor(commandBuffer, 0, 1, &area);
 }
 
-//void VKCommandBuffer::CopyVKBuffer(VKBuffer * src, VKBuffer * dst, VkBufferCopy & region)
-//{
-//	vkCmdCopyBuffer(commandBuffer, src->buffer, dst->buffer, 1, &region);
-//}
-//
-//void VKCommandBuffer::CopyVKBufferToVKImage(VKBuffer * src, VKImage * dst)
-//{
-//	VkBufferImageCopy bufferImageCopyInfo = {};
-//	bufferImageCopyInfo.bufferOffset = 0;
-//	bufferImageCopyInfo.bufferRowLength = 0;
-//	bufferImageCopyInfo.bufferImageHeight = 0;
-//	bufferImageCopyInfo.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT,0,0,1 };
-//	bufferImageCopyInfo.imageOffset = { 0,0,0 };
-//	bufferImageCopyInfo.imageExtent = { dst->width,dst->height,1 };
-//
-//	vkCmdCopyBufferToImage(commandBuffer, src->buffer, dst->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
-//}
-//
-//void VKCommandBuffer::ImageMemoryBarrier(VKImage * image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL)
-//{
-//	VkImageSubresourceRange imageSubresourceRange = {};
-//	imageSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-//	imageSubresourceRange.baseMipLevel = 0;
-//	imageSubresourceRange.levelCount = 1;;
-//	imageSubresourceRange.baseArrayLayer = 0;
-//	imageSubresourceRange.layerCount = 1;
-//
-//	VkImageMemoryBarrier imageMemoryBarrier = {};
-//	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-//	imageMemoryBarrier.pNext = nullptr;
-//	imageMemoryBarrier.srcAccessMask = srcAF;
-//	imageMemoryBarrier.dstAccessMask = dstAF;
-//	imageMemoryBarrier.oldLayout = oldIL;
-//	imageMemoryBarrier.newLayout = newIL;
-//	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-//	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-//	imageMemoryBarrier.image = image->image;
-//	imageMemoryBarrier.subresourceRange = imageSubresourceRange;
-//
-//	vkCmdPipelineBarrier(commandBuffer, srcPSF, dstPSF, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
-//}
-//
+void VKCommandBuffer::CopyBuffer(VKBuffer * src, VKBuffer * dst, VkBufferCopy & region)
+{
+	vkCmdCopyBuffer(commandBuffer, src->m_Buffer, dst->m_Buffer, 1, &region);
+}
+
+void VKCommandBuffer::CopyBufferToImage(VKBuffer * src, VKImage * dst)
+{
+	VkBufferImageCopy bufferImageCopyInfo = {};
+	bufferImageCopyInfo.bufferOffset = 0;
+	bufferImageCopyInfo.bufferRowLength = 0;
+	bufferImageCopyInfo.bufferImageHeight = 0;
+	bufferImageCopyInfo.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT,0,0,1 };
+	bufferImageCopyInfo.imageOffset = { 0,0,0 };
+	bufferImageCopyInfo.imageExtent = { dst->GetWidth(),dst->GetHeight(),1 };
+
+	vkCmdCopyBufferToImage(commandBuffer, src->m_Buffer, dst->m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
+}
+
+void VKCommandBuffer::ImageMemoryBarrier(VKImage * image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL)
+{
+	VkImageSubresourceRange imageSubresourceRange = {};
+	imageSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	imageSubresourceRange.baseMipLevel = 0;
+	imageSubresourceRange.levelCount = 1;;
+	imageSubresourceRange.baseArrayLayer = 0;
+	imageSubresourceRange.layerCount = 1;
+
+	VkImageMemoryBarrier imageMemoryBarrier = {};
+	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	imageMemoryBarrier.pNext = nullptr;
+	imageMemoryBarrier.srcAccessMask = srcAF;
+	imageMemoryBarrier.dstAccessMask = dstAF;
+	imageMemoryBarrier.oldLayout = oldIL;
+	imageMemoryBarrier.newLayout = newIL;
+	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageMemoryBarrier.image = image->m_Image;
+	imageMemoryBarrier.subresourceRange = imageSubresourceRange;
+
+	vkCmdPipelineBarrier(commandBuffer, srcPSF, dstPSF, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+}
+
 
 
 

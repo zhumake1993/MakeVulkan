@@ -2,85 +2,88 @@
 #include "DeviceProperties.h"
 #include "VulkanTools.h"
 
-VKImage::VKImage(VkDevice vkDevice)
-	: device(vkDevice)
+VKImage::VKImage(ImageType imageType, VkDevice vkDevice, VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, VkImageUsageFlags usage,
+	VkImageViewType vkImageViewType, VkImageAspectFlags aspectMask) :
+	Image(imageType, format, width, height),
+	m_Device(vkDevice)
 {
-}
+	// Image
 
-VKImage::~VKImage()
-{
-	if (device != VK_NULL_HANDLE) {
-		if (image != VK_NULL_HANDLE) {
-			vkDestroyImage(device, image, nullptr);
-			image = VK_NULL_HANDLE;
-		}
-		if (memory != VK_NULL_HANDLE) {
-			vkFreeMemory(device, memory, nullptr);
-			memory = VK_NULL_HANDLE;
-		}
-		if (view != VK_NULL_HANDLE) {
-			vkDestroyImageView(device, view, nullptr);
-			view = VK_NULL_HANDLE;
-		}
-	}
-}
+	VkImageCreateInfo imageCI = {};
+	imageCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageCI.pNext = nullptr;
+	imageCI.flags = 0;
+	imageCI.imageType = vkImageType;
+	imageCI.format = format;
+	imageCI.extent.width = width;
+	imageCI.extent.height = height;
+	imageCI.extent.depth = 1;
+	imageCI.mipLevels = 1;
+	imageCI.arrayLayers = 1;
+	imageCI.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageCI.usage = usage;
+	imageCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	imageCI.queueFamilyIndexCount = 0;
+	imageCI.pQueueFamilyIndices = nullptr;
+	imageCI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-void VKImage::CreateVkImage()
-{
-	VkImageCreateInfo ci = {};
-	ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	ci.pNext = nullptr;
-	ci.flags = imageCreateFlags;
-	ci.imageType = imageType;
-	ci.format = format;
-	ci.extent.width = width;
-	ci.extent.height = height;
-	ci.extent.depth = depth;
-	ci.mipLevels = mipLevels;
-	ci.arrayLayers = arrayLayers;
-	ci.samples = samples;
-	ci.tiling = tiling;
-	ci.usage = usage;
-	ci.sharingMode = sharingMode;
-	ci.queueFamilyIndexCount = queueFamilyIndexCount;
-	ci.pQueueFamilyIndices = pQueueFamilyIndices;
-	ci.initialLayout = initialLayout;
+	VK_CHECK_RESULT(vkCreateImage(m_Device, &imageCI, nullptr, &m_Image));
 
-	VK_CHECK_RESULT(vkCreateImage(device, &ci, nullptr, &image));
+	// Memory
 
 	auto& dp = GetDeviceProperties();
 
 	VkMemoryRequirements memReqs;
-	vkGetImageMemoryRequirements(device, image, &memReqs);
+	vkGetImageMemoryRequirements(m_Device, m_Image, &memReqs);
 
 	VkMemoryAllocateInfo memoryAllocateInfo = {};
 	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	memoryAllocateInfo.pNext = nullptr;
 	memoryAllocateInfo.allocationSize = memReqs.size;
 	memoryAllocateInfo.memoryTypeIndex = dp.GetMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(device, &memoryAllocateInfo, nullptr, &memory));
+	VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memoryAllocateInfo, nullptr, &m_Memory));
 
-	VK_CHECK_RESULT(vkBindImageMemory(device, image, memory, 0));
+	// Bind
+
+	VK_CHECK_RESULT(vkBindImageMemory(m_Device, m_Image, m_Memory, 0));
+
+	// View
+
+	VkImageViewCreateInfo imageViewCI = {};
+	imageViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	imageViewCI.pNext = nullptr;
+	imageViewCI.flags = 0;
+	imageViewCI.image = m_Image;
+	imageViewCI.viewType = vkImageViewType;
+	imageViewCI.format = format;
+	imageViewCI.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCI.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCI.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCI.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewCI.subresourceRange.aspectMask = aspectMask;
+	imageViewCI.subresourceRange.baseMipLevel = 0;
+	imageViewCI.subresourceRange.levelCount = 1;
+	imageViewCI.subresourceRange.baseArrayLayer = 0;
+	imageViewCI.subresourceRange.layerCount = 1;
+
+	VK_CHECK_RESULT(vkCreateImageView(m_Device, &imageViewCI, nullptr, &m_View));
 }
 
-void VKImage::CreateVkImageView()
+VKImage::~VKImage()
 {
-	VkImageViewCreateInfo ci = {};
-	ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	ci.pNext = nullptr;
-	ci.flags = imageViewCreateFlags;
-	ci.image = image;
-	ci.viewType = viewType;
-	ci.format = format;
-	ci.components.r = rSwizzle;
-	ci.components.g = gSwizzle;
-	ci.components.b = bSwizzle;
-	ci.components.a = aSwizzle;
-	ci.subresourceRange.aspectMask = aspectMask;
-	ci.subresourceRange.baseMipLevel = baseMipLevel;
-	ci.subresourceRange.levelCount = levelCount;
-	ci.subresourceRange.baseArrayLayer = baseArrayLayer;
-	ci.subresourceRange.layerCount = layerCount;
-
-	VK_CHECK_RESULT(vkCreateImageView(device, &ci, nullptr, &view));
+	if (m_Device != VK_NULL_HANDLE) {
+		if (m_Image != VK_NULL_HANDLE) {
+			vkDestroyImage(m_Device, m_Image, nullptr);
+			m_Image = VK_NULL_HANDLE;
+		}
+		if (m_Memory != VK_NULL_HANDLE) {
+			vkFreeMemory(m_Device, m_Memory, nullptr);
+			m_Memory = VK_NULL_HANDLE;
+		}
+		if (m_View != VK_NULL_HANDLE) {
+			vkDestroyImageView(m_Device, m_View, nullptr);
+			m_View = VK_NULL_HANDLE;
+		}
+	}
 }

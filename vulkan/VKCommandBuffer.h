@@ -3,6 +3,9 @@
 #include "Env.h"
 #include "NonCopyable.h"
 
+class VKBuffer;
+class VKImage;
+
 struct VKCommandBuffer : public NonCopyable
 {
 	VKCommandBuffer(VkDevice vkDevice, VkCommandPool vkCommandPool, VkCommandBufferLevel level);
@@ -17,14 +20,12 @@ struct VKCommandBuffer : public NonCopyable
 	void SetViewport(VkViewport& viewport);
 	void SetScissor(VkRect2D& area);
 
-	//// Resource
+	void CopyBuffer(VKBuffer* src, VKBuffer* dst, VkBufferCopy& region);
+	void CopyBufferToImage(VKBuffer* src, VKImage* dst);
 
-	//void CopyVKBuffer(VKBuffer* src, VKBuffer* dst, VkBufferCopy& region);
-	//void CopyVKBufferToVKImage(VKBuffer* src, VKImage* dst);
-	//
-	//void ImageMemoryBarrier(VKImage* image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL);
-	//
-	//// Render Pass
+	void ImageMemoryBarrier(VKImage* image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL);
+
+
 
 	
 

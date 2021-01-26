@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Env.h"
+#include "Log.h"
 
 struct Color
 {
@@ -34,4 +35,40 @@ struct Viewport
 	uint32_t height;
 	float    minDepth;
 	float    maxDepth;
+};
+
+enum VertexChannel
+{
+	kVertexPosition,
+	kVertexNormal,
+	kVertexColor,
+	kVertexTexcoord0,
+
+	kVertexChannelCount
+};
+
+VkFormat VertexChannelToFormat(VertexChannel channel);
+
+uint32_t VkFormatToSize(VkFormat format);
+
+struct VertexDescription
+{
+	std::vector<VkFormat> formats;
+	std::vector<uint32_t> offsets;
+	uint32_t stride;
+};
+
+enum BufferType
+{
+	kBufferTypeVertex,
+	kBufferTypeIndex,
+	kBufferTypeUniform,
+	kBufferTypeStaging
+};
+
+enum ImageType
+{
+	kImageType1D,
+	kImageType2D,
+	kImageType3D
 };

@@ -12,7 +12,11 @@ struct VKCommandPool;
 
 struct VKCommandBuffer;
 struct VKRenderPass;
-struct VKImage;
+class VKImage;
+class VKBuffer;
+
+class Buffer;
+class Image;
 
 class GfxDevice : public NonCopyable
 {
@@ -56,6 +60,12 @@ public:
 	void SetViewport(Viewport& viewport);
 	void SetScissor(Rect2D& scissorArea);
 
+	Buffer* CreateBuffer(BufferType bufferType, uint64_t size);
+	void UpdateBuffer(Buffer* buffer, void* data, uint64_t size);
+
+	Image* CreateImage(ImageType imageType, VkFormat format, uint32_t width, uint32_t height);
+	void UpdateImage(Image* image, void* data, uint64_t size);
+
 private:
 
 	VkFormat GetSupportedDepthFormat();
@@ -86,6 +96,11 @@ private:
 	// SwapChain中的image数量可能并不等于FrameResourcesCount，所以要单独处理Framebuffer
 	uint32_t m_ImageIndex;
 	std::vector<VkFramebuffer> m_Framebuffers;
+
+	// staging
+	VKCommandBuffer* m_UploadCommandBuffer;
+	const uint32_t m_StagingBufferSize = 10 * 1024 * 1024;
+	VKBuffer* m_StagingBuffer;
 };
 
 void CreateGfxDevice();

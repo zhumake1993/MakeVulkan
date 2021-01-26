@@ -13,6 +13,7 @@
 #include "VKCommandBuffer.h"
 #include "VKRenderPass.h"
 #include "VKImage.h"
+#include "VKBuffer.h"
 
 GfxDevice* gfxDevice;
 
@@ -46,14 +47,8 @@ GfxDevice::GfxDevice()
 
 	// depth
 	m_DepthFormat = GetSupportedDepthFormat();
-	m_DepthImage = new VKImage(m_VKDevice->device);
-	m_DepthImage->format = m_DepthFormat;
-	m_DepthImage->width = windowWidth;
-	m_DepthImage->height = windowHeight;
-	m_DepthImage->usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-	m_DepthImage->CreateVkImage();
-	m_DepthImage->aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-	m_DepthImage->CreateVkImageView();
+	m_DepthImage = new VKImage(kImageType2D, m_VKDevice->device, VK_IMAGE_TYPE_2D, m_DepthFormat, windowWidth, windowHeight, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+		VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_DEPTH_BIT);
 
 	m_VKRenderPass = new VKRenderPass(m_VKDevice->device, m_VKSwapChain->format.format, m_DepthFormat);
 
@@ -69,12 +64,19 @@ GfxDevice::GfxDevice()
 	m_Framebuffers.resize(m_VKSwapChain->numberOfImages);
 	for (size_t i = 0; i < m_VKSwapChain->numberOfImages; ++i)
 	{
-		m_Framebuffers[i] = CreateVkFramebuffer(m_VKRenderPass->renderPass, m_VKSwapChain->swapChainImageViews[i], m_DepthImage->view, windowWidth, windowHeight);
+		m_Framebuffers[i] = CreateVkFramebuffer(m_VKRenderPass->renderPass, m_VKSwapChain->swapChainImageViews[i], m_DepthImage->m_View, windowWidth, windowHeight);
 	}
+
+	m_UploadCommandBuffer = new VKCommandBuffer(m_VKDevice->device, m_VKCommandPool->commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	m_StagingBuffer = new VKBuffer(kBufferTypeStaging, m_VKDevice->device, m_StagingBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	m_StagingBuffer->Map();
 }
 
 GfxDevice::~GfxDevice()
 {
+	RELEASE(m_UploadCommandBuffer);
+	RELEASE(m_StagingBuffer);
+
 	for (size_t i = 0; i < m_VKSwapChain->numberOfImages; ++i)
 	{
 		vkDestroyFramebuffer(m_VKDevice->device, m_Framebuffers[i], nullptr);
@@ -252,6 +254,150 @@ void GfxDevice::SetScissor(Rect2D & scissorArea)
 	area.extent.height = scissorArea.height;
 
 	m_FrameResources[m_CurrFrameIndex].commandBuffer->SetScissor(area);
+}
+
+Buffer * GfxDevice::CreateBuffer(BufferType bufferType, uint64_t size)
+{
+	switch (bufferType)
+	{
+		case kBufferTypeVertex:
+		{
+			return new VKBuffer(kBufferTypeVertex, m_VKDevice->device, size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			break;
+		}
+		case kBufferTypeIndex:
+		{
+			return new VKBuffer(kBufferTypeIndex, m_VKDevice->device, size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			break;
+		}
+		case kBufferTypeUniform:
+		{
+			//todo
+			//return new VKBuffer(kBufferTypeUniform, m_VKDevice->device, size, usage, memoryProperty);
+			break;
+		}
+		default:
+		{
+			LOG("wrong BufferType.");
+			EXIT;
+		}
+	}
+	return nullptr;
+}
+
+void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t size)
+{
+	BufferType bufferType = buffer->GetBufferType();
+	VKBuffer* vkBuffer = static_cast<VKBuffer*>(buffer);
+
+	if (bufferType == kBufferTypeVertex || bufferType == kBufferTypeIndex)
+	{
+		m_StagingBuffer->Update(data, 0, size);
+
+		m_UploadCommandBuffer->Begin();
+
+		VkBufferCopy bufferCopyInfo = {};
+		bufferCopyInfo.srcOffset = 0;
+		bufferCopyInfo.dstOffset = 0;
+		bufferCopyInfo.size = size;
+		m_UploadCommandBuffer->CopyBuffer(m_StagingBuffer, vkBuffer, bufferCopyInfo);
+
+		// 经测试发现没有这一步也没问题（许多教程也的确没有这一步）
+		// 个人认为是因为调用了DeviceWaitIdle
+		//vkCmdPipelineBarrier
+
+		m_UploadCommandBuffer->End();
+
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.pNext = nullptr;
+		submitInfo.waitSemaphoreCount = 0;
+		submitInfo.pWaitSemaphores = nullptr;
+		submitInfo.pWaitDstStageMask = nullptr;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &m_UploadCommandBuffer->commandBuffer;
+		submitInfo.signalSemaphoreCount = 0;
+		submitInfo.pSignalSemaphores = nullptr;
+		VK_CHECK_RESULT(vkQueueSubmit(m_VKDevice->queue, 1, &submitInfo, VK_NULL_HANDLE));
+
+		DeviceWaitIdle();
+	}
+	else if (bufferType == kBufferTypeUniform)
+	{
+		//todo
+	}
+	else
+	{
+		LOG("wrong Buffertype.");
+		EXIT;
+	}
+}
+
+Image * GfxDevice::CreateImage(ImageType imageType, VkFormat format, uint32_t width, uint32_t height)
+{
+	switch (imageType)
+	{
+		case kImageType1D:
+		{
+			break;
+		}
+		case kImageType2D:
+		{
+			return new VKImage(imageType, m_VKDevice->device, VK_IMAGE_TYPE_2D, format, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 
+				VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT);
+			break;
+		}
+		case kImageType3D:
+		{
+			break;
+		}
+		default:
+		{
+			LOG("wrong ImageType.");
+			EXIT;
+		}
+	}
+	return nullptr;
+}
+
+void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size)
+{
+	ImageType imageType = image->GetImageType();
+	VKImage* vkImage = static_cast<VKImage*>(image);
+
+	if (imageType == kImageType2D)
+	{
+		m_StagingBuffer->Update(data, 0, size);
+
+		m_UploadCommandBuffer->Begin();
+
+		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+		m_UploadCommandBuffer->CopyBufferToImage(m_StagingBuffer, vkImage);
+
+		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+		m_UploadCommandBuffer->End();
+
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.pNext = nullptr;
+		submitInfo.waitSemaphoreCount = 0;
+		submitInfo.pWaitSemaphores = nullptr;
+		submitInfo.pWaitDstStageMask = nullptr;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &m_UploadCommandBuffer->commandBuffer;
+		submitInfo.signalSemaphoreCount = 0;
+		submitInfo.pSignalSemaphores = nullptr;
+		VK_CHECK_RESULT(vkQueueSubmit(m_VKDevice->queue, 1, &submitInfo, VK_NULL_HANDLE));
+
+		DeviceWaitIdle();
+	}
+	else
+	{
+		LOG("wrong ImageType.");
+		EXIT;
+	}
 }
 
 VkFormat GfxDevice::GetSupportedDepthFormat()

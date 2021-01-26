@@ -4,6 +4,9 @@
 #include "GfxDevice.h"
 #include "Settings.h"
 
+#include "Mesh.h"
+#include "Texture.h"
+
 Triangle::Triangle()
 {
 }
@@ -50,6 +53,7 @@ void Triangle::ConfigDeviceProperties()
 
 void Triangle::Init()
 {
+	PrepareResources();
 }
 
 void Triangle::Release()
@@ -89,4 +93,49 @@ void Triangle::Update()
 	device.EndRenderPass();
 
 	device.EndCommandBuffer();
+}
+
+void Triangle::PrepareResources()
+{
+	// Mesh
+	{
+		m_CubeMesh = CreateMesh();
+		m_CubeMesh->LoadFromFile(AssetPath + "models/cube.obj");
+		m_CubeMesh->UploadToGPU();
+
+		m_CustomCubeMesh = CreateMesh();
+		m_CustomCubeMesh->SetVertexChannels({ kVertexPosition, kVertexColor });
+		std::vector<float> vertices = {
+			-1.0f, -1.0f,  1.0f , 1.0f, 0.0f, 0.0f  ,
+			1.0f, -1.0f,  1.0f , 0.0f, 1.0f, 0.0f  ,
+			1.0f,  1.0f,  1.0f , 0.0f, 0.0f, 1.0f  ,
+			-1.0f,  1.0f,  1.0f , 0.0f, 0.0f, 0.0f  ,
+			-1.0f, -1.0f, -1.0f , 1.0f, 0.0f, 0.0f  ,
+			1.0f, -1.0f, -1.0f , 0.0f, 1.0f, 0.0f  ,
+			1.0f,  1.0f, -1.0f , 0.0f, 0.0f, 1.0f  ,
+			-1.0f,  1.0f, -1.0f , 0.0f, 0.0f, 0.0f  ,
+		};
+		std::vector<uint32_t> indices = {
+			0,1,2, 2,3,0, 1,5,6, 6,2,1, 7,6,5, 5,4,7, 4,0,3, 3,7,4, 4,5,1, 1,0,4, 3,2,6, 6,7,3,
+		};
+		m_CustomCubeMesh->SetVertices(vertices);
+		m_CustomCubeMesh->SetIndices(indices);
+		m_CustomCubeMesh->UploadToGPU();
+
+		m_SphereMesh = CreateMesh();
+		m_SphereMesh->LoadFromFile(AssetPath + "models/sphere.obj");
+		m_SphereMesh->UploadToGPU();
+	}
+
+	// Texture
+	{
+		m_Crate01Tex = CreateTexture();
+		m_Crate01Tex->LoadFromFile(AssetPath + "textures/crate01_color_height_rgba.ktx");
+
+		m_Crate02Tex = CreateTexture();
+		m_Crate02Tex->LoadFromFile(AssetPath + "textures/crate02_color_height_rgba.ktx");
+
+		m_MetalplateTex = CreateTexture();
+		m_MetalplateTex->LoadFromFile(AssetPath + "textures/metalplate_nomips_rgba.ktx");
+	}
 }
