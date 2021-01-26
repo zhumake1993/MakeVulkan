@@ -2,6 +2,7 @@
 #include "Tools.h"
 #include "Example.h"
 #include "GfxDevice.h"
+#include "DeviceProperties.h"
 
 Engine::Engine(Example* example) :
 	m_Example(example)
@@ -14,8 +15,12 @@ Engine::~Engine()
 
 void Engine::Init()
 {
+	// 设置DeviceProperties，初始化GfxDevice会用到
+	CreateDeviceProperties();
+	m_Example->ConfigDeviceProperties();
+
 	// 初始化GfxDevice
-	GetGfxDevice().Init();
+	CreateGfxDevice();
 
 	// 初始化Manager
 	//todo
@@ -43,7 +48,10 @@ void Engine::Release()
 	//todo
 
 	// 清理GfxDevice
-	GetGfxDevice().Release();
+	ReleaseGfxDevice();
+
+	// 清理DeviceProperties
+	ReleaseDeviceProperties();
 }
 
 void Engine::Update()
@@ -55,6 +63,10 @@ void Engine::Update()
 	//timeMgr.Tick();
 
 	//PROFILER(Engine_TickEngine);
+
+	auto& device = GetGfxDevice();
+	device.WaitForPresent();
+	device.AcquireNextImage();
 
 	// 更新Example
 	m_Example->Update();
@@ -70,6 +82,8 @@ void Engine::Update()
 	// 更新UI顶点计算
 	//m_Imgui->Tick();
 
-	// 更新GfxDevice
-	GetGfxDevice().Update();
+	// Present
+	device.QueueSubmit();
+	device.QueuePresent();
+	device.Update();
 }

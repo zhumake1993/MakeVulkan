@@ -8,7 +8,6 @@ class Example;
 
 class Application : public NonCopyable
 {
-
 public:
 
 	Application(Example* example);

@@ -8,6 +8,8 @@
 #define USE_VISUAL_LEAK_DETECTOR 0
 #endif
 
+#define FrameResourcesCount 3
+
 #if defined(_WIN32)
 extern std::string consoleTitle;
 extern std::string windowClassName;

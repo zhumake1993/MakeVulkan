@@ -14,3 +14,12 @@ VulkanSDK: 1.2.131.2
 修改cmakelist ：set(name startup)
 修改gradle task copyTask
 同步
+
+//todo
+//SetWindowText(global::windowHandle, "Triangle");
+
+ConfigGlobalSettings();
+
+
+#define MaxObjectsCount 100
+#define MaxMaterialsCount 100

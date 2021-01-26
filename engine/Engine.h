@@ -6,7 +6,6 @@ class Example;
 
 class Engine : public NonCopyable
 {
-
 public:
 
 	Engine(Example* example);

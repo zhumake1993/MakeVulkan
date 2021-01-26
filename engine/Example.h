@@ -9,6 +9,7 @@ public:
 	Example() {}
 	~Example() {}
 
+	virtual void ConfigDeviceProperties() = 0;
 	virtual void Init() = 0;
 	virtual void Release() = 0;
 	virtual void Update() = 0;
