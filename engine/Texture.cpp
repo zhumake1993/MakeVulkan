@@ -8,7 +8,8 @@
 
 #include <ktxvulkan.h>
 
-Texture::Texture()
+Texture::Texture(std::string name) :
+	m_Name(name)
 {
 }
 

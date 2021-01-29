@@ -9,7 +9,7 @@ class Texture
 
 public:
 
-	Texture();
+	Texture(std::string name);
 	~Texture();
 
 	void LoadFromFile(const std::string& filename);
@@ -23,6 +23,8 @@ private:
 	std::vector<char> ReadImageUsingKTX(const std::string& filename, uint32_t& width, uint32_t& height);
 
 private:
+
+	std::string m_Name;
 
 	Image* m_Image = nullptr;
 };

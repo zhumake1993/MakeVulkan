@@ -8,7 +8,8 @@
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include "obj/tiny_obj_loader.h"
 
-Mesh::Mesh()
+Mesh::Mesh(std::string name) :
+	m_Name(name)
 {
 	m_VertexChannels = {
 		kVertexPosition,

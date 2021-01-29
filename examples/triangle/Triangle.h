@@ -30,4 +30,22 @@ private:
 	Texture* m_Crate01Tex;
 	Texture* m_Crate02Tex;
 	Texture* m_MetalplateTex;
+
+	// Shader
+	Shader* m_LitShader;
+	Shader* m_ColorShader;
+
+	// Material
+	Material* m_Crate01Mat;
+	Material* m_Crate02Mat;
+	Material* m_ColorMat;
+	Material* m_MetalplateMat;
+
+	// RenderNode
+	RenderNode* m_CubeNode;
+	RenderNode* m_SphereNode;
+	RenderNode* m_ColorCubeNode;
+
+	// camera
+	//Camera* m_Camera;
 };

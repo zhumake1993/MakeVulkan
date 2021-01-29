@@ -66,6 +66,8 @@ public:
 	Image* CreateImage(ImageType imageType, VkFormat format, uint32_t width, uint32_t height);
 	void UpdateImage(Image* image, void* data, uint64_t size);
 
+	//void CreateVKShaderModule()
+
 private:
 
 	VkFormat GetSupportedDepthFormat();

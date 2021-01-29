@@ -5,6 +5,9 @@
 
 class Mesh;
 class Texture;
+class Shader;
+class Material;
+class RenderNode;
 
 class Example : public NonCopyable
 {
@@ -20,17 +23,17 @@ public:
 
 protected:
 
-	Mesh* CreateMesh();
-	Texture* CreateTexture();
-	//Shader* CreateShader();
-	//Material* CreateMaterial(std::string name);
-	//RenderNode* CreateRenderNode();
+	Mesh* CreateMesh(std::string name);
+	Texture* CreateTexture(std::string name);
+	Shader* CreateShader(std::string name);
+	Material* CreateMaterial(std::string name);
+	RenderNode* CreateRenderNode(std::string name);
 
 protected:
 
 	std::vector<Mesh*> m_MeshContainer;
 	std::vector<Texture*> m_TextureContainer;
-	//std::vector<Shader*> m_ShaderContainer;
-	//std::vector<Material*> m_MaterialContainer;
-	//std::vector<RenderNode*> m_RenderNodeContainer;
+	std::vector<Shader*> m_ShaderContainer;
+	std::vector<Material*> m_MaterialContainer;
+	std::vector<RenderNode*> m_RenderNodeContainer;
 };
