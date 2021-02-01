@@ -12,8 +12,13 @@
 
 #include "VKCommandBuffer.h"
 #include "VKRenderPass.h"
+
+#include "VKGarbageCollector.h"
+
 #include "VKImage.h"
 #include "VKBuffer.h"
+
+#include "VKGpuProgram.h"
 
 GfxDevice* gfxDevice;
 
@@ -68,12 +73,46 @@ GfxDevice::GfxDevice()
 	}
 
 	m_UploadCommandBuffer = new VKCommandBuffer(m_VKDevice->device, m_VKCommandPool->commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-	m_StagingBuffer = new VKBuffer(kBufferTypeStaging, m_VKDevice->device, m_StagingBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-	m_StagingBuffer->Map();
+	m_StagingBuffer = new VKBuffer(m_CurrFrameIndex, m_VKDevice->device, m_StagingBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+
+	// Descriptor
+
+	std::vector<VkDescriptorPoolSize> descriptorPoolSizes(11);
+	descriptorPoolSizes[0] = { VK_DESCRIPTOR_TYPE_SAMPLER , 100 };
+	descriptorPoolSizes[1] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER , 100 };
+	descriptorPoolSizes[2] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE , 100 };
+	descriptorPoolSizes[3] = { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE , 100 };
+	descriptorPoolSizes[4] = { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER , 100 };
+	descriptorPoolSizes[5] = { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER , 100 };
+	descriptorPoolSizes[6] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER , 100 };
+	descriptorPoolSizes[7] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER , 100 };
+	descriptorPoolSizes[8] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC , 100 };
+	descriptorPoolSizes[9] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC , 100 };
+	descriptorPoolSizes[10] = { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT , 100 };
+
+	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
+	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	descriptorPoolCreateInfo.pNext = nullptr;
+	descriptorPoolCreateInfo.flags = 0;
+	descriptorPoolCreateInfo.maxSets = 100;
+	descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
+	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
+
+	VK_CHECK_RESULT(vkCreateDescriptorPool(m_VKDevice->device, &descriptorPoolCreateInfo, nullptr, &m_DescriptorPool));
+
+	// GC
+	m_VKGarbageCollector = new VKGarbageCollector();
 }
 
 GfxDevice::~GfxDevice()
 {
+	//CleanUnusedUniformBuffer();
+
+	RELEASE(m_VKGarbageCollector);
+
+	// 销毁DescriptorPool会自动销毁其中分配的Set
+	vkDestroyDescriptorPool(m_VKDevice->device, m_DescriptorPool, nullptr);
+
 	RELEASE(m_UploadCommandBuffer);
 	RELEASE(m_StagingBuffer);
 
@@ -194,6 +233,8 @@ void GfxDevice::QueuePresent()
 
 void GfxDevice::Update()
 {
+	m_VKGarbageCollector->Update(m_CurrFrameIndex);
+
 	m_CurrFrameIndex = (m_CurrFrameIndex + 1) % FrameResourcesCount;
 }
 
@@ -262,20 +303,24 @@ Buffer * GfxDevice::CreateBuffer(BufferType bufferType, uint64_t size)
 	{
 		case kBufferTypeVertex:
 		{
-			return new VKBuffer(kBufferTypeVertex, m_VKDevice->device, size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			return new VKBufferResource(kBufferTypeVertex, m_VKGarbageCollector, m_CurrFrameIndex, m_VKDevice->device, size,
+				VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 			break;
 		}
 		case kBufferTypeIndex:
 		{
-			return new VKBuffer(kBufferTypeIndex, m_VKDevice->device, size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			return new VKBufferResource(kBufferTypeIndex, m_VKGarbageCollector, m_CurrFrameIndex, m_VKDevice->device, size,
+				VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 			break;
 		}
-		case kBufferTypeUniform:
+		/*case kBufferTypeUniform:
 		{
-			//todo
-			//return new VKBuffer(kBufferTypeUniform, m_VKDevice->device, size, usage, memoryProperty);
+			VKBuffer* buffer = new VKBuffer(kBufferTypeUniform, m_CurrFrameIndex, m_VKDevice->device, size, 
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			m_UniformBufferContainer.push_back(buffer);
+			return buffer;
 			break;
-		}
+		}*/
 		default:
 		{
 			LOG("wrong BufferType.");
@@ -288,7 +333,7 @@ Buffer * GfxDevice::CreateBuffer(BufferType bufferType, uint64_t size)
 void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t size)
 {
 	BufferType bufferType = buffer->GetBufferType();
-	VKBuffer* vkBuffer = static_cast<VKBuffer*>(buffer);
+	VKBufferResource* vkBufferResource = static_cast<VKBufferResource*>(buffer);
 
 	if (bufferType == kBufferTypeVertex || bufferType == kBufferTypeIndex)
 	{
@@ -300,7 +345,7 @@ void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t size)
 		bufferCopyInfo.srcOffset = 0;
 		bufferCopyInfo.dstOffset = 0;
 		bufferCopyInfo.size = size;
-		m_UploadCommandBuffer->CopyBuffer(m_StagingBuffer, vkBuffer, bufferCopyInfo);
+		m_UploadCommandBuffer->CopyBuffer(m_StagingBuffer, vkBufferResource->GetVKBuffer(), bufferCopyInfo);
 
 		// 经测试发现没有这一步也没问题（许多教程也的确没有这一步）
 		// 个人认为是因为调用了DeviceWaitIdle
@@ -321,10 +366,6 @@ void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t size)
 		VK_CHECK_RESULT(vkQueueSubmit(m_VKDevice->queue, 1, &submitInfo, VK_NULL_HANDLE));
 
 		DeviceWaitIdle();
-	}
-	else if (bufferType == kBufferTypeUniform)
-	{
-		//todo
 	}
 	else
 	{
@@ -398,6 +439,11 @@ void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size)
 		LOG("wrong ImageType.");
 		EXIT;
 	}
+}
+
+GpuProgram * GfxDevice::CreateGpuProgram(GpuParameters& parameters)
+{
+	return new VKGpuProgram(m_VKDevice->device, parameters);
 }
 
 VkFormat GfxDevice::GetSupportedDepthFormat()

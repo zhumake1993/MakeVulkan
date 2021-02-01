@@ -1,5 +1,6 @@
 #include "Material.h"
 #include "Shader.h"
+#include "GpuProgram.h"
 #include "Texture.h"
 #include "Tools.h"
 
@@ -26,18 +27,16 @@ void Material::SetShader(Shader * shader)
 	RELEASE(m_UniformBufferData);
 	m_UniformBufferData = nullptr;
 
-	UniformBufferDesc& ubDesc = m_Shader->GetUniformBufferDesc();
-	for (auto& layout : ubDesc.layouts)
+	uint32_t perMaterialBufferSize = m_Shader->GetGpuProgram().GetUniformBufferSize("PerMaterial");
+	if (perMaterialBufferSize > 0)
 	{
-		if (layout.name == "PerMaterial")
-		{
-			m_UniformBufferData = new char[layout.GetSize()];
-			break;
-		}
+		m_UniformBufferData = new char[perMaterialBufferSize];
 	}
 
-	std::vector<std::string>& textureDesc = m_Shader->GetTextureDesc();
-	m_Textures.resize(textureDesc.size(), nullptr);
+
+	//todo
+	//std::vector<std::string>& textureDesc = m_Shader->GetTextureDesc();
+	//m_Textures.resize(textureDesc.size(), nullptr);
 
 	/*if (uniformSize > 0) {
 		GetVulkanDriver().CreateUniformBuffer(m_Name, uniformSize);
@@ -104,7 +103,8 @@ void Material::SetFloat4x4(std::string name, glm::mat4 & mat)
 
 void Material::SetTextures(std::string name, Texture * texture)
 {
-	std::vector<std::string>& textureDesc = m_Shader->GetTextureDesc();
+	//todo
+	/*std::vector<std::string>& textureDesc = m_Shader->GetTextureDesc();
 	int index = 0;
 	for (; index < textureDesc.size(); index++)
 	{
@@ -120,13 +120,12 @@ void Material::SetTextures(std::string name, Texture * texture)
 		EXIT;
 	}
 
-	m_Textures[index] = texture;
+	m_Textures[index] = texture;*/
 }
 
 uint32_t Material::GetUniformBufferDataOffset(std::string name, UniformDataType type)
 {
-	UniformBufferDesc& ubDesc = m_Shader->GetUniformBufferDesc();
-	for (auto& layout : ubDesc.layouts)
+	for (auto& layout : m_Shader->GetGpuProgram().GetGpuParameters().uniformBufferLayouts)
 	{
 		if (layout.name == "PerMaterial")
 		{

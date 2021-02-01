@@ -72,7 +72,7 @@ void VKCommandBuffer::SetScissor(VkRect2D & area)
 
 void VKCommandBuffer::CopyBuffer(VKBuffer * src, VKBuffer * dst, VkBufferCopy & region)
 {
-	vkCmdCopyBuffer(commandBuffer, src->m_Buffer, dst->m_Buffer, 1, &region);
+	vkCmdCopyBuffer(commandBuffer, src->GetVkBuffer(), dst->GetVkBuffer(), 1, &region);
 }
 
 void VKCommandBuffer::CopyBufferToImage(VKBuffer * src, VKImage * dst)
@@ -85,7 +85,7 @@ void VKCommandBuffer::CopyBufferToImage(VKBuffer * src, VKImage * dst)
 	bufferImageCopyInfo.imageOffset = { 0,0,0 };
 	bufferImageCopyInfo.imageExtent = { dst->GetWidth(),dst->GetHeight(),1 };
 
-	vkCmdCopyBufferToImage(commandBuffer, src->m_Buffer, dst->m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
+	vkCmdCopyBufferToImage(commandBuffer, src->GetVkBuffer(), dst->m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
 }
 
 void VKCommandBuffer::ImageMemoryBarrier(VKImage * image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL)

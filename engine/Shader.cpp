@@ -1,5 +1,7 @@
 #include "Shader.h"
 #include "Tools.h"
+#include "GfxDevice.h"
+#include "GpuProgram.h"
 
 Shader::Shader(std::string name) :
 	m_Name(name)
@@ -10,6 +12,7 @@ Shader::~Shader()
 {
 	//RELEASE(m_ShaderModuleVert);
 	//RELEASE(m_ShaderModuleFrag);
+	RELEASE(m_GpuProgram);
 }
 
 void Shader::LoadSPV(const std::string & vertFilename, const std::string & fragFilename)
@@ -20,25 +23,37 @@ void Shader::LoadSPV(const std::string & vertFilename, const std::string & fragF
 	//VKShaderModule* m_ShaderModuleFrag = device.CreateVKShaderModule(fragFilename);
 }
 
-void Shader::SetUniformBufferDesc(UniformBufferDesc & desc)
+void Shader::CreateGpuProgram(GpuParameters & parameters)
 {
-	m_UniformBufferDesc = desc;
+	auto& device = GetGfxDevice();
+
+	m_GpuProgram = device.CreateGpuProgram(parameters);
 }
 
-UniformBufferDesc & Shader::GetUniformBufferDesc()
+GpuProgram & Shader::GetGpuProgram()
 {
-	return m_UniformBufferDesc;
+	return *m_GpuProgram;
 }
 
-void Shader::SetTextureDesc(const std::vector<std::string>& names)
-{
-	m_TextureNames = names;
-}
-
-std::vector<std::string>& Shader::GetTextureDesc()
-{
-	return m_TextureNames;
-}
+//void Shader::SetUniformBufferDesc(UniformBufferDesc & desc)
+//{
+//	m_UniformBufferDesc = desc;
+//}
+//
+//UniformBufferDesc & Shader::GetUniformBufferDesc()
+//{
+//	return m_UniformBufferDesc;
+//}
+//
+//void Shader::SetTextureDesc(const std::vector<std::string>& names)
+//{
+//	m_TextureNames = names;
+//}
+//
+//std::vector<std::string>& Shader::GetTextureDesc()
+//{
+//	return m_TextureNames;
+//}
 
 
 

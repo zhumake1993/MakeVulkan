@@ -62,7 +62,7 @@ enum BufferType
 {
 	kBufferTypeVertex,
 	kBufferTypeIndex,
-	kBufferTypeUniform,
+	//kBufferTypeUniform,
 	kBufferTypeStaging
 };
 
@@ -98,7 +98,7 @@ struct UniformBufferElement
 
 struct UniformBufferLayout
 {
-	UniformBufferLayout(std::string n, int b) :name(n), binding(b) {}
+	UniformBufferLayout(std::string n, int b, VkShaderStageFlags flags) :name(n), binding(b), stageFlags(flags) {}
 
 	void Add(UniformBufferElement& element)
 	{
@@ -120,13 +120,11 @@ struct UniformBufferLayout
 
 	std::string name;
 	int binding;
+	VkShaderStageFlags stageFlags;
 	std::vector<UniformBufferElement> elements;
 };
 
-struct UniformBufferDesc
+struct GpuParameters
 {
-	UniformBufferDesc() {}
-	UniformBufferDesc(std::vector<UniformBufferLayout>& ls) :layouts(ls) {}
-
-	std::vector<UniformBufferLayout> layouts;
+	std::vector<UniformBufferLayout> uniformBufferLayouts;
 };

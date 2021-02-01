@@ -10,6 +10,8 @@ struct VKDevice;
 struct VKSwapChain;
 struct VKCommandPool;
 
+class VKGarbageCollector;
+
 struct VKCommandBuffer;
 struct VKRenderPass;
 class VKImage;
@@ -17,6 +19,8 @@ class VKBuffer;
 
 class Buffer;
 class Image;
+
+class GpuProgram;
 
 class GfxDevice : public NonCopyable
 {
@@ -66,6 +70,8 @@ public:
 	Image* CreateImage(ImageType imageType, VkFormat format, uint32_t width, uint32_t height);
 	void UpdateImage(Image* image, void* data, uint64_t size);
 
+	GpuProgram* CreateGpuProgram(GpuParameters& parameters);
+
 	//void CreateVKShaderModule()
 
 private:
@@ -99,10 +105,19 @@ private:
 	uint32_t m_ImageIndex;
 	std::vector<VkFramebuffer> m_Framebuffers;
 
-	// staging
+	// staging buffer
 	VKCommandBuffer* m_UploadCommandBuffer;
 	const uint32_t m_StagingBufferSize = 10 * 1024 * 1024;
 	VKBuffer* m_StagingBuffer;
+
+	// GC
+	VKGarbageCollector* m_VKGarbageCollector;
+
+	// uniform buffer
+	std::list<VKBuffer*> m_UniformBufferContainer;
+
+	// Descriptor
+	VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
 };
 
 void CreateGfxDevice();

@@ -2,6 +2,12 @@
 
 #include "Example.h"
 
+struct UniformPerView
+{
+	alignas(16) glm::mat4 view;
+	alignas(16) glm::mat4 proj;
+};
+
 class Triangle : public Example
 {
 
@@ -17,9 +23,13 @@ public:
 
 private:
 
+	void Draw();
 	void PrepareResources();
 
 private:
+
+	UniformPerView m_UniformPerView;
+	Buffer* m_UniformPerViewBuffer = nullptr;
 
 	// Mesh
 	Mesh* m_CubeMesh;
@@ -46,6 +56,6 @@ private:
 	RenderNode* m_SphereNode;
 	RenderNode* m_ColorCubeNode;
 
-	// camera
-	//Camera* m_Camera;
+	// Camera
+	Camera* m_Camera;
 };

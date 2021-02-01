@@ -1,13 +1,11 @@
 #include "VKBuffer.h"
 #include "DeviceProperties.h"
 #include "VulkanTools.h"
+#include "VKGarbageCollector.h"
 
-VKBuffer::VKBuffer(BufferType bufferType, VkDevice vkDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty) :
-	Buffer(bufferType),
-	m_Device(vkDevice),
-	m_Size(size),
-	m_Usage(usage),
-	m_MemoryProperty(memoryProperty)
+VKBuffer::VKBuffer(uint32_t currFrameIndex, VkDevice vkDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty) :
+	VKResource(currFrameIndex),
+	m_Device(vkDevice)
 {
 	// Buffer
 
@@ -44,12 +42,15 @@ VKBuffer::VKBuffer(BufferType bufferType, VkDevice vkDevice, VkDeviceSize size, 
 
 VKBuffer::~VKBuffer()
 {
-	if (m_Device != VK_NULL_HANDLE) {
-		if (m_Buffer != VK_NULL_HANDLE) {
+	if (m_Device != VK_NULL_HANDLE)
+	{
+		if (m_Buffer != VK_NULL_HANDLE)
+		{
 			vkDestroyBuffer(m_Device, m_Buffer, nullptr);
 			m_Buffer = VK_NULL_HANDLE;
 		}
-		if (m_Memory != VK_NULL_HANDLE) {
+		if (m_Memory != VK_NULL_HANDLE)
+		{
 			vkFreeMemory(m_Device, m_Memory, nullptr);
 			m_Memory = VK_NULL_HANDLE;
 		}
@@ -97,4 +98,42 @@ void VKBuffer::Invalidate(VkDeviceSize offset, VkDeviceSize size)
 	mappedRange.size = size;
 
 	vkInvalidateMappedMemoryRanges(m_Device, 1, &mappedRange);
+}
+
+VKBufferResource::VKBufferResource(BufferType bufferType, VKGarbageCollector* gc, uint32_t currFrameIndex, VkDevice vkDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty) :
+	Buffer(bufferType),
+	m_VKGarbageCollector(gc),
+	m_Size(size),
+	m_Usage(usage),
+	m_MemoryProperty(memoryProperty)
+{
+	m_Buffer = new VKBuffer(currFrameIndex, vkDevice, size, usage, memoryProperty);
+	m_Buffer->Map();
+}
+
+VKBufferResource::~VKBufferResource()
+{
+	m_VKGarbageCollector->AddBuffers(m_Buffer);
+}
+
+void VKBufferResource::Update(uint32_t currFrameIndex, void * data, VkDeviceSize offset, VkDeviceSize size)
+{
+	if (m_Buffer->InUse(currFrameIndex))
+	{
+		m_VKGarbageCollector->AddBuffers(m_Buffer);
+
+		m_Buffer = new VKBuffer(currFrameIndex, m_Buffer->m_Device, m_Size, m_Usage, m_MemoryProperty);
+
+		m_Buffer->Map();
+		m_Buffer->Update(data, offset, size);
+	}
+	else
+	{
+		m_Buffer->Update(data, offset, size);
+	}
+}
+
+VKBuffer* VKBufferResource::GetVKBuffer()
+{
+	return m_Buffer;
 }

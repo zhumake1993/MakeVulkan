@@ -3,12 +3,14 @@
 #include "GfxTypes.h"
 #include "GfxDevice.h"
 #include "Settings.h"
+#include "Tools.h"
 
 #include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
 #include "Material.h"
 #include "RenderNode.h"
+#include "Camera.h"
 
 Triangle::Triangle()
 {
@@ -16,6 +18,7 @@ Triangle::Triangle()
 
 Triangle::~Triangle()
 {
+	RELEASE(m_Camera);
 }
 
 void Triangle::ConfigDeviceProperties()
@@ -56,6 +59,20 @@ void Triangle::ConfigDeviceProperties()
 
 void Triangle::Init()
 {
+	auto& device = GetGfxDevice();
+
+	// Camera
+	m_Camera = new Camera();
+	m_Camera->LookAt(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	m_Camera->SetLens(glm::radians(60.0f), 1.0f * windowWidth / windowHeight, 0.1f, 256.0f);
+#if defined(_WIN32)
+	m_Camera->SetSpeed(1.0f, 0.005f);
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+	m_Camera->SetSpeed(0.001f, 0.005f);
+#endif
+
+	m_UniformPerViewBuffer = device.CreateBuffer(kBufferTypeUniform, sizeof(UniformPerView));
+
 	PrepareResources();
 }
 
@@ -64,6 +81,23 @@ void Triangle::Release()
 }
 
 void Triangle::Update()
+{
+	auto& device = GetGfxDevice();
+
+	//auto deltaTime = GetTimeMgr().GetDeltaTime();
+
+	//m_Camera->Update(deltaTime);
+
+	m_UniformPerView.view = m_Camera->GetView();
+	m_UniformPerView.proj = m_Camera->GetProj();
+	//m_GlobalUniform.eyePos = glm::vec4(m_Camera->GetPosition(), 1.0f);
+
+	device.UpdateBuffer(m_UniformPerViewBuffer, &m_UniformPerView, sizeof(UniformPerView));
+
+	Draw();
+}
+
+void Triangle::Draw()
 {
 	auto& device = GetGfxDevice();
 
@@ -79,7 +113,7 @@ void Triangle::Update()
 	device.SetViewport(viewport);
 	device.SetScissor(area);
 
-
+	// test m_ColorCubeNode
 
 
 
@@ -147,35 +181,55 @@ void Triangle::PrepareResources()
 		m_ColorShader = CreateShader("ColorShader");
 		m_ColorShader->LoadSPV(AssetPath + "shaders/triangle/Color.vert.spv", AssetPath + "shaders/triangle/Color.frag.spv");
 
-		UniformBufferLayout layout0("Global", 0);
-		layout0.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixView"));
-		layout0.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixProj"));
+		GpuParameters parameters;
 
-		UniformBufferLayout layout1("PerDraw", 1);
-		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "ObjectToWorld"));
+		//UniformBufferLayout layout0("Global", 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+		//layout0.Add(UniformBufferElement(kUniformDataTypeFloat4, "Time"));
 
-		m_ColorShader->SetUniformBufferDesc(UniformBufferDesc(std::vector<UniformBufferLayout>{ layout0, layout1 }));
+		UniformBufferLayout layout1("PerView", 1, VK_SHADER_STAGE_VERTEX_BIT);
+		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixView"));
+		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixProj"));
+
+		UniformBufferLayout layout2("PerDraw", 2, VK_SHADER_STAGE_VERTEX_BIT);
+		layout2.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "ObjectToWorld"));
+
+		//parameters.uniformBufferLayouts.push_back(layout0);
+		parameters.uniformBufferLayouts.push_back(layout1);
+		parameters.uniformBufferLayouts.push_back(layout2);
+
+		m_ColorShader->CreateGpuProgram(parameters);
 	}
 	{
 		m_LitShader = CreateShader("LitShader");
 		m_LitShader->LoadSPV(AssetPath + "shaders/triangle/Lit.vert.spv", AssetPath + "shaders/triangle/Lit.frag.spv");
 
-		UniformBufferLayout layout0("Global", 0);
-		layout0.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixView"));
-		layout0.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixProj"));
-		layout0.Add(UniformBufferElement(kUniformDataTypeFloat4, "EyePos"));
+		GpuParameters parameters;
 
-		UniformBufferLayout layout1("PerMaterial", 1);
-		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4, "DiffuseAlbedo"));
-		layout1.Add(UniformBufferElement(kUniformDataTypeFloat3, "FresnelR0"));
-		layout1.Add(UniformBufferElement(kUniformDataTypeFloat1, "Roughness"));
-		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatTransform"));
+		UniformBufferLayout layout0("Global", 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+		layout0.Add(UniformBufferElement(kUniformDataTypeFloat4, "Time"));
 
-		UniformBufferLayout layout2("PerDraw", 2);
-		layout2.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "ObjectToWorld"));
+		UniformBufferLayout layout1("PerView", 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixView"));
+		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixProj"));
+		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4, "EyePos"));
 
-		m_LitShader->SetUniformBufferDesc(UniformBufferDesc(std::vector<UniformBufferLayout>{ layout0, layout1, layout2 }));
-		m_LitShader->SetTextureDesc({ "BaseTexture" });
+		UniformBufferLayout layout2("PerMaterial", 2, VK_SHADER_STAGE_FRAGMENT_BIT);
+		layout2.Add(UniformBufferElement(kUniformDataTypeFloat4, "DiffuseAlbedo"));
+		layout2.Add(UniformBufferElement(kUniformDataTypeFloat3, "FresnelR0"));
+		layout2.Add(UniformBufferElement(kUniformDataTypeFloat1, "Roughness"));
+		layout2.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatTransform"));
+
+		UniformBufferLayout layout3("PerDraw", 3, VK_SHADER_STAGE_VERTEX_BIT);
+		layout3.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "ObjectToWorld"));
+
+		parameters.uniformBufferLayouts.push_back(layout0);
+		parameters.uniformBufferLayouts.push_back(layout1);
+		parameters.uniformBufferLayouts.push_back(layout2);
+		parameters.uniformBufferLayouts.push_back(layout3);
+
+		m_LitShader->CreateGpuProgram(parameters);
+
+		//m_LitShader->SetTextureDesc({ "BaseTexture" });
 
 		//m_LitShader->AddSpecializationConstant(0, 1);
 		//m_LitShader->AddSpecializationConstant(1, 1);

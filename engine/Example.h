@@ -8,6 +8,8 @@ class Texture;
 class Shader;
 class Material;
 class RenderNode;
+class Camera;
+class Buffer;
 
 class Example : public NonCopyable
 {

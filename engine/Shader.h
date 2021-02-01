@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Env.h"
-#include "GfxDevice.h"
+#include "GfxTypes.h"
+
+class GpuProgram;
 
 class Shader
 {
@@ -15,11 +17,14 @@ public:
 
 	// 成熟的做法是使用反射，这里手动设置
 	// 假设数据是紧密pack的（满足对齐要求），这样方便处理
-	void SetUniformBufferDesc(UniformBufferDesc& desc);
-	UniformBufferDesc& GetUniformBufferDesc();
+	void CreateGpuProgram(GpuParameters& parameters);
+	GpuProgram& GetGpuProgram();
 
-	void SetTextureDesc(const std::vector<std::string>& names);
-	std::vector<std::string>& GetTextureDesc();
+	//void SetUniformBufferDesc(UniformBufferDesc& desc);
+	//UniformBufferDesc& GetUniformBufferDesc();
+
+	//void SetTextureDesc(const std::vector<std::string>& names);
+	//std::vector<std::string>& GetTextureDesc();
 
 	//void AddSpecializationConstant(int id, uint32_t value);
 	//void SetSpecializationConstant(int id, uint32_t value);
@@ -42,9 +47,11 @@ private:
 
 	std::string m_Name;
 
-	UniformBufferDesc m_UniformBufferDesc;
+	GpuProgram* m_GpuProgram;
 
-	std::vector<std::string> m_TextureNames;
+	//UniformBufferDesc m_UniformBufferDesc;
+
+	//std::vector<std::string> m_TextureNames;
 
 	//VKSpecializationConstant* m_SpecializationConstant = nullptr;
 };
