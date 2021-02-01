@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Env.h"
+#include "NonCopyable.h"
 
-class VKResource
+class VKResource : public NonCopyable
 {
 public:
 

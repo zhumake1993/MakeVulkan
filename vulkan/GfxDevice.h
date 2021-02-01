@@ -15,12 +15,13 @@ class VKGarbageCollector;
 struct VKCommandBuffer;
 struct VKRenderPass;
 class VKImage;
-class VKBuffer;
+struct VKBuffer;
+struct VKDescriptorSet;
+struct PipelineCI;
 
 class Buffer;
 class Image;
-
-class GpuProgram;
+class Shader;
 
 class GfxDevice : public NonCopyable
 {
@@ -70,9 +71,16 @@ public:
 	Image* CreateImage(ImageType imageType, VkFormat format, uint32_t width, uint32_t height);
 	void UpdateImage(Image* image, void* data, uint64_t size);
 
-	GpuProgram* CreateGpuProgram(GpuParameters& parameters);
+	GpuProgram* CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode);
 
 	//void CreateVKShaderModule()
+
+	void BindUniformDataGlobal(void* data, uint64_t size);
+	void BindUniformDataPerView(void* data, uint64_t size);
+
+	void SetShader(Shader* shader);
+
+	void DrawBuffer(Buffer* vertexBuffer, Buffer* indexBuffer, uint32_t indexCount, VertexDescription& vertexDescription);
 
 private:
 
@@ -110,14 +118,21 @@ private:
 	const uint32_t m_StagingBufferSize = 10 * 1024 * 1024;
 	VKBuffer* m_StagingBuffer;
 
-	// GC
-	VKGarbageCollector* m_VKGarbageCollector;
-
-	// uniform buffer
-	std::list<VKBuffer*> m_UniformBufferContainer;
-
 	// Descriptor
 	VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
+
+	// ‘§∂®“ÂDescriptorSetLayout
+	VkDescriptorSetLayout m_DescriptorSetLayoutGlobal = VK_NULL_HANDLE;
+	VkDescriptorSetLayout m_DescriptorSetLayoutPerView = VK_NULL_HANDLE;
+	VKDescriptorSet* m_PendingDescriptorSetGlobal = nullptr;
+	VKDescriptorSet* m_PendingDescriptorSetPerView = nullptr;
+
+	// Pipeline
+	VkPipelineLayout m_PendingPipelineLayout = VK_NULL_HANDLE;
+	PipelineCI* m_PendingPipelineCI = nullptr;
+
+	// GC
+	VKGarbageCollector* m_VKGarbageCollector;
 };
 
 void CreateGfxDevice();

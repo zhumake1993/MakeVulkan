@@ -18,7 +18,10 @@ public:
 	// 成熟的做法是使用反射，这里手动设置
 	// 假设数据是紧密pack的（满足对齐要求），这样方便处理
 	void CreateGpuProgram(GpuParameters& parameters);
-	GpuProgram& GetGpuProgram();
+	GpuProgram* GetGpuProgram();
+
+	void SetRenderStatus(RenderStatus& renderStatus);
+	RenderStatus& GetRenderStatus();
 
 	//void SetUniformBufferDesc(UniformBufferDesc& desc);
 	//UniformBufferDesc& GetUniformBufferDesc();
@@ -47,7 +50,12 @@ private:
 
 	std::string m_Name;
 
+	std::vector<char> m_VertCode;
+	std::vector<char> m_FragCode;
+
 	GpuProgram* m_GpuProgram;
+
+	RenderStatus m_RenderStatus;
 
 	//UniformBufferDesc m_UniformBufferDesc;
 

@@ -8,6 +8,32 @@
 
 Example::Example()
 {
+	m_DummyShader = new Shader("DummyShader");
+
+	GpuParameters parameters;
+
+	// set0存放自定义的uniform：PerMaterial,PerDraw
+	// set1存放自定义的texture：BaseTexture
+	// set2存放预定义的uniform：Global,PerView
+	// set3存放预定义的texture：todo
+
+	// Global
+	{
+		UniformBufferLayout layout0("Global", 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+		layout0.Add(UniformBufferElement(kUniformDataTypeFloat4, "Time"));
+		parameters.uniformBufferLayouts.push_back(layout0);
+	}
+	
+	// PerView
+	{
+		UniformBufferLayout layout1("PerView", 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixView"));
+		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixProj"));
+		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4, "EyePos"));
+		parameters.uniformBufferLayouts.push_back(layout1);
+	}
+
+	m_DummyShader->CreateGpuProgram(parameters);
 }
 
 Example::~Example()
@@ -17,6 +43,8 @@ Example::~Example()
 	for (auto p : m_ShaderContainer) { RELEASE(p); }
 	for (auto p : m_MaterialContainer) { RELEASE(p); }
 	for (auto p : m_RenderNodeContainer) { RELEASE(p); }
+
+	RELEASE(m_DummyShader);
 }
 
 Mesh * Example::CreateMesh(std::string name)

@@ -17,10 +17,10 @@ struct VKBuffer : public VKResource
 	void Flush(VkDeviceSize offset = 0, VkDeviceSize size = VK_WHOLE_SIZE);
 	void Invalidate(VkDeviceSize offset = 0, VkDeviceSize size = VK_WHOLE_SIZE);
 
-	VkBuffer m_Buffer = VK_NULL_HANDLE;
-	VkDeviceMemory m_Memory = VK_NULL_HANDLE;
-	void* m_MappedPointer = nullptr;
-	VkDevice m_Device = VK_NULL_HANDLE;
+	VkBuffer buffer = VK_NULL_HANDLE;
+	VkDeviceMemory memory = VK_NULL_HANDLE;
+	void* mappedPointer = nullptr;
+	VkDevice device = VK_NULL_HANDLE;
 };
 
 class VKGarbageCollector;

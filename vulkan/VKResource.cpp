@@ -12,7 +12,7 @@ VKResource::~VKResource()
 
 bool VKResource::InUse(uint32_t currFrameIndex)
 {
-	return currFrameIndex - m_FrameIndex < FrameResourcesCount;
+	return currFrameIndex < m_FrameIndex + FrameResourcesCount;
 }
 
 void VKResource::Use(uint32_t currFrameIndex)

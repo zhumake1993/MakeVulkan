@@ -27,7 +27,7 @@ void Material::SetShader(Shader * shader)
 	RELEASE(m_UniformBufferData);
 	m_UniformBufferData = nullptr;
 
-	uint32_t perMaterialBufferSize = m_Shader->GetGpuProgram().GetUniformBufferSize("PerMaterial");
+	uint32_t perMaterialBufferSize = m_Shader->GetGpuProgram()->GetUniformBufferSize("PerMaterial");
 	if (perMaterialBufferSize > 0)
 	{
 		m_UniformBufferData = new char[perMaterialBufferSize];
@@ -125,7 +125,7 @@ void Material::SetTextures(std::string name, Texture * texture)
 
 uint32_t Material::GetUniformBufferDataOffset(std::string name, UniformDataType type)
 {
-	for (auto& layout : m_Shader->GetGpuProgram().GetGpuParameters().uniformBufferLayouts)
+	for (auto& layout : m_Shader->GetGpuProgram()->GetGpuParameters().uniformBufferLayouts)
 	{
 		if (layout.name == "PerMaterial")
 		{

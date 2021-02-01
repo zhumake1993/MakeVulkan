@@ -128,3 +128,15 @@ struct GpuParameters
 {
 	std::vector<UniformBufferLayout> uniformBufferLayouts;
 };
+
+struct RenderStatus
+{
+	std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT , VK_DYNAMIC_STATE_SCISSOR };
+};
+
+enum VKShaderType
+{
+	kVKShaderTypeVertex,
+	kVKShaderTypeFragment,
+	kVKShaderTypeCount
+};

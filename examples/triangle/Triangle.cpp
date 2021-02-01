@@ -71,8 +71,6 @@ void Triangle::Init()
 	m_Camera->SetSpeed(0.001f, 0.005f);
 #endif
 
-	m_UniformPerViewBuffer = device.CreateBuffer(kBufferTypeUniform, sizeof(UniformPerView));
-
 	PrepareResources();
 }
 
@@ -86,13 +84,16 @@ void Triangle::Update()
 
 	//auto deltaTime = GetTimeMgr().GetDeltaTime();
 
+	m_UniformDataGlobal.time = glm::vec4(0, 0, 0, 0);
+	device.BindUniformDataGlobal(&m_UniformDataGlobal, sizeof(UniformDataGlobal));
+
 	//m_Camera->Update(deltaTime);
 
-	m_UniformPerView.view = m_Camera->GetView();
-	m_UniformPerView.proj = m_Camera->GetProj();
-	//m_GlobalUniform.eyePos = glm::vec4(m_Camera->GetPosition(), 1.0f);
+	m_UniformDataPerView.view = m_Camera->GetView();
+	m_UniformDataPerView.proj = m_Camera->GetProj();
+	m_UniformDataPerView.eyePos = glm::vec4(m_Camera->GetPosition(), 1.0f);
 
-	device.UpdateBuffer(m_UniformPerViewBuffer, &m_UniformPerView, sizeof(UniformPerView));
+	device.BindUniformDataPerView(&m_UniformDataPerView, sizeof(UniformDataPerView));
 
 	Draw();
 }
@@ -183,21 +184,16 @@ void Triangle::PrepareResources()
 
 		GpuParameters parameters;
 
-		//UniformBufferLayout layout0("Global", 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-		//layout0.Add(UniformBufferElement(kUniformDataTypeFloat4, "Time"));
-
-		UniformBufferLayout layout1("PerView", 1, VK_SHADER_STAGE_VERTEX_BIT);
-		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixView"));
-		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixProj"));
-
 		UniformBufferLayout layout2("PerDraw", 2, VK_SHADER_STAGE_VERTEX_BIT);
 		layout2.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "ObjectToWorld"));
 
-		//parameters.uniformBufferLayouts.push_back(layout0);
-		parameters.uniformBufferLayouts.push_back(layout1);
 		parameters.uniformBufferLayouts.push_back(layout2);
 
 		m_ColorShader->CreateGpuProgram(parameters);
+
+		RenderStatus renderStatus;
+
+		m_ColorShader->SetRenderStatus(renderStatus);
 	}
 	{
 		m_LitShader = CreateShader("LitShader");
@@ -205,27 +201,17 @@ void Triangle::PrepareResources()
 
 		GpuParameters parameters;
 
-		UniformBufferLayout layout0("Global", 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-		layout0.Add(UniformBufferElement(kUniformDataTypeFloat4, "Time"));
+		/*UniformBufferLayout layout0("PerMaterial", 2, VK_SHADER_STAGE_FRAGMENT_BIT);
+		layout0.Add(UniformBufferElement(kUniformDataTypeFloat4, "DiffuseAlbedo"));
+		layout0.Add(UniformBufferElement(kUniformDataTypeFloat3, "FresnelR0"));
+		layout0.Add(UniformBufferElement(kUniformDataTypeFloat1, "Roughness"));
+		layout0.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatTransform"));
 
-		UniformBufferLayout layout1("PerView", 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixView"));
-		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixProj"));
-		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4, "EyePos"));
-
-		UniformBufferLayout layout2("PerMaterial", 2, VK_SHADER_STAGE_FRAGMENT_BIT);
-		layout2.Add(UniformBufferElement(kUniformDataTypeFloat4, "DiffuseAlbedo"));
-		layout2.Add(UniformBufferElement(kUniformDataTypeFloat3, "FresnelR0"));
-		layout2.Add(UniformBufferElement(kUniformDataTypeFloat1, "Roughness"));
-		layout2.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatTransform"));
-
-		UniformBufferLayout layout3("PerDraw", 3, VK_SHADER_STAGE_VERTEX_BIT);
-		layout3.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "ObjectToWorld"));
+		UniformBufferLayout layout1("PerDraw", 3, VK_SHADER_STAGE_VERTEX_BIT);
+		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "ObjectToWorld"));
 
 		parameters.uniformBufferLayouts.push_back(layout0);
-		parameters.uniformBufferLayouts.push_back(layout1);
-		parameters.uniformBufferLayouts.push_back(layout2);
-		parameters.uniformBufferLayouts.push_back(layout3);
+		parameters.uniformBufferLayouts.push_back(layout1);*/
 
 		m_LitShader->CreateGpuProgram(parameters);
 

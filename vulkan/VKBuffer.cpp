@@ -5,7 +5,7 @@
 
 VKBuffer::VKBuffer(uint32_t currFrameIndex, VkDevice vkDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty) :
 	VKResource(currFrameIndex),
-	m_Device(vkDevice)
+	device(vkDevice)
 {
 	// Buffer
 
@@ -19,59 +19,59 @@ VKBuffer::VKBuffer(uint32_t currFrameIndex, VkDevice vkDevice, VkDeviceSize size
 	vertexBufferInfo.queueFamilyIndexCount = 0;
 	vertexBufferInfo.pQueueFamilyIndices = nullptr;
 
-	VK_CHECK_RESULT(vkCreateBuffer(m_Device, &vertexBufferInfo, nullptr, &m_Buffer));
+	VK_CHECK_RESULT(vkCreateBuffer(device, &vertexBufferInfo, nullptr, &buffer));
 
 	// Memory
 
 	auto& dp = GetDeviceProperties();
 
 	VkMemoryRequirements memReqs;
-	vkGetBufferMemoryRequirements(m_Device, m_Buffer, &memReqs);
+	vkGetBufferMemoryRequirements(device, buffer, &memReqs);
 
 	VkMemoryAllocateInfo memoryAllocateInfo = {};
 	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	memoryAllocateInfo.pNext = nullptr;
 	memoryAllocateInfo.allocationSize = memReqs.size;
 	memoryAllocateInfo.memoryTypeIndex = dp.GetMemoryTypeIndex(memReqs.memoryTypeBits, memoryProperty);
-	VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memoryAllocateInfo, nullptr, &m_Memory));
+	VK_CHECK_RESULT(vkAllocateMemory(device, &memoryAllocateInfo, nullptr, &memory));
 
 	// Bind
 
-	VK_CHECK_RESULT(vkBindBufferMemory(m_Device, m_Buffer, m_Memory, 0));
+	VK_CHECK_RESULT(vkBindBufferMemory(device, buffer, memory, 0));
 }
 
 VKBuffer::~VKBuffer()
 {
-	if (m_Device != VK_NULL_HANDLE)
+	if (device != VK_NULL_HANDLE)
 	{
-		if (m_Buffer != VK_NULL_HANDLE)
+		if (buffer != VK_NULL_HANDLE)
 		{
-			vkDestroyBuffer(m_Device, m_Buffer, nullptr);
-			m_Buffer = VK_NULL_HANDLE;
+			vkDestroyBuffer(device, buffer, nullptr);
+			buffer = VK_NULL_HANDLE;
 		}
-		if (m_Memory != VK_NULL_HANDLE)
+		if (memory != VK_NULL_HANDLE)
 		{
-			vkFreeMemory(m_Device, m_Memory, nullptr);
-			m_Memory = VK_NULL_HANDLE;
+			vkFreeMemory(device, memory, nullptr);
+			memory = VK_NULL_HANDLE;
 		}
 	}
 }
 
 void VKBuffer::Map(VkDeviceSize offset, VkDeviceSize size)
 {
-	assert(m_MappedPointer == nullptr);
-	VK_CHECK_RESULT(vkMapMemory(m_Device, m_Memory, offset, size, 0, &m_MappedPointer));
+	assert(mappedPointer == nullptr);
+	VK_CHECK_RESULT(vkMapMemory(device, memory, offset, size, 0, &mappedPointer));
 }
 
 void VKBuffer::Unmap()
 {
-	vkUnmapMemory(m_Device, m_Memory);
+	vkUnmapMemory(device, memory);
 }
 
 void VKBuffer::Update(void * data, VkDeviceSize offset, VkDeviceSize size)
 {
-	assert(m_MappedPointer);
-	memcpy(static_cast<char*>(m_MappedPointer) + offset, data, size);
+	assert(mappedPointer);
+	memcpy(static_cast<char*>(mappedPointer) + offset, data, size);
 }
 
 void VKBuffer::Flush(VkDeviceSize offset, VkDeviceSize size)
@@ -80,11 +80,11 @@ void VKBuffer::Flush(VkDeviceSize offset, VkDeviceSize size)
 	VkMappedMemoryRange flushRange = {};
 	flushRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
 	flushRange.pNext = nullptr;
-	flushRange.memory = m_Memory;
+	flushRange.memory = memory;
 	flushRange.offset = offset;
 	flushRange.size = size;
 
-	vkFlushMappedMemoryRanges(m_Device, 1, &flushRange);
+	vkFlushMappedMemoryRanges(device, 1, &flushRange);
 }
 
 void VKBuffer::Invalidate(VkDeviceSize offset, VkDeviceSize size)
@@ -93,11 +93,11 @@ void VKBuffer::Invalidate(VkDeviceSize offset, VkDeviceSize size)
 	VkMappedMemoryRange mappedRange = {};
 	mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
 	mappedRange.pNext = nullptr;
-	mappedRange.memory = m_Memory;
+	mappedRange.memory = memory;
 	mappedRange.offset = offset;
 	mappedRange.size = size;
 
-	vkInvalidateMappedMemoryRanges(m_Device, 1, &mappedRange);
+	vkInvalidateMappedMemoryRanges(device, 1, &mappedRange);
 }
 
 VKBufferResource::VKBufferResource(BufferType bufferType, VKGarbageCollector* gc, uint32_t currFrameIndex, VkDevice vkDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty) :
@@ -122,7 +122,7 @@ void VKBufferResource::Update(uint32_t currFrameIndex, void * data, VkDeviceSize
 	{
 		m_VKGarbageCollector->AddBuffers(m_Buffer);
 
-		m_Buffer = new VKBuffer(currFrameIndex, m_Buffer->m_Device, m_Size, m_Usage, m_MemoryProperty);
+		m_Buffer = new VKBuffer(currFrameIndex, m_Buffer->device, m_Size, m_Usage, m_MemoryProperty);
 
 		m_Buffer->Map();
 		m_Buffer->Update(data, offset, size);

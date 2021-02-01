@@ -10,29 +10,43 @@ Shader::Shader(std::string name) :
 
 Shader::~Shader()
 {
-	//RELEASE(m_ShaderModuleVert);
-	//RELEASE(m_ShaderModuleFrag);
+	m_VertCode.clear();
+	m_FragCode.clear();
 	RELEASE(m_GpuProgram);
 }
 
 void Shader::LoadSPV(const std::string & vertFilename, const std::string & fragFilename)
 {
-	auto& device = GetGfxDevice();
-
-	//VKShaderModule* m_ShaderModuleVert = device.CreateVKShaderModule(vertFilename);
-	//VKShaderModule* m_ShaderModuleFrag = device.CreateVKShaderModule(fragFilename);
+	m_VertCode = GetBinaryFileContents(vertFilename);
+	assert(m_VertCode.size() > 0);
+	
+	m_FragCode = GetBinaryFileContents(fragFilename);
+	assert(m_FragCode.size() > 0);
 }
 
 void Shader::CreateGpuProgram(GpuParameters & parameters)
 {
 	auto& device = GetGfxDevice();
 
-	m_GpuProgram = device.CreateGpuProgram(parameters);
+	m_GpuProgram = device.CreateGpuProgram(parameters, m_VertCode, m_FragCode);
+
+	m_VertCode.clear();
+	m_FragCode.clear();
 }
 
-GpuProgram & Shader::GetGpuProgram()
+GpuProgram * Shader::GetGpuProgram()
 {
-	return *m_GpuProgram;
+	return m_GpuProgram;
+}
+
+void Shader::SetRenderStatus(RenderStatus & renderStatus)
+{
+	m_RenderStatus = renderStatus;
+}
+
+RenderStatus & Shader::GetRenderStatus()
+{
+	return m_RenderStatus;
 }
 
 //void Shader::SetUniformBufferDesc(UniformBufferDesc & desc)

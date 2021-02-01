@@ -17,8 +17,13 @@
 
 #include "VKImage.h"
 #include "VKBuffer.h"
+#include "VKPipeline.h"
+
+#include "VKDescriptorSet.h"
 
 #include "VKGpuProgram.h"
+
+#include "Shader.h"
 
 GfxDevice* gfxDevice;
 
@@ -100,13 +105,55 @@ GfxDevice::GfxDevice()
 
 	VK_CHECK_RESULT(vkCreateDescriptorPool(m_VKDevice->device, &descriptorPoolCreateInfo, nullptr, &m_DescriptorPool));
 
+	// Global DescriptorSetLayout
+	{
+		VkDescriptorSetLayoutBinding binding;
+		binding.binding = 0; // 0 for Global
+		binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		binding.descriptorCount = 1;
+		binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+		binding.pImmutableSamplers = nullptr;
+
+		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
+		descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		descriptorSetLayoutCreateInfo.pNext = nullptr;
+		descriptorSetLayoutCreateInfo.flags = 0;
+		descriptorSetLayoutCreateInfo.bindingCount = 1;
+		descriptorSetLayoutCreateInfo.pBindings = &binding;
+
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_VKDevice->device, &descriptorSetLayoutCreateInfo, nullptr, &m_DescriptorSetLayoutGlobal));
+	}
+
+	// PerView DescriptorSetLayout
+	{
+		VkDescriptorSetLayoutBinding binding;
+		binding.binding = 1; // 1 for PerView
+		binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		binding.descriptorCount = 1;
+		binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+		binding.pImmutableSamplers = nullptr;
+
+		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
+		descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		descriptorSetLayoutCreateInfo.pNext = nullptr;
+		descriptorSetLayoutCreateInfo.flags = 0;
+		descriptorSetLayoutCreateInfo.bindingCount = 1;
+		descriptorSetLayoutCreateInfo.pBindings = &binding;
+
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_VKDevice->device, &descriptorSetLayoutCreateInfo, nullptr, &m_DescriptorSetLayoutPerView));
+	}
+
 	// GC
-	m_VKGarbageCollector = new VKGarbageCollector();
+	m_VKGarbageCollector = new VKGarbageCollector(m_VKDevice->device, m_DescriptorPool);
+
+	//
+	m_PendingPipelineCI = new PipelineCI();
 }
 
 GfxDevice::~GfxDevice()
 {
-	//CleanUnusedUniformBuffer();
+	vkDestroyDescriptorSetLayout(m_VKDevice->device, m_DescriptorSetLayoutGlobal, nullptr);
+	vkDestroyDescriptorSetLayout(m_VKDevice->device, m_DescriptorSetLayoutPerView, nullptr);
 
 	RELEASE(m_VKGarbageCollector);
 
@@ -441,9 +488,169 @@ void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size)
 	}
 }
 
-GpuProgram * GfxDevice::CreateGpuProgram(GpuParameters& parameters)
+GpuProgram * GfxDevice::CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode)
 {
-	return new VKGpuProgram(m_VKDevice->device, parameters);
+	return new VKGpuProgram(m_VKDevice->device, parameters, vertCode, fragCode);
+}
+
+void GfxDevice::BindUniformDataGlobal(void * data, uint64_t size)
+{
+	// Create Buffer
+
+	VKBuffer* buffer = new VKBuffer(m_CurrFrameIndex, m_VKDevice->device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	m_VKGarbageCollector->AddBuffer(buffer);
+
+	buffer->Map();
+	buffer->Update(data, 0, size);
+
+	// Create DescriptorSet
+
+	VKDescriptorSet* descriptorSet = new VKDescriptorSet(m_CurrFrameIndex);
+	m_VKGarbageCollector->AddDescriptorSet(descriptorSet);
+
+	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
+	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	descriptorSetAllocateInfo.pNext = nullptr;
+	descriptorSetAllocateInfo.descriptorPool = m_DescriptorPool;
+	descriptorSetAllocateInfo.descriptorSetCount = 1;
+	descriptorSetAllocateInfo.pSetLayouts = &m_DescriptorSetLayoutGlobal;
+
+	VK_CHECK_RESULT(vkAllocateDescriptorSets(m_VKDevice->device, &descriptorSetAllocateInfo, &descriptorSet->descriptorSet));
+
+	// Update DescriptorSet
+
+	DescriptorInfo descriptorInfo;
+	descriptorInfo.buffer.buffer = buffer->buffer;
+	descriptorInfo.buffer.offset = 0;
+	descriptorInfo.buffer.range = size;
+
+	VkWriteDescriptorSet writeDescriptorSet = {};
+	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSet.pNext = nullptr;
+	writeDescriptorSet.dstSet = descriptorSet->descriptorSet;
+	writeDescriptorSet.dstBinding = 0; // 0 for Global
+	writeDescriptorSet.dstArrayElement = 0;
+	writeDescriptorSet.descriptorCount = 1;
+	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	writeDescriptorSet.pBufferInfo = &descriptorInfo.buffer;
+
+	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
+
+	// vkCmdBindDescriptorSets还需要PipelineLayout，因此需要先记录下来，延时绑定
+	m_PendingDescriptorSetGlobal = descriptorSet;
+}
+
+void GfxDevice::BindUniformDataPerView(void * data, uint64_t size)
+{
+	// Create Buffer
+
+	VKBuffer* buffer = new VKBuffer(m_CurrFrameIndex, m_VKDevice->device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	m_VKGarbageCollector->AddBuffer(buffer);
+
+	buffer->Map();
+	buffer->Update(data, 0, size);
+
+	// Create DescriptorSet
+
+	VKDescriptorSet* descriptorSet = new VKDescriptorSet(m_CurrFrameIndex);
+	m_VKGarbageCollector->AddDescriptorSet(descriptorSet);
+
+	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
+	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	descriptorSetAllocateInfo.pNext = nullptr;
+	descriptorSetAllocateInfo.descriptorPool = m_DescriptorPool;
+	descriptorSetAllocateInfo.descriptorSetCount = 1;
+	descriptorSetAllocateInfo.pSetLayouts = &m_DescriptorSetLayoutPerView;
+
+	VK_CHECK_RESULT(vkAllocateDescriptorSets(m_VKDevice->device, &descriptorSetAllocateInfo, &descriptorSet->descriptorSet));
+
+	// Update DescriptorSet
+
+	DescriptorInfo descriptorInfo;
+	descriptorInfo.buffer.buffer = buffer->buffer;
+	descriptorInfo.buffer.offset = 0;
+	descriptorInfo.buffer.range = size;
+
+	VkWriteDescriptorSet writeDescriptorSet = {};
+	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSet.pNext = nullptr;
+	writeDescriptorSet.dstSet = descriptorSet->descriptorSet;
+	writeDescriptorSet.dstBinding = 1; // 1 for PerView
+	writeDescriptorSet.dstArrayElement = 0;
+	writeDescriptorSet.descriptorCount = 1;
+	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	writeDescriptorSet.pBufferInfo = &descriptorInfo.buffer;
+
+	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
+
+	// vkCmdBindDescriptorSets还需要PipelineLayout，因此需要先记录下来，延时绑定
+	m_PendingDescriptorSetPerView = descriptorSet;
+}
+
+void GfxDevice::SetShader(Shader * shader)
+{
+	VKGpuProgram* gpuProgram = static_cast<VKGpuProgram*>(shader->GetGpuProgram());
+
+	// PipelineLayout
+
+	std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+	descriptorSetLayouts.push_back(m_DescriptorSetLayoutGlobal);
+	descriptorSetLayouts.push_back(m_DescriptorSetLayoutPerView);
+	descriptorSetLayouts.push_back(gpuProgram->GetDescriptorSetLayoutPerMaterial());
+	descriptorSetLayouts.push_back(gpuProgram->GetDescriptorSetLayoutPerDraw());
+
+	// todo: check maxPushConstantsSize
+	//VkPushConstantRange pushConstantRange = {};
+
+	VkPipelineLayoutCreateInfo pipelineLayoutCI = {};
+	pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutCI.pNext = nullptr;
+	pipelineLayoutCI.flags = 0;
+	pipelineLayoutCI.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+	pipelineLayoutCI.pSetLayouts = descriptorSetLayouts.data();
+	pipelineLayoutCI.pushConstantRangeCount = 0;
+	pipelineLayoutCI.pPushConstantRanges = nullptr;
+	/*if (pcSize > 0)
+	{
+		pushConstantRange.stageFlags = pcStage;
+		pushConstantRange.offset = 0;
+		pushConstantRange.size = pcSize;
+
+		pipelineLayoutCI.pushConstantRangeCount = 1;
+		pipelineLayoutCI.pPushConstantRanges = &pushConstantRange;
+	}
+	else
+	{
+		pipelineLayoutCI.pushConstantRangeCount = 0;
+		pipelineLayoutCI.pPushConstantRanges = nullptr;
+	}*/
+
+	VK_CHECK_RESULT(vkCreatePipelineLayout(m_VKDevice->device, &pipelineLayoutCI, nullptr, &m_PendingPipelineLayout));
+
+	// 有了PipelineLayout，就可以BindDescriptorSet了
+
+	m_FrameResources[m_CurrFrameIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PendingPipelineLayout, 0, m_PendingDescriptorSetGlobal->descriptorSet);
+
+	m_FrameResources[m_CurrFrameIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PendingPipelineLayout, 0, m_PendingDescriptorSetPerView->descriptorSet);
+
+	// 先创建PipelineCI
+	m_PendingPipelineCI->Reset(m_PendingPipelineLayout, m_VKRenderPass->renderPass, shader->GetRenderStatus(), gpuProgram->GetVertShaderModule(), gpuProgram->GetFragShaderModule());
+}
+
+void GfxDevice::DrawBuffer(Buffer * vertexBuffer, Buffer * indexBuffer, uint32_t indexCount, VertexDescription & vertexDescription)
+{
+	VKPipeline* pipeline = new VKPipeline(m_CurrFrameIndex, m_VKDevice->device, *m_PendingPipelineCI, vertexDescription);
+
+	//todo
+	//m_VKGarbageCollector->AddPipeline(pipeline);
+
+	m_FrameResources[m_CurrFrameIndex].commandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
+
+	//cb->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline->pipelineLayout, 1, m_CurrDescriptorSetObjectDUB, renderNode->GetDUBIndex() * m_ObjectUBAlignment);
+
+	m_FrameResources[m_CurrFrameIndex].commandBuffer->BindVertexBuffer(0, static_cast<VKBufferResource*>(vertexBuffer)->GetVKBuffer());
+	m_FrameResources[m_CurrFrameIndex].commandBuffer->BindIndexBuffer(static_cast<VKBufferResource*>(indexBuffer)->GetVKBuffer(), VK_INDEX_TYPE_UINT32);
+	m_FrameResources[m_CurrFrameIndex].commandBuffer->DrawIndexed(indexCount, 1, 0, 0, 1);
 }
 
 VkFormat GfxDevice::GetSupportedDepthFormat()

@@ -72,7 +72,7 @@ void VKCommandBuffer::SetScissor(VkRect2D & area)
 
 void VKCommandBuffer::CopyBuffer(VKBuffer * src, VKBuffer * dst, VkBufferCopy & region)
 {
-	vkCmdCopyBuffer(commandBuffer, src->GetVkBuffer(), dst->GetVkBuffer(), 1, &region);
+	vkCmdCopyBuffer(commandBuffer, src->buffer, dst->buffer, 1, &region);
 }
 
 void VKCommandBuffer::CopyBufferToImage(VKBuffer * src, VKImage * dst)
@@ -85,7 +85,7 @@ void VKCommandBuffer::CopyBufferToImage(VKBuffer * src, VKImage * dst)
 	bufferImageCopyInfo.imageOffset = { 0,0,0 };
 	bufferImageCopyInfo.imageExtent = { dst->GetWidth(),dst->GetHeight(),1 };
 
-	vkCmdCopyBufferToImage(commandBuffer, src->GetVkBuffer(), dst->m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
+	vkCmdCopyBufferToImage(commandBuffer, src->buffer, dst->m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
 }
 
 void VKCommandBuffer::ImageMemoryBarrier(VKImage * image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL)
@@ -112,42 +112,42 @@ void VKCommandBuffer::ImageMemoryBarrier(VKImage * image, VkPipelineStageFlags s
 	vkCmdPipelineBarrier(commandBuffer, srcPSF, dstPSF, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 }
 
+void VKCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set, uint32_t offset)
+{
+	// Each element of pDynamicOffsets which corresponds to a descriptor binding with type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
+	// must be a multiple of VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment
+	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, index, 1, &set, offset == -1 ? 0 : 1, &offset);
+}
+
+void VKCommandBuffer::BindPipeline(VkPipelineBindPoint bindPoint, VkPipeline vkPipeline)
+{
+	vkCmdBindPipeline(commandBuffer, bindPoint, vkPipeline);
+}
+
+void VKCommandBuffer::BindVertexBuffer(uint32_t bind, VKBuffer * vkBuffer)
+{
+	VkDeviceSize offset = 0;
+	vkCmdBindVertexBuffers(commandBuffer, bind, 1, &vkBuffer->buffer, &offset);
+}
+
+void VKCommandBuffer::BindIndexBuffer(VKBuffer * vkBuffer, VkIndexType indexType)
+{
+	vkCmdBindIndexBuffer(commandBuffer, vkBuffer->buffer, 0, indexType);
+}
+
+void VKCommandBuffer::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
+{
+	vkCmdDrawIndexed(commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+}
 
 
-
-
-//void VKCommandBuffer::BindPipeline(VkPipelineBindPoint bindPoint, VKPipeline * vkPipeline)
-//{
-//	vkCmdBindPipeline(commandBuffer, bindPoint, vkPipeline->pipeline);
-//}
-//
-//void VKCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set, uint32_t offset)
-//{
-//	// Each element of pDynamicOffsets which corresponds to a descriptor binding with type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
-//	// must be a multiple of VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment
-//	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, index, 1, &set, offset == -1 ? 0 : 1, &offset);
-//}
 //
 //void VKCommandBuffer::PushConstants(VkPipelineLayout pipelineLayout, VkShaderStageFlags pcStage, uint32_t offset, uint32_t size, void * data)
 //{
 //	vkCmdPushConstants(commandBuffer, pipelineLayout, pcStage, offset, size, data);
 //}
 //
-//void VKCommandBuffer::BindVertexBuffer(uint32_t bind, VKBuffer * vkBuffer)
-//{
-//	VkDeviceSize offset = 0;
-//	vkCmdBindVertexBuffers(commandBuffer, bind, 1, &vkBuffer->buffer, &offset);
-//}
-//
-//void VKCommandBuffer::BindIndexBuffer(VKBuffer * vkBuffer, VkIndexType indexType)
-//{
-//	vkCmdBindIndexBuffer(commandBuffer, vkBuffer->buffer, 0, indexType);
-//}
-//
-//void VKCommandBuffer::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
-//{
-//	vkCmdDrawIndexed(commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
-//}
+
 //
 //void VKCommandBuffer::WriteTimeStamp(std::string name)
 //{

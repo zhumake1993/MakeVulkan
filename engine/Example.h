@@ -11,6 +11,18 @@ class RenderNode;
 class Camera;
 class Buffer;
 
+struct UniformDataGlobal
+{
+	alignas(16) glm::vec4 time;
+};
+
+struct UniformDataPerView
+{
+	alignas(16) glm::mat4 view;
+	alignas(16) glm::mat4 proj;
+	alignas(16) glm::vec4 eyePos;
+};
+
 class Example : public NonCopyable
 {
 public:
@@ -33,9 +45,16 @@ protected:
 
 protected:
 
+	UniformDataGlobal m_UniformDataGlobal;
+	UniformDataPerView m_UniformDataPerView;
+
+private:
+
 	std::vector<Mesh*> m_MeshContainer;
 	std::vector<Texture*> m_TextureContainer;
 	std::vector<Shader*> m_ShaderContainer;
 	std::vector<Material*> m_MaterialContainer;
 	std::vector<RenderNode*> m_RenderNodeContainer;
+
+	Shader* m_DummyShader;
 };
