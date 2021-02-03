@@ -24,6 +24,10 @@ public:
 
 	void UploadToGPU();
 
+	Buffer* GetVertexBuffer();
+	Buffer* GetIndexBuffer();
+	uint32_t GetIndexCount();
+
 private:
 
 	bool HasVertexChannel(VertexChannel channel);

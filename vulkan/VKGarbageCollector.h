@@ -3,26 +3,26 @@
 #include "Env.h"
 #include "NonCopyable.h"
 
-class VKBuffer;
-class VKDescriptorSet;
+struct VKBuffer;
+//struct VKDescriptorSet;
 
 class VKGarbageCollector : public NonCopyable
 {
 public:
 
-	VKGarbageCollector(VkDevice vkDevice, VkDescriptorPool pool);
+	VKGarbageCollector(VkDevice vkDevice);
 	~VKGarbageCollector();
 
 	void Update(uint32_t currFrameIndex);
 
 	void AddBuffer(VKBuffer* buffer);
-	void AddDescriptorSet(VKDescriptorSet* descriptorSet);
+	//void AddDescriptorSet(VKDescriptorSet* descriptorSet);
 
 private:
 
 	std::list<VKBuffer*> m_PendingBuffers;
-	std::list<VKDescriptorSet*> m_PendingDescriptorSets;
+	//std::list<VKDescriptorSet*> m_PendingDescriptorSets;
 
 	VkDevice m_Device = VK_NULL_HANDLE;
-	VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
+	//VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
 };

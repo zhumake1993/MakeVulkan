@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Env.h"
+#include "Log.h"
 
 #define RELEASE(pointer)		\
 {								\
@@ -9,6 +10,13 @@
 		pointer = nullptr;		\
 	}							\
 }
+
+#define ASSERT(x,...)			\
+{								\
+	if(!(x)) LOG(__VA_ARGS__);	\
+	assert(x);					\
+}
+
 
 #define EXIT assert(false)
 

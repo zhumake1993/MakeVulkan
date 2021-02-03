@@ -16,12 +16,15 @@ struct VKCommandBuffer;
 struct VKRenderPass;
 class VKImage;
 struct VKBuffer;
-struct VKDescriptorSet;
+class DescriptorSetManager;
+class PipelineManager;
+
 struct PipelineCI;
 
 class Buffer;
 class Image;
 class Shader;
+class GpuProgram;
 
 class GfxDevice : public NonCopyable
 {
@@ -73,12 +76,13 @@ public:
 
 	GpuProgram* CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode);
 
-	//void CreateVKShaderModule()
-
-	void BindUniformDataGlobal(void* data, uint64_t size);
-	void BindUniformDataPerView(void* data, uint64_t size);
+	void BindUniformGlobal(void* data, uint64_t size);
+	void BindUniformPerView(void* data, uint64_t size);
 
 	void SetShader(Shader* shader);
+
+	void BindUniformPerMaterial(Shader* shader, void* data, uint64_t size);
+	void BindUniformPerDraw(Shader* shader, void* data, uint64_t size);
 
 	void DrawBuffer(Buffer* vertexBuffer, Buffer* indexBuffer, uint32_t indexCount, VertexDescription& vertexDescription);
 
@@ -106,7 +110,8 @@ private:
 	VkFormat m_DepthFormat;
 	VKImage* m_DepthImage;
 
-	uint32_t m_CurrFrameIndex = 0;
+	uint32_t m_FrameIndex = 0;
+	uint32_t m_FrameResourceIndex = 0;
 	std::vector<FrameResource> m_FrameResources;
 
 	// SwapChain中的image数量可能并不等于FrameResourcesCount，所以要单独处理Framebuffer
@@ -118,18 +123,13 @@ private:
 	const uint32_t m_StagingBufferSize = 10 * 1024 * 1024;
 	VKBuffer* m_StagingBuffer;
 
-	// Descriptor
-	VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
+	// 资源管理器
 
-	// 预定义DescriptorSetLayout
-	VkDescriptorSetLayout m_DescriptorSetLayoutGlobal = VK_NULL_HANDLE;
-	VkDescriptorSetLayout m_DescriptorSetLayoutPerView = VK_NULL_HANDLE;
-	VKDescriptorSet* m_PendingDescriptorSetGlobal = nullptr;
-	VKDescriptorSet* m_PendingDescriptorSetPerView = nullptr;
+	// 管理DescriptorPool, DescriptorSetLayout, DescriptorSet
+	DescriptorSetManager* m_DescriptorSetManager = nullptr;
 
-	// Pipeline
-	VkPipelineLayout m_PendingPipelineLayout = VK_NULL_HANDLE;
-	PipelineCI* m_PendingPipelineCI = nullptr;
+	// 管理PipelineLayout，Pipeline
+	PipelineManager* m_PipelineManager = nullptr;
 
 	// GC
 	VKGarbageCollector* m_VKGarbageCollector;

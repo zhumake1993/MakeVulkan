@@ -13,16 +13,18 @@ public:
 	VkShaderModule GetVertShaderModule();
 	VkShaderModule GetFragShaderModule();
 
-	VkDescriptorSetLayout GetDescriptorSetLayoutPerMaterial();
-	VkDescriptorSetLayout GetDescriptorSetLayoutPerDraw();
+	VkDescriptorSetLayout& GetDSLPerMaterial();
+	VkDescriptorSetLayout& GetDSLPerDraw();
+
+	
 
 private:
 
 	VkShaderModule m_VertShaderModule = VK_NULL_HANDLE;
 	VkShaderModule m_FragShaderModule = VK_NULL_HANDLE;
 
-	VkDescriptorSetLayout m_DescriptorSetLayoutPerMaterial = VK_NULL_HANDLE;
-	VkDescriptorSetLayout m_DescriptorSetLayoutPerDraw = VK_NULL_HANDLE;
+	VkDescriptorSetLayout m_DSLPerMaterial = VK_NULL_HANDLE;
+	VkDescriptorSetLayout m_DSLPerDraw = VK_NULL_HANDLE;
 
 	VkDevice m_Device = VK_NULL_HANDLE;
 };

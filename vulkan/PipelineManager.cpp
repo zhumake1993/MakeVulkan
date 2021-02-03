@@ -1,8 +1,9 @@
-#include "VKPipeline.h"
+#include "PipelineManager.h"
 #include "VulkanTools.h"
 
 PipelineCI::PipelineCI()
 {
+	memset(this, 0, sizeof(*this));
 }
 
 PipelineCI::~PipelineCI()
@@ -164,9 +165,124 @@ void PipelineCI::Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderS
 	}
 }
 
-VKPipeline::VKPipeline(uint32_t currFrameIndex, VkDevice vkDevice, PipelineCI& pipelineCI, VertexDescription& vertexDescription) :
-	VKResource(currFrameIndex)
+PipelineManager::PipelineManager(VkDevice vkDevice) :
+	m_Device(vkDevice)
 {
+	m_PipelineCI = new PipelineCI();
+}
+
+PipelineManager::~PipelineManager()
+{
+	RELEASE(m_PipelineCI);
+
+	for (auto itr = m_PendingPipelines.begin(); itr != m_PendingPipelines.end(); itr++)
+	{
+		vkDestroyPipeline(m_Device, (*itr)->pipeline, nullptr);
+		RELEASE(*itr);
+	}
+	m_PendingPipelines.clear();
+
+	vkDestroyPipelineLayout(m_Device, m_DummyPipelineLayout, nullptr);
+	m_DummyPipelineLayout = VK_NULL_HANDLE;
+}
+
+void PipelineManager::Update()
+{
+	// 找到第一个可以被销毁的Pipeline
+	auto unused = m_PendingPipelines.begin();
+	for (; unused != m_PendingPipelines.end(); unused++)
+	{
+		if (!(*unused)->InUse(m_FrameIndex))
+		{
+			break;
+		}
+	}
+
+	for (auto itr = unused; itr != m_PendingPipelines.end(); itr++)
+	{
+		vkDestroyPipeline(m_Device, (*itr)->pipeline, nullptr);
+		RELEASE(*itr);
+	}
+
+	m_PendingPipelines.erase(unused, m_PendingPipelines.end());
+
+	// 新的Pipeline放在list前部
+	m_PendingPipelines.splice(m_PendingPipelines.begin(), m_NewPipelines);
+	m_NewPipelines.clear();
+
+	m_FrameIndex++;
+}
+
+VkPipelineLayout PipelineManager::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& layouts)
+{
+	VkPipelineLayout pipelineLayout;
+
+	// todo: check maxPushConstantsSize
+	//VkPushConstantRange pushConstantRange = {};
+
+	VkPipelineLayoutCreateInfo pipelineLayoutCI = {};
+	pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutCI.pNext = nullptr;
+	pipelineLayoutCI.flags = 0;
+	pipelineLayoutCI.setLayoutCount = static_cast<uint32_t>(layouts.size());
+	pipelineLayoutCI.pSetLayouts = layouts.data();
+	pipelineLayoutCI.pushConstantRangeCount = 0;
+	pipelineLayoutCI.pPushConstantRanges = nullptr;
+	/*if (pcSize > 0)
+	{
+		pushConstantRange.stageFlags = pcStage;
+		pushConstantRange.offset = 0;
+		pushConstantRange.size = pcSize;
+
+		pipelineLayoutCI.pushConstantRangeCount = 1;
+		pipelineLayoutCI.pPushConstantRanges = &pushConstantRange;
+	}
+	else
+	{
+		pipelineLayoutCI.pushConstantRangeCount = 0;
+		pipelineLayoutCI.pPushConstantRanges = nullptr;
+	}*/
+
+	VK_CHECK_RESULT(vkCreatePipelineLayout(m_Device, &pipelineLayoutCI, nullptr, &pipelineLayout));
+
+	return pipelineLayout;
+}
+
+void PipelineManager::SetDummyPipelineLayout(VkPipelineLayout layout)
+{
+	m_DummyPipelineLayout = layout;
+}
+
+VkPipelineLayout PipelineManager::GetDummyPipelineLayout()
+{
+	return m_DummyPipelineLayout;
+}
+
+void PipelineManager::SetPipelineCI(std::vector<VkDescriptorSetLayout>& layouts, VkRenderPass renderPass, RenderStatus & renderStatus, VkShaderModule vertexSM, VkShaderModule framentSM)
+{
+	// 先释放之前的PipelineLayout
+	if (m_PipelineCI->pipelineCreateInfo.layout != VK_NULL_HANDLE)
+	{
+		vkDestroyPipelineLayout(m_Device, m_PipelineCI->pipelineCreateInfo.layout, nullptr);
+		m_PipelineCI->pipelineCreateInfo.layout = VK_NULL_HANDLE;
+	}
+	
+	VkPipelineLayout pipelineLayout = CreatePipelineLayout(layouts);
+
+	m_PipelineCI->Reset(pipelineLayout, renderPass, renderStatus, vertexSM, framentSM);
+}
+
+VkPipelineLayout PipelineManager::GetCurrPipelineLayout()
+{
+	return m_PipelineCI->pipelineCreateInfo.layout;
+}
+
+VkPipeline PipelineManager::CreatePipeline(VertexDescription & vertexDescription)
+{
+	VKPipeline* pipeline = new VKPipeline(m_FrameIndex);
+	m_NewPipelines.push_back(pipeline);
+
+	PipelineCI& pipelineCI = *m_PipelineCI;
 	{
 		// Inpute attribute bindings describe shader attribute locations and memory layouts
 		uint32_t num = static_cast<uint32_t>(vertexDescription.formats.size());
@@ -194,12 +310,8 @@ VKPipeline::VKPipeline(uint32_t currFrameIndex, VkDevice vkDevice, PipelineCI& p
 		pipelineCI.vertexInputStateCreateInfo.vertexAttributeDescriptionCount = num;
 		pipelineCI.vertexInputStateCreateInfo.pVertexAttributeDescriptions = pipelineCI.vertexInputAttributs;
 	}
-	
-	VK_CHECK_RESULT(vkCreateGraphicsPipelines(vkDevice, VK_NULL_HANDLE, 1, &pipelineCI.pipelineCreateInfo, nullptr, &pipeline));
+
+	VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineCI.pipelineCreateInfo, nullptr, &pipeline->pipeline));
+
+	return pipeline->pipeline;
 }
-
-VKPipeline::~VKPipeline()
-{
-}
-
-

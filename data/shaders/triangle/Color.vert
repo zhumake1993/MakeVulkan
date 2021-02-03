@@ -1,11 +1,20 @@
 #version 450
 
-layout(set=0, binding=0) uniform u_PassUniformBuffer {
-    mat4 view;
-    mat4 proj;
+/////////////////////////////////////////////////////
+// Uniform
+/////////////////////////////////////////////////////
+
+layout(set=0, binding=0) uniform Global {
+    vec4 time;
 };
 
-layout(set=1, binding=0) uniform u_ObjectUniformBuffer {
+layout(set=1, binding=0) uniform PerView {
+    mat4 view;
+    mat4 proj;
+	vec4 eyePos;
+};
+
+layout(set=3, binding=0) uniform PerDraw {
     mat4 world;
 };
 

@@ -10,30 +10,33 @@ Example::Example()
 {
 	m_DummyShader = new Shader("DummyShader");
 
-	GpuParameters parameters;
+	//GpuParameters parameters;
 
-	// set0存放自定义的uniform：PerMaterial,PerDraw
-	// set1存放自定义的texture：BaseTexture
-	// set2存放预定义的uniform：Global,PerView
-	// set3存放预定义的texture：todo
+	// Place the least frequently changing descriptor sets near the start of the pipeline layout, and place the descriptor sets representing the most frequently changing resources near the end. 
+	// When pipelines are switched, only the descriptor set bindings that have been invalidated will need to be updated and the remainder of the descriptor set bindings will remain in place.
 
-	// Global
-	{
-		UniformBufferLayout layout0("Global", 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-		layout0.Add(UniformBufferElement(kUniformDataTypeFloat4, "Time"));
-		parameters.uniformBufferLayouts.push_back(layout0);
-	}
-	
-	// PerView
-	{
-		UniformBufferLayout layout1("PerView", 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixView"));
-		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixProj"));
-		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4, "EyePos"));
-		parameters.uniformBufferLayouts.push_back(layout1);
-	}
+	//// set0存放自定义的uniform：Global   
+	//// set1存放自定义的texture：PerView
+	//// set2存放预定义的uniform：PerMaterial
+	//// set3存放预定义的texture：PerDraw
 
-	m_DummyShader->CreateGpuProgram(parameters);
+	//// Global
+	//{
+	//	UniformBufferLayout layout0("Global", 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+	//	layout0.Add(UniformBufferElement(kUniformDataTypeFloat4, "Time"));
+	//	parameters.uniformBufferLayouts.push_back(layout0);
+	//}
+	//
+	//// PerView
+	//{
+	//	UniformBufferLayout layout1("PerView", 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+	//	layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixView"));
+	//	layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixProj"));
+	//	layout1.Add(UniformBufferElement(kUniformDataTypeFloat4, "EyePos"));
+	//	parameters.uniformBufferLayouts.push_back(layout1);
+	//}
+
+	//m_DummyShader->CreateGpuProgram(parameters);
 }
 
 Example::~Example()

@@ -3,7 +3,7 @@
 #include "Env.h"
 #include "NonCopyable.h"
 
-class VKBuffer;
+struct VKBuffer;
 class VKImage;
 
 struct VKCommandBuffer : public NonCopyable

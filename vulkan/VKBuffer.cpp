@@ -108,19 +108,19 @@ VKBufferResource::VKBufferResource(BufferType bufferType, VKGarbageCollector* gc
 	m_MemoryProperty(memoryProperty)
 {
 	m_Buffer = new VKBuffer(currFrameIndex, vkDevice, size, usage, memoryProperty);
-	m_Buffer->Map();
+	//m_Buffer->Map();
 }
 
 VKBufferResource::~VKBufferResource()
 {
-	m_VKGarbageCollector->AddBuffers(m_Buffer);
+	m_VKGarbageCollector->AddBuffer(m_Buffer);
 }
 
 void VKBufferResource::Update(uint32_t currFrameIndex, void * data, VkDeviceSize offset, VkDeviceSize size)
 {
 	if (m_Buffer->InUse(currFrameIndex))
 	{
-		m_VKGarbageCollector->AddBuffers(m_Buffer);
+		m_VKGarbageCollector->AddBuffer(m_Buffer);
 
 		m_Buffer = new VKBuffer(currFrameIndex, m_Buffer->device, m_Size, m_Usage, m_MemoryProperty);
 

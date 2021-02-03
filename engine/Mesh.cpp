@@ -143,6 +143,21 @@ void Mesh::UploadToGPU()
 	device.UpdateBuffer(m_IndexBuffer, m_Indices.data(), indexBufferSize);
 }
 
+Buffer * Mesh::GetVertexBuffer()
+{
+	return m_VertexBuffer;
+}
+
+Buffer * Mesh::GetIndexBuffer()
+{
+	return m_IndexBuffer;
+}
+
+uint32_t Mesh::GetIndexCount()
+{
+	return static_cast<uint32_t>(m_Indices.size());
+}
+
 bool Mesh::HasVertexChannel(VertexChannel channel)
 {
 	return std::find(m_VertexChannels.begin(), m_VertexChannels.end(), channel) != m_VertexChannels.end();
