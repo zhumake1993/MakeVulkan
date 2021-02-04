@@ -13,11 +13,9 @@
 #include "VKCommandBuffer.h"
 #include "VKRenderPass.h"
 
-#include "VKGarbageCollector.h"
-
 #include "VKImage.h"
-#include "VKBuffer.h"
 
+#include "BufferManager.h"
 #include "DescriptorSetManager.h"
 #include "PipelineManager.h"
 
@@ -78,8 +76,8 @@ GfxDevice::GfxDevice()
 	}
 
 	m_UploadCommandBuffer = new VKCommandBuffer(m_VKDevice->device, m_VKCommandPool->commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-	m_StagingBuffer = new VKBuffer(m_FrameIndex, m_VKDevice->device, m_StagingBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-	m_StagingBuffer->Map();
+
+	m_BufferManager = new BufferManager(m_VKDevice->device);
 
 	m_DescriptorSetManager = new DescriptorSetManager(m_VKDevice->device);
 
@@ -87,22 +85,15 @@ GfxDevice::GfxDevice()
 
 	std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { m_DescriptorSetManager->GetDSLGlobal(),m_DescriptorSetManager->GetDSLPerView() };
 	m_PipelineManager->SetDummyPipelineLayout(m_PipelineManager->CreatePipelineLayout(descriptorSetLayouts));
-
-	// GC
-	m_VKGarbageCollector = new VKGarbageCollector(m_VKDevice->device);
 }
 
 GfxDevice::~GfxDevice()
 {
+	RELEASE(m_BufferManager);
 	RELEASE(m_DescriptorSetManager);
 	RELEASE(m_PipelineManager);
 
-	RELEASE(m_VKGarbageCollector);
-
-	
-
 	RELEASE(m_UploadCommandBuffer);
-	RELEASE(m_StagingBuffer);
 
 	for (size_t i = 0; i < m_VKSwapChain->numberOfImages; ++i)
 	{
@@ -221,8 +212,7 @@ void GfxDevice::QueuePresent()
 
 void GfxDevice::Update()
 {
-	m_VKGarbageCollector->Update(m_FrameIndex);
-
+	m_BufferManager->Update();
 	m_DescriptorSetManager->Update();
 	m_PipelineManager->Update();
 
@@ -295,27 +285,26 @@ Buffer * GfxDevice::CreateBuffer(BufferType bufferType, uint64_t size)
 	{
 		case kBufferTypeVertex:
 		{
-			return new VKBufferResource(kBufferTypeVertex, m_VKGarbageCollector, m_FrameIndex, m_VKDevice->device, size,
-				VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			VKBuffer* buffer = m_BufferManager->CreateBuffer(bufferType, size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true);
+			return buffer;
 			break;
 		}
 		case kBufferTypeIndex:
 		{
-			return new VKBufferResource(kBufferTypeIndex, m_VKGarbageCollector, m_FrameIndex, m_VKDevice->device, size,
-				VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-			break;
-		}
-		/*case kBufferTypeUniform:
-		{
-			VKBuffer* buffer = new VKBuffer(kBufferTypeUniform, m_FrameIndex, m_VKDevice->device, size, 
-				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-			m_UniformBufferContainer.push_back(buffer);
+			VKBuffer* buffer = m_BufferManager->CreateBuffer(bufferType, size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true);
 			return buffer;
 			break;
-		}*/
+		}
+		case kBufferTypeUniform:
+		{
+			// 上层创建的Uniform Buffer也是persistent的，例如material的buffer
+			VKBuffer* buffer = m_BufferManager->CreateBuffer(bufferType, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
+			return buffer;
+			break;
+		}
 		default:
 		{
-			LOG("wrong BufferType.");
+			LOG("Wrong BufferType.");
 			EXIT;
 		}
 	}
@@ -325,44 +314,42 @@ Buffer * GfxDevice::CreateBuffer(BufferType bufferType, uint64_t size)
 void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t size)
 {
 	BufferType bufferType = buffer->GetBufferType();
-	VKBufferResource* vkBufferResource = static_cast<VKBufferResource*>(buffer);
 
-	if (bufferType == kBufferTypeVertex || bufferType == kBufferTypeIndex)
+	VKBuffer* vKBuffer = static_cast<VKBuffer*>(buffer);
+
+	switch (bufferType)
 	{
-		m_StagingBuffer->Update(data, 0, size);
+		case kBufferTypeVertex:
+		case kBufferTypeIndex:
+		{
+			m_BufferManager->UpdateBuffer(vKBuffer, data, size, m_UploadCommandBuffer);
 
-		m_UploadCommandBuffer->Begin();
+			VkSubmitInfo submitInfo = {};
+			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submitInfo.pNext = nullptr;
+			submitInfo.waitSemaphoreCount = 0;
+			submitInfo.pWaitSemaphores = nullptr;
+			submitInfo.pWaitDstStageMask = nullptr;
+			submitInfo.commandBufferCount = 1;
+			submitInfo.pCommandBuffers = &m_UploadCommandBuffer->commandBuffer;
+			submitInfo.signalSemaphoreCount = 0;
+			submitInfo.pSignalSemaphores = nullptr;
+			VK_CHECK_RESULT(vkQueueSubmit(m_VKDevice->queue, 1, &submitInfo, VK_NULL_HANDLE));
 
-		VkBufferCopy bufferCopyInfo = {};
-		bufferCopyInfo.srcOffset = 0;
-		bufferCopyInfo.dstOffset = 0;
-		bufferCopyInfo.size = size;
-		m_UploadCommandBuffer->CopyBuffer(m_StagingBuffer, vkBufferResource->GetVKBuffer(), bufferCopyInfo);
+			DeviceWaitIdle();
 
-		// 经测试发现没有这一步也没问题（许多教程也的确没有这一步）
-		// 个人认为是因为调用了DeviceWaitIdle
-		//vkCmdPipelineBarrier
-
-		m_UploadCommandBuffer->End();
-
-		VkSubmitInfo submitInfo = {};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.pNext = nullptr;
-		submitInfo.waitSemaphoreCount = 0;
-		submitInfo.pWaitSemaphores = nullptr;
-		submitInfo.pWaitDstStageMask = nullptr;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &m_UploadCommandBuffer->commandBuffer;
-		submitInfo.signalSemaphoreCount = 0;
-		submitInfo.pSignalSemaphores = nullptr;
-		VK_CHECK_RESULT(vkQueueSubmit(m_VKDevice->queue, 1, &submitInfo, VK_NULL_HANDLE));
-
-		DeviceWaitIdle();
-	}
-	else
-	{
-		LOG("wrong Buffertype.");
-		EXIT;
+			break;
+		}
+		case kBufferTypeUniform:
+		{
+			m_BufferManager->UpdateBuffer(vKBuffer, data, size, nullptr);
+			break;
+		}
+		default:
+		{
+			LOG("Wrong BufferType.");
+			EXIT;
+		}
 	}
 }
 
@@ -398,15 +385,17 @@ void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size)
 	ImageType imageType = image->GetImageType();
 	VKImage* vkImage = static_cast<VKImage*>(image);
 
+	VKBuffer* stagingBuffer = m_BufferManager->GetStagingBuffer();
+
 	if (imageType == kImageType2D)
 	{
-		m_StagingBuffer->Update(data, 0, size);
+		stagingBuffer->Update(data, 0, size);
 
 		m_UploadCommandBuffer->Begin();
 
 		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-		m_UploadCommandBuffer->CopyBufferToImage(m_StagingBuffer, vkImage);
+		m_UploadCommandBuffer->CopyBufferToImage(stagingBuffer->GetBuffer(), vkImage);
 
 		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
@@ -442,10 +431,11 @@ void GfxDevice::BindUniformGlobal(void * data, uint64_t size)
 {
 	// Create Buffer
 
-	VKBuffer* buffer = new VKBuffer(m_FrameIndex, m_VKDevice->device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	m_VKGarbageCollector->AddBuffer(buffer);
+	VKBuffer* buffer = m_BufferManager->CreateBuffer(kBufferTypeUniform, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
+	//VKBuffer* buffer = new VKBuffer(m_FrameIndex, m_VKDevice->device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	//m_VKGarbageCollector->AddBuffer(buffer);
 
-	buffer->Map();
+	//buffer->Map();
 	buffer->Update(data, 0, size);
 
 	// Create DescriptorSet
@@ -455,7 +445,7 @@ void GfxDevice::BindUniformGlobal(void * data, uint64_t size)
 	// Update DescriptorSet
 
 	DescriptorInfo descriptorInfo;
-	descriptorInfo.buffer.buffer = buffer->buffer;
+	descriptorInfo.buffer.buffer = buffer->GetBuffer();
 	descriptorInfo.buffer.offset = 0;
 	descriptorInfo.buffer.range = size;
 
@@ -480,10 +470,11 @@ void GfxDevice::BindUniformPerView(void * data, uint64_t size)
 {
 	// Create Buffer
 
-	VKBuffer* buffer = new VKBuffer(m_FrameIndex, m_VKDevice->device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	m_VKGarbageCollector->AddBuffer(buffer);
+	VKBuffer* buffer = m_BufferManager->CreateBuffer(kBufferTypeUniform, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
+	//VKBuffer* buffer = new VKBuffer(m_FrameIndex, m_VKDevice->device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	//m_VKGarbageCollector->AddBuffer(buffer);
 
-	buffer->Map();
+	//buffer->Map();
 	buffer->Update(data, 0, size);
 
 	// Create DescriptorSet
@@ -493,7 +484,7 @@ void GfxDevice::BindUniformPerView(void * data, uint64_t size)
 	// Update DescriptorSet
 
 	DescriptorInfo descriptorInfo;
-	descriptorInfo.buffer.buffer = buffer->buffer;
+	descriptorInfo.buffer.buffer = buffer->GetBuffer();
 	descriptorInfo.buffer.offset = 0;
 	descriptorInfo.buffer.range = size;
 
@@ -533,10 +524,11 @@ void GfxDevice::BindUniformPerDraw(Shader * shader, void * data, uint64_t size)
 
 	// Create Buffer
 
-	VKBuffer* buffer = new VKBuffer(m_FrameIndex, m_VKDevice->device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	m_VKGarbageCollector->AddBuffer(buffer);
+	VKBuffer* buffer = m_BufferManager->CreateBuffer(kBufferTypeUniform, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
+	//VKBuffer* buffer = new VKBuffer(m_FrameIndex, m_VKDevice->device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	//m_VKGarbageCollector->AddBuffer(buffer);
 
-	buffer->Map();
+	//buffer->Map();
 	buffer->Update(data, 0, size);
 
 	// Create DescriptorSet
@@ -546,7 +538,7 @@ void GfxDevice::BindUniformPerDraw(Shader * shader, void * data, uint64_t size)
 	// Update DescriptorSet
 
 	DescriptorInfo descriptorInfo;
-	descriptorInfo.buffer.buffer = buffer->buffer;
+	descriptorInfo.buffer.buffer = buffer->GetBuffer();
 	descriptorInfo.buffer.offset = 0;
 	descriptorInfo.buffer.range = size;
 
@@ -570,8 +562,8 @@ void GfxDevice::DrawBuffer(Buffer * vertexBuffer, Buffer * indexBuffer, uint32_t
 	VkPipeline pipeline = m_PipelineManager->CreatePipeline(vertexDescription);
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindVertexBuffer(0, static_cast<VKBufferResource*>(vertexBuffer)->GetVKBuffer());
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindIndexBuffer(static_cast<VKBufferResource*>(indexBuffer)->GetVKBuffer(), VK_INDEX_TYPE_UINT32);
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindVertexBuffer(0, static_cast<VKBuffer*>(vertexBuffer)->GetBuffer());
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindIndexBuffer(static_cast<VKBuffer*>(indexBuffer)->GetBuffer(), VK_INDEX_TYPE_UINT32);
 
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->DrawIndexed(indexCount, 1, 0, 0, 1);
 }

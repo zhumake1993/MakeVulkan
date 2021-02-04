@@ -10,12 +10,10 @@ struct VKDevice;
 struct VKSwapChain;
 struct VKCommandPool;
 
-class VKGarbageCollector;
-
 struct VKCommandBuffer;
 struct VKRenderPass;
 class VKImage;
-struct VKBuffer;
+class BufferManager;
 class DescriptorSetManager;
 class PipelineManager;
 
@@ -48,7 +46,7 @@ class GfxDevice : public NonCopyable
 public:
 
 	GfxDevice();
-	~GfxDevice();
+	virtual ~GfxDevice();
 
 	void WaitForPresent();
 	void AcquireNextImage();
@@ -118,21 +116,19 @@ private:
 	uint32_t m_ImageIndex;
 	std::vector<VkFramebuffer> m_Framebuffers;
 
-	// staging buffer
+	// 用于传数据
 	VKCommandBuffer* m_UploadCommandBuffer;
-	const uint32_t m_StagingBufferSize = 10 * 1024 * 1024;
-	VKBuffer* m_StagingBuffer;
 
 	// 资源管理器
+
+	// 管理Buffer
+	BufferManager* m_BufferManager = nullptr;
 
 	// 管理DescriptorPool, DescriptorSetLayout, DescriptorSet
 	DescriptorSetManager* m_DescriptorSetManager = nullptr;
 
 	// 管理PipelineLayout，Pipeline
 	PipelineManager* m_PipelineManager = nullptr;
-
-	// GC
-	VKGarbageCollector* m_VKGarbageCollector;
 };
 
 void CreateGfxDevice();

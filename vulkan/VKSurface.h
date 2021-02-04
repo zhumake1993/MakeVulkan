@@ -6,7 +6,7 @@
 struct VKSurface : public NonCopyable
 {
 	VKSurface(VkInstance vkInstance);
-	~VKSurface();
+	virtual ~VKSurface();
 
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
 

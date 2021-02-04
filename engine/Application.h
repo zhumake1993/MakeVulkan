@@ -11,7 +11,7 @@ class Application : public NonCopyable
 public:
 
 	Application(Example* example);
-	~Application();
+	virtual ~Application();
 
 	void Init();
 	void Release();

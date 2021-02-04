@@ -60,10 +60,10 @@ struct VertexDescription
 
 enum BufferType
 {
+	kBufferTypeStaging,
 	kBufferTypeVertex,
 	kBufferTypeIndex,
-	//kBufferTypeUniform,
-	kBufferTypeStaging
+	kBufferTypeUniform
 };
 
 enum ImageType

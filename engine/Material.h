@@ -12,7 +12,7 @@ class Material
 public:
 
 	Material(std::string name);
-	~Material();
+	virtual ~Material();
 
 	std::string GetName();
 

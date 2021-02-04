@@ -6,7 +6,7 @@
 struct VKDevice : public NonCopyable
 {
 	VKDevice(VkInstance vkInstance, VkSurfaceKHR vkSurface);
-	~VKDevice();
+	virtual ~VKDevice();
 
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	VkDevice device = VK_NULL_HANDLE;

@@ -1,6 +1,5 @@
 #include "VKCommandBuffer.h"
 #include "VulkanTools.h"
-#include "VKBuffer.h"
 #include "VKImage.h"
 
 VKCommandBuffer::VKCommandBuffer(VkDevice vkDevice, VkCommandPool vkCommandPool, VkCommandBufferLevel level) :
@@ -70,12 +69,12 @@ void VKCommandBuffer::SetScissor(VkRect2D & area)
 	vkCmdSetScissor(commandBuffer, 0, 1, &area);
 }
 
-void VKCommandBuffer::CopyBuffer(VKBuffer * src, VKBuffer * dst, VkBufferCopy & region)
+void VKCommandBuffer::CopyBuffer(VkBuffer src, VkBuffer dst, VkBufferCopy & region)
 {
-	vkCmdCopyBuffer(commandBuffer, src->buffer, dst->buffer, 1, &region);
+	vkCmdCopyBuffer(commandBuffer, src, dst, 1, &region);
 }
 
-void VKCommandBuffer::CopyBufferToImage(VKBuffer * src, VKImage * dst)
+void VKCommandBuffer::CopyBufferToImage(VkBuffer src, VKImage * dst)
 {
 	VkBufferImageCopy bufferImageCopyInfo = {};
 	bufferImageCopyInfo.bufferOffset = 0;
@@ -85,7 +84,7 @@ void VKCommandBuffer::CopyBufferToImage(VKBuffer * src, VKImage * dst)
 	bufferImageCopyInfo.imageOffset = { 0,0,0 };
 	bufferImageCopyInfo.imageExtent = { dst->GetWidth(),dst->GetHeight(),1 };
 
-	vkCmdCopyBufferToImage(commandBuffer, src->buffer, dst->m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
+	vkCmdCopyBufferToImage(commandBuffer, src, dst->m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
 }
 
 void VKCommandBuffer::ImageMemoryBarrier(VKImage * image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL)
@@ -124,15 +123,15 @@ void VKCommandBuffer::BindPipeline(VkPipelineBindPoint bindPoint, VkPipeline vkP
 	vkCmdBindPipeline(commandBuffer, bindPoint, vkPipeline);
 }
 
-void VKCommandBuffer::BindVertexBuffer(uint32_t bind, VKBuffer * vkBuffer)
+void VKCommandBuffer::BindVertexBuffer(uint32_t bind, VkBuffer vkBuffer)
 {
 	VkDeviceSize offset = 0;
-	vkCmdBindVertexBuffers(commandBuffer, bind, 1, &vkBuffer->buffer, &offset);
+	vkCmdBindVertexBuffers(commandBuffer, bind, 1, &vkBuffer, &offset);
 }
 
-void VKCommandBuffer::BindIndexBuffer(VKBuffer * vkBuffer, VkIndexType indexType)
+void VKCommandBuffer::BindIndexBuffer(VkBuffer vkBuffer, VkIndexType indexType)
 {
-	vkCmdBindIndexBuffer(commandBuffer, vkBuffer->buffer, 0, indexType);
+	vkCmdBindIndexBuffer(commandBuffer, vkBuffer, 0, indexType);
 }
 
 void VKCommandBuffer::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)

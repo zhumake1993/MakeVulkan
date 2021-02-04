@@ -8,7 +8,7 @@ class Transform
 public:
 
 	Transform();
-	~Transform();
+	virtual ~Transform();
 
 	glm::mat4& GetMatrix();
 	void SetMatrix(glm::mat4& m);

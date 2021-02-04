@@ -1,8 +1,7 @@
 #include "VKBuffer.h"
 #include "DeviceProperties.h"
 #include "VulkanTools.h"
-#include "VKGarbageCollector.h"
-
+/*
 VKBuffer::VKBuffer(uint32_t currFrameIndex, VkDevice vkDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty) :
 	VKResource(currFrameIndex),
 	device(vkDevice)
@@ -137,3 +136,4 @@ VKBuffer* VKBufferResource::GetVKBuffer()
 {
 	return m_Buffer;
 }
+*/

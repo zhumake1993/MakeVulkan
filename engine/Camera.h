@@ -8,7 +8,7 @@ class Camera
 public:
 
 	Camera();
-	~Camera();
+	virtual ~Camera();
 
 	glm::vec3 GetPosition();
 	void LookAt(glm::vec3 pos, glm::vec3 target);

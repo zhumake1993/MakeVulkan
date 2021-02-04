@@ -8,7 +8,7 @@ class VKGpuProgram : public GpuProgram
 public:
 
 	VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode);
-	~VKGpuProgram();
+	virtual ~VKGpuProgram();
 
 	VkShaderModule GetVertShaderModule();
 	VkShaderModule GetFragShaderModule();

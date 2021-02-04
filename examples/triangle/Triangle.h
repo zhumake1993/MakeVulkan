@@ -8,7 +8,7 @@ class Triangle : public Example
 public:
 
 	Triangle();
-	~Triangle();
+	virtual ~Triangle();
 
 	void ConfigDeviceProperties() override;
 	void Init() override;

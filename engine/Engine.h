@@ -9,7 +9,7 @@ class Engine : public NonCopyable
 public:
 
 	Engine(Example* example);
-	~Engine();
+	virtual ~Engine();
 
 	void Init();
 	void Release();

@@ -9,7 +9,7 @@ class GpuProgram : public NonCopyable
 public:
 
 	GpuProgram(GpuParameters& parameters);
-	~GpuProgram();
+	virtual ~GpuProgram();
 
 	GpuParameters& GetGpuParameters();
 

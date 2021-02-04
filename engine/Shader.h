@@ -11,7 +11,7 @@ class Shader
 public:
 
 	Shader(std::string name);
-	~Shader();
+	virtual ~Shader();
 
 	void LoadSPV(const std::string& vertFilename, const std::string& fragFilename);
 

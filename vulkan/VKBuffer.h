@@ -4,10 +4,12 @@
 #include "Buffer.h"
 #include "VKResource.h"
 
+/*
+
 struct VKBuffer : public VKResource
 {
 	VKBuffer(uint32_t currFrameIndex, VkDevice vkDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty);
-	~VKBuffer();
+	virtual ~VKBuffer();
 
 	void Map(VkDeviceSize offset = 0, VkDeviceSize size = VK_WHOLE_SIZE);
 	void Unmap();
@@ -31,7 +33,7 @@ class VKBufferResource : public Buffer
 public:
 
 	VKBufferResource(BufferType bufferType, VKGarbageCollector* gc, uint32_t currFrameIndex, VkDevice vkDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty);
-	~VKBufferResource();
+	virtual ~VKBufferResource();
 
 	// 一帧内至多调用一次
 	void Update(uint32_t currFrameIndex, void * data, VkDeviceSize offset, VkDeviceSize size);
@@ -47,3 +49,4 @@ private:
 	VKBuffer* m_Buffer;
 	VKGarbageCollector* m_VKGarbageCollector;
 };
+*/

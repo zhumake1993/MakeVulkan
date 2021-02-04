@@ -6,7 +6,7 @@
 struct DeviceProperties : public NonCopyable
 {
 	DeviceProperties();
-	~DeviceProperties();
+	virtual ~DeviceProperties();
 
 	uint32_t GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties);
 

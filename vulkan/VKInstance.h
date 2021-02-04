@@ -6,7 +6,7 @@
 struct VKInstance : public NonCopyable
 {
 	VKInstance();
-	~VKInstance();
+	virtual ~VKInstance();
 
 	VkInstance instance = VK_NULL_HANDLE;
 };

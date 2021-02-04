@@ -3,13 +3,12 @@
 #include "Env.h"
 #include "NonCopyable.h"
 
-struct VKBuffer;
 class VKImage;
 
 struct VKCommandBuffer : public NonCopyable
 {
 	VKCommandBuffer(VkDevice vkDevice, VkCommandPool vkCommandPool, VkCommandBufferLevel level);
-	~VKCommandBuffer();
+	virtual ~VKCommandBuffer();
 
 	void Begin();
 	void End();
@@ -20,16 +19,16 @@ struct VKCommandBuffer : public NonCopyable
 	void SetViewport(VkViewport& viewport);
 	void SetScissor(VkRect2D& area);
 
-	void CopyBuffer(VKBuffer* src, VKBuffer* dst, VkBufferCopy& region);
-	void CopyBufferToImage(VKBuffer* src, VKImage* dst);
+	void CopyBuffer(VkBuffer src, VkBuffer dst, VkBufferCopy& region);
+	void CopyBufferToImage(VkBuffer src, VKImage* dst);
 
 	void ImageMemoryBarrier(VKImage* image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL);
 
 	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set, uint32_t offset = -1);
 	void BindPipeline(VkPipelineBindPoint bindPoint, VkPipeline vkPipeline);
 	
-	void BindVertexBuffer(uint32_t bind, VKBuffer* vkBuffer);
-	void BindIndexBuffer(VKBuffer* vkBuffer, VkIndexType indexType);
+	void BindVertexBuffer(uint32_t bind, VkBuffer vkBuffer);
+	void BindIndexBuffer(VkBuffer vkBuffer, VkIndexType indexType);
 	
 	void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance);
 

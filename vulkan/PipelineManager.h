@@ -8,7 +8,7 @@
 struct PipelineCI
 {
 	PipelineCI();
-	~PipelineCI();
+	virtual ~PipelineCI();
 
 	void Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderStatus& renderStatus, VkShaderModule vertexSM, VkShaderModule framentSM);
 
@@ -32,7 +32,7 @@ struct PipelineCI
 struct VKPipeline : public VKResource
 {
 	VKPipeline(uint32_t currFrameIndex) :VKResource(currFrameIndex) {}
-	~VKPipeline() {}
+	virtual ~VKPipeline() {}
 
 	VkPipeline pipeline = VK_NULL_HANDLE;
 
@@ -45,7 +45,7 @@ class PipelineManager : public NonCopyable
 public:
 
 	PipelineManager(VkDevice vkDevice);
-	~PipelineManager();
+	virtual ~PipelineManager();
 
 	void Update();
 
@@ -65,10 +65,10 @@ private:
 	// 当前的PipelineCI
 	PipelineCI* m_PipelineCI = nullptr;
 
-	// 这一帧新加的DescriptorSet
+	// 这一帧新加的Pipeline
 	std::list<VKPipeline*> m_NewPipelines;
 
-	// 可能还使用中的DescriptorSet
+	// 可能还在使用中的Pipeline
 	std::list<VKPipeline*> m_PendingPipelines;
 
 	// 利用Pipeline Layout Compatibility的特性，在创建实际使用的PipelineLayout之前，就可以绑定Global和PerView

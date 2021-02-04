@@ -6,7 +6,7 @@
 struct VKSwapChain : public NonCopyable
 {
 	VKSwapChain(VkPhysicalDevice physicalDevice, VkDevice vkDevice, VkSurfaceKHR vkSurface);
-	~VKSwapChain();
+	virtual ~VKSwapChain();
 
 	uint32_t						numberOfImages;
 	VkSurfaceFormatKHR				format;

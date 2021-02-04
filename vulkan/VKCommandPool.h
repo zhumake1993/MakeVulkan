@@ -6,7 +6,7 @@
 struct VKCommandPool : public NonCopyable
 {
 	VKCommandPool(VkDevice vkDevice, VkCommandPoolCreateFlags flags, uint32_t queueFamilyIndex);
-	~VKCommandPool();
+	virtual ~VKCommandPool();
 
 	VkCommandPool commandPool = VK_NULL_HANDLE;
 

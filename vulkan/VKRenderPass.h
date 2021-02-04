@@ -6,7 +6,7 @@
 struct VKRenderPass : public NonCopyable
 {
 	VKRenderPass(VkDevice vkDevice, VkFormat colorFormat, VkFormat depthFormat);
-	~VKRenderPass();
+	virtual ~VKRenderPass();
 
 	VkRenderPass renderPass = VK_NULL_HANDLE;
 

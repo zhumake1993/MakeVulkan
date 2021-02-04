@@ -8,7 +8,7 @@ class VKResource : public NonCopyable
 public:
 
 	VKResource(uint32_t currFrameIndex);
-	~VKResource();
+	virtual ~VKResource();
 
 	bool InUse(uint32_t currFrameIndex);
 	void Use(uint32_t currFrameIndex);

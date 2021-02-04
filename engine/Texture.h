@@ -10,7 +10,7 @@ class Texture
 public:
 
 	Texture(std::string name);
-	~Texture();
+	virtual ~Texture();
 
 	void LoadFromFile(const std::string& filename);
 

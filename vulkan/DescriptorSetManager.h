@@ -14,7 +14,7 @@ union DescriptorInfo
 struct VKDescriptorSet : public VKResource
 {
 	VKDescriptorSet(uint32_t currFrameIndex) :VKResource(currFrameIndex) {}
-	~VKDescriptorSet() {}
+	virtual ~VKDescriptorSet() {}
 
 	VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
 };
@@ -24,7 +24,7 @@ class DescriptorSetManager : public NonCopyable
 public:
 
 	DescriptorSetManager(VkDevice vkDevice);
-	~DescriptorSetManager();
+	virtual ~DescriptorSetManager();
 
 	void Update();
 
@@ -44,7 +44,7 @@ private:
 	// 这一帧新加的DescriptorSet
 	std::list<VKDescriptorSet*> m_NewDescriptorSets;
 
-	// 可能还使用中的DescriptorSet
+	// 可能还在使用中的DescriptorSet
 	std::list<VKDescriptorSet*> m_PendingDescriptorSets;
 
 	uint32_t m_FrameIndex = 0;

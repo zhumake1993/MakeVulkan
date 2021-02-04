@@ -9,7 +9,7 @@ public:
 
 	VKImage(ImageType imageType, VkDevice vkDevice, VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, VkImageUsageFlags usage,
 		VkImageViewType vkImageViewType, VkImageAspectFlags aspectMask);
-	~VKImage();
+	virtual ~VKImage();
 
 	VkImage m_Image = VK_NULL_HANDLE;
 	VkImageView m_View = VK_NULL_HANDLE;

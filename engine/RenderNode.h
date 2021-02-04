@@ -12,7 +12,7 @@ class RenderNode
 public:
 
 	RenderNode(std::string name);
-	~RenderNode();
+	virtual ~RenderNode();
 
 	Transform& GetTransform();
 
