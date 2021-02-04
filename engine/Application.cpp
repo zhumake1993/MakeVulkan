@@ -345,7 +345,7 @@ void HandleTouchScreenEvent(int32_t action, AInputEvent* event)
 	{
 		input.count = 0;
 		break;
-		}
+	}
 	case AMOTION_EVENT_ACTION_DOWN:
 	{
 		input.count = 1;

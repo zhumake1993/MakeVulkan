@@ -100,7 +100,7 @@ struct UniformBufferLayout
 {
 	UniformBufferLayout(std::string n, int b, VkShaderStageFlags flags) :name(n), binding(b), stageFlags(flags) {}
 
-	void Add(UniformBufferElement& element)
+	void Add(UniformBufferElement element)
 	{
 		element.offset = GetSize();
 		elements.push_back(element);

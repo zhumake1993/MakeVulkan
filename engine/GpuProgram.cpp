@@ -23,4 +23,7 @@ uint32_t GpuProgram::GetUniformBufferSize(std::string name)
 			return layout.GetSize();
 		}
 	}
+
+	//todo
+	return 256;
 }

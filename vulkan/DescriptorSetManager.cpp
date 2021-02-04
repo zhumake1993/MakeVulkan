@@ -22,8 +22,8 @@ DescriptorSetManager::DescriptorSetManager(VkDevice vkDevice) :
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	descriptorPoolCreateInfo.pNext = nullptr;
-	descriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-	descriptorPoolCreateInfo.maxSets = 100;
+	descriptorPoolCreateInfo.flags = 0;// VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	descriptorPoolCreateInfo.maxSets = 1000;
 	descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
 	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
 
@@ -99,6 +99,7 @@ DescriptorSetManager::~DescriptorSetManager()
 
 void DescriptorSetManager::Update()
 {
+	return;
 	// 找到第一个可以被销毁的set
 	auto unused = m_PendingDescriptorSets.begin();
 	for (; unused != m_PendingDescriptorSets.end(); unused++)
@@ -111,7 +112,7 @@ void DescriptorSetManager::Update()
 
 	for (auto itr = unused; itr != m_PendingDescriptorSets.end(); itr++)
 	{
-		vkFreeDescriptorSets(m_Device, m_DescriptorPool, 1, &(*itr)->descriptorSet);
+		//vkFreeDescriptorSets(m_Device, m_DescriptorPool, 1, &(*itr)->descriptorSet);
 		RELEASE(*itr);
 	}
 
@@ -136,8 +137,11 @@ VkDescriptorSetLayout DescriptorSetManager::GetDSLPerView()
 
 VkDescriptorSet DescriptorSetManager::AllocateDescriptorSet(VkDescriptorSetLayout layout)
 {
-	VKDescriptorSet* descriptorSet = new VKDescriptorSet(m_FrameIndex);
-	m_NewDescriptorSets.push_back(descriptorSet);
+	//VKDescriptorSet* descriptorSet = new VKDescriptorSet(m_FrameIndex);
+	//m_NewDescriptorSets.push_back(descriptorSet);
+
+	//
+	VkDescriptorSet gggggggggggg;
 
 	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
 	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -146,7 +150,10 @@ VkDescriptorSet DescriptorSetManager::AllocateDescriptorSet(VkDescriptorSetLayou
 	descriptorSetAllocateInfo.descriptorSetCount = 1;
 	descriptorSetAllocateInfo.pSetLayouts = &layout;
 
-	VK_CHECK_RESULT(vkAllocateDescriptorSets(m_Device, &descriptorSetAllocateInfo, &descriptorSet->descriptorSet));
+	VK_CHECK_RESULT(vkAllocateDescriptorSets(m_Device, &descriptorSetAllocateInfo, &gggggggggggg));
 
-	return descriptorSet->descriptorSet;
+	//vkFreeDescriptorSets(m_Device, m_DescriptorPool, 1, &gggggggggggg);
+	vkResetDescriptorPool(m_Device, m_DescriptorPool,0);
+
+	return gggggggggggg;
 }

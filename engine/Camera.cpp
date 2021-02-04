@@ -1,6 +1,7 @@
 #include "Camera.h"
 #include "Tools.h"
 #include "Input.h"
+#include "Settings.h"
 
 Camera::Camera()
 {
@@ -72,7 +73,7 @@ void Camera::Update(float deltaTime)
 		float deltaX = input.pos0.x - input.oldPos0.x;
 		float deltaY = input.pos0.y - input.oldPos0.y;
 		
-		if (input.pos0.x < global::windowWidth / 2) {
+		if (input.pos0.x < windowWidth / 2) {
 
 			// ´¥ÃþÆÁÄ»×ó±ß£¬ÒÆ¶¯Î»ÖÃ
 			auto right = glm::cross(m_WorldUp, m_Look);
@@ -94,7 +95,7 @@ void Camera::Update(float deltaTime)
 		deltaX = input.pos1.x - input.oldPos1.x;
 		deltaY = input.pos1.y - input.oldPos1.y;
 
-		if (input.pos1.x < global::windowWidth / 2) {
+		if (input.pos1.x < windowWidth / 2) {
 
 			// ´¥ÃþÆÁÄ»×ó±ß£¬ÒÆ¶¯Î»ÖÃ
 			auto right = glm::cross(m_WorldUp, m_Look);

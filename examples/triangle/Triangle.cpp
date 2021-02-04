@@ -37,7 +37,7 @@ void Triangle::ConfigDeviceProperties()
 	// 添加InstanceExtension
 
 	// 这个暂时搁置
-	//global::enabledInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+	//dp.enabledInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
 	dp.enabledInstanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 #if defined(_WIN32)
@@ -104,7 +104,7 @@ void Triangle::Draw()
 	device.BeginCommandBuffer();
 
 	device.BindUniformGlobal(&m_UniformDataGlobal, sizeof(UniformDataGlobal));
-	device.BindUniformPerView(&m_UniformDataPerView, sizeof(UniformDataPerView));
+	//device.BindUniformPerView(&m_UniformDataPerView, sizeof(UniformDataPerView));
 
 	Color clearColor;
 	DepthStencil clearDepthStencil;
@@ -118,13 +118,13 @@ void Triangle::Draw()
 
 	// test m_ColorCubeNode
 
-	device.SetShader(m_ColorShader);
+	//device.SetShader(m_ColorShader);
 
-	glm::mat4& mat = m_ColorCubeNode->GetTransform().GetMatrix();
+	//glm::mat4& mat = m_ColorCubeNode->GetTransform().GetMatrix();
 
-	device.BindUniformPerDraw(m_ColorShader, &mat, sizeof(glm::mat4));
+	//device.BindUniformPerDraw(m_ColorShader, &mat, sizeof(glm::mat4));
 
-	device.DrawBuffer(m_ColorCubeNode->GetMesh()->GetVertexBuffer(), m_ColorCubeNode->GetMesh()->GetIndexBuffer(), m_ColorCubeNode->GetMesh()->GetIndexCount(), m_ColorCubeNode->GetMesh()->GetVertexDescription());
+	//device.DrawBuffer(m_ColorCubeNode->GetMesh()->GetVertexBuffer(), m_ColorCubeNode->GetMesh()->GetIndexBuffer(), m_ColorCubeNode->GetMesh()->GetIndexCount(), m_ColorCubeNode->GetMesh()->GetVertexDescription());
 
 
 
