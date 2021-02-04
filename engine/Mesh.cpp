@@ -20,8 +20,10 @@ Mesh::Mesh(std::string name) :
 
 Mesh::~Mesh()
 {
-	RELEASE(m_VertexBuffer);
-	RELEASE(m_IndexBuffer);
+	auto& device = GetGfxDevice();
+
+	device.ReleaseBuffer(m_VertexBuffer);
+	device.ReleaseBuffer(m_IndexBuffer);
 }
 
 void Mesh::SetVertexChannels(const std::vector<VertexChannel>& channels)

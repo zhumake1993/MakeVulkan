@@ -8,7 +8,7 @@
 struct PipelineCI
 {
 	PipelineCI();
-	virtual ~PipelineCI();
+	~PipelineCI(); // 不能有虚函数，否则用memset清空后，虚函数表指针也会被清空
 
 	void Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderStatus& renderStatus, VkShaderModule vertexSM, VkShaderModule framentSM);
 

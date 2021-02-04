@@ -72,6 +72,13 @@ DescriptorSetManager::DescriptorSetManager(VkDevice vkDevice) :
 
 DescriptorSetManager::~DescriptorSetManager()
 {
+	for (auto itr = m_NewDescriptorSets.begin(); itr != m_NewDescriptorSets.end(); itr++)
+	{
+		vkFreeDescriptorSets(m_Device, m_DescriptorPool, 1, &(*itr)->descriptorSet);
+		RELEASE(*itr);
+	}
+	m_NewDescriptorSets.clear();
+
 	for (auto itr = m_PendingDescriptorSets.begin(); itr != m_PendingDescriptorSets.end(); itr++)
 	{
 		vkFreeDescriptorSets(m_Device, m_DescriptorPool, 1, &(*itr)->descriptorSet);

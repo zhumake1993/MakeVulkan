@@ -68,6 +68,7 @@ public:
 
 	Buffer* CreateBuffer(BufferType bufferType, uint64_t size);
 	void UpdateBuffer(Buffer* buffer, void* data, uint64_t size);
+	void ReleaseBuffer(Buffer* buffer);
 
 	Image* CreateImage(ImageType imageType, VkFormat format, uint32_t width, uint32_t height);
 	void UpdateImage(Image* image, void* data, uint64_t size);

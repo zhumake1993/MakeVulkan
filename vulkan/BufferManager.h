@@ -71,7 +71,7 @@ public:
 
 	void UpdateBuffer(VKBuffer* buffer, void * data, uint64_t size, VKCommandBuffer* commandBuffer);
 
-	void ReleaseBuffer();
+	void ReleaseBuffer(VKBuffer* buffer);
 
 private:
 

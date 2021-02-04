@@ -353,6 +353,11 @@ void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t size)
 	}
 }
 
+void GfxDevice::ReleaseBuffer(Buffer * buffer)
+{
+	m_BufferManager->ReleaseBuffer(static_cast<VKBuffer*>(buffer));
+}
+
 Image * GfxDevice::CreateImage(ImageType imageType, VkFormat format, uint32_t width, uint32_t height)
 {
 	switch (imageType)

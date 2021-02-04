@@ -8,7 +8,7 @@
 
 Example::Example()
 {
-	m_DummyShader = new Shader("DummyShader");
+	//m_DummyShader = new Shader("DummyShader");
 
 	//GpuParameters parameters;
 
@@ -47,7 +47,8 @@ Example::~Example()
 	for (auto p : m_MaterialContainer) { RELEASE(p); }
 	for (auto p : m_RenderNodeContainer) { RELEASE(p); }
 
-	RELEASE(m_DummyShader);
+	//todo
+	//RELEASE(m_DummyShader);
 }
 
 Mesh * Example::CreateMesh(std::string name)

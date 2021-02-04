@@ -56,5 +56,5 @@ private:
 	std::vector<Material*> m_MaterialContainer;
 	std::vector<RenderNode*> m_RenderNodeContainer;
 
-	Shader* m_DummyShader;
+	//Shader* m_DummyShader;
 };

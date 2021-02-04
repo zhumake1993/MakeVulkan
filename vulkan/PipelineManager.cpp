@@ -173,7 +173,15 @@ PipelineManager::PipelineManager(VkDevice vkDevice) :
 
 PipelineManager::~PipelineManager()
 {
+	vkDestroyPipelineLayout(m_Device, m_PipelineCI->pipelineCreateInfo.layout, nullptr);
 	RELEASE(m_PipelineCI);
+
+	for (auto itr = m_NewPipelines.begin(); itr != m_NewPipelines.end(); itr++)
+	{
+		vkDestroyPipeline(m_Device, (*itr)->pipeline, nullptr);
+		RELEASE(*itr);
+	}
+	m_NewPipelines.clear();
 
 	for (auto itr = m_PendingPipelines.begin(); itr != m_PendingPipelines.end(); itr++)
 	{

@@ -123,14 +123,16 @@ BufferManager::BufferManager(VkDevice vkDevice) :
 
 BufferManager::~BufferManager()
 {
-	//vkDestroyBuffer(m_Device, m_StagingBuffer->m_Buffer->buffer, nullptr);
-	//vkFreeMemory(m_Device, m_StagingBuffer->m_Buffer->memory, nullptr);
 	RELEASE(m_StagingBuffer);
+
+	for (auto itr = m_NewBuffers.begin(); itr != m_NewBuffers.end(); itr++)
+	{
+		RELEASE(*itr);
+	}
+	m_NewBuffers.clear();
 
 	for (auto itr = m_PendingBuffers.begin(); itr != m_PendingBuffers.end(); itr++)
 	{
-		//vkDestroyBuffer(m_Device, (*itr)->m_Buffer->buffer, nullptr);
-		//vkFreeMemory(m_Device, (*itr)->m_Buffer->memory, nullptr);
 		RELEASE(*itr);
 	}
 	m_PendingBuffers.clear();
@@ -150,8 +152,6 @@ void BufferManager::Update()
 
 	for (auto itr = unused; itr != m_PendingBuffers.end(); itr++)
 	{
-		//vkDestroyBuffer(m_Device, (*itr)->m_Buffer->buffer, nullptr);
-		//vkFreeMemory(m_Device, (*itr)->m_Buffer->memory, nullptr);
 		RELEASE(*itr);
 	}
 
@@ -190,18 +190,11 @@ void BufferManager::UpdateBuffer(VKBuffer* buffer, void * data, uint64_t size, V
 		dummyBuffer->SwitchResource(buffer);
 
 		m_NewBuffers.push_back(dummyBuffer);
-
-		//newBuffer = CreateBuffer(buffer->GetBufferType(), buffer->GetSize(), buffer->GetUsage(), buffer->GetMemoryProperty(), buffer->GetPersistent());
 	}
-	/*else
-	{
-		newBuffer = buffer;
-	}*/
 
 	if (commandBuffer)
 	{
 		m_StagingBuffer->Update(data, 0, size);
-		//memcpy(static_cast<char*>(m_StagingBuffer->m_Buffer->mappedPointer), data, size);
 
 		commandBuffer->Begin();
 
@@ -220,8 +213,10 @@ void BufferManager::UpdateBuffer(VKBuffer* buffer, void * data, uint64_t size, V
 	else
 	{
 		buffer->Update(data, 0, size);
-		//memcpy(static_cast<char*>(newBuffer->m_Buffer->mappedPointer), data, size);
 	}
+}
 
-	//return newBuffer;
+void BufferManager::ReleaseBuffer(VKBuffer * buffer)
+{
+	m_NewBuffers.push_back(buffer);
 }
