@@ -11,7 +11,7 @@
 #define KEY_Q 0x51
 #define KEY_E 0x45
 
-struct Input
+struct InputManager
 {
 	bool key_W = false;
 	bool key_S = false;
@@ -45,4 +45,4 @@ struct Input
 
 #endif
 
-extern Input input;
+extern InputManager inputManager;

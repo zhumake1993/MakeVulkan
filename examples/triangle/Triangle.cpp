@@ -11,6 +11,7 @@
 #include "Material.h"
 #include "RenderNode.h"
 #include "Camera.h"
+#include "TimeManager.h"
 
 Triangle::Triangle()
 {
@@ -71,7 +72,7 @@ void Triangle::Init()
 	m_Camera->LookAt(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	m_Camera->SetLens(glm::radians(60.0f), 1.0f * windowWidth / windowHeight, 0.1f, 256.0f);
 #if defined(_WIN32)
-	m_Camera->SetSpeed(1.0f, 0.005f);
+	m_Camera->SetSpeed(0.5f, 0.005f);
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
 	m_Camera->SetSpeed(0.001f, 0.005f);
 #endif
@@ -85,19 +86,15 @@ void Triangle::Release()
 
 void Triangle::Update()
 {
-	auto& device = GetGfxDevice();
-
-	//auto deltaTime = GetTimeMgr().GetDeltaTime();
+	Example::Update();
 
 	m_UniformDataGlobal.time = glm::vec4(0, 0, 0, 0);
-	
 
-	//m_Camera->Update(deltaTime);
+	m_Camera->Update(m_TimeManager->GetDeltaTime());
 
 	m_UniformDataPerView.view = m_Camera->GetView();
 	m_UniformDataPerView.proj = m_Camera->GetProj();
 	m_UniformDataPerView.eyePos = glm::vec4(m_Camera->GetPosition(), 1.0f);
-
 
 	Draw();
 }
@@ -150,10 +147,7 @@ void Triangle::PrepareResources()
 {
 	// Mesh
 	{
-		//m_CubeMesh = CreateMesh("CubeMesh");
-		//m_CubeMesh->LoadFromFile(AssetPath + "models/cube.obj");
-		//m_CubeMesh->UploadToGPU();
-
+		// 自定义顶点buffer的结构和数据
 		m_CustomCubeMesh = CreateMesh("CustomCubeMesh");
 		m_CustomCubeMesh->SetVertexChannels({ kVertexPosition, kVertexColor });
 		std::vector<float> vertices = {
@@ -172,6 +166,10 @@ void Triangle::PrepareResources()
 		m_CustomCubeMesh->SetVertices(vertices);
 		m_CustomCubeMesh->SetIndices(indices);
 		m_CustomCubeMesh->UploadToGPU();
+
+		//m_CubeMesh = CreateMesh("CubeMesh");
+		//m_CubeMesh->LoadFromFile(AssetPath + "models/cube.obj");
+		//m_CubeMesh->UploadToGPU();
 
 		//m_SphereMesh = CreateMesh("SphereMesh");
 		//m_SphereMesh->LoadFromFile(AssetPath + "models/sphere.obj");
@@ -195,6 +193,7 @@ void Triangle::PrepareResources()
 		m_ColorShader = CreateShader("ColorShader");
 		m_ColorShader->LoadSPV(AssetPath + "shaders/triangle/Color.vert.spv", AssetPath + "shaders/triangle/Color.frag.spv");
 
+		//todo
 		GpuParameters parameters;
 
 		UniformBufferLayout layoutMaterial0("PerMaterial", 0, VK_SHADER_STAGE_VERTEX_BIT);
@@ -244,13 +243,15 @@ void Triangle::PrepareResources()
 
 	// Material
 	{
+		m_ColorMat = CreateMaterial("SimpleColorMat");
+		m_ColorMat->SetShader(m_ColorShader);
+
 		//m_Crate01Mat = CreateMaterial("Crate01Mat");
 		//m_Crate01Mat->SetShader(m_LitShader);
 		//m_Crate01Mat->SetFloat4("DiffuseAlbedo", 1.0f, 1.0f, 1.0f, 1.0f);
 		//m_Crate01Mat->SetFloat3("FresnelR0", 0.3f, 0.3f, 0.3f);
 		//m_Crate01Mat->SetFloat("Roughness", 0.3f);
 		//m_Crate01Mat->SetTextures("BaseTexture", m_Crate01Tex);
-		////CreateVKPipeline(m_Crate01Mat, m_Home->GetVertexDescription());
 
 		//m_Crate02Mat = CreateMaterial("Crate02Mat");
 		//m_Crate02Mat->SetShader(m_LitShader);
@@ -258,11 +259,6 @@ void Triangle::PrepareResources()
 		//m_Crate02Mat->SetFloat3("FresnelR0", 0.3f, 0.3f, 0.3f);
 		//m_Crate02Mat->SetFloat("Roughness", 0.3f);
 		//m_Crate02Mat->SetTextures("BaseTexture", m_Crate02Tex);
-		//CreateVKPipeline(m_Crate02Mat, m_Home->GetVertexDescription());
-
-		m_ColorMat = CreateMaterial("SimpleColorMat");
-		m_ColorMat->SetShader(m_ColorShader);
-		//CreateVKPipeline(m_SimpleColorMat, m_SimpleCube->GetVertexDescription());
 
 		/*m_MetalplateMat = CreateMaterial("MetalplateMat");
 		m_MetalplateMat->SetShader(m_LitShader);
@@ -270,11 +266,15 @@ void Triangle::PrepareResources()
 		m_MetalplateMat->SetFloat3("FresnelR0", 0.3f, 0.3f, 0.3f);
 		m_MetalplateMat->SetFloat("Roughness", 0.3f);
 		m_MetalplateMat->SetTextures("BaseTexture", m_MetalplateTex);*/
-		//CreateVKPipeline(m_MetalplateMat, m_Quad->GetVertexDescription());
 	}
 
 	// RenderNode
 	{
+		m_ColorCubeNode = CreateRenderNode("ColorCubeNode");
+		m_ColorCubeNode->SetMesh(m_CustomCubeMesh);
+		m_ColorCubeNode->SetMaterial(m_ColorMat);
+		m_ColorCubeNode->GetTransform().Scale(0.1f, 0.1f, 0.1f).Translate(0.0f, 0.6f, 0.0f);
+
 		/*m_CubeNode = CreateRenderNode("CubeNode");
 		m_CubeNode->SetMesh(m_CubeMesh);
 		m_CubeNode->SetMaterial(m_Crate01Mat);
@@ -285,9 +285,6 @@ void Triangle::PrepareResources()
 		m_SphereNode->SetMaterial(m_Crate02Mat);
 		m_SphereNode->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.3f, 0.0f);*/
 
-		m_ColorCubeNode = CreateRenderNode("ColorCubeNode");
-		m_ColorCubeNode->SetMesh(m_CustomCubeMesh);
-		m_ColorCubeNode->SetMaterial(m_ColorMat);
-		m_ColorCubeNode->GetTransform().Scale(0.1f, 0.1f, 0.1f).Translate(0.0f, 0.6f, 0.0f);
+		
 	}
 }

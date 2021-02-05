@@ -1,6 +1,6 @@
 #include "Camera.h"
 #include "Tools.h"
-#include "Input.h"
+#include "InputManager.h"
 #include "Settings.h"
 
 Camera::Camera()
@@ -49,21 +49,21 @@ void Camera::Update(float deltaTime)
 
 	auto right = glm::cross(m_WorldUp, m_Look);
 
-	if (input.key_W) dir += m_Look;
-	if (input.key_S) dir -= m_Look;
-	if (input.key_A) dir -= right;
-	if (input.key_D) dir += right;
-	if (input.key_Q) dir -= m_WorldUp;
-	if (input.key_E) dir += m_WorldUp;
+	if (inputManager.key_W) dir += m_Look;
+	if (inputManager.key_S) dir -= m_Look;
+	if (inputManager.key_A) dir -= right;
+	if (inputManager.key_D) dir += right;
+	if (inputManager.key_Q) dir -= m_WorldUp;
+	if (inputManager.key_E) dir += m_WorldUp;
 
 	if (glm::length(dir) > 0) {
 		m_Position += glm::normalize(dir) * m_MoveSpeed * deltaTime;
 	}
 
-	if (input.key_MouseRight) {
+	if (inputManager.key_MouseRight) {
 		// 这里不要乘以deltaTime，要根据移动的距离来控制旋转的角度
-		RotateY((input.pos.x - input.oldPos.x) * m_RotateSpeed);
-		Pitch((input.pos.y - input.oldPos.y) * m_RotateSpeed);
+		RotateY((inputManager.pos.x - inputManager.oldPos.x) * m_RotateSpeed);
+		Pitch((inputManager.pos.y - inputManager.oldPos.y) * m_RotateSpeed);
 	}
 
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)

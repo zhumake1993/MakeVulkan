@@ -5,6 +5,7 @@
 #include "Shader.h"
 #include "Material.h"
 #include "RenderNode.h"
+#include "TimeManager.h"
 
 Example::Example()
 {
@@ -37,10 +38,14 @@ Example::Example()
 	//}
 
 	//m_DummyShader->CreateGpuProgram(parameters);
+
+	m_TimeManager = new TimeManager();
 }
 
 Example::~Example()
 {
+	RELEASE(m_TimeManager);
+
 	for (auto p : m_MeshContainer) { RELEASE(p); }
 	for (auto p : m_TextureContainer) { RELEASE(p); }
 	for (auto p : m_ShaderContainer) { RELEASE(p); }
@@ -49,6 +54,11 @@ Example::~Example()
 
 	//todo
 	//RELEASE(m_DummyShader);
+}
+
+void Example::Update()
+{
+	m_TimeManager->Update();
 }
 
 Mesh * Example::CreateMesh(std::string name)

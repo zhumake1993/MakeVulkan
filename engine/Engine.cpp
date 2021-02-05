@@ -3,6 +3,7 @@
 #include "Example.h"
 #include "GfxDevice.h"
 #include "DeviceProperties.h"
+#include "InputManager.h"
 
 Engine::Engine(Example* example) :
 	m_Example(example)
@@ -23,7 +24,7 @@ void Engine::Init()
 	CreateGfxDevice();
 
 	// 初始化Manager
-	//todo
+	
 
 	// 初始化Engine
 	//todo
@@ -45,7 +46,7 @@ void Engine::Release()
 	//todo
 
 	// 清理Manager
-	//todo
+	
 
 	// 清理GfxDevice
 	ReleaseGfxDevice();
@@ -59,8 +60,7 @@ void Engine::Update()
 	// 顺序很重要！！！
 
 	// 更新时间
-	//auto& timeMgr = GetTimeMgr();
-	//timeMgr.Tick();
+	
 
 	//PROFILER(Engine_TickEngine);
 
@@ -71,13 +71,14 @@ void Engine::Update()
 	// 更新Example
 	m_Example->Update();
 
+	// 必须在游戏逻辑更新完之后再更新输入
+	inputManager.Tick();
+
 	// 更新UI逻辑
 	//m_Imgui->Prepare();
 	//TickUI();
 	//ImGui::Render();
-
-	// 更新输入
-	//input.Tick();
+	
 
 	// 更新UI顶点计算
 	//m_Imgui->Tick();

@@ -3,7 +3,7 @@
 #include "Log.h"
 #include "Engine.h"
 #include "Tools.h"
-#include "Input.h"
+#include "InputManager.h"
 
 Application* application;
 
@@ -245,22 +245,22 @@ void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		switch (wParam)
 		{
 		case KEY_W:
-			input.key_W = true;
+			inputManager.key_W = true;
 			break;
 		case KEY_S:
-			input.key_S = true;
+			inputManager.key_S = true;
 			break;
 		case KEY_A:
-			input.key_A = true;
+			inputManager.key_A = true;
 			break;
 		case KEY_D:
-			input.key_D = true;
+			inputManager.key_D = true;
 			break;
 		case KEY_Q:
-			input.key_Q = true;
+			inputManager.key_Q = true;
 			break;
 		case KEY_E:
-			input.key_E = true;
+			inputManager.key_E = true;
 			break;
 		}
 		break;
@@ -268,43 +268,43 @@ void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		switch (wParam)
 		{
 		case KEY_W:
-			input.key_W = false;
+			inputManager.key_W = false;
 			break;
 		case KEY_S:
-			input.key_S = false;
+			inputManager.key_S = false;
 			break;
 		case KEY_A:
-			input.key_A = false;
+			inputManager.key_A = false;
 			break;
 		case KEY_D:
-			input.key_D = false;
+			inputManager.key_D = false;
 			break;
 		case KEY_Q:
-			input.key_Q = false;
+			inputManager.key_Q = false;
 			break;
 		case KEY_E:
-			input.key_E = false;
+			inputManager.key_E = false;
 			break;
 		}
 		break;
 	case WM_LBUTTONDOWN:
-		input.key_MouseLeft = true;
-		input.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
+		inputManager.key_MouseLeft = true;
+		inputManager.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
 		break;
 	case WM_RBUTTONDOWN:
-		input.key_MouseRight = true;
-		input.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
+		inputManager.key_MouseRight = true;
+		inputManager.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
 		break;
 	case WM_MBUTTONDOWN:
 		// ¹öÂÖ
 		break;
 	case WM_LBUTTONUP:
-		input.key_MouseLeft = false;
-		input.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
+		inputManager.key_MouseLeft = false;
+		inputManager.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
 		break;
 	case WM_RBUTTONUP:
-		input.key_MouseRight = false;
-		input.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
+		inputManager.key_MouseRight = false;
+		inputManager.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
 		break;
 	case WM_MBUTTONUP:
 		// ¹öÂÖ
@@ -316,7 +316,7 @@ void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	case WM_MOUSEMOVE:
 	{
-		input.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
+		inputManager.pos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
 		break;
 	}
 	case WM_SIZE:

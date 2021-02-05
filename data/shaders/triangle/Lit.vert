@@ -7,7 +7,7 @@
 /*
 #define MaxLights 16
 #define NUM_DIR_LIGHTS 1
-#define NUM_POINT_LIGHTS 1
+#define NUM_POINT_LIGHTS 0
 #define NUM_SPOT_LIGHTS 0
 
 struct Light

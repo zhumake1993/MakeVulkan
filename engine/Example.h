@@ -23,6 +23,8 @@ struct UniformDataPerView
 	alignas(16) glm::vec4 eyePos;
 };
 
+class TimeManager;
+
 class Example : public NonCopyable
 {
 public:
@@ -33,7 +35,7 @@ public:
 	virtual void ConfigDeviceProperties() = 0;
 	virtual void Init() = 0;
 	virtual void Release() = 0;
-	virtual void Update() = 0;
+	virtual void Update();
 
 protected:
 
@@ -47,6 +49,8 @@ protected:
 
 	UniformDataGlobal m_UniformDataGlobal;
 	UniformDataPerView m_UniformDataPerView;
+
+	TimeManager* m_TimeManager;
 
 private:
 
