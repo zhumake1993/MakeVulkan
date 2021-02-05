@@ -449,26 +449,26 @@ void GfxDevice::BindUniformGlobal(void * data, uint64_t size)
 
 	// Update DescriptorSet
 
-	//DescriptorInfo descriptorInfo;
-	//descriptorInfo.buffer.buffer = buffer->GetBuffer();
-	//descriptorInfo.buffer.offset = 0;
-	//descriptorInfo.buffer.range = size;
+	DescriptorInfo descriptorInfo;
+	descriptorInfo.buffer.buffer = buffer->GetBuffer();
+	descriptorInfo.buffer.offset = 0;
+	descriptorInfo.buffer.range = size;
 
-	//VkWriteDescriptorSet writeDescriptorSet = {};
-	//writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	//writeDescriptorSet.pNext = nullptr;
-	//writeDescriptorSet.dstSet = descriptorSet;
-	//writeDescriptorSet.dstBinding = 0;
-	//writeDescriptorSet.dstArrayElement = 0;
-	//writeDescriptorSet.descriptorCount = 1;
-	//writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	//writeDescriptorSet.pBufferInfo = &descriptorInfo.buffer;
+	VkWriteDescriptorSet writeDescriptorSet = {};
+	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSet.pNext = nullptr;
+	writeDescriptorSet.dstSet = descriptorSet;
+	writeDescriptorSet.dstBinding = 0;
+	writeDescriptorSet.dstArrayElement = 0;
+	writeDescriptorSet.descriptorCount = 1;
+	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	writeDescriptorSet.pBufferInfo = &descriptorInfo.buffer;
 
-	//vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
+	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
 
-	//// Bind DescriptorSet
+	// Bind DescriptorSet
 
-	//m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineManager->GetDummyPipelineLayout(), 0, descriptorSet);
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineManager->GetDummyPipelineLayout(), 0, descriptorSet);
 }
 
 void GfxDevice::BindUniformPerView(void * data, uint64_t size)

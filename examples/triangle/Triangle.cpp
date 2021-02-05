@@ -27,10 +27,15 @@ void Triangle::ConfigDeviceProperties()
 
 	// 添加InstanceLayer
 
-	// The VK_LAYER_KHRONOS_validation contains all current validation functionality.
-	// Note that on Android this layer requires at least NDK r20
-#if defined(_WIN32)
+	// vkAllocateDescriptorSets发生内存泄露的原因跟VK_LAYER_KHRONOS_validation有关
+	// 可能的原因请参考：https ://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/236
+	// 使用VK_PRESENT_MODE_MAILBOX_KHR时，不管是vkFreeDescriptorSets还是vkResetDescriptorPool都无法解决内存泄漏
+	// 使用VK_PRESENT_MODE_FIFO_KHR时，没有观察到内存泄露
+	// 升级Vulkan至1.2.162.1，问题仍在
+
+	// 安卓上VK_LAYER_KHRONOS_validation需要至少NDK r20
 	// 目前我用的NDK r19
+#if defined(_WIN32)
 	dp.enabledInstanceLayers.push_back("VK_LAYER_KHRONOS_validation");
 #endif
 
@@ -104,7 +109,7 @@ void Triangle::Draw()
 	device.BeginCommandBuffer();
 
 	device.BindUniformGlobal(&m_UniformDataGlobal, sizeof(UniformDataGlobal));
-	//device.BindUniformPerView(&m_UniformDataPerView, sizeof(UniformDataPerView));
+	device.BindUniformPerView(&m_UniformDataPerView, sizeof(UniformDataPerView));
 
 	Color clearColor;
 	DepthStencil clearDepthStencil;
@@ -118,13 +123,13 @@ void Triangle::Draw()
 
 	// test m_ColorCubeNode
 
-	//device.SetShader(m_ColorShader);
+	device.SetShader(m_ColorShader);
 
-	//glm::mat4& mat = m_ColorCubeNode->GetTransform().GetMatrix();
+	glm::mat4& mat = m_ColorCubeNode->GetTransform().GetMatrix();
 
-	//device.BindUniformPerDraw(m_ColorShader, &mat, sizeof(glm::mat4));
+	device.BindUniformPerDraw(m_ColorShader, &mat, sizeof(glm::mat4));
 
-	//device.DrawBuffer(m_ColorCubeNode->GetMesh()->GetVertexBuffer(), m_ColorCubeNode->GetMesh()->GetIndexBuffer(), m_ColorCubeNode->GetMesh()->GetIndexCount(), m_ColorCubeNode->GetMesh()->GetVertexDescription());
+	device.DrawBuffer(m_ColorCubeNode->GetMesh()->GetVertexBuffer(), m_ColorCubeNode->GetMesh()->GetIndexBuffer(), m_ColorCubeNode->GetMesh()->GetIndexCount(), m_ColorCubeNode->GetMesh()->GetVertexDescription());
 
 
 

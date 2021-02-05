@@ -24,7 +24,7 @@ uint32_t GetSwapChainNumImages()
 {
 	auto& dp = GetDeviceProperties();
 
-	uint32_t imageCount = dp.surfaceCapabilities.minImageCount + 2;
+	uint32_t imageCount = dp.surfaceCapabilities.minImageCount + 1;
 	if ((dp.surfaceCapabilities.maxImageCount > 0) &&
 		(imageCount > dp.surfaceCapabilities.maxImageCount)) {
 		imageCount = dp.surfaceCapabilities.maxImageCount;
@@ -229,6 +229,14 @@ VKSwapChain::VKSwapChain(VkPhysicalDevice physicalDevice, VkDevice vkDevice, VkS
 	VK_CHECK_RESULT(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr));
 	swapChainImages.resize(imageCount);
 	VK_CHECK_RESULT(vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data()));
+
+	// 创建SwapChain时提供的参数是minImageCount，实际的image数量可能不一样
+	// 尤其是使用VK_PRESENT_MODE_MAILBOX_KHR的时候
+	if (numberOfImages != imageCount)
+	{
+		LOG("numberOfImages has been changed.");
+		numberOfImages = imageCount;
+	}
 
 	swapChainImageViews.resize(imageCount);
 	for (uint32_t i = 0; i < imageCount; i++)
