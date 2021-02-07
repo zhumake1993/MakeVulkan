@@ -132,7 +132,7 @@ void Triangle::Draw()
 
 	// m_TexCubeNode
 
-	device.SetShader(m_TexShader);
+	/*device.SetShader(m_TexShader);
 
 	device.BindUniformPerMaterial(m_Crate01Tex);
 
@@ -140,7 +140,7 @@ void Triangle::Draw()
 
 	device.BindUniformPerDraw(m_TexShader, &mat2, sizeof(glm::mat4));
 
-	device.DrawBuffer(m_TexCubeNode->GetMesh()->GetVertexBuffer(), m_TexCubeNode->GetMesh()->GetIndexBuffer(), m_TexCubeNode->GetMesh()->GetIndexCount(), m_TexCubeNode->GetMesh()->GetVertexDescription());
+	device.DrawBuffer(m_TexCubeNode->GetMesh()->GetVertexBuffer(), m_TexCubeNode->GetMesh()->GetIndexBuffer(), m_TexCubeNode->GetMesh()->GetIndexCount(), m_TexCubeNode->GetMesh()->GetVertexDescription());*/
 
 
 

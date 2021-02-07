@@ -2,19 +2,20 @@
 
 #include "Env.h"
 #include "NonCopyable.h"
+#include "Settings.h"
 
 class VKResource : public NonCopyable
 {
 public:
 
-	VKResource(uint32_t currFrameIndex);
+	VKResource();
 	virtual ~VKResource();
 
-	bool InUse(uint32_t currFrameIndex);
-	void Use(uint32_t currFrameIndex);
+	bool InUse(int currFrameIndex);
+	void Use(int currFrameIndex);
 
 private:
 
 	// 在该帧被使用
-	uint32_t m_FrameIndex = 0;
+	int m_FrameIndex = -FrameResourcesCount;
 };

@@ -4,29 +4,28 @@
 #include "NonCopyable.h"
 #include "VKResource.h"
 
-union DescriptorInfo
-{
-	VkDescriptorBufferInfo buffer;
-	VkDescriptorImageInfo image;
-	VkBufferView texelBufferView;
-};
-
 struct VKDescriptorSet : public VKResource
 {
-	VKDescriptorSet(uint32_t currFrameIndex) :VKResource(currFrameIndex) {}
-	virtual ~VKDescriptorSet() {}
+	VKDescriptorSet(VkDevice vkDevice, VkDescriptorPool vkDescriptorPool) :device(vkDevice), descriptorPool(vkDescriptorPool) {}
+	virtual ~VKDescriptorSet()
+	{
+		vkFreeDescriptorSets(device, descriptorPool, 1, &descriptorSet);
+	}
 
 	VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+
+	VkDevice device = VK_NULL_HANDLE;
+	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 };
+
+class GarbageCollector;
 
 class DescriptorSetManager : public NonCopyable
 {
 public:
 
-	DescriptorSetManager(VkDevice vkDevice);
+	DescriptorSetManager(VkDevice vkDevice, GarbageCollector* gc);
 	virtual ~DescriptorSetManager();
-
-	void Update();
 
 	VkDescriptorSetLayout GetDSLGlobal();
 	VkDescriptorSetLayout GetDSLPerView();
@@ -41,13 +40,7 @@ private:
 	VkDescriptorSetLayout m_DSLGlobal = VK_NULL_HANDLE;
 	VkDescriptorSetLayout m_DSLPerView = VK_NULL_HANDLE;
 
-	// 这一帧新加的DescriptorSet
-	std::list<VKDescriptorSet*> m_NewDescriptorSets;
-
-	// 可能还在使用中的DescriptorSet
-	std::list<VKDescriptorSet*> m_PendingDescriptorSets;
-
-	uint32_t m_FrameIndex = 0;
+	GarbageCollector* m_GarbageCollector = nullptr;
 
 	VkDevice m_Device = VK_NULL_HANDLE;
 };

@@ -1,8 +1,10 @@
 #include "DescriptorSetManager.h"
 #include "VulkanTools.h"
+#include "GarbageCollector.h"
 
-DescriptorSetManager::DescriptorSetManager(VkDevice vkDevice) :
-	m_Device(vkDevice)
+DescriptorSetManager::DescriptorSetManager(VkDevice vkDevice, GarbageCollector* gc) :
+	m_Device(vkDevice),
+	m_GarbageCollector(gc)
 {
 	// DescriptorPool
 
@@ -72,20 +74,6 @@ DescriptorSetManager::DescriptorSetManager(VkDevice vkDevice) :
 
 DescriptorSetManager::~DescriptorSetManager()
 {
-	for (auto itr = m_NewDescriptorSets.begin(); itr != m_NewDescriptorSets.end(); itr++)
-	{
-		vkFreeDescriptorSets(m_Device, m_DescriptorPool, 1, &(*itr)->descriptorSet);
-		RELEASE(*itr);
-	}
-	m_NewDescriptorSets.clear();
-
-	for (auto itr = m_PendingDescriptorSets.begin(); itr != m_PendingDescriptorSets.end(); itr++)
-	{
-		vkFreeDescriptorSets(m_Device, m_DescriptorPool, 1, &(*itr)->descriptorSet);
-		RELEASE(*itr);
-	}
-	m_PendingDescriptorSets.clear();
-
 	vkDestroyDescriptorSetLayout(m_Device, m_DSLPerView, nullptr);
 	m_DSLPerView = VK_NULL_HANDLE;
 
@@ -95,33 +83,6 @@ DescriptorSetManager::~DescriptorSetManager()
 	// 销毁DescriptorPool会自动销毁其中分配的Set
 	vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
 	m_DescriptorPool = VK_NULL_HANDLE;
-}
-
-void DescriptorSetManager::Update()
-{
-	// 找到第一个可以被销毁的set
-	auto unused = m_PendingDescriptorSets.begin();
-	for (; unused != m_PendingDescriptorSets.end(); unused++)
-	{
-		if (!(*unused)->InUse(m_FrameIndex))
-		{
-			break;
-		}
-	}
-
-	for (auto itr = unused; itr != m_PendingDescriptorSets.end(); itr++)
-	{
-		vkFreeDescriptorSets(m_Device, m_DescriptorPool, 1, &(*itr)->descriptorSet);
-		RELEASE(*itr);
-	}
-
-	m_PendingDescriptorSets.erase(unused, m_PendingDescriptorSets.end());
-
-	// 新的set放在list前部
-	m_PendingDescriptorSets.splice(m_PendingDescriptorSets.begin(), m_NewDescriptorSets);
-	m_NewDescriptorSets.clear();
-
-	m_FrameIndex++;
 }
 
 VkDescriptorSetLayout DescriptorSetManager::GetDSLGlobal()
@@ -136,8 +97,10 @@ VkDescriptorSetLayout DescriptorSetManager::GetDSLPerView()
 
 VkDescriptorSet DescriptorSetManager::AllocateDescriptorSet(VkDescriptorSetLayout layout)
 {
-	VKDescriptorSet* descriptorSet = new VKDescriptorSet(m_FrameIndex);
-	m_NewDescriptorSets.push_back(descriptorSet);
+	VKDescriptorSet* descriptorSet = new VKDescriptorSet(m_Device, m_DescriptorPool);
+
+	descriptorSet->Use(m_GarbageCollector->GetFrameIndex());
+	m_GarbageCollector->AddResource(descriptorSet);
 
 	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
 	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;

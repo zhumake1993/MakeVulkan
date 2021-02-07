@@ -1,5 +1,6 @@
 #include "PipelineManager.h"
 #include "VulkanTools.h"
+#include "GarbageCollector.h"
 
 PipelineCI::PipelineCI()
 {
@@ -165,8 +166,9 @@ void PipelineCI::Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderS
 	}
 }
 
-PipelineManager::PipelineManager(VkDevice vkDevice) :
-	m_Device(vkDevice)
+PipelineManager::PipelineManager(VkDevice vkDevice, GarbageCollector* gc) :
+	m_Device(vkDevice),
+	m_GarbageCollector(gc)
 {
 	m_PipelineCI = new PipelineCI();
 }
@@ -176,49 +178,8 @@ PipelineManager::~PipelineManager()
 	vkDestroyPipelineLayout(m_Device, m_PipelineCI->pipelineCreateInfo.layout, nullptr);
 	RELEASE(m_PipelineCI);
 
-	for (auto itr = m_NewPipelines.begin(); itr != m_NewPipelines.end(); itr++)
-	{
-		vkDestroyPipeline(m_Device, (*itr)->pipeline, nullptr);
-		RELEASE(*itr);
-	}
-	m_NewPipelines.clear();
-
-	for (auto itr = m_PendingPipelines.begin(); itr != m_PendingPipelines.end(); itr++)
-	{
-		vkDestroyPipeline(m_Device, (*itr)->pipeline, nullptr);
-		RELEASE(*itr);
-	}
-	m_PendingPipelines.clear();
-
 	vkDestroyPipelineLayout(m_Device, m_DummyPipelineLayout, nullptr);
 	m_DummyPipelineLayout = VK_NULL_HANDLE;
-}
-
-void PipelineManager::Update()
-{
-	// 找到第一个可以被销毁的Pipeline
-	auto unused = m_PendingPipelines.begin();
-	for (; unused != m_PendingPipelines.end(); unused++)
-	{
-		if (!(*unused)->InUse(m_FrameIndex))
-		{
-			break;
-		}
-	}
-
-	for (auto itr = unused; itr != m_PendingPipelines.end(); itr++)
-	{
-		vkDestroyPipeline(m_Device, (*itr)->pipeline, nullptr);
-		RELEASE(*itr);
-	}
-
-	m_PendingPipelines.erase(unused, m_PendingPipelines.end());
-
-	// 新的Pipeline放在list前部
-	m_PendingPipelines.splice(m_PendingPipelines.begin(), m_NewPipelines);
-	m_NewPipelines.clear();
-
-	m_FrameIndex++;
 }
 
 VkPipelineLayout PipelineManager::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& layouts)
@@ -287,8 +248,10 @@ VkPipelineLayout PipelineManager::GetCurrPipelineLayout()
 
 VkPipeline PipelineManager::CreatePipeline(VertexDescription & vertexDescription)
 {
-	VKPipeline* pipeline = new VKPipeline(m_FrameIndex);
-	m_NewPipelines.push_back(pipeline);
+	VKPipeline* pipeline = new VKPipeline(m_Device);
+
+	pipeline->Use(m_GarbageCollector->GetFrameIndex());
+	m_GarbageCollector->AddResource(pipeline);
 
 	PipelineCI& pipelineCI = *m_PipelineCI;
 	{

@@ -15,6 +15,8 @@
 
 #include "VKImage.h"
 
+#include "GarbageCollector.h"
+
 #include "BufferManager.h"
 #include "DescriptorSetManager.h"
 #include "PipelineManager.h"
@@ -77,11 +79,14 @@ GfxDevice::GfxDevice()
 
 	m_UploadCommandBuffer = new VKCommandBuffer(m_VKDevice->device, m_VKCommandPool->commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
-	m_BufferManager = new BufferManager(m_VKDevice->device);
+	// GC
+	m_GarbageCollector = new GarbageCollector();
 
-	m_DescriptorSetManager = new DescriptorSetManager(m_VKDevice->device);
+	m_BufferManager = new BufferManager(m_VKDevice->device, m_GarbageCollector);
 
-	m_PipelineManager = new PipelineManager(m_VKDevice->device);
+	m_DescriptorSetManager = new DescriptorSetManager(m_VKDevice->device, m_GarbageCollector);
+
+	m_PipelineManager = new PipelineManager(m_VKDevice->device, m_GarbageCollector);
 
 	std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { m_DescriptorSetManager->GetDSLGlobal(),m_DescriptorSetManager->GetDSLPerView() };
 	m_PipelineManager->SetDummyPipelineLayout(m_PipelineManager->CreatePipelineLayout(descriptorSetLayouts));
@@ -89,6 +94,8 @@ GfxDevice::GfxDevice()
 
 GfxDevice::~GfxDevice()
 {
+	RELEASE(m_GarbageCollector);
+
 	RELEASE(m_BufferManager);
 	RELEASE(m_DescriptorSetManager);
 	RELEASE(m_PipelineManager);
@@ -212,9 +219,7 @@ void GfxDevice::QueuePresent()
 
 void GfxDevice::Update()
 {
-	m_BufferManager->Update();
-	m_DescriptorSetManager->Update();
-	m_PipelineManager->Update();
+	m_GarbageCollector->Update();
 
 	m_FrameIndex++;
 	m_FrameResourceIndex = m_FrameIndex % FrameResourcesCount;
@@ -285,21 +290,20 @@ Buffer * GfxDevice::CreateBuffer(BufferType bufferType, uint64_t size)
 	{
 		case kBufferTypeVertex:
 		{
-			VKBuffer* buffer = m_BufferManager->CreateBuffer(bufferType, size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true);
-			return buffer;
+			VKBuffer* buffer = m_BufferManager->CreateBuffer(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			return new BufferImpl(bufferType, buffer);
 			break;
 		}
 		case kBufferTypeIndex:
 		{
-			VKBuffer* buffer = m_BufferManager->CreateBuffer(bufferType, size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true);
-			return buffer;
+			VKBuffer* buffer = m_BufferManager->CreateBuffer(size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			return new BufferImpl(bufferType, buffer);
 			break;
 		}
 		case kBufferTypeUniform:
 		{
-			// 上层创建的Uniform Buffer也是persistent的，例如material的buffer
-			VKBuffer* buffer = m_BufferManager->CreateBuffer(bufferType, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
-			return buffer;
+			VKBuffer* buffer = m_BufferManager->CreateBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			return new BufferImpl(bufferType, buffer);
 			break;
 		}
 		default:
@@ -315,14 +319,40 @@ void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t size)
 {
 	BufferType bufferType = buffer->GetBufferType();
 
-	VKBuffer* vKBuffer = static_cast<VKBuffer*>(buffer);
+	BufferImpl* bufferImpl = static_cast<BufferImpl*>(buffer);
+
+	VKBuffer* vkBuffer = bufferImpl->GetBuffer();
+
+	if (vkBuffer->InUse(m_FrameIndex))
+	{
+		m_GarbageCollector->AddResource(vkBuffer);
+
+		vkBuffer = m_BufferManager->CreateBuffer(vkBuffer->size, vkBuffer->usage, vkBuffer->memoryProperty);
+
+		bufferImpl->SetBuffer(vkBuffer);
+	}
 
 	switch (bufferType)
 	{
 		case kBufferTypeVertex:
 		case kBufferTypeIndex:
 		{
-			m_BufferManager->UpdateBuffer(vKBuffer, data, size, m_UploadCommandBuffer);
+			VKBuffer* stagingBuffer = m_BufferManager->GetStagingBuffer();
+			stagingBuffer->Update(data, 0, size);
+
+			m_UploadCommandBuffer->Begin();
+
+			VkBufferCopy bufferCopyInfo = {};
+			bufferCopyInfo.srcOffset = 0;
+			bufferCopyInfo.dstOffset = 0;
+			bufferCopyInfo.size = size;
+			m_UploadCommandBuffer->CopyBuffer(stagingBuffer->buffer, vkBuffer->buffer, bufferCopyInfo);
+
+			// 经测试发现没有这一步也没问题（许多教程也的确没有这一步）
+			// 个人认为是因为调用了DeviceWaitIdle
+			//vkCmdPipelineBarrier
+
+			m_UploadCommandBuffer->End();
 
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -342,7 +372,7 @@ void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t size)
 		}
 		case kBufferTypeUniform:
 		{
-			m_BufferManager->UpdateBuffer(vKBuffer, data, size, nullptr);
+			vkBuffer->Update(data, 0, size);
 			break;
 		}
 		default:
@@ -355,7 +385,7 @@ void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t size)
 
 void GfxDevice::ReleaseBuffer(Buffer * buffer)
 {
-	m_BufferManager->ReleaseBuffer(static_cast<VKBuffer*>(buffer));
+	m_GarbageCollector->AddResource(static_cast<BufferImpl*>(buffer)->GetBuffer());
 }
 
 Image * GfxDevice::CreateImage(ImageType imageType, VkFormat format, uint32_t width, uint32_t height)
@@ -400,7 +430,7 @@ void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size)
 
 		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-		m_UploadCommandBuffer->CopyBufferToImage(stagingBuffer->GetBuffer(), vkImage);
+		m_UploadCommandBuffer->CopyBufferToImage(stagingBuffer->buffer, vkImage);
 
 		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
@@ -436,11 +466,7 @@ void GfxDevice::BindUniformGlobal(void * data, uint64_t size)
 {
 	// Create Buffer
 
-	VKBuffer* buffer = m_BufferManager->CreateBuffer(kBufferTypeUniform, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
-	//VKBuffer* buffer = new VKBuffer(m_FrameIndex, m_VKDevice->device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	//m_VKGarbageCollector->AddBuffer(buffer);
-
-	//buffer->Map();
+	VKBuffer* buffer = m_BufferManager->CreateTempBuffer(size);
 	buffer->Update(data, 0, size);
 
 	// Create DescriptorSet
@@ -449,10 +475,10 @@ void GfxDevice::BindUniformGlobal(void * data, uint64_t size)
 
 	// Update DescriptorSet
 
-	DescriptorInfo descriptorInfo;
-	descriptorInfo.buffer.buffer = buffer->GetBuffer();
-	descriptorInfo.buffer.offset = 0;
-	descriptorInfo.buffer.range = size;
+	VkDescriptorBufferInfo bufferInfo;
+	bufferInfo.buffer = buffer->buffer;
+	bufferInfo.offset = 0;
+	bufferInfo.range = size;
 
 	VkWriteDescriptorSet writeDescriptorSet = {};
 	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -462,24 +488,24 @@ void GfxDevice::BindUniformGlobal(void * data, uint64_t size)
 	writeDescriptorSet.dstArrayElement = 0;
 	writeDescriptorSet.descriptorCount = 1;
 	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	writeDescriptorSet.pBufferInfo = &descriptorInfo.buffer;
+	writeDescriptorSet.pBufferInfo = &bufferInfo;
 
 	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
 
 	// Bind DescriptorSet
 
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineManager->GetDummyPipelineLayout(), 0, descriptorSet);
+
+	// 标记资源被使用
+
+	buffer->Use(m_FrameIndex);
 }
 
 void GfxDevice::BindUniformPerView(void * data, uint64_t size)
 {
 	// Create Buffer
 
-	VKBuffer* buffer = m_BufferManager->CreateBuffer(kBufferTypeUniform, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
-	//VKBuffer* buffer = new VKBuffer(m_FrameIndex, m_VKDevice->device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	//m_VKGarbageCollector->AddBuffer(buffer);
-
-	//buffer->Map();
+	VKBuffer* buffer = m_BufferManager->CreateTempBuffer(size);
 	buffer->Update(data, 0, size);
 
 	// Create DescriptorSet
@@ -488,10 +514,10 @@ void GfxDevice::BindUniformPerView(void * data, uint64_t size)
 
 	// Update DescriptorSet
 
-	DescriptorInfo descriptorInfo;
-	descriptorInfo.buffer.buffer = buffer->GetBuffer();
-	descriptorInfo.buffer.offset = 0;
-	descriptorInfo.buffer.range = size;
+	VkDescriptorBufferInfo bufferInfo;
+	bufferInfo.buffer = buffer->buffer;
+	bufferInfo.offset = 0;
+	bufferInfo.range = size;
 
 	VkWriteDescriptorSet writeDescriptorSet = {};
 	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -501,13 +527,17 @@ void GfxDevice::BindUniformPerView(void * data, uint64_t size)
 	writeDescriptorSet.dstArrayElement = 0;
 	writeDescriptorSet.descriptorCount = 1;
 	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	writeDescriptorSet.pBufferInfo = &descriptorInfo.buffer;
+	writeDescriptorSet.pBufferInfo = &bufferInfo;
 
 	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
 
 	// Bind DescriptorSet
 
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineManager->GetDummyPipelineLayout(), 1, descriptorSet);
+
+	// 标记资源被使用
+
+	buffer->Use(m_FrameIndex);
 }
 
 void GfxDevice::SetShader(Shader * shader)
@@ -552,6 +582,10 @@ void GfxDevice::BindUniformPerMaterial(Shader * shader, Texture * tex)
 	//vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
 
 	//m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineManager->GetCurrPipelineLayout(), 3, descriptorSet);
+
+	// 标记资源被使用
+
+	//buffer->Use(m_FrameIndex);
 }
 
 void GfxDevice::BindUniformPerDraw(Shader * shader, void * data, uint64_t size)
@@ -560,11 +594,7 @@ void GfxDevice::BindUniformPerDraw(Shader * shader, void * data, uint64_t size)
 
 	// Create Buffer
 
-	VKBuffer* buffer = m_BufferManager->CreateBuffer(kBufferTypeUniform, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
-	//VKBuffer* buffer = new VKBuffer(m_FrameIndex, m_VKDevice->device, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	//m_VKGarbageCollector->AddBuffer(buffer);
-
-	//buffer->Map();
+	VKBuffer* buffer = m_BufferManager->CreateTempBuffer(size);
 	buffer->Update(data, 0, size);
 
 	// Create DescriptorSet
@@ -573,10 +603,10 @@ void GfxDevice::BindUniformPerDraw(Shader * shader, void * data, uint64_t size)
 
 	// Update DescriptorSet
 
-	DescriptorInfo descriptorInfo;
-	descriptorInfo.buffer.buffer = buffer->GetBuffer();
-	descriptorInfo.buffer.offset = 0;
-	descriptorInfo.buffer.range = size;
+	VkDescriptorBufferInfo bufferInfo;
+	bufferInfo.buffer = buffer->buffer;
+	bufferInfo.offset = 0;
+	bufferInfo.range = size;
 
 	VkWriteDescriptorSet writeDescriptorSet = {};
 	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -586,11 +616,15 @@ void GfxDevice::BindUniformPerDraw(Shader * shader, void * data, uint64_t size)
 	writeDescriptorSet.dstArrayElement = 0;
 	writeDescriptorSet.descriptorCount = 1;
 	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	writeDescriptorSet.pBufferInfo = &descriptorInfo.buffer;
+	writeDescriptorSet.pBufferInfo = &bufferInfo;
 
 	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
 
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineManager->GetCurrPipelineLayout(), 3, descriptorSet);
+
+	// 标记资源被使用
+
+	buffer->Use(m_FrameIndex);
 }
 
 void GfxDevice::DrawBuffer(Buffer * vertexBuffer, Buffer * indexBuffer, uint32_t indexCount, VertexDescription & vertexDescription)
@@ -598,8 +632,8 @@ void GfxDevice::DrawBuffer(Buffer * vertexBuffer, Buffer * indexBuffer, uint32_t
 	VkPipeline pipeline = m_PipelineManager->CreatePipeline(vertexDescription);
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindVertexBuffer(0, static_cast<VKBuffer*>(vertexBuffer)->GetBuffer());
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindIndexBuffer(static_cast<VKBuffer*>(indexBuffer)->GetBuffer(), VK_INDEX_TYPE_UINT32);
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindVertexBuffer(0, static_cast<BufferImpl*>(vertexBuffer)->GetBuffer()->buffer);
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindIndexBuffer(static_cast<BufferImpl*>(indexBuffer)->GetBuffer()->buffer, VK_INDEX_TYPE_UINT32);
 
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->DrawIndexed(indexCount, 1, 0, 0, 1);
 }

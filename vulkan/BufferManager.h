@@ -5,25 +5,15 @@
 #include "Buffer.h"
 #include "VKResource.h"
 
-struct VKBufferResource : public VKResource
+struct VKBuffer : public VKResource
 {
-	VKBufferResource(uint32_t currFrameIndex) :VKResource(currFrameIndex) {}
-	virtual ~VKBufferResource() {}
-
-	VkBuffer buffer = VK_NULL_HANDLE;
-	VkDeviceMemory memory = VK_NULL_HANDLE;
-	void* mappedPointer = nullptr;
-};
-
-class VKBuffer : public Buffer
-{
-
-public:
-
-	VKBuffer(BufferType bufferType, uint32_t currFrameIndex, VkDevice vkDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty, bool persistent);
-	virtual ~VKBuffer();
-
-	bool InUse(uint32_t currFrameIndex);
+	VKBuffer(VkDevice vkDevice, VkDeviceSize vkSize, VkBufferUsageFlags vkUsage, VkMemoryPropertyFlags vkMemoryProperty) :
+		device(vkDevice), size(vkSize), usage(vkUsage), memoryProperty(vkMemoryProperty) {}
+	virtual ~VKBuffer()
+	{
+		vkDestroyBuffer(device, buffer, nullptr);
+		vkFreeMemory(device, memory, nullptr);
+	}
 
 	void Map(VkDeviceSize offset = 0, VkDeviceSize size = VK_WHOLE_SIZE);
 	void Unmap();
@@ -33,45 +23,51 @@ public:
 	void Flush(VkDeviceSize offset = 0, VkDeviceSize size = VK_WHOLE_SIZE);
 	void Invalidate(VkDeviceSize offset = 0, VkDeviceSize size = VK_WHOLE_SIZE);
 
-	void SwitchResource(VKBuffer* other);
+	VkDeviceSize size;
+	VkBufferUsageFlags usage;
+	VkMemoryPropertyFlags memoryProperty;
 
-	VkDeviceSize GetSize() { return m_Size; }
-	VkBufferUsageFlags GetUsage() { return m_Usage; }
-	VkMemoryPropertyFlags GetMemoryProperty() { return m_MemoryProperty; }
-	bool GetPersistent() { return m_Persistent; }
+	VkBuffer buffer = VK_NULL_HANDLE;
+	VkDeviceMemory memory = VK_NULL_HANDLE;
+	void* mappedPointer = nullptr;
 
-	VkBuffer GetBuffer() { return m_BufferResource->buffer; }
+	VkDevice device = VK_NULL_HANDLE;
+};
+
+class BufferImpl : public Buffer
+{
+
+public:
+
+	BufferImpl(BufferType bufferType, VKBuffer* buffer);
+	virtual ~BufferImpl();
+
+	VKBuffer* GetBuffer() { return m_Buffer; }
+	void SetBuffer(VKBuffer* buffer) { m_Buffer = buffer; }
 
 private:
 
-	VkDeviceSize m_Size;
-	VkBufferUsageFlags m_Usage;
-	VkMemoryPropertyFlags m_MemoryProperty;
-
-	bool m_Persistent;
-
-	VKBufferResource* m_BufferResource;
-	VkDevice m_Device = VK_NULL_HANDLE;
+	VKBuffer* m_Buffer;
 };
 
 struct VKCommandBuffer;
+class GarbageCollector;
 
 class BufferManager : public NonCopyable
 {
 public:
 
-	BufferManager(VkDevice vkDevice);
+	BufferManager(VkDevice vkDevice, GarbageCollector* gc);
 	virtual ~BufferManager();
-
-	void Update();
 
 	VKBuffer* GetStagingBuffer();
 
-	VKBuffer* CreateBuffer(BufferType bufferType, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty, bool persistent);
+	VKBuffer* CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty);
+	VKBuffer* CreateTempBuffer(VkDeviceSize size);
 
-	void UpdateBuffer(VKBuffer* buffer, void * data, uint64_t size, VKCommandBuffer* commandBuffer);
+private:
 
-	void ReleaseBuffer(VKBuffer* buffer);
+	VKBuffer* CreateBufferInternal(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperty);
 
 private:
 
@@ -79,13 +75,7 @@ private:
 	const uint32_t m_StagingBufferSize = 10 * 1024 * 1024;
 	VKBuffer* m_StagingBuffer;
 
-	// 这一帧新加的Buffer
-	std::list<VKBuffer*> m_NewBuffers;
-
-	// 可能还在使用中的Buffer
-	std::list<VKBuffer*> m_PendingBuffers;
-
-	uint32_t m_FrameIndex = 0;
+	GarbageCollector* m_GarbageCollector = nullptr;
 
 	VkDevice m_Device = VK_NULL_HANDLE;
 };

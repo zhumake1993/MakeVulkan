@@ -14,6 +14,9 @@ struct VKCommandPool;
 struct VKCommandBuffer;
 struct VKRenderPass;
 class VKImage;
+
+class GarbageCollector;
+
 class BufferManager;
 class DescriptorSetManager;
 class PipelineManager;
@@ -123,6 +126,9 @@ private:
 
 	// 用于传数据
 	VKCommandBuffer* m_UploadCommandBuffer;
+
+	// GC
+	GarbageCollector* m_GarbageCollector = nullptr;
 
 	// 资源管理器
 

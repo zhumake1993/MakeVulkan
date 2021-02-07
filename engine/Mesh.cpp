@@ -24,6 +24,9 @@ Mesh::~Mesh()
 
 	device.ReleaseBuffer(m_VertexBuffer);
 	device.ReleaseBuffer(m_IndexBuffer);
+
+	RELEASE(m_VertexBuffer);
+	RELEASE(m_IndexBuffer);
 }
 
 void Mesh::SetVertexChannels(const std::vector<VertexChannel>& channels)

@@ -31,23 +31,25 @@ struct PipelineCI
 
 struct VKPipeline : public VKResource
 {
-	VKPipeline(uint32_t currFrameIndex) :VKResource(currFrameIndex) {}
-	virtual ~VKPipeline() {}
+	VKPipeline(VkDevice vkDevice) :device(vkDevice) {}
+	virtual ~VKPipeline()
+	{
+		vkDestroyPipeline(device, pipeline, nullptr);
+	}
 
 	VkPipeline pipeline = VK_NULL_HANDLE;
 
-	// todo
-	//VkPipelineCache pipelineCache = VK_NULL_HANDLE;
+	VkDevice device = VK_NULL_HANDLE;
 };
+
+class GarbageCollector;
 
 class PipelineManager : public NonCopyable
 {
 public:
 
-	PipelineManager(VkDevice vkDevice);
+	PipelineManager(VkDevice vkDevice, GarbageCollector* gc);
 	virtual ~PipelineManager();
-
-	void Update();
 
 	VkPipelineLayout CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& layouts);
 
@@ -65,16 +67,13 @@ private:
 	// 当前的PipelineCI
 	PipelineCI* m_PipelineCI = nullptr;
 
-	// 这一帧新加的Pipeline
-	std::list<VKPipeline*> m_NewPipelines;
-
-	// 可能还在使用中的Pipeline
-	std::list<VKPipeline*> m_PendingPipelines;
-
 	// 利用Pipeline Layout Compatibility的特性，在创建实际使用的PipelineLayout之前，就可以绑定Global和PerView
 	VkPipelineLayout m_DummyPipelineLayout = VK_NULL_HANDLE;
 
-	uint32_t m_FrameIndex = 0;
+	GarbageCollector* m_GarbageCollector = nullptr;
 
 	VkDevice m_Device = VK_NULL_HANDLE;
+
+	// todo
+	//VkPipelineCache pipelineCache = VK_NULL_HANDLE;
 };
