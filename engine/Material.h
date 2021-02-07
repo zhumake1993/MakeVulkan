@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Env.h"
-#include "GfxDevice.h"
+#include "GpuProgram.h"
 
 class Shader;
 class Texture;
@@ -33,7 +33,7 @@ public:
 	//char* GetUniformData();
 	//uint32_t GetUniformDataSize();
 
-	//std::vector<Texture*>& GetTextures();
+	std::vector<Texture*>& GetTextures();
 
 	//void SetDirty();
 	//bool IsDirty();

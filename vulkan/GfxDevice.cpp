@@ -523,6 +523,37 @@ void GfxDevice::SetShader(Shader * shader)
 	m_PipelineManager->SetPipelineCI(descriptorSetLayouts, m_VKRenderPass->renderPass, shader->GetRenderStatus(), gpuProgram->GetVertShaderModule(), gpuProgram->GetFragShaderModule());
 }
 
+void GfxDevice::BindUniformPerMaterial(Shader * shader, Texture * tex)
+{
+	//VKGpuProgram* gpuProgram = static_cast<VKGpuProgram*>(shader->GetGpuProgram());
+
+	//// Create DescriptorSet
+
+	//VkDescriptorSet descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(gpuProgram->GetDSLPerMaterial());
+
+	//// Update DescriptorSet
+
+	//DescriptorInfo descriptorInfo;
+	//descriptorInfo.image.sampler = ;
+	//descriptorInfo.image.imageView;
+	//descriptorInfo.image.imageLayout;
+	//info.info.image = { m_Sampler->sampler, textures[i]->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+
+	//VkWriteDescriptorSet writeDescriptorSet = {};
+	//writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	//writeDescriptorSet.pNext = nullptr;
+	//writeDescriptorSet.dstSet = descriptorSet;
+	//writeDescriptorSet.dstBinding = 0;//todo
+	//writeDescriptorSet.dstArrayElement = 0;
+	//writeDescriptorSet.descriptorCount = 1;
+	//writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	//writeDescriptorSet.pBufferInfo = &descriptorInfo.buffer;
+
+	//vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
+
+	//m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineManager->GetCurrPipelineLayout(), 3, descriptorSet);
+}
+
 void GfxDevice::BindUniformPerDraw(Shader * shader, void * data, uint64_t size)
 {
 	VKGpuProgram* gpuProgram = static_cast<VKGpuProgram*>(shader->GetGpuProgram());

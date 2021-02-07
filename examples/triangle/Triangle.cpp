@@ -13,6 +13,8 @@
 #include "Camera.h"
 #include "TimeManager.h"
 
+#include "GpuProgram.h"
+
 Triangle::Triangle()
 {
 }
@@ -118,7 +120,7 @@ void Triangle::Draw()
 	device.SetViewport(viewport);
 	device.SetScissor(area);
 
-	// test m_ColorCubeNode
+	// m_ColorCubeNode
 
 	device.SetShader(m_ColorShader);
 
@@ -128,10 +130,17 @@ void Triangle::Draw()
 
 	device.DrawBuffer(m_ColorCubeNode->GetMesh()->GetVertexBuffer(), m_ColorCubeNode->GetMesh()->GetIndexBuffer(), m_ColorCubeNode->GetMesh()->GetIndexCount(), m_ColorCubeNode->GetMesh()->GetVertexDescription());
 
+	// m_TexCubeNode
 
+	device.SetShader(m_TexShader);
 
+	device.BindUniformPerMaterial(m_Crate01Tex);
 
+	glm::mat4& mat2 = m_TexCubeNode->GetTransform().GetMatrix();
 
+	device.BindUniformPerDraw(m_TexShader, &mat2, sizeof(glm::mat4));
+
+	device.DrawBuffer(m_TexCubeNode->GetMesh()->GetVertexBuffer(), m_TexCubeNode->GetMesh()->GetIndexBuffer(), m_TexCubeNode->GetMesh()->GetIndexCount(), m_TexCubeNode->GetMesh()->GetVertexDescription());
 
 
 
@@ -167,6 +176,11 @@ void Triangle::PrepareResources()
 		m_CustomCubeMesh->SetIndices(indices);
 		m_CustomCubeMesh->UploadToGPU();
 
+		m_TexCubeMesh = CreateMesh("CubeMesh");
+		m_TexCubeMesh->SetVertexChannels({ kVertexPosition, kVertexTexcoord0 });
+		m_TexCubeMesh->LoadFromFile(AssetPath + "models/cube.obj");
+		m_TexCubeMesh->UploadToGPU();
+
 		//m_CubeMesh = CreateMesh("CubeMesh");
 		//m_CubeMesh->LoadFromFile(AssetPath + "models/cube.obj");
 		//m_CubeMesh->UploadToGPU();
@@ -178,14 +192,14 @@ void Triangle::PrepareResources()
 
 	// Texture
 	{
-		/*m_Crate01Tex = CreateTexture("Crate01Tex");
+		m_Crate01Tex = CreateTexture("Crate01Tex");
 		m_Crate01Tex->LoadFromFile(AssetPath + "textures/crate01_color_height_rgba.ktx");
 
-		m_Crate02Tex = CreateTexture("Crate02Tex");
-		m_Crate02Tex->LoadFromFile(AssetPath + "textures/crate02_color_height_rgba.ktx");
+		//m_Crate02Tex = CreateTexture("Crate02Tex");
+		//m_Crate02Tex->LoadFromFile(AssetPath + "textures/crate02_color_height_rgba.ktx");
 
-		m_MetalplateTex = CreateTexture("MetalplateTex");
-		m_MetalplateTex->LoadFromFile(AssetPath + "textures/metalplate_nomips_rgba.ktx");*/
+		//m_MetalplateTex = CreateTexture("MetalplateTex");
+		//m_MetalplateTex->LoadFromFile(AssetPath + "textures/metalplate_nomips_rgba.ktx");
 	}
 
 	// Shader
@@ -212,6 +226,30 @@ void Triangle::PrepareResources()
 		RenderStatus renderStatus;
 
 		m_ColorShader->SetRenderStatus(renderStatus);
+	}
+	{
+		m_TexShader = CreateShader("TexShader");
+		m_TexShader->LoadSPV(AssetPath + "shaders/triangle/Tex.vert.spv", AssetPath + "shaders/triangle/Tex.frag.spv");
+
+		//todo
+		GpuParameters parameters;
+
+		UniformBufferLayout layoutMaterial0("PerMaterial", 0, VK_SHADER_STAGE_VERTEX_BIT);
+		//layoutMaterial0.Add(UniformBufferElement(kUniformDataTypeFloat4, "DiffuseAlbedo"));
+		//layoutMaterial0.Add(UniformBufferElement(kUniformDataTypeFloat3, "FresnelR0"));
+		//layoutMaterial0.Add(UniformBufferElement(kUniformDataTypeFloat1, "Roughness"));
+		//layoutMaterial0.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatTransform"));
+		parameters.uniformBufferLayouts.push_back(layoutMaterial0);
+
+		UniformBufferLayout layout0("PerDraw", 0, VK_SHADER_STAGE_VERTEX_BIT);
+		layout0.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "ObjectToWorld"));
+		parameters.uniformBufferLayouts.push_back(layout0);
+
+		m_TexShader->CreateGpuProgram(parameters);
+
+		RenderStatus renderStatus;
+
+		m_TexShader->SetRenderStatus(renderStatus);
 	}
 	{
 		//m_LitShader = CreateShader("LitShader");
@@ -246,6 +284,11 @@ void Triangle::PrepareResources()
 		m_ColorMat = CreateMaterial("SimpleColorMat");
 		m_ColorMat->SetShader(m_ColorShader);
 
+		m_TexMat = CreateMaterial("TexMat");
+		m_TexMat->SetShader(m_TexShader);
+
+		m_TexMat->SetTextures("sdfgsdf", m_Crate01Tex);
+
 		//m_Crate01Mat = CreateMaterial("Crate01Mat");
 		//m_Crate01Mat->SetShader(m_LitShader);
 		//m_Crate01Mat->SetFloat4("DiffuseAlbedo", 1.0f, 1.0f, 1.0f, 1.0f);
@@ -274,6 +317,11 @@ void Triangle::PrepareResources()
 		m_ColorCubeNode->SetMesh(m_CustomCubeMesh);
 		m_ColorCubeNode->SetMaterial(m_ColorMat);
 		m_ColorCubeNode->GetTransform().Scale(0.1f, 0.1f, 0.1f).Translate(0.0f, 0.6f, 0.0f);
+
+		m_TexCubeNode = CreateRenderNode("TexCubeNode");
+		m_TexCubeNode->SetMesh(m_TexCubeMesh);
+		m_TexCubeNode->SetMaterial(m_TexMat);
+		m_TexCubeNode->GetTransform().Scale(0.1f, 0.1f, 0.1f).Translate(0.0f, 0.3f, 0.0f);
 
 		/*m_CubeNode = CreateRenderNode("CubeNode");
 		m_CubeNode->SetMesh(m_CubeMesh);

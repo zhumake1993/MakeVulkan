@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Env.h"
+#include "GpuProgram.h"
 #include "GfxTypes.h"
 
 class GpuProgram;

@@ -3,6 +3,7 @@
 #include "Env.h"
 #include "NonCopyable.h"
 #include "GfxTypes.h"
+#include "GpuProgram.h"
 
 struct VKInstance;
 struct VKSurface;
@@ -23,6 +24,9 @@ class Buffer;
 class Image;
 class Shader;
 class GpuProgram;
+
+//todo
+class Texture;
 
 class GfxDevice : public NonCopyable
 {
@@ -80,7 +84,7 @@ public:
 
 	void SetShader(Shader* shader);
 
-	void BindUniformPerMaterial(Shader* shader, void* data, uint64_t size);
+	void BindUniformPerMaterial(Shader * shader, Texture* tex);
 	void BindUniformPerDraw(Shader* shader, void* data, uint64_t size);
 
 	void DrawBuffer(Buffer* vertexBuffer, Buffer* indexBuffer, uint32_t indexCount, VertexDescription& vertexDescription);

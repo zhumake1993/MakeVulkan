@@ -103,6 +103,7 @@ void Material::SetFloat4x4(std::string name, glm::mat4 & mat)
 
 void Material::SetTextures(std::string name, Texture * texture)
 {
+	m_Textures.push_back(texture);
 	//todo
 	/*std::vector<std::string>& textureDesc = m_Shader->GetTextureDesc();
 	int index = 0;
@@ -175,10 +176,10 @@ uint32_t Material::GetUniformBufferDataOffset(std::string name, UniformDataType 
 //	return m_Shader->GetUniformSize();
 //}
 //
-//std::vector<Texture*>& Material::GetTextures()
-//{
-//	return m_Textures;
-//}
+std::vector<Texture*>& Material::GetTextures()
+{
+	return m_Textures;
+}
 //
 //void Material::SetDirty()
 //{

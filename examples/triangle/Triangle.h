@@ -24,7 +24,7 @@ private:
 
 	// Mesh
 	Mesh* m_CustomCubeMesh;
-	Mesh* m_CubeMesh;
+	Mesh* m_TexCubeMesh;
 	//Mesh* m_SphereMesh;
 
 	// Texture
@@ -34,17 +34,18 @@ private:
 
 	// Shader
 	Shader* m_ColorShader;
+	Shader* m_TexShader;
 	//Shader* m_LitShader;
 
 	// Material
 	Material* m_ColorMat;
-	Material* m_Crate01Mat;
+	Material* m_TexMat;
 	//Material* m_Crate02Mat;
 	//Material* m_MetalplateMat;
 
 	// RenderNode
 	RenderNode* m_ColorCubeNode;
-	RenderNode* m_CubeNode;
+	RenderNode* m_TexCubeNode;
 	//RenderNode* m_SphereNode;
 
 	// Camera
