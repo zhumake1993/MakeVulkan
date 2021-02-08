@@ -3,8 +3,6 @@
 #include "Env.h"
 #include "NonCopyable.h"
 
-class VKImage;
-
 struct VKCommandBuffer : public NonCopyable
 {
 	VKCommandBuffer(VkDevice vkDevice, VkCommandPool vkCommandPool, VkCommandBufferLevel level);
@@ -20,9 +18,9 @@ struct VKCommandBuffer : public NonCopyable
 	void SetScissor(VkRect2D& area);
 
 	void CopyBuffer(VkBuffer src, VkBuffer dst, VkBufferCopy& region);
-	void CopyBufferToImage(VkBuffer src, VKImage* dst);
+	void CopyBufferToImage(VkBuffer src, VkImage dst, uint32_t width, uint32_t height);
 
-	void ImageMemoryBarrier(VKImage* image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL);
+	void ImageMemoryBarrier(VkImage image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL);
 
 	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set, uint32_t offset = -1);
 	void BindPipeline(VkPipelineBindPoint bindPoint, VkPipeline vkPipeline);

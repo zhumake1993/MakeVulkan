@@ -1,7 +1,6 @@
 #include "BufferManager.h"
 #include "DeviceProperties.h"
 #include "VulkanTools.h"
-#include "VKCommandBuffer.h"
 #include "GarbageCollector.h"
 
 void VKBuffer::Map(VkDeviceSize offset, VkDeviceSize size)
@@ -45,16 +44,6 @@ void VKBuffer::Invalidate(VkDeviceSize offset, VkDeviceSize size)
 	mappedRange.size = size;
 
 	vkInvalidateMappedMemoryRanges(device, 1, &mappedRange);
-}
-
-BufferImpl::BufferImpl(BufferType bufferType, VKBuffer* buffer) :
-	Buffer(bufferType),
-	m_Buffer(buffer)
-{
-}
-
-BufferImpl::~BufferImpl()
-{
 }
 
 BufferManager::BufferManager(VkDevice vkDevice, GarbageCollector* gc) :

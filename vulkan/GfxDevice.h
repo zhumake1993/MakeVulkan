@@ -13,23 +13,21 @@ struct VKCommandPool;
 
 struct VKCommandBuffer;
 struct VKRenderPass;
-class VKImage;
+struct VKImage;
+struct VKImageView;
 
 class GarbageCollector;
-
 class BufferManager;
+class ImageManager;
 class DescriptorSetManager;
 class PipelineManager;
-
 struct PipelineCI;
 
 class Buffer;
 class Image;
-class Shader;
 class GpuProgram;
-
-//todo
-class Texture;
+class Shader;
+class Material;
 
 class GfxDevice : public NonCopyable
 {
@@ -79,6 +77,7 @@ public:
 
 	Image* CreateImage(ImageType imageType, VkFormat format, uint32_t width, uint32_t height);
 	void UpdateImage(Image* image, void* data, uint64_t size);
+	void ReleaseImage(Image* image);
 
 	GpuProgram* CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode);
 
@@ -86,8 +85,9 @@ public:
 	void BindUniformPerView(void* data, uint64_t size);
 
 	void SetShader(Shader* shader);
+	void SetMaterial(Material* material);
 
-	void BindUniformPerMaterial(Shader * shader, Texture* tex);
+	void BindUniformPerMaterial(Shader * shader, Image* tex);
 	void BindUniformPerDraw(Shader* shader, void* data, uint64_t size);
 
 	void DrawBuffer(Buffer* vertexBuffer, Buffer* indexBuffer, uint32_t indexCount, VertexDescription& vertexDescription);
@@ -110,15 +110,23 @@ private:
 	VKSwapChain* m_VKSwapChain = nullptr;
 	VKCommandPool* m_VKCommandPool = nullptr;
 
-	VKRenderPass* m_VKRenderPass = nullptr;
-
-	// depth
-	VkFormat m_DepthFormat;
-	VKImage* m_DepthImage;
-
 	uint32_t m_FrameIndex = 0;
 	uint32_t m_FrameResourceIndex = 0;
 	std::vector<FrameResource> m_FrameResources;
+
+	// 资源管理器
+	GarbageCollector* m_GarbageCollector = nullptr; // GC
+	BufferManager* m_BufferManager = nullptr; // 管理Buffer
+	ImageManager* m_ImageManager = nullptr; // 管理Image
+	DescriptorSetManager* m_DescriptorSetManager = nullptr; // 管理DescriptorPool, DescriptorSetLayout, DescriptorSet
+	PipelineManager* m_PipelineManager = nullptr; // 管理PipelineLayout，Pipeline
+
+	// Depth
+	VKImage* m_DepthImage;
+	VKImageView* m_DepthView;
+
+	// RenderPass
+	VKRenderPass* m_VKRenderPass = nullptr;
 
 	// SwapChain中的image数量可能并不等于FrameResourcesCount，所以要单独处理Framebuffer
 	uint32_t m_ImageIndex;
@@ -126,20 +134,6 @@ private:
 
 	// 用于传数据
 	VKCommandBuffer* m_UploadCommandBuffer;
-
-	// GC
-	GarbageCollector* m_GarbageCollector = nullptr;
-
-	// 资源管理器
-
-	// 管理Buffer
-	BufferManager* m_BufferManager = nullptr;
-
-	// 管理DescriptorPool, DescriptorSetLayout, DescriptorSet
-	DescriptorSetManager* m_DescriptorSetManager = nullptr;
-
-	// 管理PipelineLayout，Pipeline
-	PipelineManager* m_PipelineManager = nullptr;
 };
 
 void CreateGfxDevice();

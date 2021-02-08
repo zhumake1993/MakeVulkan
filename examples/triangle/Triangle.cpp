@@ -132,15 +132,16 @@ void Triangle::Draw()
 
 	// m_TexCubeNode
 
-	/*device.SetShader(m_TexShader);
+	device.SetShader(m_TexShader);
 
-	device.BindUniformPerMaterial(m_Crate01Tex);
+	device.SetMaterial(m_TexMat);
+	//device.BindUniformPerMaterial(m_TexShader, m_Crate01Tex);
 
 	glm::mat4& mat2 = m_TexCubeNode->GetTransform().GetMatrix();
 
 	device.BindUniformPerDraw(m_TexShader, &mat2, sizeof(glm::mat4));
 
-	device.DrawBuffer(m_TexCubeNode->GetMesh()->GetVertexBuffer(), m_TexCubeNode->GetMesh()->GetIndexBuffer(), m_TexCubeNode->GetMesh()->GetIndexCount(), m_TexCubeNode->GetMesh()->GetVertexDescription());*/
+	device.DrawBuffer(m_TexCubeNode->GetMesh()->GetVertexBuffer(), m_TexCubeNode->GetMesh()->GetIndexBuffer(), m_TexCubeNode->GetMesh()->GetIndexCount(), m_TexCubeNode->GetMesh()->GetVertexDescription());
 
 
 
@@ -321,7 +322,7 @@ void Triangle::PrepareResources()
 		m_TexCubeNode = CreateRenderNode("TexCubeNode");
 		m_TexCubeNode->SetMesh(m_TexCubeMesh);
 		m_TexCubeNode->SetMaterial(m_TexMat);
-		m_TexCubeNode->GetTransform().Scale(0.1f, 0.1f, 0.1f).Translate(0.0f, 0.3f, 0.0f);
+		m_TexCubeNode->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.3f, 0.0f);
 
 		/*m_CubeNode = CreateRenderNode("CubeNode");
 		m_CubeNode->SetMesh(m_CubeMesh);

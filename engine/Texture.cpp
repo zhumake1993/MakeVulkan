@@ -15,6 +15,10 @@ Texture::Texture(std::string name) :
 
 Texture::~Texture()
 {
+	auto& device = GetGfxDevice();
+
+	device.ReleaseImage(m_Image);
+
 	RELEASE(m_Image);
 }
 
@@ -39,6 +43,11 @@ void Texture::LoadFromFile(const std::string& filename)
 
 	m_Image = device.CreateImage(kImageType2D, VK_FORMAT_R8G8B8A8_UNORM, width, height);
 	device.UpdateImage(m_Image, imageData.data(), imageData.size());
+}
+
+Image * Texture::GetImage()
+{
+	return m_Image;
 }
 
 std::vector<char> Texture::ReadImageUsingSTB(const std::string& filename, uint32_t& width, uint32_t& height)

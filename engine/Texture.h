@@ -14,6 +14,8 @@ public:
 
 	void LoadFromFile(const std::string& filename);
 
+	Image* GetImage();
+
 private:
 
 	// 使用stb_image库读取文件，不支持mipmap

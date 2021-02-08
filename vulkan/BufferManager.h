@@ -39,8 +39,9 @@ class BufferImpl : public Buffer
 
 public:
 
-	BufferImpl(BufferType bufferType, VKBuffer* buffer);
-	virtual ~BufferImpl();
+	BufferImpl(BufferType bufferType, VKBuffer* buffer) :
+		Buffer(bufferType), m_Buffer(buffer) {}
+	virtual ~BufferImpl() {}
 
 	VKBuffer* GetBuffer() { return m_Buffer; }
 	void SetBuffer(VKBuffer* buffer) { m_Buffer = buffer; }
@@ -50,7 +51,6 @@ private:
 	VKBuffer* m_Buffer;
 };
 
-struct VKCommandBuffer;
 class GarbageCollector;
 
 class BufferManager : public NonCopyable

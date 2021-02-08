@@ -9,23 +9,23 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 	{
 		if (layout.name == "PerMaterial")//todo
 		{
-			uint32_t num = 2;
+			uint32_t num = 1;
 			std::vector<VkDescriptorSetLayoutBinding> layoutBindings(num);
-			for (uint32_t i = 0; i < 1; i++)
+			/*for (uint32_t i = 0; i < 1; i++)
 			{
 				layoutBindings[i].binding = layout.binding;
 				layoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				layoutBindings[i].descriptorCount = 1;
 				layoutBindings[i].stageFlags = layout.stageFlags;
 				layoutBindings[i].pImmutableSamplers = nullptr;
-			}
+			}*/
 
 			// todo
-			layoutBindings[1].binding = 1;
-			layoutBindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			layoutBindings[1].descriptorCount = 1;
-			layoutBindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-			layoutBindings[1].pImmutableSamplers = nullptr;
+			layoutBindings[0].binding = 0;
+			layoutBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			layoutBindings[0].descriptorCount = 1;
+			layoutBindings[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			layoutBindings[0].pImmutableSamplers = nullptr;
 
 			VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
 			descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;

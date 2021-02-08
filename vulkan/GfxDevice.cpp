@@ -13,17 +13,19 @@
 #include "VKCommandBuffer.h"
 #include "VKRenderPass.h"
 
-#include "VKImage.h"
-
 #include "GarbageCollector.h"
-
 #include "BufferManager.h"
+#include "ImageManager.h"
 #include "DescriptorSetManager.h"
 #include "PipelineManager.h"
 
 #include "VKGpuProgram.h"
 
+#include "Mesh.h"
+#include "Texture.h"
 #include "Shader.h"
+#include "Material.h"
+#include "RenderNode.h"
 
 GfxDevice* gfxDevice;
 
@@ -55,13 +57,7 @@ GfxDevice::GfxDevice()
 	//todo
 	dp.Log();
 
-	// depth
-	m_DepthFormat = GetSupportedDepthFormat();
-	m_DepthImage = new VKImage(kImageType2D, m_VKDevice->device, VK_IMAGE_TYPE_2D, m_DepthFormat, windowWidth, windowHeight, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-		VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_DEPTH_BIT);
-
-	m_VKRenderPass = new VKRenderPass(m_VKDevice->device, m_VKSwapChain->format.format, m_DepthFormat);
-
+	// FrameResource
 	m_FrameResources.resize(FrameResourcesCount);
 	for (size_t i = 0; i < FrameResourcesCount; ++i)
 	{
@@ -71,35 +67,37 @@ GfxDevice::GfxDevice()
 		m_FrameResources[i].fence = CreateVKFence(true);
 	}
 
-	m_Framebuffers.resize(m_VKSwapChain->numberOfImages);
-	for (size_t i = 0; i < m_VKSwapChain->numberOfImages; ++i)
-	{
-		m_Framebuffers[i] = CreateVkFramebuffer(m_VKRenderPass->renderPass, m_VKSwapChain->swapChainImageViews[i], m_DepthImage->m_View, windowWidth, windowHeight);
-	}
-
-	m_UploadCommandBuffer = new VKCommandBuffer(m_VKDevice->device, m_VKCommandPool->commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-
-	// GC
+	// 资源管理
 	m_GarbageCollector = new GarbageCollector();
-
 	m_BufferManager = new BufferManager(m_VKDevice->device, m_GarbageCollector);
-
+	m_ImageManager = new ImageManager(m_VKDevice->device, m_GarbageCollector);
 	m_DescriptorSetManager = new DescriptorSetManager(m_VKDevice->device, m_GarbageCollector);
-
 	m_PipelineManager = new PipelineManager(m_VKDevice->device, m_GarbageCollector);
 
 	std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { m_DescriptorSetManager->GetDSLGlobal(),m_DescriptorSetManager->GetDSLPerView() };
 	m_PipelineManager->SetDummyPipelineLayout(m_PipelineManager->CreatePipelineLayout(descriptorSetLayouts));
+
+	// Depth
+	VkFormat depthFormat = GetSupportedDepthFormat();
+	m_DepthImage = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, depthFormat, windowWidth, windowHeight, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+	m_DepthView = m_ImageManager->CreateView(m_DepthImage->image, VK_IMAGE_VIEW_TYPE_2D, m_DepthImage->format, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+	// RenderPass
+	m_VKRenderPass = new VKRenderPass(m_VKDevice->device, m_VKSwapChain->format.format, depthFormat);
+
+	// Framebuffer
+	m_Framebuffers.resize(m_VKSwapChain->numberOfImages);
+	for (size_t i = 0; i < m_VKSwapChain->numberOfImages; ++i)
+	{
+		m_Framebuffers[i] = CreateVkFramebuffer(m_VKRenderPass->renderPass, m_VKSwapChain->swapChainImageViews[i], m_DepthView->view, windowWidth, windowHeight);
+	}
+
+	// CommandBuffer
+	m_UploadCommandBuffer = new VKCommandBuffer(m_VKDevice->device, m_VKCommandPool->commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 }
 
 GfxDevice::~GfxDevice()
 {
-	RELEASE(m_GarbageCollector);
-
-	RELEASE(m_BufferManager);
-	RELEASE(m_DescriptorSetManager);
-	RELEASE(m_PipelineManager);
-
 	RELEASE(m_UploadCommandBuffer);
 
 	for (size_t i = 0; i < m_VKSwapChain->numberOfImages; ++i)
@@ -107,6 +105,17 @@ GfxDevice::~GfxDevice()
 		vkDestroyFramebuffer(m_VKDevice->device, m_Framebuffers[i], nullptr);
 		m_Framebuffers[i] = VK_NULL_HANDLE;
 	}
+
+	RELEASE(m_VKRenderPass);
+
+	RELEASE(m_DepthImage);
+	RELEASE(m_DepthView);
+
+	RELEASE(m_GarbageCollector);
+	RELEASE(m_BufferManager);
+	RELEASE(m_ImageManager);
+	RELEASE(m_DescriptorSetManager);
+	RELEASE(m_PipelineManager);
 
 	for (size_t i = 0; i < FrameResourcesCount; ++i)
 	{
@@ -121,9 +130,6 @@ GfxDevice::~GfxDevice()
 		vkDestroyFence(m_VKDevice->device, m_FrameResources[i].fence, nullptr);
 		m_FrameResources[i].fence = VK_NULL_HANDLE;
 	}
-
-	RELEASE(m_VKRenderPass);
-	RELEASE(m_DepthImage);
 
 	RELEASE(m_VKCommandPool);
 	RELEASE(m_VKSwapChain);
@@ -398,8 +404,10 @@ Image * GfxDevice::CreateImage(ImageType imageType, VkFormat format, uint32_t wi
 		}
 		case kImageType2D:
 		{
-			return new VKImage(imageType, m_VKDevice->device, VK_IMAGE_TYPE_2D, format, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 
-				VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT);
+			VKImage* image = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, format, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+			VKImageView* view = m_ImageManager->CreateView(image->image, VK_IMAGE_VIEW_TYPE_2D, image->format, VK_IMAGE_ASPECT_COLOR_BIT);
+			VKImageSampler* sammpler = m_ImageManager->CreateSampler();
+			return new ImageImpl(imageType, format, width, height, image, view, sammpler);
 			break;
 		}
 		case kImageType3D:
@@ -418,7 +426,10 @@ Image * GfxDevice::CreateImage(ImageType imageType, VkFormat format, uint32_t wi
 void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size)
 {
 	ImageType imageType = image->GetImageType();
-	VKImage* vkImage = static_cast<VKImage*>(image);
+
+	ImageImpl* imageImpl = static_cast<ImageImpl*>(image);
+
+	VkImage vkImage = imageImpl->GetImage()->image;
 
 	VKBuffer* stagingBuffer = m_BufferManager->GetStagingBuffer();
 
@@ -428,11 +439,13 @@ void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size)
 
 		m_UploadCommandBuffer->Begin();
 
-		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+			0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-		m_UploadCommandBuffer->CopyBufferToImage(stagingBuffer->buffer, vkImage);
+		m_UploadCommandBuffer->CopyBufferToImage(stagingBuffer->buffer, vkImage, imageImpl->GetWidth(), imageImpl->GetHeight());
 
-		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		m_UploadCommandBuffer->End();
 
@@ -455,6 +468,14 @@ void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size)
 		LOG("wrong ImageType.");
 		EXIT;
 	}
+}
+
+void GfxDevice::ReleaseImage(Image * image)
+{
+	ImageImpl* imageImpl = static_cast<ImageImpl*>(image);
+	m_GarbageCollector->AddResource(imageImpl->GetImage());
+	m_GarbageCollector->AddResource(imageImpl->GetView());
+	m_GarbageCollector->AddResource(imageImpl->GetSampler());
 }
 
 GpuProgram * GfxDevice::CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode)
@@ -553,40 +574,50 @@ void GfxDevice::SetShader(Shader * shader)
 	m_PipelineManager->SetPipelineCI(descriptorSetLayouts, m_VKRenderPass->renderPass, shader->GetRenderStatus(), gpuProgram->GetVertShaderModule(), gpuProgram->GetFragShaderModule());
 }
 
-void GfxDevice::BindUniformPerMaterial(Shader * shader, Texture * tex)
+void GfxDevice::SetMaterial(Material * material)
 {
-	//VKGpuProgram* gpuProgram = static_cast<VKGpuProgram*>(shader->GetGpuProgram());
+	Texture* texture = material->GetTextures()[0];
 
-	//// Create DescriptorSet
+	ImageImpl* imageImpl = static_cast<ImageImpl*>(texture->GetImage());
 
-	//VkDescriptorSet descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(gpuProgram->GetDSLPerMaterial());
+	VKGpuProgram* gpuProgram = static_cast<VKGpuProgram*>(material->GetShader()->GetGpuProgram());
 
-	//// Update DescriptorSet
+	// Create DescriptorSet
 
-	//DescriptorInfo descriptorInfo;
-	//descriptorInfo.image.sampler = ;
-	//descriptorInfo.image.imageView;
-	//descriptorInfo.image.imageLayout;
-	//info.info.image = { m_Sampler->sampler, textures[i]->GetView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+	VkDescriptorSet descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(gpuProgram->GetDSLPerMaterial());
 
-	//VkWriteDescriptorSet writeDescriptorSet = {};
-	//writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	//writeDescriptorSet.pNext = nullptr;
-	//writeDescriptorSet.dstSet = descriptorSet;
-	//writeDescriptorSet.dstBinding = 0;//todo
-	//writeDescriptorSet.dstArrayElement = 0;
-	//writeDescriptorSet.descriptorCount = 1;
-	//writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	//writeDescriptorSet.pBufferInfo = &descriptorInfo.buffer;
+	// Update DescriptorSet
 
-	//vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
+	VkDescriptorImageInfo imageInfo;
+	imageInfo.sampler = imageImpl->GetSampler()->sampler;
+	imageInfo.imageView = imageImpl->GetView()->view;
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	//m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineManager->GetCurrPipelineLayout(), 3, descriptorSet);
+	VkWriteDescriptorSet writeDescriptorSet = {};
+	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSet.pNext = nullptr;
+	writeDescriptorSet.dstSet = descriptorSet;
+	writeDescriptorSet.dstBinding = 0;//todo
+	writeDescriptorSet.dstArrayElement = 0;
+	writeDescriptorSet.descriptorCount = 1;
+	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	writeDescriptorSet.pImageInfo = &imageInfo;
+
+	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
+
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineManager->GetCurrPipelineLayout(), 2, descriptorSet);
 
 	// 标记资源被使用
 
-	//buffer->Use(m_FrameIndex);
+	imageImpl->GetImage()->Use(m_FrameIndex);
+	imageImpl->GetView()->Use(m_FrameIndex);
+	imageImpl->GetSampler()->Use(m_FrameIndex);
 }
+
+//void GfxDevice::BindUniformPerMaterial(Shader * shader, Texture * tex)
+//{
+//	
+//}
 
 void GfxDevice::BindUniformPerDraw(Shader * shader, void * data, uint64_t size)
 {
@@ -632,8 +663,14 @@ void GfxDevice::DrawBuffer(Buffer * vertexBuffer, Buffer * indexBuffer, uint32_t
 	VkPipeline pipeline = m_PipelineManager->CreatePipeline(vertexDescription);
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindVertexBuffer(0, static_cast<BufferImpl*>(vertexBuffer)->GetBuffer()->buffer);
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindIndexBuffer(static_cast<BufferImpl*>(indexBuffer)->GetBuffer()->buffer, VK_INDEX_TYPE_UINT32);
+	VKBuffer* vBuffer = static_cast<BufferImpl*>(vertexBuffer)->GetBuffer();
+	VKBuffer* iBuffer = static_cast<BufferImpl*>(indexBuffer)->GetBuffer();
+
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindVertexBuffer(0, vBuffer->buffer);
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindIndexBuffer(iBuffer->buffer, VK_INDEX_TYPE_UINT32);
+
+	vBuffer->Use(m_FrameIndex);
+	iBuffer->Use(m_FrameIndex);
 
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->DrawIndexed(indexCount, 1, 0, 0, 1);
 }
@@ -662,6 +699,7 @@ VkFormat GfxDevice::GetSupportedDepthFormat()
 	}
 
 	LOG("Can not find supported depth format");
+	EXIT;
 	return VK_FORMAT_UNDEFINED;
 }
 
