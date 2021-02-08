@@ -17,7 +17,6 @@
 	assert(x);					\
 }
 
-
 #define EXIT assert(false)
 
 // 根据文件路径返回文件内容

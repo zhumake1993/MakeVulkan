@@ -11,7 +11,7 @@ class RenderNode
 
 public:
 
-	RenderNode(std::string name);
+	RenderNode(const std::string& name);
 	virtual ~RenderNode();
 
 	Transform& GetTransform();

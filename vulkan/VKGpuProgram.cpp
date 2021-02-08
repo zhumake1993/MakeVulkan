@@ -5,63 +5,65 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 	GpuProgram(parameters),
 	m_Device(vkDevice)
 {
-	for (auto& layout : parameters.uniformBufferLayouts)
+	std::vector<VkDescriptorSetLayoutBinding> bindingsPerMaterial;
+	std::vector<VkDescriptorSetLayoutBinding> bindingsPerDraw;
+
+	for (auto& uniform : parameters.uniformParameters)
 	{
-		if (layout.name == "PerMaterial")//todo
+		// PerMaterial只有一个uniform buffer
+		if (uniform.name == "PerMaterial")
 		{
-			uint32_t num = 1;
-			std::vector<VkDescriptorSetLayoutBinding> layoutBindings(num);
-			/*for (uint32_t i = 0; i < 1; i++)
-			{
-				layoutBindings[i].binding = layout.binding;
-				layoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				layoutBindings[i].descriptorCount = 1;
-				layoutBindings[i].stageFlags = layout.stageFlags;
-				layoutBindings[i].pImmutableSamplers = nullptr;
-			}*/
+			VkDescriptorSetLayoutBinding binding = {};
+			binding.binding = uniform.binding;
+			binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; // or VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC?
+			binding.descriptorCount = 1;
+			binding.stageFlags = uniform.stageFlags;
+			binding.pImmutableSamplers = nullptr;
 
-			// todo
-			layoutBindings[0].binding = 0;
-			layoutBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			layoutBindings[0].descriptorCount = 1;
-			layoutBindings[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-			layoutBindings[0].pImmutableSamplers = nullptr;
-
-			VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
-			descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			descriptorSetLayoutCreateInfo.pNext = nullptr;
-			descriptorSetLayoutCreateInfo.flags = 0;
-			descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(layoutBindings.size());
-			descriptorSetLayoutCreateInfo.pBindings = layoutBindings.data();
-
-			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptorSetLayoutCreateInfo, nullptr, &m_DSLPerMaterial));
+			bindingsPerMaterial.push_back(binding);
 		}
-		else if (layout.name == "PerDraw")//todo
+		else if (uniform.name.find("PerDraw") == 0)
 		{
-			uint32_t num = 1;
-			std::vector<VkDescriptorSetLayoutBinding> layoutBindings(num);
-			for (uint32_t i = 0; i < num; i++)
-			{
-				layoutBindings[i].binding = layout.binding;
-				layoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; // VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
-				layoutBindings[i].descriptorCount = 1;
-				layoutBindings[i].stageFlags = layout.stageFlags;
-				layoutBindings[i].pImmutableSamplers = nullptr;
-			}
+			VkDescriptorSetLayoutBinding binding = {};
+			binding.binding = uniform.binding;
+			binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; // or VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC?
+			binding.descriptorCount = 1;
+			binding.stageFlags = uniform.stageFlags;
+			binding.pImmutableSamplers = nullptr;
 
-			VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
-			descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			descriptorSetLayoutCreateInfo.pNext = nullptr;
-			descriptorSetLayoutCreateInfo.flags = 0;
-			descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(layoutBindings.size());
-			descriptorSetLayoutCreateInfo.pBindings = layoutBindings.data();
-
-			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptorSetLayoutCreateInfo, nullptr, &m_DSLPerDraw));
+			bindingsPerDraw.push_back(binding);
+		}
+		else
+		{
+			LOGE("Invalid Uniform Parameter: %s", uniform.name.c_str());
 		}
 	}
 
-	ASSERT(m_DSLPerMaterial != VK_NULL_HANDLE, "m_DSLPerMaterial == VK_NULL_HANDLE");
-	ASSERT(m_DSLPerDraw != VK_NULL_HANDLE, "m_DSLPerDraw == VK_NULL_HANDLE");
+	for (auto& texture : parameters.textureParameters)
+	{
+		VkDescriptorSetLayoutBinding binding = {};
+		binding.binding = texture.binding;
+		binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		binding.descriptorCount = 1;
+		binding.stageFlags = texture.stageFlags;
+		binding.pImmutableSamplers = nullptr;
+
+		bindingsPerMaterial.push_back(binding);
+	}
+
+	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
+	descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	descriptorSetLayoutCreateInfo.pNext = nullptr;
+	descriptorSetLayoutCreateInfo.flags = 0;
+
+	ASSERT(bindingsPerMaterial.size() == 1, "bindingsPerMaterial.size() != 1")
+	descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(bindingsPerMaterial.size());
+	descriptorSetLayoutCreateInfo.pBindings = bindingsPerMaterial.data();
+	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptorSetLayoutCreateInfo, nullptr, &m_DSLPerMaterial));
+
+	descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(bindingsPerDraw.size());
+	descriptorSetLayoutCreateInfo.pBindings = bindingsPerDraw.data();
+	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptorSetLayoutCreateInfo, nullptr, &m_DSLPerDraw));
 
 	{
 		VkShaderModuleCreateInfo moduleCreateInfo = {};

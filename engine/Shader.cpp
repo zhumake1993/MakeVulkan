@@ -3,7 +3,7 @@
 #include "GfxDevice.h"
 #include "GpuProgram.h"
 
-Shader::Shader(std::string name) :
+Shader::Shader(const std::string& name) :
 	m_Name(name)
 {
 }

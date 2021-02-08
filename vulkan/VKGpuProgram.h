@@ -16,8 +16,6 @@ public:
 	VkDescriptorSetLayout& GetDSLPerMaterial();
 	VkDescriptorSetLayout& GetDSLPerDraw();
 
-	
-
 private:
 
 	VkShaderModule m_VertShaderModule = VK_NULL_HANDLE;

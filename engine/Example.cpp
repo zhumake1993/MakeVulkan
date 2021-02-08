@@ -1,11 +1,13 @@
 #include "Example.h"
 #include "Tools.h"
+#include "GfxDevice.h"
 #include "Mesh.h"
 #include "Texture.h"
 #include "Shader.h"
 #include "Material.h"
 #include "RenderNode.h"
 #include "TimeManager.h"
+#include "ShaderData.h"
 
 Example::Example()
 {
@@ -61,7 +63,7 @@ void Example::Update()
 	m_TimeManager->Update();
 }
 
-Mesh * Example::CreateMesh(std::string name)
+Mesh * Example::CreateMesh(const std::string& name)
 {
 	Mesh* mesh = new Mesh(name);
 	m_MeshContainer.push_back(mesh);
@@ -69,7 +71,7 @@ Mesh * Example::CreateMesh(std::string name)
 	return mesh;
 }
 
-Texture * Example::CreateTexture(std::string name)
+Texture * Example::CreateTexture(const std::string& name)
 {
 	Texture* texture = new Texture(name);
 	m_TextureContainer.push_back(texture);
@@ -77,7 +79,7 @@ Texture * Example::CreateTexture(std::string name)
 	return texture;
 }
 
-Shader * Example::CreateShader(std::string name)
+Shader * Example::CreateShader(const std::string& name)
 {
 	Shader* shader = new Shader(name);
 	m_ShaderContainer.push_back(shader);
@@ -85,7 +87,7 @@ Shader * Example::CreateShader(std::string name)
 	return shader;
 }
 
-Material * Example::CreateMaterial(std::string name)
+Material * Example::CreateMaterial(const std::string& name)
 {
 	Material* material = new Material(name);
 	m_MaterialContainer.push_back(material);
@@ -93,10 +95,73 @@ Material * Example::CreateMaterial(std::string name)
 	return material;
 }
 
-RenderNode * Example::CreateRenderNode(std::string name)
+RenderNode * Example::CreateRenderNode(const std::string& name)
 {
 	RenderNode* renderNode = new RenderNode(name);
 	m_RenderNodeContainer.push_back(renderNode);
 
 	return renderNode;
+}
+
+void Example::SetShader(Shader * shader)
+{
+	auto& device = GetGfxDevice();
+
+	device.SetPass(shader->GetGpuProgram(), shader->GetRenderStatus());
+}
+
+void Example::BindMaterial(Material * material)
+{
+	auto& device = GetGfxDevice();
+
+	//todo
+	//dirty?
+
+	GpuProgram* gpuProgram = material->GetShader()->GetGpuProgram();
+	GpuParameters& gpuParameters = gpuProgram->GetGpuParameters();
+	ShaderData* shaderData = material->GetShaderData();
+	
+	int binding = -1;
+	for (auto& uniform : gpuParameters.uniformParameters)
+	{
+		if (uniform.name == "PerMaterial")
+		{
+			binding = uniform.binding;
+		}
+	}
+
+	if (binding != -1)
+	{
+		ASSERT(shaderData->GetDataSize() > 0, "empty data");
+
+		Buffer* buffer = material->GetUniformBuffer();
+		device.BindUniformBuffer(gpuProgram, 2, binding, buffer);
+	}
+
+	for (auto& texture : gpuParameters.textureParameters)
+	{
+		Texture* tex = shaderData->GetTexture(texture.name);
+		device.BindImage(gpuProgram, 2, texture.binding, tex->GetImage());
+	}
+}
+
+void Example::DrawRenderNode(RenderNode * node)
+{
+	auto& device = GetGfxDevice();
+
+	GpuProgram* gpuProgram = node->GetMaterial()->GetShader()->GetGpuProgram();
+	GpuParameters& gpuParameters = gpuProgram->GetGpuParameters();
+
+	for (auto& uniform : gpuParameters.uniformParameters)
+	{
+		// 暂时只支持一个PerDraw
+		if (uniform.name == "PerDraw")
+		{
+			glm::mat4& mat = node->GetTransform().GetMatrix();
+			device.BindUniformBuffer(gpuProgram, 3, uniform.binding, &mat, sizeof(glm::mat4));
+		}
+	}
+
+	Mesh* mesh = node->GetMesh();
+	device.DrawBuffer(mesh->GetVertexBuffer(), mesh->GetIndexBuffer(), mesh->GetIndexCount(), mesh->GetVertexDescription());
 }

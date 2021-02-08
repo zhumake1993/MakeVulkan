@@ -39,11 +39,15 @@ public:
 
 protected:
 
-	Mesh* CreateMesh(std::string name);
-	Texture* CreateTexture(std::string name);
-	Shader* CreateShader(std::string name);
-	Material* CreateMaterial(std::string name);
-	RenderNode* CreateRenderNode(std::string name);
+	Mesh* CreateMesh(const std::string& name);
+	Texture* CreateTexture(const std::string& name);
+	Shader* CreateShader(const std::string& name);
+	Material* CreateMaterial(const std::string& name);
+	RenderNode* CreateRenderNode(const std::string& name);
+
+	void SetShader(Shader* shader);
+	void BindMaterial(Material* material);
+	void DrawRenderNode(RenderNode* node);
 
 protected:
 

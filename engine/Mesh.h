@@ -9,7 +9,7 @@ class Mesh
 {
 public:
 
-	Mesh(std::string name);
+	Mesh(const std::string& name);
 	virtual ~Mesh();
 
 	void SetVertexChannels(const std::vector<VertexChannel>& channels);
