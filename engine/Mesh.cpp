@@ -139,12 +139,12 @@ void Mesh::UploadToGPU()
 
 	// Vertex buffer
 	uint64_t vertexBufferSize = static_cast<uint64_t>(m_Vertices.size()) * sizeof(m_Vertices[0]);
-	m_VertexBuffer = device.CreateBuffer(kBufferTypeVertex, vertexBufferSize);
+	m_VertexBuffer = device.CreateBuffer(kBufferUsageVertex, kMemoryPropertyDeviceLocal, vertexBufferSize);
 	device.UpdateBuffer(m_VertexBuffer, m_Vertices.data(), vertexBufferSize);
 
 	// Index buffer
 	uint64_t indexBufferSize = static_cast<uint64_t>(m_Indices.size()) * sizeof(uint32_t);
-	m_IndexBuffer = device.CreateBuffer(kBufferTypeIndex, indexBufferSize);
+	m_IndexBuffer = device.CreateBuffer(kBufferUsageIndex, kMemoryPropertyDeviceLocal, indexBufferSize);
 	device.UpdateBuffer(m_IndexBuffer, m_Indices.data(), indexBufferSize);
 }
 

@@ -290,41 +290,47 @@ void GfxDevice::SetScissor(Rect2D & scissorArea)
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->SetScissor(area);
 }
 
-Buffer * GfxDevice::CreateBuffer(BufferType bufferType, uint64_t size)
+Buffer * GfxDevice::CreateBuffer(BufferUsageType bufferUsage, MemoryPropertyType memoryProp, uint64_t size)
 {
-	switch (bufferType)
+	VkBufferUsageFlags usage = 0;
+	VkMemoryPropertyFlags memoryProperty = 0;
+
+	switch (bufferUsage)
 	{
-		case kBufferTypeVertex:
-		{
-			VKBuffer* buffer = m_BufferManager->CreateBuffer(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-			return new BufferImpl(bufferType, buffer);
-			break;
-		}
-		case kBufferTypeIndex:
-		{
-			VKBuffer* buffer = m_BufferManager->CreateBuffer(size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-			return new BufferImpl(bufferType, buffer);
-			break;
-		}
-		case kBufferTypeUniform:
-		{
-			VKBuffer* buffer = m_BufferManager->CreateBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-			return new BufferImpl(bufferType, buffer);
-			break;
-		}
-		default:
-		{
-			LOG("Wrong BufferType.");
-			EXIT;
-		}
+	case kBufferUsageVertex:
+		usage |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT; 
+		break;
+	case kBufferUsageIndex:
+		usage |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT; 
+		break;
+	case kBufferUsageUniform:
+		usage |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT; 
+		break;
+	default:LOGE("Wrong BufferUsageType");
 	}
-	return nullptr;
+
+	switch (memoryProp)
+	{
+	case kMemoryPropertyDeviceLocal:
+		memoryProperty |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; 
+		usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		break;
+	case kMemoryPropertyHostVisible:
+		memoryProperty |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT; 
+		break;
+	case kMemoryPropertyHostCoherent:
+		memoryProperty |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+		memoryProperty |= VK_MEMORY_PROPERTY_HOST_COHERENT_BIT; 
+		break;
+	default:LOGE("Wrong MemoryPropertyType");
+	}
+
+	VKBuffer* buffer = m_BufferManager->CreateBuffer(size, usage, memoryProperty);
+	return new BufferImpl(buffer);
 }
 
 void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t size)
 {
-	BufferType bufferType = buffer->GetBufferType();
-
 	BufferImpl* bufferImpl = static_cast<BufferImpl*>(buffer);
 
 	VKBuffer* vkBuffer = bufferImpl->GetBuffer();
@@ -338,54 +344,42 @@ void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t size)
 		bufferImpl->SetBuffer(vkBuffer);
 	}
 
-	switch (bufferType)
+	if (vkBuffer->memoryProperty & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 	{
-		case kBufferTypeVertex:
-		case kBufferTypeIndex:
-		{
-			VKBuffer* stagingBuffer = m_BufferManager->GetStagingBuffer();
-			stagingBuffer->Update(data, 0, size);
+		VKBuffer* stagingBuffer = m_BufferManager->GetStagingBuffer();
+		stagingBuffer->Update(data, 0, size);
 
-			m_UploadCommandBuffer->Begin();
+		m_UploadCommandBuffer->Begin();
 
-			VkBufferCopy bufferCopyInfo = {};
-			bufferCopyInfo.srcOffset = 0;
-			bufferCopyInfo.dstOffset = 0;
-			bufferCopyInfo.size = size;
-			m_UploadCommandBuffer->CopyBuffer(stagingBuffer->buffer, vkBuffer->buffer, bufferCopyInfo);
+		VkBufferCopy bufferCopyInfo = {};
+		bufferCopyInfo.srcOffset = 0;
+		bufferCopyInfo.dstOffset = 0;
+		bufferCopyInfo.size = size;
+		m_UploadCommandBuffer->CopyBuffer(stagingBuffer->buffer, vkBuffer->buffer, bufferCopyInfo);
 
-			// 经测试发现没有这一步也没问题（许多教程也的确没有这一步）
-			// 个人认为是因为调用了DeviceWaitIdle
-			//vkCmdPipelineBarrier
+		// 经测试发现没有这一步也没问题（许多教程也的确没有这一步）
+		// 个人认为是因为调用了DeviceWaitIdle
+		//vkCmdPipelineBarrier
 
-			m_UploadCommandBuffer->End();
+		m_UploadCommandBuffer->End();
 
-			VkSubmitInfo submitInfo = {};
-			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-			submitInfo.pNext = nullptr;
-			submitInfo.waitSemaphoreCount = 0;
-			submitInfo.pWaitSemaphores = nullptr;
-			submitInfo.pWaitDstStageMask = nullptr;
-			submitInfo.commandBufferCount = 1;
-			submitInfo.pCommandBuffers = &m_UploadCommandBuffer->commandBuffer;
-			submitInfo.signalSemaphoreCount = 0;
-			submitInfo.pSignalSemaphores = nullptr;
-			VK_CHECK_RESULT(vkQueueSubmit(m_VKDevice->queue, 1, &submitInfo, VK_NULL_HANDLE));
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.pNext = nullptr;
+		submitInfo.waitSemaphoreCount = 0;
+		submitInfo.pWaitSemaphores = nullptr;
+		submitInfo.pWaitDstStageMask = nullptr;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &m_UploadCommandBuffer->commandBuffer;
+		submitInfo.signalSemaphoreCount = 0;
+		submitInfo.pSignalSemaphores = nullptr;
+		VK_CHECK_RESULT(vkQueueSubmit(m_VKDevice->queue, 1, &submitInfo, VK_NULL_HANDLE));
 
-			DeviceWaitIdle();
-
-			break;
-		}
-		case kBufferTypeUniform:
-		{
-			vkBuffer->Update(data, 0, size);
-			break;
-		}
-		default:
-		{
-			LOG("Wrong BufferType.");
-			EXIT;
-		}
+		DeviceWaitIdle();
+	}
+	else
+	{
+		vkBuffer->Update(data, 0, size);
 	}
 }
 
@@ -498,12 +492,11 @@ void GfxDevice::SetPass(GpuProgram * gpuProgram, RenderStatus & renderStatus)
 
 void GfxDevice::BindUniformBuffer(GpuProgram* gpuProgram, int set, int binding, Buffer* buffer)
 {
-	BufferType bufferType = buffer->GetBufferType();
-	ASSERT(bufferType == kBufferTypeUniform, "not uniform buffer");
-
 	BufferImpl* bufferImpl = static_cast<BufferImpl*>(buffer);
 
 	VKBuffer* vkBuffer = bufferImpl->GetBuffer();
+
+	ASSERT(vkBuffer->usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, "not uniform buffer");
 
 	BindUniformBuffer(gpuProgram, set, binding, vkBuffer);
 }

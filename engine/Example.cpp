@@ -9,19 +9,20 @@
 #include "TimeManager.h"
 #include "ShaderData.h"
 
+// Place the least frequently changing descriptor sets near the start of the pipeline layout, and place the descriptor sets representing the most frequently changing resources near the end. 
+// When pipelines are switched, only the descriptor set bindings that have been invalidated will need to be updated and the remainder of the descriptor set bindings will remain in place.
+// set0存放自定义的uniform：Global   
+// set1存放自定义的texture：PerView
+// set2存放预定义的uniform：PerMaterial
+// set3存放预定义的texture：PerDraw
+
 Example::Example()
 {
 	//m_DummyShader = new Shader("DummyShader");
 
 	//GpuParameters parameters;
 
-	// Place the least frequently changing descriptor sets near the start of the pipeline layout, and place the descriptor sets representing the most frequently changing resources near the end. 
-	// When pipelines are switched, only the descriptor set bindings that have been invalidated will need to be updated and the remainder of the descriptor set bindings will remain in place.
-
-	//// set0存放自定义的uniform：Global   
-	//// set1存放自定义的texture：PerView
-	//// set2存放预定义的uniform：PerMaterial
-	//// set3存放预定义的texture：PerDraw
+	
 
 	//// Global
 	//{
@@ -160,8 +161,22 @@ void Example::DrawRenderNode(RenderNode * node)
 		// 暂时只支持一个PerDraw
 		if (uniform.name == "PerDraw")
 		{
-			glm::mat4& mat = node->GetTransform().GetMatrix();
-			device.BindUniformBuffer(gpuProgram, 3, uniform.binding, &mat, sizeof(glm::mat4));
+			ShaderData shaderData(uniform);
+
+			for (auto& vp : uniform.valueParameters)
+			{
+				if (vp.name == "ObjectToWorld")
+				{
+					glm::mat4& mat = node->GetTransform().GetMatrix();
+					shaderData.SetFloat4x4("ObjectToWorld", mat);
+				}
+				else
+				{
+					LOGE("not support.");
+				}
+			}
+
+			device.BindUniformBuffer(gpuProgram, 3, uniform.binding, shaderData.GetDate(), shaderData.GetDataSize());
 		}
 	}
 

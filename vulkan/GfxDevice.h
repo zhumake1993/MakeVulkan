@@ -72,7 +72,7 @@ public:
 	void SetViewport(Viewport& viewport);
 	void SetScissor(Rect2D& scissorArea);
 
-	Buffer* CreateBuffer(BufferType bufferType, uint64_t size);
+	Buffer* CreateBuffer(BufferUsageType bufferUsage, MemoryPropertyType memoryProp, uint64_t size);
 	void UpdateBuffer(Buffer* buffer, void* data, uint64_t size);
 	void ReleaseBuffer(Buffer* buffer);
 

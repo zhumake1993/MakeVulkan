@@ -1,4 +1,4 @@
-glslangValidator -g -V -o shader.vert.spv -H shader.vert > shader.vert.spv.txt
-glslangValidator -g -V -o shader.frag.spv -H shader.frag > shader.frag.spv.txt
+glslangValidator -g -V -o imgui.vert.spv -H imgui.vert > imgui.vert.spv.txt
+glslangValidator -g -V -o imgui.frag.spv -H imgui.frag > imgui.frag.spv.txt
 
 pause

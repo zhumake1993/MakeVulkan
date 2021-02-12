@@ -53,7 +53,7 @@ void Material::SetShader(Shader * shader)
 	uint32_t dataSize = m_ShaderData->GetDataSize();
 	if (dataSize > 0)
 	{
-		m_UniformBuffer = device.CreateBuffer(kBufferTypeUniform, dataSize);
+		m_UniformBuffer = device.CreateBuffer(kBufferUsageUniform, kMemoryPropertyHostCoherent, dataSize);
 		device.UpdateBuffer(m_UniformBuffer, m_ShaderData->GetDate(), dataSize);
 	}
 }

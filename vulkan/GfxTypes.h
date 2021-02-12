@@ -58,12 +58,18 @@ struct VertexDescription
 	uint32_t stride;
 };
 
-enum BufferType
+enum BufferUsageType
 {
-	kBufferTypeStaging,
-	kBufferTypeVertex,
-	kBufferTypeIndex,
-	kBufferTypeUniform
+	kBufferUsageVertex,
+	kBufferUsageIndex,
+	kBufferUsageUniform
+};
+
+enum MemoryPropertyType
+{
+	kMemoryPropertyDeviceLocal,
+	kMemoryPropertyHostVisible,
+	kMemoryPropertyHostCoherent
 };
 
 enum ImageType

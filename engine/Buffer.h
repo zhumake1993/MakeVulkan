@@ -8,12 +8,10 @@ class Buffer : public NonCopyable
 {
 public:
 
-	Buffer(BufferType bufferType);
+	Buffer();
 	virtual ~Buffer();
-
-	BufferType GetBufferType() { return m_BufferType; }
 
 protected:
 
-	BufferType m_BufferType;
+	//
 };

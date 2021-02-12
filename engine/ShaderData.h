@@ -10,7 +10,8 @@ class ShaderData
 public:
 
 	// 支持一个uniform，多个texture
-	ShaderData(GpuParameters::UniformParameter uniformParameter, std::vector<GpuParameters::TextureParameter>& textureParameters);
+	ShaderData(GpuParameters::UniformParameter& uniformParameter, std::vector<GpuParameters::TextureParameter>& textureParameters);
+	ShaderData(GpuParameters::UniformParameter& uniformParameter);
 	ShaderData(std::vector<GpuParameters::TextureParameter>& textureParameters);
 	~ShaderData();
 
@@ -28,8 +29,13 @@ public:
 
 private:
 
+	void CreateFromUniformParameter(GpuParameters::UniformParameter& uniformParameter);
+	void CreateFromTextureParameter(std::vector<GpuParameters::TextureParameter>& textureParameters);
+
+private:
+
 	char* m_Data = nullptr;
-	uint32_t m_DataSize;
+	uint32_t m_DataSize = 0;
 	std::unordered_map<std::string, uint32_t> m_OffsetMap;
 	std::unordered_map<std::string, Texture*> m_TextureMap;
 };

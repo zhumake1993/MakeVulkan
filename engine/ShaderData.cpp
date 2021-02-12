@@ -27,37 +27,20 @@ uint32_t UniformDataTypeToSize(GpuParameters::UniformDataType type)
 	}
 }
 
-ShaderData::ShaderData(GpuParameters::UniformParameter uniformParameter, std::vector<GpuParameters::TextureParameter>& textureParameters)
+ShaderData::ShaderData(GpuParameters::UniformParameter& uniformParameter, std::vector<GpuParameters::TextureParameter>& textureParameters)
 {
-	// uniform
-	uint32_t offset = 0;
-	for (auto& vp : uniformParameter.valueParameters)
-	{
-		m_OffsetMap[vp.name] = offset;
-		offset += UniformDataTypeToSize(vp.type);
-	}
+	CreateFromUniformParameter(uniformParameter);
+	CreateFromTextureParameter(textureParameters);
+}
 
-	m_Data = new char[offset];
-	memset(m_Data, 0, offset);
-
-	m_DataSize = offset;
-
-	// texture
-	for (auto& texture : textureParameters)
-	{
-		m_TextureMap[texture.name] = nullptr;
-	}
+ShaderData::ShaderData(GpuParameters::UniformParameter & uniformParameter)
+{
+	CreateFromUniformParameter(uniformParameter);
 }
 
 ShaderData::ShaderData(std::vector<GpuParameters::TextureParameter>& textureParameters)
 {
-	m_DataSize = 0;
-
-	// texture
-	for (auto& texture : textureParameters)
-	{
-		m_TextureMap[texture.name] = nullptr;
-	}
+	CreateFromTextureParameter(textureParameters);
 }
 
 ShaderData::~ShaderData()
@@ -139,4 +122,27 @@ Texture * ShaderData::GetTexture(const std::string& name)
 	}
 
 	return m_TextureMap[name];
+}
+
+void ShaderData::CreateFromUniformParameter(GpuParameters::UniformParameter & uniformParameter)
+{
+	uint32_t offset = 0;
+	for (auto& vp : uniformParameter.valueParameters)
+	{
+		m_OffsetMap[vp.name] = offset;
+		offset += UniformDataTypeToSize(vp.type);
+	}
+
+	m_Data = new char[offset];
+	memset(m_Data, 0, offset);
+
+	m_DataSize = offset;
+}
+
+void ShaderData::CreateFromTextureParameter(std::vector<GpuParameters::TextureParameter>& textureParameters)
+{
+	for (auto& texture : textureParameters)
+	{
+		m_TextureMap[texture.name] = nullptr;
+	}
 }
