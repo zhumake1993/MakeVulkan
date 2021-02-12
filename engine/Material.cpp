@@ -16,11 +16,11 @@ Material::~Material()
 {
 	RELEASE(m_ShaderData);
 
-	auto& device = GetGfxDevice();
-
-	device.ReleaseBuffer(m_UniformBuffer);
-
-	RELEASE(m_UniformBuffer);
+	if (m_UniformBuffer)
+	{
+		GetGfxDevice().ReleaseBuffer(m_UniformBuffer);
+		RELEASE(m_UniformBuffer);
+	}
 }
 
 std::string Material::GetName()
@@ -66,26 +66,36 @@ Shader * Material::GetShader()
 void Material::SetFloat(const std::string& name, float x)
 {
 	m_ShaderData->SetFloat(name, x);
+
+	m_Dirty = true;
 }
 
 void Material::SetFloat2(const std::string& name, float x, float y)
 {
 	m_ShaderData->SetFloat2(name, x, y);
+
+	m_Dirty = true;
 }
 
 void Material::SetFloat3(const std::string& name, float x, float y, float z)
 {
 	m_ShaderData->SetFloat3(name, x, y, z);
+
+	m_Dirty = true;
 }
 
 void Material::SetFloat4(const std::string& name, float x, float y, float z, float w)
 {
 	m_ShaderData->SetFloat4(name, x, y, z, w);
+
+	m_Dirty = true;
 }
 
 void Material::SetFloat4x4(const std::string& name, glm::mat4 & mat)
 {
 	m_ShaderData->SetFloat4x4(name, mat);
+
+	m_Dirty = true;
 }
 
 void Material::SetTexture(const std::string& name, Texture * texture)
@@ -101,4 +111,24 @@ ShaderData * Material::GetShaderData()
 Buffer * Material::GetUniformBuffer()
 {
 	return m_UniformBuffer;
+}
+
+void Material::UpdateUniformBuffer()
+{
+	auto& device = GetGfxDevice();
+	uint32_t dataSize = m_ShaderData->GetDataSize();
+	if (dataSize > 0)
+	{
+		device.UpdateBuffer(m_UniformBuffer, m_ShaderData->GetDate(), dataSize);
+	}
+}
+
+bool Material::IsDirty()
+{
+	return m_Dirty;
+}
+
+void Material::SetDirty(bool dirty)
+{
+	m_Dirty = dirty;
 }

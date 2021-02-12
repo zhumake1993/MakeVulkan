@@ -343,51 +343,51 @@ void HandleTouchScreenEvent(int32_t action, AInputEvent* event)
 	{
 	case AMOTION_EVENT_ACTION_UP:
 	{
-		input.count = 0;
+		inputManager.count = 0;
 		break;
 	}
 	case AMOTION_EVENT_ACTION_DOWN:
 	{
-		input.count = 1;
+		inputManager.count = 1;
 
-		input.pos0.x = AMotionEvent_getX(event, 0);
-		input.pos0.y = AMotionEvent_getY(event, 0);
-		input.oldPos0.x = AMotionEvent_getX(event, 0);
-		input.oldPos0.y = AMotionEvent_getY(event, 0);
+		inputManager.pos0.x = AMotionEvent_getX(event, 0);
+		inputManager.pos0.y = AMotionEvent_getY(event, 0);
+		inputManager.oldPos0.x = AMotionEvent_getX(event, 0);
+		inputManager.oldPos0.y = AMotionEvent_getY(event, 0);
 
 		break;
 	}
 	case AMOTION_EVENT_ACTION_MOVE:
 	{
 		if (AMotionEvent_getPointerCount(event) == 1) {
-			input.pos0.x = AMotionEvent_getX(event, 0);
-			input.pos0.y = AMotionEvent_getY(event, 0);
+			inputManager.pos0.x = AMotionEvent_getX(event, 0);
+			inputManager.pos0.y = AMotionEvent_getY(event, 0);
 
 			// 
-			if (input.count == 2) {
-				input.count = 1;
+			if (inputManager.count == 2) {
+				inputManager.count = 1;
 
-				input.oldPos0.x = AMotionEvent_getX(event, 0);
-				input.oldPos0.y = AMotionEvent_getY(event, 0);
+				inputManager.oldPos0.x = AMotionEvent_getX(event, 0);
+				inputManager.oldPos0.y = AMotionEvent_getY(event, 0);
 			}
 		}
 		else if (AMotionEvent_getPointerCount(event) == 2) {
 
-			input.pos0.x = AMotionEvent_getX(event, 0);
-			input.pos0.y = AMotionEvent_getY(event, 0);
+			inputManager.pos0.x = AMotionEvent_getX(event, 0);
+			inputManager.pos0.y = AMotionEvent_getY(event, 0);
 
-			input.pos1.x = AMotionEvent_getX(event, 1);
-			input.pos1.y = AMotionEvent_getY(event, 1);
+			inputManager.pos1.x = AMotionEvent_getX(event, 1);
+			inputManager.pos1.y = AMotionEvent_getY(event, 1);
 
 			// 
-			if (input.count == 1) {
-				input.count = 2;
+			if (inputManager.count == 1) {
+				inputManager.count = 2;
 
-				input.oldPos0.x = AMotionEvent_getX(event, 0);
-				input.oldPos0.y = AMotionEvent_getY(event, 0);
+				inputManager.oldPos0.x = AMotionEvent_getX(event, 0);
+				inputManager.oldPos0.y = AMotionEvent_getY(event, 0);
 
-				input.oldPos1.x = AMotionEvent_getX(event, 1);
-				input.oldPos1.y = AMotionEvent_getY(event, 1);
+				inputManager.oldPos1.x = AMotionEvent_getX(event, 1);
+				inputManager.oldPos1.y = AMotionEvent_getY(event, 1);
 			}
 		}
 		else {

@@ -114,8 +114,11 @@ void Example::BindMaterial(Material * material)
 {
 	auto& device = GetGfxDevice();
 
-	//todo
-	//dirty?
+	if (material->IsDirty())
+	{
+		material->UpdateUniformBuffer();
+		material->SetDirty(false);
+	}
 
 	GpuProgram* gpuProgram = material->GetShader()->GetGpuProgram();
 	GpuParameters& gpuParameters = gpuProgram->GetGpuParameters();

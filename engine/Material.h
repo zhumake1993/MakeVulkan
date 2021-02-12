@@ -32,6 +32,10 @@ public:
 	ShaderData* GetShaderData();
 
 	Buffer* GetUniformBuffer();
+	void UpdateUniformBuffer();
+
+	bool IsDirty();
+	void SetDirty(bool dirty);
 
 public:
 
@@ -46,4 +50,6 @@ private:
 	ShaderData* m_ShaderData = nullptr;
 
 	Buffer* m_UniformBuffer = nullptr;
+
+	bool m_Dirty = true;
 };

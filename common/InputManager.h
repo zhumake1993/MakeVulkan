@@ -29,7 +29,7 @@ struct InputManager
 
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
 
-struct Input
+struct InputManager
 {
 	// ´¥µãÊıÁ¿
 	int count = 0;

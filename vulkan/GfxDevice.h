@@ -89,15 +89,6 @@ public:
 
 	void BindImage(GpuProgram* gpuProgram, int set, int binding, Image* image);
 
-	//void BindUniformGlobal(void* data, uint64_t size);
-	//void BindUniformPerView(void* data, uint64_t size);
-
-	//void SetShader(Shader* shader);
-	//void SetMaterial(Material* material);
-
-	//void BindUniformPerMaterial(Shader * shader, Image* tex);
-	//void BindUniformPerDraw(Shader* shader, void* data, uint64_t size);
-
 	void DrawBuffer(Buffer* vertexBuffer, Buffer* indexBuffer, uint32_t indexCount, VertexDescription& vertexDescription);
 
 private:

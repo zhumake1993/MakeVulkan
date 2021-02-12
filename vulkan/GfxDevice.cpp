@@ -557,138 +557,6 @@ void GfxDevice::BindImage(GpuProgram * gpuProgram, int set, int binding, Image *
 	imageImpl->GetSampler()->Use(m_FrameIndex);
 }
 
-//void GfxDevice::BindUniformGlobal(void * data, uint64_t size)
-//{
-//	// Create Buffer
-//
-//	VKBuffer* buffer = m_BufferManager->CreateTempBuffer(size);
-//	buffer->Update(data, 0, size);
-//
-//	// Create DescriptorSet
-//
-//	VkDescriptorSet descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(m_DescriptorSetManager->GetDSLGlobal());
-//
-//	// Update DescriptorSet
-//
-//	VkDescriptorBufferInfo bufferInfo;
-//	bufferInfo.buffer = buffer->buffer;
-//	bufferInfo.offset = 0;
-//	bufferInfo.range = size;
-//
-//	VkWriteDescriptorSet writeDescriptorSet = {};
-//	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-//	writeDescriptorSet.pNext = nullptr;
-//	writeDescriptorSet.dstSet = descriptorSet;
-//	writeDescriptorSet.dstBinding = 0;
-//	writeDescriptorSet.dstArrayElement = 0;
-//	writeDescriptorSet.descriptorCount = 1;
-//	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-//	writeDescriptorSet.pBufferInfo = &bufferInfo;
-//
-//	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
-//
-//	// Bind DescriptorSet
-//
-//	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineManager->GetDummyPipelineLayout(), 0, descriptorSet);
-//
-//	// 标记资源被使用
-//
-//	buffer->Use(m_FrameIndex);
-//}
-//
-//void GfxDevice::BindUniformPerView(void * data, uint64_t size)
-//{
-//	// Create Buffer
-//
-//	VKBuffer* buffer = m_BufferManager->CreateTempBuffer(size);
-//	buffer->Update(data, 0, size);
-//
-//	// Create DescriptorSet
-//
-//	VkDescriptorSet descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(m_DescriptorSetManager->GetDSLPerView());
-//
-//	// Update DescriptorSet
-//
-//	VkDescriptorBufferInfo bufferInfo;
-//	bufferInfo.buffer = buffer->buffer;
-//	bufferInfo.offset = 0;
-//	bufferInfo.range = size;
-//
-//	VkWriteDescriptorSet writeDescriptorSet = {};
-//	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-//	writeDescriptorSet.pNext = nullptr;
-//	writeDescriptorSet.dstSet = descriptorSet;
-//	writeDescriptorSet.dstBinding = 0;
-//	writeDescriptorSet.dstArrayElement = 0;
-//	writeDescriptorSet.descriptorCount = 1;
-//	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-//	writeDescriptorSet.pBufferInfo = &bufferInfo;
-//
-//	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
-//
-//	// Bind DescriptorSet
-//
-//	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineManager->GetDummyPipelineLayout(), 1, descriptorSet);
-//
-//	// 标记资源被使用
-//
-//	buffer->Use(m_FrameIndex);
-//}
-
-//void GfxDevice::SetShader(Shader * shader)
-//{
-//	
-//}
-//
-//void GfxDevice::SetMaterial(Material * material)
-//{
-//	
-//}
-
-//void GfxDevice::BindUniformPerMaterial(Shader * shader, Texture * tex)
-//{
-//	
-//}
-
-//void GfxDevice::BindUniformPerDraw(Shader * shader, void * data, uint64_t size)
-//{
-//	VKGpuProgram* gpuProgram = static_cast<VKGpuProgram*>(shader->GetGpuProgram());
-//
-//	// Create Buffer
-//
-//	VKBuffer* buffer = m_BufferManager->CreateTempBuffer(size);
-//	buffer->Update(data, 0, size);
-//
-//	// Create DescriptorSet
-//
-//	VkDescriptorSet descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(gpuProgram->GetDSLPerDraw());
-//
-//	// Update DescriptorSet
-//
-//	VkDescriptorBufferInfo bufferInfo;
-//	bufferInfo.buffer = buffer->buffer;
-//	bufferInfo.offset = 0;
-//	bufferInfo.range = size;
-//
-//	VkWriteDescriptorSet writeDescriptorSet = {};
-//	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-//	writeDescriptorSet.pNext = nullptr;
-//	writeDescriptorSet.dstSet = descriptorSet;
-//	writeDescriptorSet.dstBinding = 0;//todo
-//	writeDescriptorSet.dstArrayElement = 0;
-//	writeDescriptorSet.descriptorCount = 1;
-//	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-//	writeDescriptorSet.pBufferInfo = &bufferInfo;
-//
-//	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
-//
-//	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineManager->GetCurrPipelineLayout(), 3, descriptorSet);
-//
-//	// 标记资源被使用
-//
-//	buffer->Use(m_FrameIndex);
-//}
-
 void GfxDevice::DrawBuffer(Buffer * vertexBuffer, Buffer * indexBuffer, uint32_t indexCount, VertexDescription & vertexDescription)
 {
 	VkPipeline pipeline = m_PipelineManager->CreatePipeline(vertexDescription);
@@ -787,35 +655,37 @@ VkFence GfxDevice::CreateVKFence(bool signaled)
 
 void GfxDevice::BindUniformBuffer(GpuProgram * gpuProgram, int set, int binding, VKBuffer * buffer)
 {
-	// DescriptorSet, PipelineLayout
+	VKGpuProgram* vkGpuProgram = static_cast<VKGpuProgram*>(gpuProgram);
+
+	// DescriptorSet
 
 	VkDescriptorSet descriptorSet;
-	VkPipelineLayout pipelineLayout;
-	if (set == 0)
+	switch (set)
 	{
-		descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(m_DescriptorSetManager->GetDSLGlobal());
-		pipelineLayout = m_PipelineManager->GetDummyPipelineLayout();
-	}
-	else if (set == 1)
-	{
-		descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(m_DescriptorSetManager->GetDSLPerView());
-		pipelineLayout = m_PipelineManager->GetDummyPipelineLayout();
-	}
-	else if (set == 2)
-	{
-		VKGpuProgram* vkGpuProgram = static_cast<VKGpuProgram*>(gpuProgram);
-		descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerMaterial());
-		pipelineLayout = m_PipelineManager->GetCurrPipelineLayout();
-	}
-	else if (set == 3)
-	{
-		VKGpuProgram* vkGpuProgram = static_cast<VKGpuProgram*>(gpuProgram);
-		descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerDraw());
-		pipelineLayout = m_PipelineManager->GetCurrPipelineLayout();
-	}
-	else
-	{
-		LOGE("set > 3");
+		case 0:
+		{
+			descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(m_DescriptorSetManager->GetDSLGlobal());
+			break;
+		}
+		case 1:
+		{
+			descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(m_DescriptorSetManager->GetDSLPerView());
+			break;
+		}
+		case 2:
+		{
+			descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerMaterial());
+			break;
+		}
+		case 3:
+		{
+			descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerDraw());
+			break;
+		}
+		default:
+		{
+			LOGE("set > 3");
+		}
 	}
 
 	// Update DescriptorSet
@@ -837,9 +707,40 @@ void GfxDevice::BindUniformBuffer(GpuProgram * gpuProgram, int set, int binding,
 
 	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
 
+	// PipelineLayout
+
+	VkPipelineLayout pipelineLayout;
+	switch (set)
+	{
+		case 0:
+		{
+			pipelineLayout = m_PipelineManager->GetDummyPipelineLayout();
+			break;
+		}
+		case 1:
+		{
+			pipelineLayout = m_PipelineManager->GetDummyPipelineLayout();
+			break;
+		}
+		case 2:
+		{
+			pipelineLayout = m_PipelineManager->GetCurrPipelineLayout();
+			break;
+		}
+		case 3:
+		{
+			pipelineLayout = m_PipelineManager->GetCurrPipelineLayout();
+			break;
+		}
+		default:
+		{
+			LOGE("set > 3");
+		}
+	}
+
 	// Bind DescriptorSet
 
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineManager->GetDummyPipelineLayout(), set, descriptorSet);
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, set, descriptorSet);
 
 	// 标记资源被使用
 
