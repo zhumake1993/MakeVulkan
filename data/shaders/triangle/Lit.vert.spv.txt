@@ -15,40 +15,16 @@ Lit.vert
 #version 450
 
 /////////////////////////////////////////////////////
-// Light
-/////////////////////////////////////////////////////
-
-/*
-#define MaxLights 16
-#define NUM_DIR_LIGHTS 1
-#define NUM_POINT_LIGHTS 0
-#define NUM_SPOT_LIGHTS 0
-
-struct Light
-{
-	vec3 strength; // light color
-	float falloffStart; // point/spot light only
-	vec3 direction;// directional/spot lightonly
-	float falloffEnd; // point/spot light only
-	vec3 position; // point/spot light only
-	float spotPower; // spot light only
-};
-*/
-
-/////////////////////////////////////////////////////
 // Uniform
 /////////////////////////////////////////////////////
 
-layout(set=0, binding=0) uniform u_PassUniformBuffer {
+layout(set=1, binding=0) uniform PerView {
     mat4 view;
     mat4 proj;
 	vec4 eyePos;
-	
-	//vec4 ambientLight;
-	//Light lights[MaxLights];
 };
 
-layout(set=1, binding=0) uniform u_ObjectUniformBuffer {
+layout(set=3, binding=0) uniform PerDraw {
     mat4 world;
 };
 
@@ -85,8 +61,8 @@ void main() {
 "
                               Name 5  "main"
                               Name 10  "v_wPos"
-                              Name 12  "u_ObjectUniformBuffer"
-                              MemberName 12(u_ObjectUniformBuffer) 0  "world"
+                              Name 12  "PerDraw"
+                              MemberName 12(PerDraw) 0  "world"
                               Name 14  ""
                               Name 22  "i_Position"
                               Name 31  "v_Normal"
@@ -96,17 +72,17 @@ void main() {
                               Name 49  "gl_PerVertex"
                               MemberName 49(gl_PerVertex) 0  "gl_Position"
                               Name 51  ""
-                              Name 52  "u_PassUniformBuffer"
-                              MemberName 52(u_PassUniformBuffer) 0  "view"
-                              MemberName 52(u_PassUniformBuffer) 1  "proj"
-                              MemberName 52(u_PassUniformBuffer) 2  "eyePos"
+                              Name 52  "PerView"
+                              MemberName 52(PerView) 0  "view"
+                              MemberName 52(PerView) 1  "proj"
+                              MemberName 52(PerView) 2  "eyePos"
                               Name 54  ""
                               Decorate 10(v_wPos) Location 2
-                              MemberDecorate 12(u_ObjectUniformBuffer) 0 ColMajor
-                              MemberDecorate 12(u_ObjectUniformBuffer) 0 Offset 0
-                              MemberDecorate 12(u_ObjectUniformBuffer) 0 MatrixStride 16
-                              Decorate 12(u_ObjectUniformBuffer) Block
-                              Decorate 14 DescriptorSet 1
+                              MemberDecorate 12(PerDraw) 0 ColMajor
+                              MemberDecorate 12(PerDraw) 0 Offset 0
+                              MemberDecorate 12(PerDraw) 0 MatrixStride 16
+                              Decorate 12(PerDraw) Block
+                              Decorate 14 DescriptorSet 3
                               Decorate 14 Binding 0
                               Decorate 22(i_Position) Location 0
                               Decorate 31(v_Normal) Location 0
@@ -115,15 +91,15 @@ void main() {
                               Decorate 47(i_Texcoord) Location 2
                               MemberDecorate 49(gl_PerVertex) 0 BuiltIn Position
                               Decorate 49(gl_PerVertex) Block
-                              MemberDecorate 52(u_PassUniformBuffer) 0 ColMajor
-                              MemberDecorate 52(u_PassUniformBuffer) 0 Offset 0
-                              MemberDecorate 52(u_PassUniformBuffer) 0 MatrixStride 16
-                              MemberDecorate 52(u_PassUniformBuffer) 1 ColMajor
-                              MemberDecorate 52(u_PassUniformBuffer) 1 Offset 64
-                              MemberDecorate 52(u_PassUniformBuffer) 1 MatrixStride 16
-                              MemberDecorate 52(u_PassUniformBuffer) 2 Offset 128
-                              Decorate 52(u_PassUniformBuffer) Block
-                              Decorate 54 DescriptorSet 0
+                              MemberDecorate 52(PerView) 0 ColMajor
+                              MemberDecorate 52(PerView) 0 Offset 0
+                              MemberDecorate 52(PerView) 0 MatrixStride 16
+                              MemberDecorate 52(PerView) 1 ColMajor
+                              MemberDecorate 52(PerView) 1 Offset 64
+                              MemberDecorate 52(PerView) 1 MatrixStride 16
+                              MemberDecorate 52(PerView) 2 Offset 128
+                              Decorate 52(PerView) Block
+                              Decorate 54 DescriptorSet 1
                               Decorate 54 Binding 0
                3:             TypeVoid
                4:             TypeFunction 3
@@ -132,8 +108,8 @@ void main() {
                9:             TypePointer Output 8(fvec4)
       10(v_wPos):      9(ptr) Variable Output
               11:             TypeMatrix 8(fvec4) 4
-12(u_ObjectUniformBuffer):             TypeStruct 11
-              13:             TypePointer Uniform 12(u_ObjectUniformBuffer)
+     12(PerDraw):             TypeStruct 11
+              13:             TypePointer Uniform 12(PerDraw)
               14:     13(ptr) Variable Uniform
               15:             TypeInt 32 1
               16:     15(int) Constant 0
@@ -154,13 +130,13 @@ void main() {
 49(gl_PerVertex):             TypeStruct 8(fvec4)
               50:             TypePointer Output 49(gl_PerVertex)
               51:     50(ptr) Variable Output
-52(u_PassUniformBuffer):             TypeStruct 11 11 8(fvec4)
-              53:             TypePointer Uniform 52(u_PassUniformBuffer)
+     52(PerView):             TypeStruct 11 11 8(fvec4)
+              53:             TypePointer Uniform 52(PerView)
               54:     53(ptr) Variable Uniform
               55:     15(int) Constant 1
          5(main):           3 Function None 4
                6:             Label
-                              Line 1 61 0
+                              Line 1 37 0
               18:     17(ptr) AccessChain 14 16
               19:          11 Load 18
               23:   20(fvec3) Load 22(i_Position)
@@ -170,7 +146,7 @@ void main() {
               28:    8(fvec4) CompositeConstruct 25 26 27 24
               29:    8(fvec4) MatrixTimesVector 19 28
                               Store 10(v_wPos) 29
-                              Line 1 64 0
+                              Line 1 40 0
               32:     17(ptr) AccessChain 14 16
               33:          11 Load 32
               35:   20(fvec3) Load 34(i_Normal)
@@ -181,10 +157,10 @@ void main() {
               41:    8(fvec4) MatrixTimesVector 33 40
               42:   20(fvec3) VectorShuffle 41 41 0 1 2
                               Store 31(v_Normal) 42
-                              Line 1 66 0
+                              Line 1 42 0
               48:   43(fvec2) Load 47(i_Texcoord)
                               Store 45(v_Texcoord) 48
-                              Line 1 69 0
+                              Line 1 45 0
               56:     17(ptr) AccessChain 54 55
               57:          11 Load 56
               58:     17(ptr) AccessChain 54 16

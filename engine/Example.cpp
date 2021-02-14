@@ -122,12 +122,16 @@ void Example::SetShader(Shader * shader)
 
 void Example::BindGlobalUniformBuffer()
 {
-	GetGfxDevice().BindUniformBuffer(m_DummyShader->GetGpuProgram(), 0, 0, &m_UniformDataGlobal, sizeof(UniformDataGlobal));
+	ShaderBindings shaderBindings;
+	shaderBindings.uniformDataBindings.emplace_back(0, &m_UniformDataGlobal, sizeof(UniformDataGlobal));
+	GetGfxDevice().BindShaderResources(m_DummyShader->GetGpuProgram(), 0, shaderBindings);
 }
 
 void Example::BindPerViewUniformBuffer()
 {
-	GetGfxDevice().BindUniformBuffer(m_DummyShader->GetGpuProgram(), 1, 0, &m_UniformDataPerView, sizeof(UniformDataPerView));
+	ShaderBindings shaderBindings;
+	shaderBindings.uniformDataBindings.emplace_back(0, &m_UniformDataPerView, sizeof(UniformDataPerView));
+	GetGfxDevice().BindShaderResources(m_DummyShader->GetGpuProgram(), 1, shaderBindings);
 }
 
 void Example::BindMaterial(Material * material)
@@ -143,6 +147,8 @@ void Example::BindMaterial(Material * material)
 	GpuProgram* gpuProgram = material->GetShader()->GetGpuProgram();
 	GpuParameters& gpuParameters = gpuProgram->GetGpuParameters();
 	ShaderData* shaderData = material->GetShaderData();
+
+	ShaderBindings shaderBindings;
 	
 	int binding = -1;
 	for (auto& uniform : gpuParameters.uniformParameters)
@@ -158,14 +164,18 @@ void Example::BindMaterial(Material * material)
 		ASSERT(shaderData->GetDataSize() > 0, "empty data");
 
 		Buffer* buffer = material->GetUniformBuffer();
-		device.BindUniformBuffer(gpuProgram, 2, binding, buffer);
+
+		shaderBindings.uniformBufferBindings.emplace_back(binding, buffer);
 	}
 
 	for (auto& texture : gpuParameters.textureParameters)
 	{
 		Texture* tex = shaderData->GetTexture(texture.name);
-		device.BindImage(gpuProgram, 2, texture.binding, tex->GetImage());
+
+		shaderBindings.imageBindings.emplace_back(texture.binding, tex->GetImage());
 	}
+
+	device.BindShaderResources(gpuProgram, 2, shaderBindings);
 }
 
 void Example::DrawRenderNode(RenderNode * node)
@@ -195,7 +205,9 @@ void Example::DrawRenderNode(RenderNode * node)
 				}
 			}
 
-			device.BindUniformBuffer(gpuProgram, 3, uniform.binding, shaderData.GetDate(), shaderData.GetDataSize());
+			ShaderBindings shaderBindings;
+			shaderBindings.uniformDataBindings.emplace_back(uniform.binding, shaderData.GetDate(), shaderData.GetDataSize());
+			device.BindShaderResources(gpuProgram, 3, shaderBindings);
 		}
 	}
 

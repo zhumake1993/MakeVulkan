@@ -95,13 +95,29 @@ void Triangle::Update()
 {
 	Example::Update();
 
+	float deltaTime = m_TimeManager->GetDeltaTime();
+
 	m_UniformDataGlobal.time = glm::vec4(0, 0, 0, 0);
 
-	m_Camera->Update(m_TimeManager->GetDeltaTime());
+	m_Camera->Update(deltaTime);
 
 	m_UniformDataPerView.view = m_Camera->GetView();
 	m_UniformDataPerView.proj = m_Camera->GetProj();
 	m_UniformDataPerView.eyePos = glm::vec4(m_Camera->GetPosition(), 1.0f);
+
+	m_UniformDataPerView.ambientLight = glm::vec4(0.2f, 0.2f, 0.2f, 0.0f);
+
+	m_UniformDataPerView.lights[0].strength = glm::vec3(0.3f, 0.3f, 0.3f);
+	m_UniformDataPerView.lights[0].direction = glm::vec3(1.0f, 0.0f, 0.0f);
+
+	/*m_UniformDataPerView.lights[1].strength = glm::vec3(0.3f, 0.3f, 0.3f);
+	m_UniformDataPerView.lights[1].falloffStart = 0.1f;
+	m_UniformDataPerView.lights[1].falloffEnd = 1.0f;
+	m_UniformDataPerView.lights[1].position = glm::vec3(0.0f, 0.0f, -1.0f);*/
+
+	m_ColorCubeNode->GetTransform().Rotate(-deltaTime * 0.5f, 0.0f, 1.0f, 0.0f);
+	m_TexCubeNode->GetTransform().Rotate(deltaTime * 0.5f, 0.0f, 1.0f, 0.0f);
+	m_LitSphereNode->GetTransform().Rotate(-deltaTime * 0.5f, 0.0f, 1.0f, 0.0f);
 
 	// Imgui
 
@@ -134,13 +150,17 @@ void Triangle::Draw()
 	// m_ColorCubeNode
 	SetShader(m_ColorShader);
 	BindMaterial(m_ColorMat);
-
 	DrawRenderNode(m_ColorCubeNode);
 
 	// m_TexCubeNode
 	SetShader(m_TexShader);
 	BindMaterial(m_TexMat);
 	DrawRenderNode(m_TexCubeNode);
+
+	// m_LitSphereNode
+	SetShader(m_LitShader);
+	BindMaterial(m_LitMat);
+	DrawRenderNode(m_LitSphereNode);
 
 	DrawImgui();
 
@@ -178,13 +198,9 @@ void Triangle::PrepareResources()
 		m_TexCubeMesh->LoadFromFile(AssetPath + "models/cube.obj");
 		m_TexCubeMesh->UploadToGPU();
 
-		//m_CubeMesh = CreateMesh("CubeMesh");
-		//m_CubeMesh->LoadFromFile(AssetPath + "models/cube.obj");
-		//m_CubeMesh->UploadToGPU();
-
-		//m_SphereMesh = CreateMesh("SphereMesh");
-		//m_SphereMesh->LoadFromFile(AssetPath + "models/sphere.obj");
-		//m_SphereMesh->UploadToGPU();
+		m_SphereMesh = CreateMesh("SphereMesh");
+		m_SphereMesh->LoadFromFile(AssetPath + "models/sphere.obj");
+		m_SphereMesh->UploadToGPU();
 	}
 
 	// Texture
@@ -192,11 +208,11 @@ void Triangle::PrepareResources()
 		m_Crate01Tex = CreateTexture("Crate01Tex");
 		m_Crate01Tex->LoadFromFile(AssetPath + "textures/crate01_color_height_rgba.ktx");
 
-		//m_Crate02Tex = CreateTexture("Crate02Tex");
-		//m_Crate02Tex->LoadFromFile(AssetPath + "textures/crate02_color_height_rgba.ktx");
+		m_Crate02Tex = CreateTexture("Crate02Tex");
+		m_Crate02Tex->LoadFromFile(AssetPath + "textures/crate02_color_height_rgba.ktx");
 
-		//m_MetalplateTex = CreateTexture("MetalplateTex");
-		//m_MetalplateTex->LoadFromFile(AssetPath + "textures/metalplate_nomips_rgba.ktx");
+		m_MetalplateTex = CreateTexture("MetalplateTex");
+		m_MetalplateTex->LoadFromFile(AssetPath + "textures/metalplate_nomips_rgba.ktx");
 	}
 
 	// Shader
@@ -205,11 +221,6 @@ void Triangle::PrepareResources()
 		m_ColorShader->LoadSPV(AssetPath + "shaders/triangle/Color.vert.spv", AssetPath + "shaders/triangle/Color.frag.spv");
 
 		GpuParameters parameters;
-		{
-			GpuParameters::UniformParameter uniform("PerMaterial", 0, VK_SHADER_STAGE_VERTEX_BIT);
-			uniform.valueParameters.emplace_back("Test", GpuParameters::kUniformDataFloat4);
-			parameters.uniformParameters.push_back(uniform);
-		}
 		{
 			GpuParameters::UniformParameter uniform("PerDraw", 0, VK_SHADER_STAGE_VERTEX_BIT);
 			uniform.valueParameters.emplace_back("ObjectToWorld", GpuParameters::kUniformDataFloat4x4);
@@ -227,7 +238,7 @@ void Triangle::PrepareResources()
 
 		GpuParameters parameters;
 		{
-			GpuParameters::TextureParameter texture("Base", 0, VK_SHADER_STAGE_FRAGMENT_BIT);
+			GpuParameters::TextureParameter texture("BaseTexture", 0, VK_SHADER_STAGE_FRAGMENT_BIT);
 			parameters.textureParameters.push_back(texture);
 		}
 		{
@@ -242,35 +253,32 @@ void Triangle::PrepareResources()
 		m_TexShader->SetRenderState(renderState);
 	}
 	{
-		//m_LitShader = CreateShader("LitShader");
-		//m_LitShader->LoadSPV(AssetPath + "shaders/triangle/Lit.vert.spv", AssetPath + "shaders/triangle/Lit.frag.spv");
+		m_LitShader = CreateShader("LitShader");
+		m_LitShader->LoadSPV(AssetPath + "shaders/triangle/Lit.vert.spv", AssetPath + "shaders/triangle/Lit.frag.spv");
 
-		//GpuParameters parameters;
-
+		GpuParameters parameters;
 		{
-			/*GpuParameters::UniformParameter uniform("PerMaterial", 0, VK_SHADER_STAGE_VERTEX_BIT);
+			GpuParameters::UniformParameter uniform("PerMaterial", 0, VK_SHADER_STAGE_FRAGMENT_BIT);
 			uniform.valueParameters.emplace_back("DiffuseAlbedo", GpuParameters::kUniformDataFloat4);
 			uniform.valueParameters.emplace_back("FresnelR0", GpuParameters::kUniformDataFloat3);
 			uniform.valueParameters.emplace_back("Roughness", GpuParameters::kUniformDataFloat1);
 			uniform.valueParameters.emplace_back("MatTransform", GpuParameters::kUniformDataFloat4x4);
-			parameters.uniformParameters.push_back(uniform);*/
+			parameters.uniformParameters.push_back(uniform);
 		}
+		{
+			GpuParameters::TextureParameter texture("BaseTexture", 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+			parameters.textureParameters.push_back(texture);
+		}
+		{
+			GpuParameters::UniformParameter uniform("PerDraw", 0, VK_SHADER_STAGE_VERTEX_BIT);
+			uniform.valueParameters.emplace_back("ObjectToWorld", GpuParameters::kUniformDataFloat4x4);
+			parameters.uniformParameters.push_back(uniform);
+		}
+		m_LitShader->CreateGpuProgram(parameters);
 
-		/*UniformBufferLayout layout0("PerMaterial", 2, VK_SHADER_STAGE_FRAGMENT_BIT);
-		layout0.Add(UniformBufferElement(kUniformDataTypeFloat4, "DiffuseAlbedo"));
-		layout0.Add(UniformBufferElement(kUniformDataTypeFloat3, "FresnelR0"));
-		layout0.Add(UniformBufferElement(kUniformDataTypeFloat1, "Roughness"));
-		layout0.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatTransform"));
+		RenderState renderState;
 
-		UniformBufferLayout layout1("PerDraw", 3, VK_SHADER_STAGE_VERTEX_BIT);
-		layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "ObjectToWorld"));
-
-		parameters.uniformBufferLayouts.push_back(layout0);
-		parameters.uniformBufferLayouts.push_back(layout1);*/
-
-		//m_LitShader->CreateGpuProgram(parameters);
-
-		//m_LitShader->SetTextureDesc({ "BaseTexture" });
+		m_LitShader->SetRenderState(renderState);
 
 		//m_LitShader->AddSpecializationConstant(0, 1);
 		//m_LitShader->AddSpecializationConstant(1, 1);
@@ -282,32 +290,17 @@ void Triangle::PrepareResources()
 	{
 		m_ColorMat = CreateMaterial("SimpleColorMat");
 		m_ColorMat->SetShader(m_ColorShader);
-		m_ColorMat->SetFloat4("Test", 1.1f, 1.2f, 1.3f, 1.4f);
 
 		m_TexMat = CreateMaterial("TexMat");
 		m_TexMat->SetShader(m_TexShader);
-		m_TexMat->SetTexture("Base", m_Crate01Tex);
+		m_TexMat->SetTexture("BaseTexture", m_Crate01Tex);
 
-		//m_Crate01Mat = CreateMaterial("Crate01Mat");
-		//m_Crate01Mat->SetShader(m_LitShader);
-		//m_Crate01Mat->SetFloat4("DiffuseAlbedo", 1.0f, 1.0f, 1.0f, 1.0f);
-		//m_Crate01Mat->SetFloat3("FresnelR0", 0.3f, 0.3f, 0.3f);
-		//m_Crate01Mat->SetFloat("Roughness", 0.3f);
-		//m_Crate01Mat->SetTextures("BaseTexture", m_Crate01Tex);
-
-		//m_Crate02Mat = CreateMaterial("Crate02Mat");
-		//m_Crate02Mat->SetShader(m_LitShader);
-		//m_Crate02Mat->SetFloat4("DiffuseAlbedo", 1.0f, 1.0f, 1.0f, 1.0f);
-		//m_Crate02Mat->SetFloat3("FresnelR0", 0.3f, 0.3f, 0.3f);
-		//m_Crate02Mat->SetFloat("Roughness", 0.3f);
-		//m_Crate02Mat->SetTextures("BaseTexture", m_Crate02Tex);
-
-		/*m_MetalplateMat = CreateMaterial("MetalplateMat");
-		m_MetalplateMat->SetShader(m_LitShader);
-		m_MetalplateMat->SetFloat4("DiffuseAlbedo", 1.0f, 1.0f, 1.0f, 1.0f);
-		m_MetalplateMat->SetFloat3("FresnelR0", 0.3f, 0.3f, 0.3f);
-		m_MetalplateMat->SetFloat("Roughness", 0.3f);
-		m_MetalplateMat->SetTextures("BaseTexture", m_MetalplateTex);*/
+		m_LitMat = CreateMaterial("LitMat");
+		m_LitMat->SetShader(m_LitShader);
+		m_LitMat->SetFloat4("DiffuseAlbedo", 1.0f, 1.0f, 1.0f, 1.0f);
+		m_LitMat->SetFloat3("FresnelR0", 0.3f, 0.3f, 0.3f);
+		m_LitMat->SetFloat("Roughness", 0.3f);
+		m_LitMat->SetTexture("BaseTexture", m_Crate02Tex);
 	}
 
 	// RenderNode
@@ -322,16 +315,9 @@ void Triangle::PrepareResources()
 		m_TexCubeNode->SetMaterial(m_TexMat);
 		m_TexCubeNode->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.3f, 0.0f);
 
-		/*m_CubeNode = CreateRenderNode("CubeNode");
-		m_CubeNode->SetMesh(m_CubeMesh);
-		m_CubeNode->SetMaterial(m_Crate01Mat);
-		m_CubeNode->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.3f, 0.3f);
-
-		m_SphereNode = CreateRenderNode("SphereNode");
-		m_SphereNode->SetMesh(m_SphereMesh);
-		m_SphereNode->SetMaterial(m_Crate02Mat);
-		m_SphereNode->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.3f, 0.0f);*/
-
-		
+		m_LitSphereNode = CreateRenderNode("LitSphereNode");
+		m_LitSphereNode->SetMesh(m_SphereMesh);
+		m_LitSphereNode->SetMaterial(m_LitMat);
+		m_LitSphereNode->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.0f, 0.0f);
 	}
 }

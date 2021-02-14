@@ -495,66 +495,106 @@ void GfxDevice::SetPass(GpuProgram * gpuProgram, RenderState & renderState)
 	m_PipelineManager->SetPipelineCI(vkGpuProgram->GetPipelineLayout(), m_VKRenderPass->renderPass, renderState, vkGpuProgram->GetVertShaderModule(), vkGpuProgram->GetFragShaderModule());
 }
 
-void GfxDevice::BindUniformBuffer(GpuProgram* gpuProgram, int set, int binding, Buffer* buffer)
+void GfxDevice::BindShaderResources(GpuProgram * gpuProgram, int set, ShaderBindings shaderBindings)
 {
-	BufferImpl* bufferImpl = static_cast<BufferImpl*>(buffer);
-
-	VKBuffer* vkBuffer = bufferImpl->GetBuffer();
-
-	ASSERT(vkBuffer->usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, "not uniform buffer");
-
-	BindUniformBuffer(gpuProgram, set, binding, vkBuffer);
-}
-
-void GfxDevice::BindUniformBuffer(GpuProgram * gpuProgram, int set, int binding, void * data, uint64_t size)
-{
-	// Create Buffer
-
-	VKBuffer* vkBuffer = m_BufferManager->CreateTempBuffer(size);
-	vkBuffer->Update(data, 0, size);
-
-	ASSERT(vkBuffer->usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, "not uniform buffer");
-
-	BindUniformBuffer(gpuProgram, set, binding, vkBuffer);
-}
-
-void GfxDevice::BindImage(GpuProgram * gpuProgram, int set, int binding, Image * image)
-{
-	ImageImpl* imageImpl = static_cast<ImageImpl*>(image);
-
 	VKGpuProgram* vkGpuProgram = static_cast<VKGpuProgram*>(gpuProgram);
 
-	// Create DescriptorSet
+	// DescriptorSet
 
-	ASSERT(set == 2, "only PerMaterial has image binding");
-	VkDescriptorSet descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerMaterial());
+	VkDescriptorSet descriptorSet;
+	switch (set)
+	{
+	case 0:descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLGlobal()); break;
+	case 1:descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerView()); break;
+	case 2:descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerMaterial()); break;
+	case 3:descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerDraw()); break;
+	default:LOGE("set > 3");
+	}
 
-	// Update DescriptorSet
+	for (auto& uniform : shaderBindings.uniformDataBindings)
+	{
+		VKBuffer* vkBuffer = m_BufferManager->CreateTempBuffer(uniform.size);
+		vkBuffer->Update(uniform.data, 0, uniform.size);
 
-	VkDescriptorImageInfo imageInfo;
-	imageInfo.sampler = imageImpl->GetSampler()->sampler;
-	imageInfo.imageView = imageImpl->GetView()->view;
-	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		VkDescriptorBufferInfo bufferInfo;
+		bufferInfo.buffer = vkBuffer->buffer;
+		bufferInfo.offset = 0;
+		bufferInfo.range = vkBuffer->size;
 
-	VkWriteDescriptorSet writeDescriptorSet = {};
-	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writeDescriptorSet.pNext = nullptr;
-	writeDescriptorSet.dstSet = descriptorSet;
-	writeDescriptorSet.dstBinding = binding;
-	writeDescriptorSet.dstArrayElement = 0;
-	writeDescriptorSet.descriptorCount = 1;
-	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	writeDescriptorSet.pImageInfo = &imageInfo;
+		VkWriteDescriptorSet writeDescriptorSet = {};
+		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSet.pNext = nullptr;
+		writeDescriptorSet.dstSet = descriptorSet;
+		writeDescriptorSet.dstBinding = uniform.binding;
+		writeDescriptorSet.dstArrayElement = 0;
+		writeDescriptorSet.descriptorCount = 1;
+		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		writeDescriptorSet.pBufferInfo = &bufferInfo;
 
-	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
+		vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
+
+		vkBuffer->Use(m_FrameIndex);
+	}
+
+	for (auto& uniform : shaderBindings.uniformBufferBindings)
+	{
+		BufferImpl* bufferImpl = static_cast<BufferImpl*>(uniform.buffer);
+		VKBuffer* vkBuffer = bufferImpl->GetBuffer();
+
+		ASSERT(vkBuffer->usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, "not uniform buffer");
+
+		VkDescriptorBufferInfo bufferInfo;
+		bufferInfo.buffer = vkBuffer->buffer;
+		bufferInfo.offset = 0;
+		bufferInfo.range = vkBuffer->size;
+
+		VkWriteDescriptorSet writeDescriptorSet = {};
+		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSet.pNext = nullptr;
+		writeDescriptorSet.dstSet = descriptorSet;
+		writeDescriptorSet.dstBinding = uniform.binding;
+		writeDescriptorSet.dstArrayElement = 0;
+		writeDescriptorSet.descriptorCount = 1;
+		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		writeDescriptorSet.pBufferInfo = &bufferInfo;
+
+		vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
+
+		vkBuffer->Use(m_FrameIndex);
+	}
+
+	for (auto& image : shaderBindings.imageBindings)
+	{
+		ImageImpl* imageImpl = static_cast<ImageImpl*>(image.image);
+		VKGpuProgram* vkGpuProgram = static_cast<VKGpuProgram*>(gpuProgram);
+
+		ASSERT(set == 2, "only PerMaterial has image binding");
+
+		VkDescriptorImageInfo imageInfo;
+		imageInfo.sampler = imageImpl->GetSampler()->sampler;
+		imageInfo.imageView = imageImpl->GetView()->view;
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		VkWriteDescriptorSet writeDescriptorSet = {};
+		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSet.pNext = nullptr;
+		writeDescriptorSet.dstSet = descriptorSet;
+		writeDescriptorSet.dstBinding = image.binding;
+		writeDescriptorSet.dstArrayElement = 0;
+		writeDescriptorSet.descriptorCount = 1;
+		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		writeDescriptorSet.pImageInfo = &imageInfo;
+
+		vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
+
+		imageImpl->GetImage()->Use(m_FrameIndex);
+		imageImpl->GetView()->Use(m_FrameIndex);
+		imageImpl->GetSampler()->Use(m_FrameIndex);
+	}
+
+	// Bind DescriptorSet
 
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, vkGpuProgram->GetPipelineLayout(), set, descriptorSet);
-
-	// 标记资源被使用
-
-	imageImpl->GetImage()->Use(m_FrameIndex);
-	imageImpl->GetView()->Use(m_FrameIndex);
-	imageImpl->GetSampler()->Use(m_FrameIndex);
 }
 
 void GfxDevice::BindMeshBuffer(Buffer * vertexBuffer, Buffer * indexBuffer, VertexDescription & vertexDescription, VkIndexType indexType)
@@ -661,48 +701,4 @@ VkFence GfxDevice::CreateVKFence(bool signaled)
 	VK_CHECK_RESULT(vkCreateFence(m_VKDevice->device, &fenceCreateInfo, nullptr, &fence));
 
 	return fence;
-}
-
-void GfxDevice::BindUniformBuffer(GpuProgram * gpuProgram, int set, int binding, VKBuffer * buffer)
-{
-	VKGpuProgram* vkGpuProgram = static_cast<VKGpuProgram*>(gpuProgram);
-
-	// DescriptorSet
-
-	VkDescriptorSet descriptorSet;
-	switch (set)
-	{
-	case 0:descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLGlobal()); break;
-	case 1:descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerView()); break;
-	case 2:descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerMaterial()); break;
-	case 3:descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerDraw()); break;
-	default:LOGE("set > 3");
-	}
-
-	// Update DescriptorSet
-
-	VkDescriptorBufferInfo bufferInfo;
-	bufferInfo.buffer = buffer->buffer;
-	bufferInfo.offset = 0;
-	bufferInfo.range = buffer->size;
-
-	VkWriteDescriptorSet writeDescriptorSet = {};
-	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writeDescriptorSet.pNext = nullptr;
-	writeDescriptorSet.dstSet = descriptorSet;
-	writeDescriptorSet.dstBinding = binding;
-	writeDescriptorSet.dstArrayElement = 0;
-	writeDescriptorSet.descriptorCount = 1;
-	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	writeDescriptorSet.pBufferInfo = &bufferInfo;
-
-	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
-
-	// Bind DescriptorSet
-
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, vkGpuProgram->GetPipelineLayout(), set, descriptorSet);
-
-	// 标记资源被使用
-
-	buffer->Use(m_FrameIndex);
 }

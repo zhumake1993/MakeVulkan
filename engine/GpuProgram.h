@@ -75,3 +75,32 @@ protected:
 
 	GpuParameters m_GpuParameters;
 };
+
+struct ShaderBindings
+{
+	struct UniformDataBinding
+	{
+		UniformDataBinding(int p1, void* p2, uint64_t p3) :binding(p1), data(p2), size(p3) {}
+		int binding;
+		void* data;
+		uint64_t size;
+	};
+
+	struct UniformBufferBinding
+	{
+		UniformBufferBinding(int p1, void* p2) :binding(p1),buffer(p2) {}
+		int binding;
+		void* buffer;
+	};
+
+	struct ImageBinding
+	{
+		ImageBinding(int p1, void* p2) :binding(p1), image(p2) {}
+		int binding;
+		void* image;
+	};
+
+	std::vector<UniformDataBinding> uniformDataBindings;
+	std::vector<UniformBufferBinding> uniformBufferBindings;
+	std::vector<ImageBinding> imageBindings;
+};

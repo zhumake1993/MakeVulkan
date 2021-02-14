@@ -85,10 +85,7 @@ public:
 
 	void SetPass(GpuProgram* gpuProgram, RenderState& renderState);
 
-	void BindUniformBuffer(GpuProgram* gpuProgram, int set, int binding, Buffer* buffer);
-	void BindUniformBuffer(GpuProgram* gpuProgram, int set, int binding, void* data, uint64_t size);
-
-	void BindImage(GpuProgram* gpuProgram, int set, int binding, Image* image);
+	void BindShaderResources(GpuProgram* gpuProgram, int set, ShaderBindings shaderBindings);
 
 	void BindMeshBuffer(Buffer* vertexBuffer, Buffer* indexBuffer, VertexDescription& vertexDescription, VkIndexType indexType = VK_INDEX_TYPE_UINT32);
 
@@ -105,8 +102,6 @@ private:
 	VkSemaphore CreateVKSemaphore();
 
 	VkFence CreateVKFence(bool signaled);
-
-	void BindUniformBuffer(GpuProgram* gpuProgram, int set, int binding, VKBuffer* buffer);
 
 private:
 

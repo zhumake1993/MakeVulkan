@@ -5,9 +5,12 @@
 /////////////////////////////////////////////////////
 
 #define MaxLights 16
-layout (constant_id = 0) const int NUM_DIR_LIGHTS = 0;
-layout (constant_id = 1) const int NUM_POINT_LIGHTS = 0;
-layout (constant_id = 2) const int NUM_SPOT_LIGHTS = 0;
+//layout (constant_id = 0) const int NUM_DIR_LIGHTS = 0;
+//layout (constant_id = 1) const int NUM_POINT_LIGHTS = 0;
+//layout (constant_id = 2) const int NUM_SPOT_LIGHTS = 0;
+#define NUM_DIR_LIGHTS 1
+#define NUM_POINT_LIGHTS 1
+#define NUM_SPOT_LIGHTS 0
 
 struct Light
 {
@@ -17,6 +20,14 @@ struct Light
 	float falloffEnd; // point/spot light only
 	vec3 position; // point/spot light only
 	float spotPower; // spot light only
+};
+
+struct Material
+{
+	vec4 diffuseAlbedo;
+	vec3 fresnelR0;
+	float roughness;
+	mat4 matTransform;
 };
 
 float CalcAttenuation(float d, float falloffStart, float falloffEnd)
@@ -35,14 +46,6 @@ vec3 SchlickFresnel(vec3 R0, vec3 normal, vec3 lightVec)
 	vec3 reflectPercent = R0 + (1.0f - R0)* (f0*f0*f0*f0*f0);
 	return reflectPercent;
 }
-
-struct Material
-{
-	vec4 diffuseAlbedo;
-	vec3 fresnelR0;
-	float roughness;
-	mat4 matTransform;
-};
 
 vec3 BlinnPhong(vec3 lightStrength, vec3 lightVec, vec3 normal, vec3 toEye, Material mat)
 {
@@ -133,7 +136,7 @@ vec4 ComputeLighting(Light gLights[MaxLights], Material mat, vec3 pos, vec3 norm
 {
 	vec3 result = vec3(0.0f, 0.0f, 0.0f);
 	int i = 0;
-	
+
 	//#if (NUM_DIR_LIGHTS > 0)
 		for(i = 0; i < NUM_DIR_LIGHTS; ++i)
 		{
@@ -142,16 +145,16 @@ vec4 ComputeLighting(Light gLights[MaxLights], Material mat, vec3 pos, vec3 norm
 	//#endif
 	
 	//#if (NUM_POINT_LIGHTS > 0)
-		for(i = NUM_DIR_LIGHTS; i < NUM_DIR_LIGHTS+NUM_POINT_LIGHTS; ++i)
+		//for(i = NUM_DIR_LIGHTS; i < NUM_DIR_LIGHTS+NUM_POINT_LIGHTS; ++i)
 		{
-			result += ComputePointLight(gLights[i], mat, pos, normal, toEye);
+			//result += ComputePointLight(gLights[i], mat, pos, normal, toEye);
 		}
 	//#endif
 	
 	//#if (NUM_SPOT_LIGHTS > 0)
-		for(i = NUM_DIR_LIGHTS + NUM_POINT_LIGHTS; i < NUM_DIR_LIGHTS + NUM_POINT_LIGHTS + NUM_SPOT_LIGHTS; ++i)
+		//for(i = NUM_DIR_LIGHTS + NUM_POINT_LIGHTS; i < NUM_DIR_LIGHTS + NUM_POINT_LIGHTS + NUM_SPOT_LIGHTS; ++i)
 		{
-			result += ComputeSpotLight(gLights[i], mat, pos, normal, toEye);
+			//result += ComputeSpotLight(gLights[i], mat, pos, normal, toEye);
 		}
 	//#endif
 
@@ -162,7 +165,7 @@ vec4 ComputeLighting(Light gLights[MaxLights], Material mat, vec3 pos, vec3 norm
 // Uniform
 /////////////////////////////////////////////////////
 
-layout(set=0, binding=0) uniform u_PassUniformBuffer {
+layout(set=1, binding=0) uniform PerView {
     mat4 view;
     mat4 proj;
 	vec4 eyePos;
@@ -177,7 +180,7 @@ layout(set=0, binding=0) uniform u_PassUniformBuffer {
 	Light lights[MaxLights];
 };
 
-layout(set=2, binding=0) uniform u_MaterialUniformBuffer{
+layout(set=2, binding=0) uniform PerMaterial{
 	Material gMaterial;
 };
 

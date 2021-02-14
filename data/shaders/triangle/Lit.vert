@@ -1,40 +1,16 @@
 #version 450
 
 /////////////////////////////////////////////////////
-// Light
-/////////////////////////////////////////////////////
-
-/*
-#define MaxLights 16
-#define NUM_DIR_LIGHTS 1
-#define NUM_POINT_LIGHTS 0
-#define NUM_SPOT_LIGHTS 0
-
-struct Light
-{
-	vec3 strength; // light color
-	float falloffStart; // point/spot light only
-	vec3 direction;// directional/spot lightonly
-	float falloffEnd; // point/spot light only
-	vec3 position; // point/spot light only
-	float spotPower; // spot light only
-};
-*/
-
-/////////////////////////////////////////////////////
 // Uniform
 /////////////////////////////////////////////////////
 
-layout(set=0, binding=0) uniform u_PassUniformBuffer {
+layout(set=1, binding=0) uniform PerView {
     mat4 view;
     mat4 proj;
 	vec4 eyePos;
-	
-	//vec4 ambientLight;
-	//Light lights[MaxLights];
 };
 
-layout(set=1, binding=0) uniform u_ObjectUniformBuffer {
+layout(set=3, binding=0) uniform PerDraw {
     mat4 world;
 };
 
