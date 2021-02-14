@@ -74,9 +74,6 @@ GfxDevice::GfxDevice()
 	m_DescriptorSetManager = new DescriptorSetManager(m_VKDevice->device, m_GarbageCollector);
 	m_PipelineManager = new PipelineManager(m_VKDevice->device, m_GarbageCollector);
 
-	std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { m_DescriptorSetManager->GetDSLGlobal(),m_DescriptorSetManager->GetDSLPerView() };
-	m_PipelineManager->SetDummyPipelineLayout(m_PipelineManager->CreatePipelineLayout(descriptorSetLayouts));
-
 	// Depth
 	VkFormat depthFormat = GetSupportedDepthFormat();
 	m_DepthImage = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, depthFormat, windowWidth, windowHeight, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
@@ -98,6 +95,9 @@ GfxDevice::GfxDevice()
 
 GfxDevice::~GfxDevice()
 {
+	vkDestroyDescriptorSetLayout(m_VKDevice->device, VKGpuProgram::GetDSLGlobal(), nullptr);
+	vkDestroyDescriptorSetLayout(m_VKDevice->device, VKGpuProgram::GetDSLPerView(), nullptr);
+
 	RELEASE(m_UploadCommandBuffer);
 
 	for (size_t i = 0; i < m_VKSwapChain->numberOfImages; ++i)
@@ -481,13 +481,7 @@ void GfxDevice::SetPass(GpuProgram * gpuProgram, RenderStatus & renderStatus)
 {
 	VKGpuProgram* vkGpuProgram = static_cast<VKGpuProgram*>(gpuProgram);
 
-	std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
-	descriptorSetLayouts.push_back(m_DescriptorSetManager->GetDSLGlobal());
-	descriptorSetLayouts.push_back(m_DescriptorSetManager->GetDSLPerView());
-	descriptorSetLayouts.push_back(vkGpuProgram->GetDSLPerMaterial());
-	descriptorSetLayouts.push_back(vkGpuProgram->GetDSLPerDraw());
-
-	m_PipelineManager->SetPipelineCI(descriptorSetLayouts, m_VKRenderPass->renderPass, renderStatus, vkGpuProgram->GetVertShaderModule(), vkGpuProgram->GetFragShaderModule());
+	m_PipelineManager->SetPipelineCI(vkGpuProgram->GetPipelineLayout(), m_VKRenderPass->renderPass, renderStatus, vkGpuProgram->GetVertShaderModule(), vkGpuProgram->GetFragShaderModule());
 }
 
 void GfxDevice::BindUniformBuffer(GpuProgram* gpuProgram, int set, int binding, Buffer* buffer)
@@ -505,10 +499,12 @@ void GfxDevice::BindUniformBuffer(GpuProgram * gpuProgram, int set, int binding,
 {
 	// Create Buffer
 
-	VKBuffer* buffer = m_BufferManager->CreateTempBuffer(size);
-	buffer->Update(data, 0, size);
+	VKBuffer* vkBuffer = m_BufferManager->CreateTempBuffer(size);
+	vkBuffer->Update(data, 0, size);
 
-	BindUniformBuffer(gpuProgram, set, binding, buffer);
+	ASSERT(vkBuffer->usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, "not uniform buffer");
+
+	BindUniformBuffer(gpuProgram, set, binding, vkBuffer);
 }
 
 void GfxDevice::BindImage(GpuProgram * gpuProgram, int set, int binding, Image * image)
@@ -541,7 +537,7 @@ void GfxDevice::BindImage(GpuProgram * gpuProgram, int set, int binding, Image *
 
 	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
 
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineManager->GetCurrPipelineLayout(), set, descriptorSet);
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, vkGpuProgram->GetPipelineLayout(), set, descriptorSet);
 
 	// 标记资源被使用
 
@@ -565,6 +561,13 @@ void GfxDevice::DrawBuffer(Buffer * vertexBuffer, Buffer * indexBuffer, uint32_t
 	iBuffer->Use(m_FrameIndex);
 
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->DrawIndexed(indexCount, 1, 0, 0, 1);
+}
+
+void GfxDevice::PushConstants(GpuProgram * gpuProgram, void * data, uint32_t size)
+{
+	VKGpuProgram* vkGpuProgram = static_cast<VKGpuProgram*>(gpuProgram);
+
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->PushConstants(vkGpuProgram->GetPipelineLayout(), vkGpuProgram->GetGpuParameters().pushConstantStage, 0, size, data);
 }
 
 VkFormat GfxDevice::GetSupportedDepthFormat()
@@ -655,30 +658,11 @@ void GfxDevice::BindUniformBuffer(GpuProgram * gpuProgram, int set, int binding,
 	VkDescriptorSet descriptorSet;
 	switch (set)
 	{
-		case 0:
-		{
-			descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(m_DescriptorSetManager->GetDSLGlobal());
-			break;
-		}
-		case 1:
-		{
-			descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(m_DescriptorSetManager->GetDSLPerView());
-			break;
-		}
-		case 2:
-		{
-			descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerMaterial());
-			break;
-		}
-		case 3:
-		{
-			descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerDraw());
-			break;
-		}
-		default:
-		{
-			LOGE("set > 3");
-		}
+	case 0:descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLGlobal()); break;
+	case 1:descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerView()); break;
+	case 2:descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerMaterial()); break;
+	case 3:descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerDraw()); break;
+	default:LOGE("set > 3");
 	}
 
 	// Update DescriptorSet
@@ -700,40 +684,9 @@ void GfxDevice::BindUniformBuffer(GpuProgram * gpuProgram, int set, int binding,
 
 	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
 
-	// PipelineLayout
-
-	VkPipelineLayout pipelineLayout;
-	switch (set)
-	{
-		case 0:
-		{
-			pipelineLayout = m_PipelineManager->GetDummyPipelineLayout();
-			break;
-		}
-		case 1:
-		{
-			pipelineLayout = m_PipelineManager->GetDummyPipelineLayout();
-			break;
-		}
-		case 2:
-		{
-			pipelineLayout = m_PipelineManager->GetCurrPipelineLayout();
-			break;
-		}
-		case 3:
-		{
-			pipelineLayout = m_PipelineManager->GetCurrPipelineLayout();
-			break;
-		}
-		default:
-		{
-			LOGE("set > 3");
-		}
-	}
-
 	// Bind DescriptorSet
 
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, set, descriptorSet);
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, vkGpuProgram->GetPipelineLayout(), set, descriptorSet);
 
 	// 标记资源被使用
 

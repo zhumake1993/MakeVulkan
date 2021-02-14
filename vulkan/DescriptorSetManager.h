@@ -27,18 +27,11 @@ public:
 	DescriptorSetManager(VkDevice vkDevice, GarbageCollector* gc);
 	virtual ~DescriptorSetManager();
 
-	VkDescriptorSetLayout GetDSLGlobal();
-	VkDescriptorSetLayout GetDSLPerView();
-
 	VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetLayout layout);
 
 private:
 
 	VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
-
-	// Global和PerView的Layout预先设置，非自定义
-	VkDescriptorSetLayout m_DSLGlobal = VK_NULL_HANDLE;
-	VkDescriptorSetLayout m_DSLPerView = VK_NULL_HANDLE;
 
 	GarbageCollector* m_GarbageCollector = nullptr;
 

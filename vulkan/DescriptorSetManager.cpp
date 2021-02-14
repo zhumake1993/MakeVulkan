@@ -30,69 +30,13 @@ DescriptorSetManager::DescriptorSetManager(VkDevice vkDevice, GarbageCollector* 
 	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
 
 	VK_CHECK_RESULT(vkCreateDescriptorPool(m_Device, &descriptorPoolCreateInfo, nullptr, &m_DescriptorPool));
-
-	// Global, set = 0, Layout：
-	// 0：Uniform
-	{
-		VkDescriptorSetLayoutBinding binding;
-		binding.binding = 0;
-		binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		binding.descriptorCount = 1;
-		binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-		binding.pImmutableSamplers = nullptr;
-
-		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
-		descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		descriptorSetLayoutCreateInfo.pNext = nullptr;
-		descriptorSetLayoutCreateInfo.flags = 0;
-		descriptorSetLayoutCreateInfo.bindingCount = 1;
-		descriptorSetLayoutCreateInfo.pBindings = &binding;
-
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptorSetLayoutCreateInfo, nullptr, &m_DSLGlobal));
-	}
-
-	// PerView, set = 1, Layout：
-	// 0：Uniform
-	{
-		VkDescriptorSetLayoutBinding binding;
-		binding.binding = 0;
-		binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		binding.descriptorCount = 1;
-		binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-		binding.pImmutableSamplers = nullptr;
-
-		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
-		descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		descriptorSetLayoutCreateInfo.pNext = nullptr;
-		descriptorSetLayoutCreateInfo.flags = 0;
-		descriptorSetLayoutCreateInfo.bindingCount = 1;
-		descriptorSetLayoutCreateInfo.pBindings = &binding;
-
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptorSetLayoutCreateInfo, nullptr, &m_DSLPerView));
-	}
 }
 
 DescriptorSetManager::~DescriptorSetManager()
 {
-	vkDestroyDescriptorSetLayout(m_Device, m_DSLPerView, nullptr);
-	m_DSLPerView = VK_NULL_HANDLE;
-
-	vkDestroyDescriptorSetLayout(m_Device, m_DSLGlobal, nullptr);
-	m_DSLGlobal = VK_NULL_HANDLE;
-
 	// 销毁DescriptorPool会自动销毁其中分配的Set
 	vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
 	m_DescriptorPool = VK_NULL_HANDLE;
-}
-
-VkDescriptorSetLayout DescriptorSetManager::GetDSLGlobal()
-{
-	return m_DSLGlobal;
-}
-
-VkDescriptorSetLayout DescriptorSetManager::GetDSLPerView()
-{
-	return m_DSLPerView;
 }
 
 VkDescriptorSet DescriptorSetManager::AllocateDescriptorSet(VkDescriptorSetLayout layout)

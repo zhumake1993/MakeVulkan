@@ -33,8 +33,8 @@ public:
 	virtual ~Example();
 
 	virtual void ConfigDeviceProperties() = 0;
-	virtual void Init() = 0;
-	virtual void Release() = 0;
+	virtual void Init();
+	virtual void Release();
 	virtual void Update();
 
 protected:
@@ -53,7 +53,7 @@ protected:
 
 	UniformDataGlobal m_UniformDataGlobal;
 	UniformDataPerView m_UniformDataPerView;
-
+	Shader* m_DummyShader;
 	TimeManager* m_TimeManager;
 
 private:
@@ -64,5 +64,5 @@ private:
 	std::vector<Material*> m_MaterialContainer;
 	std::vector<RenderNode*> m_RenderNodeContainer;
 
-	//Shader* m_DummyShader;
+	
 };

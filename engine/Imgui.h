@@ -5,6 +5,7 @@
 
 class Image;
 class Buffer;
+class Shader;
 
 class Imgui
 {
@@ -34,6 +35,10 @@ private:
 	const uint32_t m_MaxIndexCount = 65536;
 	Buffer* m_VertexBuffer = nullptr;
 	Buffer* m_IndexBuffer = nullptr;
+
+	Shader* m_Shader;
+
+	VertexDescription m_VertexDes;
 
 	//VKImage* m_FontImage;
 	//VKSampler* m_Sampler;

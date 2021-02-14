@@ -91,6 +91,8 @@ public:
 
 	void DrawBuffer(Buffer* vertexBuffer, Buffer* indexBuffer, uint32_t indexCount, VertexDescription& vertexDescription);
 
+	void PushConstants(GpuProgram* gpuProgram, void* data, uint32_t size);
+
 private:
 
 	VkFormat GetSupportedDepthFormat();
@@ -117,10 +119,10 @@ private:
 
 	// 资源管理器
 	GarbageCollector* m_GarbageCollector = nullptr; // GC
-	BufferManager* m_BufferManager = nullptr; // 管理Buffer
-	ImageManager* m_ImageManager = nullptr; // 管理Image
-	DescriptorSetManager* m_DescriptorSetManager = nullptr; // 管理DescriptorPool, DescriptorSetLayout, DescriptorSet
-	PipelineManager* m_PipelineManager = nullptr; // 管理PipelineLayout，Pipeline
+	BufferManager* m_BufferManager = nullptr;
+	ImageManager* m_ImageManager = nullptr;
+	DescriptorSetManager* m_DescriptorSetManager = nullptr;
+	PipelineManager* m_PipelineManager = nullptr;
 
 	// Depth
 	VKImage* m_DepthImage;

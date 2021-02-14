@@ -18,34 +18,36 @@
 
 Example::Example()
 {
-	//m_DummyShader = new Shader("DummyShader");
+}
 
-	//GpuParameters parameters;
+Example::~Example()
+{
+}
 
-	
+void Example::Init()
+{
+	m_DummyShader = new Shader("DummyShader");
 
-	//// Global
-	//{
-	//	UniformBufferLayout layout0("Global", 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-	//	layout0.Add(UniformBufferElement(kUniformDataTypeFloat4, "Time"));
-	//	parameters.uniformBufferLayouts.push_back(layout0);
-	//}
-	//
-	//// PerView
-	//{
-	//	UniformBufferLayout layout1("PerView", 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-	//	layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixView"));
-	//	layout1.Add(UniformBufferElement(kUniformDataTypeFloat4x4, "MatrixProj"));
-	//	layout1.Add(UniformBufferElement(kUniformDataTypeFloat4, "EyePos"));
-	//	parameters.uniformBufferLayouts.push_back(layout1);
-	//}
+	GpuParameters parameters;
+	{
+		GpuParameters::UniformParameter uniform("Global", 0, VK_SHADER_STAGE_VERTEX_BIT);
+		uniform.valueParameters.emplace_back("Time", GpuParameters::kUniformDataFloat4);
+		parameters.uniformParameters.push_back(uniform);
+	}
+	{
+		GpuParameters::UniformParameter uniform("PerView", 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+		uniform.valueParameters.emplace_back("MatrixView", GpuParameters::kUniformDataFloat4x4);
+		uniform.valueParameters.emplace_back("MatrixProj", GpuParameters::kUniformDataFloat4x4);
+		uniform.valueParameters.emplace_back("EyePos", GpuParameters::kUniformDataFloat4);
+		parameters.uniformParameters.push_back(uniform);
+	}
 
-	//m_DummyShader->CreateGpuProgram(parameters);
+	m_DummyShader->CreateGpuProgram(parameters);
 
 	m_TimeManager = new TimeManager();
 }
 
-Example::~Example()
+void Example::Release()
 {
 	RELEASE(m_TimeManager);
 
@@ -55,8 +57,7 @@ Example::~Example()
 	for (auto p : m_MaterialContainer) { RELEASE(p); }
 	for (auto p : m_RenderNodeContainer) { RELEASE(p); }
 
-	//todo
-	//RELEASE(m_DummyShader);
+	RELEASE(m_DummyShader);
 }
 
 void Example::Update()

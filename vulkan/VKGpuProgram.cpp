@@ -1,5 +1,9 @@
 #include "VKGpuProgram.h"
 #include "VulkanTools.h"
+#include "DeviceProperties.h"
+
+VkDescriptorSetLayout VKGpuProgram::m_DSLGlobal = VK_NULL_HANDLE;
+VkDescriptorSetLayout VKGpuProgram::m_DSLPerView = VK_NULL_HANDLE;
 
 VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode) :
 	GpuProgram(parameters),
@@ -10,8 +14,49 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 
 	for (auto& uniform : parameters.uniformParameters)
 	{
-		// PerMaterial只有一个uniform buffer
-		if (uniform.name == "PerMaterial")
+		if (uniform.name == "Global")
+		{
+			// Global, set = 0, Layout：
+			// 0：Uniform
+
+			VkDescriptorSetLayoutBinding binding;
+			binding.binding = 0;
+			binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			binding.descriptorCount = 1;
+			binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+			binding.pImmutableSamplers = nullptr;
+
+			VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
+			descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			descriptorSetLayoutCreateInfo.pNext = nullptr;
+			descriptorSetLayoutCreateInfo.flags = 0;
+			descriptorSetLayoutCreateInfo.bindingCount = 1;
+			descriptorSetLayoutCreateInfo.pBindings = &binding;
+
+			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptorSetLayoutCreateInfo, nullptr, &m_DSLGlobal));
+		}
+		else if (uniform.name == "PerView")
+		{
+			// PerView, set = 1, Layout：
+			// 0：Uniform
+
+			VkDescriptorSetLayoutBinding binding;
+			binding.binding = 0;
+			binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			binding.descriptorCount = 1;
+			binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+			binding.pImmutableSamplers = nullptr;
+
+			VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
+			descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			descriptorSetLayoutCreateInfo.pNext = nullptr;
+			descriptorSetLayoutCreateInfo.flags = 0;
+			descriptorSetLayoutCreateInfo.bindingCount = 1;
+			descriptorSetLayoutCreateInfo.pBindings = &binding;
+
+			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptorSetLayoutCreateInfo, nullptr, &m_DSLPerView));
+		}
+		else if (uniform.name == "PerMaterial") // PerMaterial只有一个uniform buffer
 		{
 			VkDescriptorSetLayoutBinding binding = {};
 			binding.binding = uniform.binding;
@@ -22,7 +67,7 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 
 			bindingsPerMaterial.push_back(binding);
 		}
-		else if (uniform.name.find("PerDraw") == 0)
+		else if (uniform.name.find("PerDraw") == 0) // 目前PerDraw只有一个uniform buffer
 		{
 			VkDescriptorSetLayoutBinding binding = {};
 			binding.binding = uniform.binding;
@@ -56,7 +101,6 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 	descriptorSetLayoutCreateInfo.pNext = nullptr;
 	descriptorSetLayoutCreateInfo.flags = 0;
 
-	ASSERT(bindingsPerMaterial.size() == 1, "bindingsPerMaterial.size() != 1")
 	descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(bindingsPerMaterial.size());
 	descriptorSetLayoutCreateInfo.pBindings = bindingsPerMaterial.data();
 	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptorSetLayoutCreateInfo, nullptr, &m_DSLPerMaterial));
@@ -65,6 +109,41 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 	descriptorSetLayoutCreateInfo.pBindings = bindingsPerDraw.data();
 	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_Device, &descriptorSetLayoutCreateInfo, nullptr, &m_DSLPerDraw));
 
+	// PipelineLayout
+
+	std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+	descriptorSetLayouts.push_back(m_DSLGlobal);
+	descriptorSetLayouts.push_back(m_DSLPerView);
+	descriptorSetLayouts.push_back(m_DSLPerMaterial);
+	descriptorSetLayouts.push_back(m_DSLPerDraw);
+
+	VkPipelineLayoutCreateInfo pipelineLayoutCI = {};
+	pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutCI.pNext = nullptr;
+	pipelineLayoutCI.flags = 0;
+	pipelineLayoutCI.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+	pipelineLayoutCI.pSetLayouts = descriptorSetLayouts.data();
+	pipelineLayoutCI.pushConstantRangeCount = 0;
+	pipelineLayoutCI.pPushConstantRanges = nullptr;
+
+	if (parameters.pushConstantSize > 0)
+	{
+		auto& dp = GetDeviceProperties();
+		ASSERT(parameters.pushConstantSize <= dp.deviceProperties.limits.maxPushConstantsSize, "exceed maxPushConstantsSize.");
+
+		VkPushConstantRange pushConstantRange = {};
+		pushConstantRange.stageFlags = parameters.pushConstantStage;
+		pushConstantRange.offset = 0;
+		pushConstantRange.size = parameters.pushConstantSize;
+
+		// 一个PushConstant足够了
+		pipelineLayoutCI.pushConstantRangeCount = 1;
+		pipelineLayoutCI.pPushConstantRanges = &pushConstantRange;
+	}
+
+	VK_CHECK_RESULT(vkCreatePipelineLayout(m_Device, &pipelineLayoutCI, nullptr, &m_PipelineLayout));
+
+	if(vertCode.size() > 0)
 	{
 		VkShaderModuleCreateInfo moduleCreateInfo = {};
 		moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -76,6 +155,7 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 		VK_CHECK_RESULT(vkCreateShaderModule(m_Device, &moduleCreateInfo, nullptr, &m_VertShaderModule));
 	}
 	
+	if(fragCode.size() > 0)
 	{
 		VkShaderModuleCreateInfo moduleCreateInfo = {};
 		moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -101,6 +181,9 @@ VKGpuProgram::~VKGpuProgram()
 
 	vkDestroyDescriptorSetLayout(m_Device, m_DSLPerDraw, nullptr);
 	m_DSLPerDraw = VK_NULL_HANDLE;
+
+	vkDestroyPipelineLayout(m_Device, m_PipelineLayout, nullptr);
+	m_PipelineLayout = VK_NULL_HANDLE;
 }
 
 VkShaderModule VKGpuProgram::GetVertShaderModule()
@@ -113,12 +196,27 @@ VkShaderModule VKGpuProgram::GetFragShaderModule()
 	return m_FragShaderModule;
 }
 
-VkDescriptorSetLayout& VKGpuProgram::GetDSLPerMaterial()
+VkDescriptorSetLayout VKGpuProgram::GetDSLGlobal()
+{
+	return m_DSLGlobal;
+}
+
+VkDescriptorSetLayout VKGpuProgram::GetDSLPerView()
+{
+	return m_DSLPerView;
+}
+
+VkDescriptorSetLayout VKGpuProgram::GetDSLPerMaterial()
 {
 	return m_DSLPerMaterial;
 }
 
-VkDescriptorSetLayout& VKGpuProgram::GetDSLPerDraw()
+VkDescriptorSetLayout VKGpuProgram::GetDSLPerDraw()
 {
 	return m_DSLPerDraw;
+}
+
+VkPipelineLayout VKGpuProgram::GetPipelineLayout()
+{
+	return m_PipelineLayout;
 }

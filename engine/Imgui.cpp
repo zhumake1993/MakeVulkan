@@ -1,5 +1,7 @@
 //#include "Imgui.h"
 //#include "GfxDevice.h"
+//#include "Settings.h"
+//#include "Shader.h"
 //
 ////#include "InputManager.h"
 ////#include "TimeMgr.h"
@@ -32,52 +34,48 @@
 //	// Vertex buffer
 //
 //	uint64_t vertexBufferSize = m_MaxVertexCount * sizeof(ImDrawVert);
-//	m_VertexBuffer = device.CreateBuffer(kBufferTypeUniform, vertexBufferSize); // 因为需要每帧更新，这里使用UniformBuffer
-//	//device.UpdateBuffer(m_VertexBuffer, m_Vertices.data(), vertexBufferSize);
-//
-//	//VkDeviceSize vertexBufferSize = m_MaxVertexCount * sizeof(ImDrawVert);
-//	//m_VertexBuffer = driver.CreateVKBuffer(vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-//	//m_VertexBuffer->Map();
+//	m_VertexBuffer = device.CreateBuffer(kBufferUsageVertex, kMemoryPropertyHostCoherent, vertexBufferSize); // 因为需要每帧更新，这里使用HostVisible
 //
 //	// Index buffer
 //
 //	VkDeviceSize indexBufferSize = m_MaxIndexCount * sizeof(ImDrawIdx);
-//	m_IndexBuffer = driver.CreateVKBuffer(indexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-//	m_IndexBuffer->Map();
+//	m_IndexBuffer = device.CreateBuffer(kBufferUsageIndex, kMemoryPropertyHostCoherent, indexBufferSize); // 因为需要每帧更新，这里使用HostVisible
 //
-//	// DescriptorSet
+//	// Shader
 //
-//	DSLBindings bindings(1);
-//	bindings[0] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT };
-//	auto descriptorSetLayout = driver.CreateDescriptorSetLayout(bindings);
+//	m_Shader = new Shader("ColorShader");
+//	m_Shader->LoadSPV(AssetPath + "shaders/imgui/imgui.vert.spv", AssetPath + "shaders/imgui/imgui.frag.spv");
 //
-//	m_DescriptorSet = driver.GetDescriptorSet(descriptorSetLayout, true);
+//	GpuParameters parameters;
+//	{
+//		GpuParameters::TextureParameter texture("Base", 0, VK_SHADER_STAGE_FRAGMENT_BIT);
+//		parameters.textureParameters.push_back(texture);
+//	}
+//	m_Shader->CreateGpuProgram(parameters);
 //
-//	DesUpdateInfos infos(1);
-//	infos[0].binding = 0;
-//	infos[0].info.image = { m_Sampler->sampler, m_FontImage->view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-//	driver.UpdateDescriptorSet(m_DescriptorSet, infos);
+//	RenderStatus renderStatus;
+//
+//	m_Shader->SetRenderStatus(renderStatus);
 //
 //	// pipeline
 //	
-//	PipelineCI pipelineCI;
+//	//PipelineCI pipelineCI;
 //
-//	m_RenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat());
+//	//m_RenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat());
 //
-//	VKShaderModule* shaderVert = driver.CreateVKShaderModule(global::AssetPath + "shaders/imgui/shader.vert.spv");
-//	VKShaderModule* shaderFrag = driver.CreateVKShaderModule(global::AssetPath + "shaders/imgui/shader.frag.spv");
+//	//VKShaderModule* shaderVert = driver.CreateVKShaderModule(global::AssetPath + "shaders/imgui/shader.vert.spv");
+//	//VKShaderModule* shaderFrag = driver.CreateVKShaderModule(global::AssetPath + "shaders/imgui/shader.frag.spv");
 //
-//	pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = shaderVert->shaderModule;
-//	pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = shaderFrag->shaderModule;
+//	//pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = shaderVert->shaderModule;
+//	//pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = shaderFrag->shaderModule;
 //
-//	VertexDescription vertexDes;
-//	vertexDes.formats = { VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R8G8B8A8_UNORM };
-//	vertexDes.offsets = { 0, VkFormatToSize(VK_FORMAT_R32G32_SFLOAT),VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) };
-//	vertexDes.stride = VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R8G8B8A8_UNORM);
-//	pipelineCI.SetVertexInputState(vertexDes);
+//	m_VertexDes.formats = { VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R8G8B8A8_UNORM };
+//	m_VertexDes.offsets = { 0, VkFormatToSize(VK_FORMAT_R32G32_SFLOAT),VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) };
+//	m_VertexDes.stride = VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R8G8B8A8_UNORM);
+//	//pipelineCI.SetVertexInputState(vertexDes);
 //
 //	pipelineCI.pipelineCreateInfo.layout = driver.CreateVkPipelineLayout({ descriptorSetLayout }, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 4);
-//	pipelineCI.pipelineCreateInfo.renderPass = m_RenderPass->renderPass;
+//	//pipelineCI.pipelineCreateInfo.renderPass = m_RenderPass->renderPass;
 //
 //	pipelineCI.rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_NONE;
 //	pipelineCI.rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
@@ -94,10 +92,10 @@
 //	pipelineCI.depthStencilStateCreateInfo.depthTestEnable = VK_FALSE;
 //	pipelineCI.depthStencilStateCreateInfo.depthWriteEnable = VK_FALSE;
 //
-//	m_VulkanPipeline = driver.CreateVKPipeline(pipelineCI);
+//	//m_VulkanPipeline = driver.CreateVKPipeline(pipelineCI);
 //
-//	RELEASE(shaderVert);
-//	RELEASE(shaderFrag);
+//	//RELEASE(shaderVert);
+//	//RELEASE(shaderFrag);
 //}
 //
 //Imgui::~Imgui()

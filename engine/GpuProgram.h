@@ -54,6 +54,10 @@ struct GpuParameters
 
 	std::vector<UniformParameter> uniformParameters;
 	std::vector<TextureParameter> textureParameters;
+
+	// 为了保证Pipeline Layout Compatibility，统一设置128的PushConstant
+	const uint32_t pushConstantSize = 128;
+	const VkShaderStageFlags pushConstantStage = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 };
 
 class GpuProgram : public NonCopyable

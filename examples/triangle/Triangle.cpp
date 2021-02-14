@@ -21,7 +21,6 @@ Triangle::Triangle()
 
 Triangle::~Triangle()
 {
-	RELEASE(m_Camera);
 }
 
 void Triangle::ConfigDeviceProperties()
@@ -67,6 +66,8 @@ void Triangle::ConfigDeviceProperties()
 
 void Triangle::Init()
 {
+	Example::Init();
+
 	auto& device = GetGfxDevice();
 
 	// Camera
@@ -84,6 +85,9 @@ void Triangle::Init()
 
 void Triangle::Release()
 {
+	RELEASE(m_Camera);
+
+	Example::Release();
 }
 
 void Triangle::Update()
@@ -107,8 +111,10 @@ void Triangle::Draw()
 
 	device.BeginCommandBuffer();
 
-	device.BindUniformBuffer(nullptr, 0, 0, &m_UniformDataGlobal, sizeof(UniformDataGlobal));
-	device.BindUniformBuffer(nullptr, 1, 0, &m_UniformDataPerView, sizeof(UniformDataPerView));
+	SetShader(m_DummyShader);
+	GpuProgram* gpuProgram = m_DummyShader->GetGpuProgram();
+	device.BindUniformBuffer(gpuProgram, 0, 0, &m_UniformDataGlobal, sizeof(UniformDataGlobal));
+	device.BindUniformBuffer(gpuProgram, 1, 0, &m_UniformDataPerView, sizeof(UniformDataPerView));
 
 	Color clearColor;
 	DepthStencil clearDepthStencil;
@@ -123,6 +129,10 @@ void Triangle::Draw()
 	// m_ColorCubeNode
 	SetShader(m_ColorShader);
 	BindMaterial(m_ColorMat);
+
+	glm::vec4 ggggg;
+	device.PushConstants(m_ColorShader->GetGpuProgram(), &ggggg, 16);
+
 	DrawRenderNode(m_ColorCubeNode);
 
 	// m_TexCubeNode

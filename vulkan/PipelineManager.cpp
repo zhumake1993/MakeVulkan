@@ -175,75 +175,12 @@ PipelineManager::PipelineManager(VkDevice vkDevice, GarbageCollector* gc) :
 
 PipelineManager::~PipelineManager()
 {
-	vkDestroyPipelineLayout(m_Device, m_PipelineCI->pipelineCreateInfo.layout, nullptr);
 	RELEASE(m_PipelineCI);
-
-	vkDestroyPipelineLayout(m_Device, m_DummyPipelineLayout, nullptr);
-	m_DummyPipelineLayout = VK_NULL_HANDLE;
 }
 
-VkPipelineLayout PipelineManager::CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& layouts)
+void PipelineManager::SetPipelineCI(VkPipelineLayout layout, VkRenderPass renderPass, RenderStatus & renderStatus, VkShaderModule vertexSM, VkShaderModule framentSM)
 {
-	VkPipelineLayout pipelineLayout;
-
-	// todo: check maxPushConstantsSize
-	//VkPushConstantRange pushConstantRange = {};
-
-	VkPipelineLayoutCreateInfo pipelineLayoutCI = {};
-	pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutCI.pNext = nullptr;
-	pipelineLayoutCI.flags = 0;
-	pipelineLayoutCI.setLayoutCount = static_cast<uint32_t>(layouts.size());
-	pipelineLayoutCI.pSetLayouts = layouts.data();
-	pipelineLayoutCI.pushConstantRangeCount = 0;
-	pipelineLayoutCI.pPushConstantRanges = nullptr;
-	/*if (pcSize > 0)
-	{
-		pushConstantRange.stageFlags = pcStage;
-		pushConstantRange.offset = 0;
-		pushConstantRange.size = pcSize;
-
-		pipelineLayoutCI.pushConstantRangeCount = 1;
-		pipelineLayoutCI.pPushConstantRanges = &pushConstantRange;
-	}
-	else
-	{
-		pipelineLayoutCI.pushConstantRangeCount = 0;
-		pipelineLayoutCI.pPushConstantRanges = nullptr;
-	}*/
-
-	VK_CHECK_RESULT(vkCreatePipelineLayout(m_Device, &pipelineLayoutCI, nullptr, &pipelineLayout));
-
-	return pipelineLayout;
-}
-
-void PipelineManager::SetDummyPipelineLayout(VkPipelineLayout layout)
-{
-	m_DummyPipelineLayout = layout;
-}
-
-VkPipelineLayout PipelineManager::GetDummyPipelineLayout()
-{
-	return m_DummyPipelineLayout;
-}
-
-void PipelineManager::SetPipelineCI(std::vector<VkDescriptorSetLayout>& layouts, VkRenderPass renderPass, RenderStatus & renderStatus, VkShaderModule vertexSM, VkShaderModule framentSM)
-{
-	// 先释放之前的PipelineLayout
-	if (m_PipelineCI->pipelineCreateInfo.layout != VK_NULL_HANDLE)
-	{
-		vkDestroyPipelineLayout(m_Device, m_PipelineCI->pipelineCreateInfo.layout, nullptr);
-		m_PipelineCI->pipelineCreateInfo.layout = VK_NULL_HANDLE;
-	}
-	
-	VkPipelineLayout pipelineLayout = CreatePipelineLayout(layouts);
-
-	m_PipelineCI->Reset(pipelineLayout, renderPass, renderStatus, vertexSM, framentSM);
-}
-
-VkPipelineLayout PipelineManager::GetCurrPipelineLayout()
-{
-	return m_PipelineCI->pipelineCreateInfo.layout;
+	m_PipelineCI->Reset(layout, renderPass, renderStatus, vertexSM, framentSM);
 }
 
 VkPipeline PipelineManager::CreatePipeline(VertexDescription & vertexDescription)

@@ -138,13 +138,11 @@ void VKCommandBuffer::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, u
 	vkCmdDrawIndexed(commandBuffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 }
 
+void VKCommandBuffer::PushConstants(VkPipelineLayout pipelineLayout, VkShaderStageFlags pcStage, uint32_t offset, uint32_t size, void * data)
+{
+	vkCmdPushConstants(commandBuffer, pipelineLayout, pcStage, offset, size, data);
+}
 
-//
-//void VKCommandBuffer::PushConstants(VkPipelineLayout pipelineLayout, VkShaderStageFlags pcStage, uint32_t offset, uint32_t size, void * data)
-//{
-//	vkCmdPushConstants(commandBuffer, pipelineLayout, pcStage, offset, size, data);
-//}
-//
 
 //
 //void VKCommandBuffer::WriteTimeStamp(std::string name)
