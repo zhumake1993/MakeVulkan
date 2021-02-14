@@ -73,7 +73,8 @@ public:
 	void SetScissor(Rect2D& scissorArea);
 
 	Buffer* CreateBuffer(BufferUsageType bufferUsage, MemoryPropertyType memoryProp, uint64_t size);
-	void UpdateBuffer(Buffer* buffer, void* data, uint64_t size);
+	void UpdateBuffer(Buffer* buffer, void* data, uint64_t offset, uint64_t size);
+	void FlushBuffer(Buffer* buffer);
 	void ReleaseBuffer(Buffer* buffer);
 
 	Image* CreateImage(ImageType imageType, VkFormat format, uint32_t width, uint32_t height);
@@ -82,16 +83,18 @@ public:
 
 	GpuProgram* CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode);
 
-	void SetPass(GpuProgram* gpuProgram, RenderStatus& renderStatus);
+	void SetPass(GpuProgram* gpuProgram, RenderState& renderState);
 
 	void BindUniformBuffer(GpuProgram* gpuProgram, int set, int binding, Buffer* buffer);
 	void BindUniformBuffer(GpuProgram* gpuProgram, int set, int binding, void* data, uint64_t size);
 
 	void BindImage(GpuProgram* gpuProgram, int set, int binding, Image* image);
 
-	void DrawBuffer(Buffer* vertexBuffer, Buffer* indexBuffer, uint32_t indexCount, VertexDescription& vertexDescription);
+	void BindMeshBuffer(Buffer* vertexBuffer, Buffer* indexBuffer, VertexDescription& vertexDescription, VkIndexType indexType = VK_INDEX_TYPE_UINT32);
 
-	void PushConstants(GpuProgram* gpuProgram, void* data, uint32_t size);
+	void DrawIndexed(uint32_t indexCount, uint32_t instanceCount = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0);
+
+	void PushConstants(GpuProgram* gpuProgram, void* data, uint32_t offset, uint32_t size);
 
 private:
 

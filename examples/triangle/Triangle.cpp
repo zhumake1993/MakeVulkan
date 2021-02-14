@@ -12,6 +12,7 @@
 #include "RenderNode.h"
 #include "Camera.h"
 #include "TimeManager.h"
+#include "Imgui.h"
 
 #include "GpuProgram.h"
 
@@ -102,7 +103,13 @@ void Triangle::Update()
 	m_UniformDataPerView.proj = m_Camera->GetProj();
 	m_UniformDataPerView.eyePos = glm::vec4(m_Camera->GetPosition(), 1.0f);
 
-	Draw();
+	// Imgui
+
+	// UI样例，供学习用
+	bool show_demo_window = true;
+	ImGui::ShowDemoWindow(&show_demo_window);
+
+	UpdateImgui();
 }
 
 void Triangle::Draw()
@@ -111,15 +118,13 @@ void Triangle::Draw()
 
 	device.BeginCommandBuffer();
 
-	SetShader(m_DummyShader);
-	GpuProgram* gpuProgram = m_DummyShader->GetGpuProgram();
-	device.BindUniformBuffer(gpuProgram, 0, 0, &m_UniformDataGlobal, sizeof(UniformDataGlobal));
-	device.BindUniformBuffer(gpuProgram, 1, 0, &m_UniformDataPerView, sizeof(UniformDataPerView));
+	BindGlobalUniformBuffer();
+	BindPerViewUniformBuffer();
 
-	Color clearColor;
-	DepthStencil clearDepthStencil;
+	Color clearColor(0, 0, 0, 0);
+	DepthStencil clearDepthStencil(1.0, 0);
 	Rect2D area(0, 0, windowWidth, windowHeight);
-	Viewport viewport(windowWidth, windowHeight);
+	Viewport viewport(0, 0, windowWidth, windowHeight, 0, 1);
 
 	device.BeginRenderPass(area, clearColor, clearDepthStencil);
 
@@ -130,9 +135,6 @@ void Triangle::Draw()
 	SetShader(m_ColorShader);
 	BindMaterial(m_ColorMat);
 
-	glm::vec4 ggggg;
-	device.PushConstants(m_ColorShader->GetGpuProgram(), &ggggg, 16);
-
 	DrawRenderNode(m_ColorCubeNode);
 
 	// m_TexCubeNode
@@ -140,9 +142,7 @@ void Triangle::Draw()
 	BindMaterial(m_TexMat);
 	DrawRenderNode(m_TexCubeNode);
 
-
-
-
+	DrawImgui();
 
 	device.EndRenderPass();
 
@@ -217,9 +217,9 @@ void Triangle::PrepareResources()
 		}
 		m_ColorShader->CreateGpuProgram(parameters);
 
-		RenderStatus renderStatus;
+		RenderState renderState;
 
-		m_ColorShader->SetRenderStatus(renderStatus);
+		m_ColorShader->SetRenderState(renderState);
 	}
 	{
 		m_TexShader = CreateShader("TexShader");
@@ -237,9 +237,9 @@ void Triangle::PrepareResources()
 		}
 		m_TexShader->CreateGpuProgram(parameters);
 
-		RenderStatus renderStatus;
+		RenderState renderState;
 
-		m_TexShader->SetRenderStatus(renderStatus);
+		m_TexShader->SetRenderState(renderState);
 	}
 	{
 		//m_LitShader = CreateShader("LitShader");

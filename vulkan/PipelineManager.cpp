@@ -11,7 +11,7 @@ PipelineCI::~PipelineCI()
 {
 }
 
-void PipelineCI::Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderStatus & renderStatus, VkShaderModule vertexSM, VkShaderModule framentSM)
+void PipelineCI::Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderState & renderState, VkShaderModule vertexSM, VkShaderModule framentSM)
 {
 	memset(this, 0, sizeof(*this));
 
@@ -91,8 +91,8 @@ void PipelineCI::Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderS
 		rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
 		rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 		rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
-		rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-		rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		rasterizationStateCreateInfo.cullMode = renderState.rasterizationState.cullMode;
+		rasterizationStateCreateInfo.frontFace = renderState.rasterizationState.frontFace;
 		rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
 		rasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
 		rasterizationStateCreateInfo.depthBiasClamp = 0.0f;
@@ -117,8 +117,8 @@ void PipelineCI::Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderS
 		depthStencilStateCreateInfo.pNext = nullptr;
 		depthStencilStateCreateInfo.flags = 0;
 
-		depthStencilStateCreateInfo.depthTestEnable = VK_TRUE;
-		depthStencilStateCreateInfo.depthWriteEnable = VK_TRUE;
+		depthStencilStateCreateInfo.depthTestEnable = renderState.depthStencilState.depthTestEnable;
+		depthStencilStateCreateInfo.depthWriteEnable = renderState.depthStencilState.depthWriteEnable;
 		depthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
 		depthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
 
@@ -133,14 +133,14 @@ void PipelineCI::Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderS
 	{
 		// Color blend state describes how blend factors are calculated (if used)
 		// We need one blend attachment state per color attachment (even if blending is not used)
-		colorBlendAttachmentState.blendEnable = VK_FALSE;
-		colorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-		colorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-		colorBlendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
-		colorBlendAttachmentState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-		colorBlendAttachmentState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-		colorBlendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;
-		colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		colorBlendAttachmentState.blendEnable = renderState.blendState.blendEnable;
+		colorBlendAttachmentState.srcColorBlendFactor = renderState.blendState.srcColorBlendFactor;
+		colorBlendAttachmentState.dstColorBlendFactor = renderState.blendState.dstColorBlendFactor;
+		colorBlendAttachmentState.colorBlendOp = renderState.blendState.colorBlendOp;
+		colorBlendAttachmentState.srcAlphaBlendFactor = renderState.blendState.srcAlphaBlendFactor;
+		colorBlendAttachmentState.dstAlphaBlendFactor = renderState.blendState.dstAlphaBlendFactor;
+		colorBlendAttachmentState.alphaBlendOp = renderState.blendState.alphaBlendOp;
+		colorBlendAttachmentState.colorWriteMask = renderState.blendState.colorWriteMask;
 
 		colorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlendStateCreateInfo.pNext = nullptr;
@@ -161,8 +161,8 @@ void PipelineCI::Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderS
 		dynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 		dynamicStateCreateInfo.pNext = nullptr;
 		dynamicStateCreateInfo.flags = 0;
-		dynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(renderStatus.dynamicStates.size());
-		dynamicStateCreateInfo.pDynamicStates = renderStatus.dynamicStates.data();
+		dynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(renderState.dynamicStates.size());
+		dynamicStateCreateInfo.pDynamicStates = renderState.dynamicStates.data();
 	}
 }
 
@@ -178,9 +178,9 @@ PipelineManager::~PipelineManager()
 	RELEASE(m_PipelineCI);
 }
 
-void PipelineManager::SetPipelineCI(VkPipelineLayout layout, VkRenderPass renderPass, RenderStatus & renderStatus, VkShaderModule vertexSM, VkShaderModule framentSM)
+void PipelineManager::SetPipelineCI(VkPipelineLayout layout, VkRenderPass renderPass, RenderState & renderState, VkShaderModule vertexSM, VkShaderModule framentSM)
 {
-	m_PipelineCI->Reset(layout, renderPass, renderStatus, vertexSM, framentSM);
+	m_PipelineCI->Reset(layout, renderPass, renderState, vertexSM, framentSM);
 }
 
 VkPipeline PipelineManager::CreatePipeline(VertexDescription & vertexDescription)

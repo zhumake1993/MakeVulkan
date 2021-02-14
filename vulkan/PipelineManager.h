@@ -10,7 +10,7 @@ struct PipelineCI
 	PipelineCI();
 	~PipelineCI(); // 不能有虚函数，否则用memset清空后，虚函数表指针也会被清空
 
-	void Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderStatus& renderStatus, VkShaderModule vertexSM, VkShaderModule framentSM);
+	void Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderState& renderState, VkShaderModule vertexSM, VkShaderModule framentSM);
 
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo;
 
@@ -51,7 +51,7 @@ public:
 	PipelineManager(VkDevice vkDevice, GarbageCollector* gc);
 	virtual ~PipelineManager();
 
-	void SetPipelineCI(VkPipelineLayout layout, VkRenderPass renderPass, RenderStatus& renderStatus, VkShaderModule vertexSM, VkShaderModule framentSM);
+	void SetPipelineCI(VkPipelineLayout layout, VkRenderPass renderPass, RenderState& renderState, VkShaderModule vertexSM, VkShaderModule framentSM);
 
 	VkPipeline CreatePipeline(VertexDescription& vertexDescription);
 

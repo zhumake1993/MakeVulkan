@@ -10,6 +10,7 @@ class Material;
 class RenderNode;
 class Camera;
 class Buffer;
+class Imgui;
 
 struct UniformDataGlobal
 {
@@ -36,6 +37,7 @@ public:
 	virtual void Init();
 	virtual void Release();
 	virtual void Update();
+	virtual void Draw() = 0;
 
 protected:
 
@@ -46,14 +48,18 @@ protected:
 	RenderNode* CreateRenderNode(const std::string& name);
 
 	void SetShader(Shader* shader);
+	void BindGlobalUniformBuffer();
+	void BindPerViewUniformBuffer();
 	void BindMaterial(Material* material);
 	void DrawRenderNode(RenderNode* node);
+	void UpdateImgui();
+	void DrawImgui();
 
 protected:
 
 	UniformDataGlobal m_UniformDataGlobal;
 	UniformDataPerView m_UniformDataPerView;
-	Shader* m_DummyShader;
+	
 	TimeManager* m_TimeManager;
 
 private:
@@ -64,5 +70,6 @@ private:
 	std::vector<Material*> m_MaterialContainer;
 	std::vector<RenderNode*> m_RenderNodeContainer;
 
-	
+	Shader* m_DummyShader;
+	Imgui* m_Imgui = nullptr;
 };

@@ -14,10 +14,10 @@ public:
 	void Init() override;
 	void Release() override;
 	void Update() override;
+	void Draw() override;
 
 private:
 
-	void Draw();
 	void PrepareResources();
 
 private:

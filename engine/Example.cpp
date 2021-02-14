@@ -8,6 +8,7 @@
 #include "RenderNode.h"
 #include "TimeManager.h"
 #include "ShaderData.h"
+#include "Imgui.h"
 
 // Place the least frequently changing descriptor sets near the start of the pipeline layout, and place the descriptor sets representing the most frequently changing resources near the end. 
 // When pipelines are switched, only the descriptor set bindings that have been invalidated will need to be updated and the remainder of the descriptor set bindings will remain in place.
@@ -45,10 +46,13 @@ void Example::Init()
 	m_DummyShader->CreateGpuProgram(parameters);
 
 	m_TimeManager = new TimeManager();
+
+	m_Imgui = new Imgui();
 }
 
 void Example::Release()
 {
+	RELEASE(m_Imgui);
 	RELEASE(m_TimeManager);
 
 	for (auto p : m_MeshContainer) { RELEASE(p); }
@@ -63,6 +67,10 @@ void Example::Release()
 void Example::Update()
 {
 	m_TimeManager->Update();
+
+	m_Imgui->Prepare(m_TimeManager->GetDeltaTime());
+
+	SetShader(m_DummyShader);
 }
 
 Mesh * Example::CreateMesh(const std::string& name)
@@ -109,7 +117,17 @@ void Example::SetShader(Shader * shader)
 {
 	auto& device = GetGfxDevice();
 
-	device.SetPass(shader->GetGpuProgram(), shader->GetRenderStatus());
+	device.SetPass(shader->GetGpuProgram(), shader->GetRenderState());
+}
+
+void Example::BindGlobalUniformBuffer()
+{
+	GetGfxDevice().BindUniformBuffer(m_DummyShader->GetGpuProgram(), 0, 0, &m_UniformDataGlobal, sizeof(UniformDataGlobal));
+}
+
+void Example::BindPerViewUniformBuffer()
+{
+	GetGfxDevice().BindUniformBuffer(m_DummyShader->GetGpuProgram(), 1, 0, &m_UniformDataPerView, sizeof(UniformDataPerView));
 }
 
 void Example::BindMaterial(Material * material)
@@ -182,5 +200,17 @@ void Example::DrawRenderNode(RenderNode * node)
 	}
 
 	Mesh* mesh = node->GetMesh();
-	device.DrawBuffer(mesh->GetVertexBuffer(), mesh->GetIndexBuffer(), mesh->GetIndexCount(), mesh->GetVertexDescription());
+	device.BindMeshBuffer(mesh->GetVertexBuffer(), mesh->GetIndexBuffer(), mesh->GetVertexDescription());
+	device.DrawIndexed(mesh->GetIndexCount());
+}
+
+void Example::UpdateImgui()
+{
+	ImGui::Render();
+	m_Imgui->Tick();
+}
+
+void Example::DrawImgui()
+{
+	m_Imgui->Draw();
 }

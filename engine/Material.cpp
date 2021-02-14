@@ -18,7 +18,6 @@ Material::~Material()
 
 	if (m_UniformBuffer)
 	{
-		GetGfxDevice().ReleaseBuffer(m_UniformBuffer);
 		RELEASE(m_UniformBuffer);
 	}
 }
@@ -54,7 +53,7 @@ void Material::SetShader(Shader * shader)
 	if (dataSize > 0)
 	{
 		m_UniformBuffer = device.CreateBuffer(kBufferUsageUniform, kMemoryPropertyHostCoherent, dataSize);
-		device.UpdateBuffer(m_UniformBuffer, m_ShaderData->GetDate(), dataSize);
+		device.UpdateBuffer(m_UniformBuffer, m_ShaderData->GetDate(), 0, dataSize);
 	}
 }
 
@@ -119,7 +118,7 @@ void Material::UpdateUniformBuffer()
 	uint32_t dataSize = m_ShaderData->GetDataSize();
 	if (dataSize > 0)
 	{
-		device.UpdateBuffer(m_UniformBuffer, m_ShaderData->GetDate(), dataSize);
+		device.UpdateBuffer(m_UniformBuffer, m_ShaderData->GetDate(), 0, dataSize);
 	}
 }
 

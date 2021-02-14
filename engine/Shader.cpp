@@ -39,14 +39,14 @@ GpuProgram * Shader::GetGpuProgram()
 	return m_GpuProgram;
 }
 
-void Shader::SetRenderStatus(RenderStatus & renderStatus)
+void Shader::SetRenderState(RenderState & renderState)
 {
-	m_RenderStatus = renderStatus;
+	m_RenderState = renderState;
 }
 
-RenderStatus & Shader::GetRenderStatus()
+RenderState & Shader::GetRenderState()
 {
-	return m_RenderStatus;
+	return m_RenderState;
 }
 
 //void Shader::SetUniformBufferDesc(UniformBufferDesc & desc)

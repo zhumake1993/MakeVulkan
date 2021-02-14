@@ -39,9 +39,8 @@ class BufferImpl : public Buffer
 
 public:
 
-	BufferImpl(VKBuffer* buffer) :
-		m_Buffer(buffer) {}
-	virtual ~BufferImpl() {}
+	BufferImpl(VKBuffer* buffer);
+	virtual ~BufferImpl();
 
 	VKBuffer* GetBuffer() { return m_Buffer; }
 	void SetBuffer(VKBuffer* buffer) { m_Buffer = buffer; }

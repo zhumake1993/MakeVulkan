@@ -2,6 +2,7 @@
 #include "DeviceProperties.h"
 #include "VulkanTools.h"
 #include "GarbageCollector.h"
+#include "GfxDevice.h"
 
 void VKBuffer::Map(VkDeviceSize offset, VkDeviceSize size)
 {
@@ -44,6 +45,16 @@ void VKBuffer::Invalidate(VkDeviceSize offset, VkDeviceSize size)
 	mappedRange.size = size;
 
 	vkInvalidateMappedMemoryRanges(device, 1, &mappedRange);
+}
+
+BufferImpl::BufferImpl(VKBuffer * buffer) :
+	m_Buffer(buffer)
+{
+}
+
+BufferImpl::~BufferImpl()
+{
+	GetGfxDevice().ReleaseBuffer(this);
 }
 
 BufferManager::BufferManager(VkDevice vkDevice, GarbageCollector* gc) :

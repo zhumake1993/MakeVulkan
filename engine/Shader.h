@@ -21,8 +21,8 @@ public:
 	void CreateGpuProgram(GpuParameters& parameters);
 	GpuProgram* GetGpuProgram();
 
-	void SetRenderStatus(RenderStatus& renderStatus);
-	RenderStatus& GetRenderStatus();
+	void SetRenderState(RenderState& renderState);
+	RenderState& GetRenderState();
 
 	//void SetUniformBufferDesc(UniformBufferDesc& desc);
 	//UniformBufferDesc& GetUniformBufferDesc();
@@ -56,7 +56,7 @@ private:
 
 	GpuProgram* m_GpuProgram;
 
-	RenderStatus m_RenderStatus;
+	RenderState m_RenderState;
 
 	//UniformBufferDesc m_UniformBufferDesc;
 

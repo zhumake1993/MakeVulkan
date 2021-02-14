@@ -2,6 +2,17 @@
 #include "DeviceProperties.h"
 #include "VulkanTools.h"
 #include "GarbageCollector.h"
+#include "GfxDevice.h"
+
+ImageImpl::ImageImpl(ImageType imageType, VkFormat format, uint32_t width, uint32_t height, VKImage * image, VKImageView * view, VKImageSampler * sampler) :
+	Image(imageType, format, width, height), m_Image(image), m_View(view), m_Sampler(sampler)
+{
+}
+
+ImageImpl::~ImageImpl()
+{
+	GetGfxDevice().ReleaseImage(this);
+}
 
 ImageManager::ImageManager(VkDevice vkDevice, GarbageCollector * gc) :
 	m_Device(vkDevice),

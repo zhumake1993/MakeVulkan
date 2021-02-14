@@ -20,11 +20,6 @@ Mesh::Mesh(const std::string& name) :
 
 Mesh::~Mesh()
 {
-	auto& device = GetGfxDevice();
-
-	device.ReleaseBuffer(m_VertexBuffer);
-	device.ReleaseBuffer(m_IndexBuffer);
-
 	RELEASE(m_VertexBuffer);
 	RELEASE(m_IndexBuffer);
 }
@@ -140,12 +135,12 @@ void Mesh::UploadToGPU()
 	// Vertex buffer
 	uint64_t vertexBufferSize = static_cast<uint64_t>(m_Vertices.size()) * sizeof(m_Vertices[0]);
 	m_VertexBuffer = device.CreateBuffer(kBufferUsageVertex, kMemoryPropertyDeviceLocal, vertexBufferSize);
-	device.UpdateBuffer(m_VertexBuffer, m_Vertices.data(), vertexBufferSize);
+	device.UpdateBuffer(m_VertexBuffer, m_Vertices.data(), 0, vertexBufferSize);
 
 	// Index buffer
 	uint64_t indexBufferSize = static_cast<uint64_t>(m_Indices.size()) * sizeof(uint32_t);
 	m_IndexBuffer = device.CreateBuffer(kBufferUsageIndex, kMemoryPropertyDeviceLocal, indexBufferSize);
-	device.UpdateBuffer(m_IndexBuffer, m_Indices.data(), indexBufferSize);
+	device.UpdateBuffer(m_IndexBuffer, m_Indices.data(), 0, indexBufferSize);
 }
 
 Buffer * Mesh::GetVertexBuffer()

@@ -57,31 +57,22 @@ void Engine::Release()
 
 void Engine::Update()
 {
-	// 顺序很重要！！！
-
-	// 更新时间
-	
-
 	//PROFILER(Engine_TickEngine);
 
 	auto& device = GetGfxDevice();
-	device.WaitForPresent();
-	device.AcquireNextImage();
 
-	// 更新Example
+	// 更新逻辑
 	m_Example->Update();
 
 	// 必须在游戏逻辑更新完之后再更新输入
 	inputManager.Tick();
 
-	// 更新UI逻辑
-	//m_Imgui->Prepare();
-	//TickUI();
-	//ImGui::Render();
-	
+	// 等待Fence
+	device.WaitForPresent();
+	device.AcquireNextImage();
 
-	// 更新UI顶点计算
-	//m_Imgui->Tick();
+	// 提交渲染指令
+	m_Example->Draw();
 
 	// Present
 	device.QueueSubmit();

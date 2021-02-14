@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Env.h" 
+#include "GfxTypes.h"
 #include "imgui/imgui.h"
 
 class Image;
@@ -15,9 +16,9 @@ public:
 	Imgui();
 	~Imgui();
 
-	void Prepare();
+	void Prepare(float deltaTime);
 	void Tick();
-	void RecordCommandBuffer(VKCommandBuffer* vkCommandBuffer);
+	void Draw();
 
 private:
 
@@ -39,16 +40,4 @@ private:
 	Shader* m_Shader;
 
 	VertexDescription m_VertexDes;
-
-	//VKImage* m_FontImage;
-	//VKSampler* m_Sampler;
-
-	
-	//VKBuffer* m_VertexBuffer;
-	//VKBuffer* m_IndexBuffer;
-
-	//VkDescriptorSet m_DescriptorSet;
-	//VKPipeline* m_VulkanPipeline;
-
-	//VKRenderPass* m_RenderPass;
 };

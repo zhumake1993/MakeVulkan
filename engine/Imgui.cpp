@@ -1,222 +1,195 @@
-//#include "Imgui.h"
-//#include "GfxDevice.h"
-//#include "Settings.h"
-//#include "Shader.h"
-//
-////#include "InputManager.h"
-////#include "TimeMgr.h"
-////#include "ProfilerMgr.h"
-//
-////#include <algorithm>
-//
-//Imgui::Imgui()
-//{
-//	IMGUI_CHECKVERSION();
-//
-//	ImGui::CreateContext();
-//
-//	ImGuiIO& io = ImGui::GetIO();
-//
-//	ImGui::StyleColorsDark();
-//
-//	auto& device = GetGfxDevice();
-//
-//	// font texture, use the default
-//
-//	int width, height;
-//	unsigned char* pixels = NULL;
-//	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-//	uint64_t dataSize = width * height * 4 * sizeof(char);
-//
-//	m_FontImage = device.CreateImage(kImageType2D, VK_FORMAT_R8G8B8A8_UNORM, width, height);
-//	device.UpdateImage(m_FontImage, pixels, dataSize);
-//
-//	// Vertex buffer
-//
-//	uint64_t vertexBufferSize = m_MaxVertexCount * sizeof(ImDrawVert);
-//	m_VertexBuffer = device.CreateBuffer(kBufferUsageVertex, kMemoryPropertyHostCoherent, vertexBufferSize); // 因为需要每帧更新，这里使用HostVisible
-//
-//	// Index buffer
-//
-//	VkDeviceSize indexBufferSize = m_MaxIndexCount * sizeof(ImDrawIdx);
-//	m_IndexBuffer = device.CreateBuffer(kBufferUsageIndex, kMemoryPropertyHostCoherent, indexBufferSize); // 因为需要每帧更新，这里使用HostVisible
-//
-//	// Shader
-//
-//	m_Shader = new Shader("ColorShader");
-//	m_Shader->LoadSPV(AssetPath + "shaders/imgui/imgui.vert.spv", AssetPath + "shaders/imgui/imgui.frag.spv");
-//
-//	GpuParameters parameters;
-//	{
-//		GpuParameters::TextureParameter texture("Base", 0, VK_SHADER_STAGE_FRAGMENT_BIT);
-//		parameters.textureParameters.push_back(texture);
-//	}
-//	m_Shader->CreateGpuProgram(parameters);
-//
-//	RenderStatus renderStatus;
-//
-//	m_Shader->SetRenderStatus(renderStatus);
-//
-//	// pipeline
-//	
-//	//PipelineCI pipelineCI;
-//
-//	//m_RenderPass = driver.CreateVKRenderPass(driver.GetSwapChainFormat());
-//
-//	//VKShaderModule* shaderVert = driver.CreateVKShaderModule(global::AssetPath + "shaders/imgui/shader.vert.spv");
-//	//VKShaderModule* shaderFrag = driver.CreateVKShaderModule(global::AssetPath + "shaders/imgui/shader.frag.spv");
-//
-//	//pipelineCI.shaderStageCreateInfos[kVKShaderVertex].module = shaderVert->shaderModule;
-//	//pipelineCI.shaderStageCreateInfos[kVKShaderFragment].module = shaderFrag->shaderModule;
-//
-//	m_VertexDes.formats = { VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R8G8B8A8_UNORM };
-//	m_VertexDes.offsets = { 0, VkFormatToSize(VK_FORMAT_R32G32_SFLOAT),VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) };
-//	m_VertexDes.stride = VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R8G8B8A8_UNORM);
-//	//pipelineCI.SetVertexInputState(vertexDes);
-//
-//	pipelineCI.pipelineCreateInfo.layout = driver.CreateVkPipelineLayout({ descriptorSetLayout }, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 4);
-//	//pipelineCI.pipelineCreateInfo.renderPass = m_RenderPass->renderPass;
-//
-//	pipelineCI.rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_NONE;
-//	pipelineCI.rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-//
-//	pipelineCI.colorBlendAttachmentState.blendEnable = VK_TRUE;
-//	pipelineCI.colorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-//	pipelineCI.colorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-//	pipelineCI.colorBlendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
-//	pipelineCI.colorBlendAttachmentState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-//	pipelineCI.colorBlendAttachmentState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-//	pipelineCI.colorBlendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;
-//	pipelineCI.colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-//
-//	pipelineCI.depthStencilStateCreateInfo.depthTestEnable = VK_FALSE;
-//	pipelineCI.depthStencilStateCreateInfo.depthWriteEnable = VK_FALSE;
-//
-//	//m_VulkanPipeline = driver.CreateVKPipeline(pipelineCI);
-//
-//	//RELEASE(shaderVert);
-//	//RELEASE(shaderFrag);
-//}
-//
-//Imgui::~Imgui()
-//{
-//	ImGui::DestroyContext();
-//	RELEASE(m_FontImage);
-//	RELEASE(m_Sampler);
-//	RELEASE(m_VertexBuffer);
-//	RELEASE(m_IndexBuffer);
-//	RELEASE(m_VulkanPipeline);
-//	RELEASE(m_RenderPass);
-//}
-//
-//void Imgui::Prepare()
-//{
-//	PROFILER(Imgui_Prepare);
-//
-//	float deltaTime = GetTimeMgr().GetDeltaTime();
-//
-//	ImGuiIO& io = ImGui::GetIO();
-//
-//	io.DisplaySize = ImVec2(static_cast<float>(global::windowWidth), static_cast<float>(global::windowHeight));
-//	io.DeltaTime = deltaTime;
-//
-//#if defined(_WIN32)
-//	io.MousePos = ImVec2(input.pos.x, input.pos.y);
-//	io.MouseDown[0] = input.key_MouseLeft;
-//#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-//	io.MousePos = ImVec2(input.pos0.x, input.pos0.y);
-//	io.MouseDown[0] = input.count != 0;
-//#endif
-//
-//	ImGui::NewFrame();
-//}
-//
-//void Imgui::Tick()
-//{
-//	PROFILER(Imgui_Tick);
-//
-//	ImDrawData* imDrawData = ImGui::GetDrawData();
-//
-//	if (!imDrawData) return;
-//
-//	if ((imDrawData->TotalVtxCount == 0) || (imDrawData->TotalIdxCount == 0)) {
-//		return;
-//	}
-//
-//	uint32_t vertexOffset = 0;
-//	uint32_t indexOffset = 0;
-//
-//	for (int n = 0; n < imDrawData->CmdListsCount; n++) {
-//		const ImDrawList* cmd_list = imDrawData->CmdLists[n];
-//
-//		m_VertexBuffer->Copy(cmd_list->VtxBuffer.Data, vertexOffset, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
-//		m_IndexBuffer->Copy(cmd_list->IdxBuffer.Data, indexOffset, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
-//
-//		vertexOffset += cmd_list->VtxBuffer.Size * sizeof(ImDrawVert);
-//		indexOffset += cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx);
-//	}
-//
-//	m_VertexBuffer->Flush();
-//	m_IndexBuffer->Flush();
-//}
-//
-//void Imgui::RecordCommandBuffer(VKCommandBuffer * vkCommandBuffer)
-//{
-//	PROFILER(Imgui_RecordCommandBuffer);
-//
-//	ImDrawData* imDrawData = ImGui::GetDrawData();
-//
-//	if ((!imDrawData) || (imDrawData->CmdListsCount == 0)) {
-//		return;
-//	}
-//
-//	ImGuiIO& io = ImGui::GetIO();
-//
-//	vkCommandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline);
-//	vkCommandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline->pipelineLayout, 0, m_DescriptorSet);
-//	vkCommandBuffer->BindVertexBuffer(0, m_VertexBuffer);
-//	vkCommandBuffer->BindIndexBuffer(m_IndexBuffer, VK_INDEX_TYPE_UINT16);
-//
-//	VkViewport viewport = {};
-//	viewport.x = 0.0f;
-//	viewport.y = 0.0f;
-//	viewport.width = static_cast<float>(global::windowWidth);
-//	viewport.height = static_cast<float>(global::windowHeight);
-//	viewport.minDepth = 0.0f;
-//	viewport.maxDepth = 1.0f;
-//	vkCommandBuffer->SetViewport(viewport);
-//
-//	// pushConstant
-//	float scale[2];
-//	scale[0] = 2.0f / imDrawData->DisplaySize.x;
-//	scale[1] = 2.0f / imDrawData->DisplaySize.y;
-//	float translate[2];
-//	translate[0] = -1.0f - imDrawData->DisplayPos.x * scale[0];
-//	translate[1] = -1.0f - imDrawData->DisplayPos.y * scale[1];
-//	vkCommandBuffer->PushConstants(m_VulkanPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 0, sizeof(float) * 2, scale);
-//	vkCommandBuffer->PushConstants(m_VulkanPipeline->pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, sizeof(float) * 2, sizeof(float) * 2, translate);
-//
-//	int vertexOffset = 0;
-//	int indexOffset = 0;
-//
-//	for (int32_t i = 0; i < imDrawData->CmdListsCount; i++)
-//	{
-//		const ImDrawList* cmd_list = imDrawData->CmdLists[i];
-//		for (int32_t j = 0; j < cmd_list->CmdBuffer.Size; j++)
-//		{
-//			const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[j];
-//
-//			VkRect2D scissorRect;
-//			scissorRect.offset.x = std::max((int32_t)(pcmd->ClipRect.x), 0);
-//			scissorRect.offset.y = std::max((int32_t)(pcmd->ClipRect.y), 0);
-//			scissorRect.extent.width = (uint32_t)(pcmd->ClipRect.z - pcmd->ClipRect.x);
-//			scissorRect.extent.height = (uint32_t)(pcmd->ClipRect.w - pcmd->ClipRect.y);
-//
-//			vkCommandBuffer->SetScissor(scissorRect);
-//
-//			vkCommandBuffer->DrawIndexed(pcmd->ElemCount, 1, pcmd->IdxOffset + indexOffset, pcmd->VtxOffset + vertexOffset, 0);
-//		}
-//		vertexOffset += cmd_list->VtxBuffer.Size;
-//		indexOffset += cmd_list->IdxBuffer.Size;
-//	}
-//}
+#include "Imgui.h"
+#include "GfxDevice.h"
+#include "Settings.h"
+#include "Shader.h"
+#include "Tools.h"
+#include "InputManager.h"
+#include "Image.h"
+#include "Buffer.h"
+#include <algorithm>
+
+Imgui::Imgui()
+{
+	IMGUI_CHECKVERSION();
+
+	ImGui::CreateContext();
+
+	ImGuiIO& io = ImGui::GetIO();
+
+	ImGui::StyleColorsDark();
+
+	auto& device = GetGfxDevice();
+
+	// font texture, use the default
+
+	int width, height;
+	unsigned char* pixels = NULL;
+	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+	uint64_t dataSize = width * height * 4 * sizeof(char);
+
+	m_FontImage = device.CreateImage(kImageType2D, VK_FORMAT_R8G8B8A8_UNORM, width, height);
+	device.UpdateImage(m_FontImage, pixels, dataSize);
+
+	// Vertex buffer
+
+	uint64_t vertexBufferSize = m_MaxVertexCount * sizeof(ImDrawVert);
+	m_VertexBuffer = device.CreateBuffer(kBufferUsageVertex, kMemoryPropertyHostVisible, vertexBufferSize); // 因为需要每帧更新，这里使用HostVisible，由于一帧内需要多次更新，不使用HostCoherent
+
+	// Index buffer
+
+	VkDeviceSize indexBufferSize = m_MaxIndexCount * sizeof(ImDrawIdx);
+	m_IndexBuffer = device.CreateBuffer(kBufferUsageIndex, kMemoryPropertyHostVisible, indexBufferSize); // 因为需要每帧更新，这里使用HostVisible，由于一帧内需要多次更新，不使用HostCoherent
+
+	// Shader
+
+	m_Shader = new Shader("ColorShader");
+	m_Shader->LoadSPV(AssetPath + "shaders/imgui/imgui.vert.spv", AssetPath + "shaders/imgui/imgui.frag.spv");
+
+	GpuParameters parameters;
+	{
+		GpuParameters::TextureParameter texture("Base", 0, VK_SHADER_STAGE_FRAGMENT_BIT);
+		parameters.textureParameters.push_back(texture);
+	}
+	m_Shader->CreateGpuProgram(parameters);
+
+	RenderState renderState;
+
+	renderState.rasterizationState.cullMode = VK_CULL_MODE_NONE;
+	renderState.rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+
+	renderState.blendState.blendEnable = VK_TRUE;
+	renderState.blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	renderState.blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	renderState.blendState.colorBlendOp = VK_BLEND_OP_ADD;
+	renderState.blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	renderState.blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+	renderState.blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+
+	renderState.depthStencilState.depthTestEnable = VK_FALSE;
+	renderState.depthStencilState.depthWriteEnable = VK_FALSE;
+
+	m_Shader->SetRenderState(renderState);
+
+	// VertexDescription
+
+	m_VertexDes.formats = { VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R32G32_SFLOAT ,VK_FORMAT_R8G8B8A8_UNORM };
+	m_VertexDes.offsets = { 0, VkFormatToSize(VK_FORMAT_R32G32_SFLOAT),VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) };
+	m_VertexDes.stride = VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R32G32_SFLOAT) + VkFormatToSize(VK_FORMAT_R8G8B8A8_UNORM);
+}
+
+Imgui::~Imgui()
+{
+	ImGui::DestroyContext();
+	RELEASE(m_FontImage);
+	RELEASE(m_VertexBuffer);
+	RELEASE(m_IndexBuffer);
+	RELEASE(m_Shader);
+}
+
+void Imgui::Prepare(float deltaTime)
+{
+	//PROFILER(Imgui_Prepare);
+
+	ImGuiIO& io = ImGui::GetIO();
+
+	io.DisplaySize = ImVec2(static_cast<float>(windowWidth), static_cast<float>(windowHeight));
+	io.DeltaTime = deltaTime;
+
+#if defined(_WIN32)
+	io.MousePos = ImVec2(inputManager.pos.x, inputManager.pos.y);
+	io.MouseDown[0] = inputManager.key_MouseLeft;
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+	io.MousePos = ImVec2(inputManager.pos0.x, inputManager.pos0.y);
+	io.MouseDown[0] = inputManager.count != 0;
+#endif
+
+	ImGui::NewFrame();
+}
+
+void Imgui::Tick()
+{
+	//PROFILER(Imgui_Tick);
+
+	auto& device = GetGfxDevice();
+
+	ImDrawData* imDrawData = ImGui::GetDrawData();
+
+	if (!imDrawData) return;
+
+	if ((imDrawData->TotalVtxCount == 0) || (imDrawData->TotalIdxCount == 0)) {
+		return;
+	}
+
+	uint32_t vertexOffset = 0;
+	uint32_t indexOffset = 0;
+
+	for (int n = 0; n < imDrawData->CmdListsCount; n++) {
+		const ImDrawList* cmd_list = imDrawData->CmdLists[n];
+
+		device.UpdateBuffer(m_VertexBuffer, cmd_list->VtxBuffer.Data, vertexOffset, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
+		device.UpdateBuffer(m_IndexBuffer, cmd_list->IdxBuffer.Data, indexOffset, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
+
+		vertexOffset += cmd_list->VtxBuffer.Size * sizeof(ImDrawVert);
+		indexOffset += cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx);
+	}
+
+	device.FlushBuffer(m_VertexBuffer);
+	device.FlushBuffer(m_IndexBuffer);
+}
+
+void Imgui::Draw()
+{
+	//PROFILER(Imgui_RecordCommandBuffer);
+
+	auto& device = GetGfxDevice();
+
+	ImDrawData* imDrawData = ImGui::GetDrawData();
+
+	if ((!imDrawData) || (imDrawData->CmdListsCount == 0))
+	{
+		return;
+	}
+
+	ImGuiIO& io = ImGui::GetIO();
+
+	GpuProgram* gpuProgram = m_Shader->GetGpuProgram();
+
+	device.SetPass(gpuProgram, m_Shader->GetRenderState());
+
+	device.BindImage(gpuProgram, 2, 0, m_FontImage);
+
+	device.BindMeshBuffer(m_VertexBuffer, m_IndexBuffer, m_VertexDes, VK_INDEX_TYPE_UINT16);
+
+	// PushConstant
+	float scale[2];
+	scale[0] = 2.0f / imDrawData->DisplaySize.x;
+	scale[1] = 2.0f / imDrawData->DisplaySize.y;
+	float translate[2];
+	translate[0] = -1.0f - imDrawData->DisplayPos.x * scale[0];
+	translate[1] = -1.0f - imDrawData->DisplayPos.y * scale[1];
+	device.PushConstants(gpuProgram, scale, sizeof(float) * 0, sizeof(float) * 2);
+	device.PushConstants(gpuProgram, translate, sizeof(float) * 2, sizeof(float) * 2);
+
+	int vertexOffset = 0;
+	int indexOffset = 0;
+
+	for (int32_t i = 0; i < imDrawData->CmdListsCount; i++)
+	{
+		const ImDrawList* cmd_list = imDrawData->CmdLists[i];
+		for (int32_t j = 0; j < cmd_list->CmdBuffer.Size; j++)
+		{
+			const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[j];
+
+			Rect2D area(std::max((int32_t)(pcmd->ClipRect.x), 0), 
+				std::max((int32_t)(pcmd->ClipRect.y), 0), 
+				(uint32_t)(pcmd->ClipRect.z - pcmd->ClipRect.x), 
+				(uint32_t)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+
+			device.SetScissor(area);
+
+			device.DrawIndexed(pcmd->ElemCount, 1, pcmd->IdxOffset + indexOffset, pcmd->VtxOffset + vertexOffset, 0);
+		}
+		vertexOffset += cmd_list->VtxBuffer.Size;
+		indexOffset += cmd_list->IdxBuffer.Size;
+	}
+}

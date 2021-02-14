@@ -15,10 +15,6 @@ Texture::Texture(const std::string& name) :
 
 Texture::~Texture()
 {
-	auto& device = GetGfxDevice();
-
-	device.ReleaseImage(m_Image);
-
 	RELEASE(m_Image);
 }
 

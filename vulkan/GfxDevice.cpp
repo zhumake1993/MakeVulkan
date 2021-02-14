@@ -329,7 +329,7 @@ Buffer * GfxDevice::CreateBuffer(BufferUsageType bufferUsage, MemoryPropertyType
 	return new BufferImpl(buffer);
 }
 
-void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t size)
+void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t offset, uint64_t size)
 {
 	BufferImpl* bufferImpl = static_cast<BufferImpl*>(buffer);
 
@@ -353,7 +353,7 @@ void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t size)
 
 		VkBufferCopy bufferCopyInfo = {};
 		bufferCopyInfo.srcOffset = 0;
-		bufferCopyInfo.dstOffset = 0;
+		bufferCopyInfo.dstOffset = offset;
 		bufferCopyInfo.size = size;
 		m_UploadCommandBuffer->CopyBuffer(stagingBuffer->buffer, vkBuffer->buffer, bufferCopyInfo);
 
@@ -379,8 +379,19 @@ void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t size)
 	}
 	else
 	{
-		vkBuffer->Update(data, 0, size);
+		vkBuffer->Update(data, offset, size);
 	}
+}
+
+void GfxDevice::FlushBuffer(Buffer * buffer)
+{
+	BufferImpl* bufferImpl = static_cast<BufferImpl*>(buffer);
+
+	VKBuffer* vkBuffer = bufferImpl->GetBuffer();
+
+	ASSERT(vkBuffer->memoryProperty == VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, "only host visible buffer needs flush");
+
+	vkBuffer->Flush();
 }
 
 void GfxDevice::ReleaseBuffer(Buffer * buffer)
@@ -477,11 +488,11 @@ GpuProgram * GfxDevice::CreateGpuProgram(GpuParameters& parameters, const std::v
 	return new VKGpuProgram(m_VKDevice->device, parameters, vertCode, fragCode);
 }
 
-void GfxDevice::SetPass(GpuProgram * gpuProgram, RenderStatus & renderStatus)
+void GfxDevice::SetPass(GpuProgram * gpuProgram, RenderState & renderState)
 {
 	VKGpuProgram* vkGpuProgram = static_cast<VKGpuProgram*>(gpuProgram);
 
-	m_PipelineManager->SetPipelineCI(vkGpuProgram->GetPipelineLayout(), m_VKRenderPass->renderPass, renderStatus, vkGpuProgram->GetVertShaderModule(), vkGpuProgram->GetFragShaderModule());
+	m_PipelineManager->SetPipelineCI(vkGpuProgram->GetPipelineLayout(), m_VKRenderPass->renderPass, renderState, vkGpuProgram->GetVertShaderModule(), vkGpuProgram->GetFragShaderModule());
 }
 
 void GfxDevice::BindUniformBuffer(GpuProgram* gpuProgram, int set, int binding, Buffer* buffer)
@@ -546,7 +557,7 @@ void GfxDevice::BindImage(GpuProgram * gpuProgram, int set, int binding, Image *
 	imageImpl->GetSampler()->Use(m_FrameIndex);
 }
 
-void GfxDevice::DrawBuffer(Buffer * vertexBuffer, Buffer * indexBuffer, uint32_t indexCount, VertexDescription & vertexDescription)
+void GfxDevice::BindMeshBuffer(Buffer * vertexBuffer, Buffer * indexBuffer, VertexDescription & vertexDescription, VkIndexType indexType)
 {
 	VkPipeline pipeline = m_PipelineManager->CreatePipeline(vertexDescription);
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
@@ -555,19 +566,22 @@ void GfxDevice::DrawBuffer(Buffer * vertexBuffer, Buffer * indexBuffer, uint32_t
 	VKBuffer* iBuffer = static_cast<BufferImpl*>(indexBuffer)->GetBuffer();
 
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindVertexBuffer(0, vBuffer->buffer);
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindIndexBuffer(iBuffer->buffer, VK_INDEX_TYPE_UINT32);
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindIndexBuffer(iBuffer->buffer, indexType);
 
 	vBuffer->Use(m_FrameIndex);
 	iBuffer->Use(m_FrameIndex);
-
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->DrawIndexed(indexCount, 1, 0, 0, 1);
 }
 
-void GfxDevice::PushConstants(GpuProgram * gpuProgram, void * data, uint32_t size)
+void GfxDevice::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
+{
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->DrawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+}
+
+void GfxDevice::PushConstants(GpuProgram * gpuProgram, void * data, uint32_t offset, uint32_t size)
 {
 	VKGpuProgram* vkGpuProgram = static_cast<VKGpuProgram*>(gpuProgram);
 
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->PushConstants(vkGpuProgram->GetPipelineLayout(), vkGpuProgram->GetGpuParameters().pushConstantStage, 0, size, data);
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->PushConstants(vkGpuProgram->GetPipelineLayout(), vkGpuProgram->GetGpuParameters().pushConstantStage, offset, size, data);
 }
 
 VkFormat GfxDevice::GetSupportedDepthFormat()

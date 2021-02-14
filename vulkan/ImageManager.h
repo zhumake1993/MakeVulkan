@@ -66,9 +66,8 @@ class ImageImpl : public Image
 {
 public:
 
-	ImageImpl(ImageType imageType, VkFormat format, uint32_t width, uint32_t height, VKImage* image, VKImageView* view, VKImageSampler* sampler) :
-		Image(imageType, format, width, height), m_Image(image), m_View(view), m_Sampler(sampler) {}
-	virtual ~ImageImpl() {}
+	ImageImpl(ImageType imageType, VkFormat format, uint32_t width, uint32_t height, VKImage* image, VKImageView* view, VKImageSampler* sampler);
+	virtual ~ImageImpl();
 
 	VKImage* GetImage() { return m_Image; }
 	void SetImage(VKImage* image) { m_Image = image; }

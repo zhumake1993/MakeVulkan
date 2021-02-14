@@ -5,14 +5,12 @@
 
 struct Color
 {
-	Color() :r(0.0f), g(0.0f), b(0.0f), a(1.0f) {}
 	Color(float p1, float p2, float p3, float p4) :r(p1), g(p2), b(p3), a(p4) {}
 	float r, g, b, a;
 };
 
 struct DepthStencil
 {
-	DepthStencil() :depth(1.0f), stencil(0) {}
 	DepthStencil(float p1, uint32_t p2) :depth(p1), stencil(p2) {}
 	float depth;
 	uint32_t stencil;
@@ -27,8 +25,7 @@ struct Rect2D
 
 struct Viewport
 {
-	Viewport() :x(0.0f), y(0.0f), width(0), height(0), minDepth(0.0f), maxDepth(1.0f) {}
-	Viewport(uint32_t p1, uint32_t p2) :x(0.0f), y(0.0f), width(p1), height(p2), minDepth(0.0f), maxDepth(1.0f) {}
+	Viewport(float p1, float p2, uint32_t p3, uint32_t p4, float p5, float p6) :x(p1), y(p2), width(p3), height(p4), minDepth(p5), maxDepth(p6) {}
 	float    x;
 	float    y;
 	uint32_t width;
@@ -79,10 +76,37 @@ enum ImageType
 	kImageType3D
 };
 
-//
+// äÖÈ¾×´Ì¬
 
-struct RenderStatus
+struct RasterizationState
 {
+	VkCullModeFlags          cullMode = VK_CULL_MODE_BACK_BIT;
+	VkFrontFace              frontFace = VK_FRONT_FACE_CLOCKWISE;
+};
+
+struct DepthStencilState
+{
+	VkBool32                 depthTestEnable = VK_TRUE;
+	VkBool32                 depthWriteEnable = VK_TRUE;
+};
+
+struct BlendState
+{
+	VkBool32                 blendEnable = VK_FALSE;
+	VkBlendFactor            srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+	VkBlendFactor            dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+	VkBlendOp                colorBlendOp = VK_BLEND_OP_ADD;
+	VkBlendFactor            srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	VkBlendFactor            dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+	VkBlendOp                alphaBlendOp = VK_BLEND_OP_ADD;
+	VkColorComponentFlags    colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+};
+
+struct RenderState
+{
+	RasterizationState rasterizationState;
+	BlendState blendState;
+	DepthStencilState depthStencilState;
 	std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT , VK_DYNAMIC_STATE_SCISSOR };
 };
 
