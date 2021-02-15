@@ -7,6 +7,7 @@
 #include "Material.h"
 #include "RenderNode.h"
 #include "TimeManager.h"
+#include "ProfilerManager.h"
 #include "ShaderData.h"
 #include "Imgui.h"
 
@@ -32,14 +33,14 @@ void Example::Init()
 	GpuParameters parameters;
 	{
 		GpuParameters::UniformParameter uniform("Global", 0, VK_SHADER_STAGE_VERTEX_BIT);
-		uniform.valueParameters.emplace_back("Time", GpuParameters::kUniformDataFloat4);
+		uniform.valueParameters.emplace_back("Time", kShaderDataFloat4);
 		parameters.uniformParameters.push_back(uniform);
 	}
 	{
 		GpuParameters::UniformParameter uniform("PerView", 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-		uniform.valueParameters.emplace_back("MatrixView", GpuParameters::kUniformDataFloat4x4);
-		uniform.valueParameters.emplace_back("MatrixProj", GpuParameters::kUniformDataFloat4x4);
-		uniform.valueParameters.emplace_back("EyePos", GpuParameters::kUniformDataFloat4);
+		uniform.valueParameters.emplace_back("MatrixView", kShaderDataFloat4x4);
+		uniform.valueParameters.emplace_back("MatrixProj", kShaderDataFloat4x4);
+		uniform.valueParameters.emplace_back("EyePos", kShaderDataFloat4);
 		parameters.uniformParameters.push_back(uniform);
 	}
 
@@ -66,6 +67,8 @@ void Example::Release()
 
 void Example::Update()
 {
+	PROFILER(Example_Update);
+
 	m_TimeManager->Update();
 
 	m_Imgui->Prepare(m_TimeManager->GetDeltaTime());
@@ -115,9 +118,11 @@ RenderNode * Example::CreateRenderNode(const std::string& name)
 
 void Example::SetShader(Shader * shader)
 {
+	PROFILER(Example_SetShader);
+
 	auto& device = GetGfxDevice();
 
-	device.SetPass(shader->GetGpuProgram(), shader->GetRenderState());
+	device.SetPass(shader->GetGpuProgram(), shader->GetRenderState(), shader->GetSpecializationData());
 }
 
 void Example::BindGlobalUniformBuffer()
@@ -136,6 +141,8 @@ void Example::BindPerViewUniformBuffer()
 
 void Example::BindMaterial(Material * material)
 {
+	PROFILER(Example_BindMaterial);
+
 	auto& device = GetGfxDevice();
 
 	if (material->IsDirty())
@@ -161,7 +168,7 @@ void Example::BindMaterial(Material * material)
 
 	if (binding != -1)
 	{
-		ASSERT(shaderData->GetDataSize() > 0, "empty data");
+		ASSERT(shaderData->GetValueDataSize() > 0, "empty data");
 
 		Buffer* buffer = material->GetUniformBuffer();
 
@@ -180,6 +187,8 @@ void Example::BindMaterial(Material * material)
 
 void Example::DrawRenderNode(RenderNode * node)
 {
+	PROFILER(Example_DrawRenderNode);
+
 	auto& device = GetGfxDevice();
 
 	GpuProgram* gpuProgram = node->GetMaterial()->GetShader()->GetGpuProgram();
@@ -190,7 +199,8 @@ void Example::DrawRenderNode(RenderNode * node)
 		// 暂时只支持一个PerDraw
 		if (uniform.name == "PerDraw")
 		{
-			ShaderData shaderData(uniform);
+			ShaderData shaderData;
+			shaderData.SetValueParameter(uniform.valueParameters);
 
 			for (auto& vp : uniform.valueParameters)
 			{
@@ -206,10 +216,12 @@ void Example::DrawRenderNode(RenderNode * node)
 			}
 
 			ShaderBindings shaderBindings;
-			shaderBindings.uniformDataBindings.emplace_back(uniform.binding, shaderData.GetDate(), shaderData.GetDataSize());
+			shaderBindings.uniformDataBindings.emplace_back(uniform.binding, shaderData.GetValueData(), shaderData.GetValueDataSize());
 			device.BindShaderResources(gpuProgram, 3, shaderBindings);
 		}
 	}
+
+	PROFILER(BindMeshBuffer);
 
 	Mesh* mesh = node->GetMesh();
 	device.BindMeshBuffer(mesh->GetVertexBuffer(), mesh->GetIndexBuffer(), mesh->GetVertexDescription());

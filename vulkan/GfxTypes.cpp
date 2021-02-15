@@ -33,3 +33,32 @@ uint32_t VkFormatToSize(VkFormat format)
 		return 0;
 	}
 }
+
+uint32_t ShaderDataTypeToSize(ShaderDataType type)
+{
+	switch (type)
+	{
+	case kShaderDataFloat1:
+		return 1 * 4;
+		break;
+	case kShaderDataFloat2:
+		return 2 * 4;
+		break;
+	case kShaderDataFloat3:
+		return 3 * 4;
+		break;
+	case kShaderDataFloat4:
+		return 4 * 4;
+		break;
+	case kShaderDataFloat4x4:
+		return 4 * 4 * 4;
+		break;
+	case kShaderDataInt1:
+		return 1 * 4;
+		break;
+	default:
+		LOG("wrong UniformDataType");
+		EXIT;
+		return 0;
+	}
+}

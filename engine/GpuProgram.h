@@ -2,27 +2,19 @@
 
 #include "Env.h"
 #include "NonCopyable.h"
+#include "GfxTypes.h"
 
 struct GpuParameters
 {
-	enum UniformDataType
-	{
-		kUniformDataFloat1,
-		kUniformDataFloat2,
-		kUniformDataFloat3,
-		kUniformDataFloat4,
-		kUniformDataFloat4x4
-	};
-
 	struct ValueParameter
 	{
-		ValueParameter(const std::string& _name, UniformDataType _type) :
+		ValueParameter(const std::string& _name, ShaderDataType _type) :
 			name(_name), type(_type)
 		{
 		}
 
 		std::string name;
-		UniformDataType type;
+		ShaderDataType type;
 	};
 
 	struct UniformParameter
@@ -52,12 +44,24 @@ struct GpuParameters
 		VkShaderStageFlags stageFlags;
 	};
 
+	struct SpecializationConstantParameter
+	{
+		SpecializationConstantParameter(int p1, ShaderDataType p2):
+			id(p1), type(p2) {}
+		int id;
+		ShaderDataType type;
+	};
+
 	std::vector<UniformParameter> uniformParameters;
 	std::vector<TextureParameter> textureParameters;
 
+	// PushConstant
 	// 为了保证Pipeline Layout Compatibility，统一设置128的PushConstant
 	const uint32_t pushConstantSize = 128;
 	const VkShaderStageFlags pushConstantStage = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	// SpecializationConstant
+	std::vector<SpecializationConstantParameter> SCParameters;
 };
 
 class GpuProgram : public NonCopyable
@@ -68,8 +72,6 @@ public:
 	virtual ~GpuProgram();
 
 	GpuParameters& GetGpuParameters();
-
-	//uint32_t GetUniformBufferSize(std::string name);
 
 protected:
 

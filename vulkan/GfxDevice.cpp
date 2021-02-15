@@ -21,11 +21,7 @@
 
 #include "VKGpuProgram.h"
 
-//#include "Mesh.h"
-//#include "Texture.h"
-//#include "Shader.h"
-//#include "Material.h"
-//#include "RenderNode.h"
+#include "ProfilerManager.h"
 
 GfxDevice* gfxDevice;
 
@@ -140,7 +136,7 @@ GfxDevice::~GfxDevice()
 
 void GfxDevice::WaitForPresent()
 {
-	//PROFILER(WaitForPresent);
+	PROFILER(GfxDevice_WaitForPresent);
 
 	auto& currFrameResource = m_FrameResources[m_FrameResourceIndex];
 
@@ -150,7 +146,7 @@ void GfxDevice::WaitForPresent()
 
 void GfxDevice::AcquireNextImage()
 {
-	//PROFILER(AcquireNextImage);
+	PROFILER(GfxDevice_AcquireNextImage);
 
 	VkResult result = vkAcquireNextImageKHR(m_VKDevice->device, m_VKSwapChain->swapChain, UINT64_MAX, m_FrameResources[m_FrameResourceIndex].imageAvailableSemaphore, VK_NULL_HANDLE, &m_ImageIndex);
 
@@ -172,7 +168,7 @@ void GfxDevice::AcquireNextImage()
 
 void GfxDevice::QueueSubmit()
 {
-	//PROFILER(Present);
+	PROFILER(GfxDevice_QueueSubmit);
 
 	auto& currFrameResource = m_FrameResources[m_FrameResourceIndex];
 
@@ -193,7 +189,7 @@ void GfxDevice::QueueSubmit()
 
 void GfxDevice::QueuePresent()
 {
-	//PROFILER(QueuePresent);
+	PROFILER(GfxDevice_QueuePresent);
 
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -225,6 +221,8 @@ void GfxDevice::QueuePresent()
 
 void GfxDevice::Update()
 {
+	PROFILER(GfxDevice_Update);
+
 	m_GarbageCollector->Update();
 
 	m_FrameIndex++;
@@ -488,11 +486,11 @@ GpuProgram * GfxDevice::CreateGpuProgram(GpuParameters& parameters, const std::v
 	return new VKGpuProgram(m_VKDevice->device, parameters, vertCode, fragCode);
 }
 
-void GfxDevice::SetPass(GpuProgram * gpuProgram, RenderState & renderState)
+void GfxDevice::SetPass(GpuProgram * gpuProgram, RenderState & renderState, void* scdata)
 {
 	VKGpuProgram* vkGpuProgram = static_cast<VKGpuProgram*>(gpuProgram);
 
-	m_PipelineManager->SetPipelineCI(vkGpuProgram->GetPipelineLayout(), m_VKRenderPass->renderPass, renderState, vkGpuProgram->GetVertShaderModule(), vkGpuProgram->GetFragShaderModule());
+	m_PipelineManager->SetPipelineCI(vkGpuProgram, renderState, scdata, m_VKRenderPass->renderPass);
 }
 
 void GfxDevice::BindShaderResources(GpuProgram * gpuProgram, int set, ShaderBindings shaderBindings)

@@ -13,6 +13,7 @@
 #include "Camera.h"
 #include "TimeManager.h"
 #include "Imgui.h"
+#include "ProfilerManager.h"
 
 #include "GpuProgram.h"
 
@@ -95,6 +96,8 @@ void Triangle::Update()
 {
 	Example::Update();
 
+	PROFILER(Update);
+
 	float deltaTime = m_TimeManager->GetDeltaTime();
 
 	m_UniformDataGlobal.time = glm::vec4(0, 0, 0, 0);
@@ -122,14 +125,56 @@ void Triangle::Update()
 	// Imgui
 
 	// UI样例，供学习用
-	bool show_demo_window = true;
-	ImGui::ShowDemoWindow(&show_demo_window);
+	//bool show_demo_window = true;
+	//ImGui::ShowDemoWindow(&show_demo_window);
+
+	auto& dp = GetDeviceProperties();
+
+	float fps = m_TimeManager->GetFPS();
+
+	ImGui::SetNextWindowPos(ImVec2(10, 10));
+	ImGui::Begin("MakeVulkan", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+	ImGui::TextUnformatted(dp.deviceProperties.deviceName);
+	ImGui::Text("%.2f ms/frame (%.2f fps)", (1000.0f / fps), fps);
+
+	static float acTime = 0;
+	static std::string cpuProfiler = "";
+	static std::string gpuProfiler = "";
+	acTime += deltaTime;
+	if (acTime > 1.0f)
+	{
+		auto& profilerMgr = GetProfilerManager();
+		cpuProfiler = profilerMgr.Resolve(m_TimeManager->GetFrameIndex() - 1).ToString();
+
+		//gpuProfiler = GetVulkanDriver().GetGPUProfilerMgr()->GetLastFrameView().ToString();
+
+		acTime = 0.0f;
+	}
+
+	if (ImGui::CollapsingHeader("Test", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		//ImGui::SliderFloat("Slider", &m_Temp, 0, 1);
+	}
+
+	if (ImGui::CollapsingHeader("CPU Profiler", ImGuiTreeNodeFlags_None))
+	{
+		ImGui::TextUnformatted(cpuProfiler.c_str());
+	}
+
+	if (ImGui::CollapsingHeader("GPU Profiler", ImGuiTreeNodeFlags_None))
+	{
+		ImGui::TextUnformatted(gpuProfiler.c_str());
+	}
+
+	ImGui::End();
 
 	UpdateImgui();
 }
 
 void Triangle::Draw()
 {
+	PROFILER(Draw);
+
 	auto& device = GetGfxDevice();
 
 	device.BeginCommandBuffer();
@@ -147,20 +192,32 @@ void Triangle::Draw()
 	device.SetViewport(viewport);
 	device.SetScissor(area);
 
-	// m_ColorCubeNode
+	// m_ColorShader
+
 	SetShader(m_ColorShader);
+
 	BindMaterial(m_ColorMat);
 	DrawRenderNode(m_ColorCubeNode);
 
-	// m_TexCubeNode
+	// m_TexShader
+
 	SetShader(m_TexShader);
+
 	BindMaterial(m_TexMat);
 	DrawRenderNode(m_TexCubeNode);
 
-	// m_LitSphereNode
+	// m_LitShader
+
 	SetShader(m_LitShader);
+	//m_LitShader->SetSCInt(0, 1);
+	//m_LitShader->SetSCInt(1, 0);
+	//m_LitShader->SetSCInt(2, 0);
+
 	BindMaterial(m_LitMat);
 	DrawRenderNode(m_LitSphereNode);
+
+	BindMaterial(m_HomeMat);
+	DrawRenderNode(m_HomeNode);
 
 	DrawImgui();
 
@@ -198,9 +255,17 @@ void Triangle::PrepareResources()
 		m_TexCubeMesh->LoadFromFile(AssetPath + "models/cube.obj");
 		m_TexCubeMesh->UploadToGPU();
 
+		m_CubeMesh = CreateMesh("CubeMesh");
+		m_CubeMesh->LoadFromFile(AssetPath + "models/cube.obj");
+		m_CubeMesh->UploadToGPU();
+
 		m_SphereMesh = CreateMesh("SphereMesh");
 		m_SphereMesh->LoadFromFile(AssetPath + "models/sphere.obj");
 		m_SphereMesh->UploadToGPU();
+
+		m_HomeMesh = CreateMesh("HomeMesh");
+		m_HomeMesh->LoadFromFile(AssetPath + "models/viking_room.obj");
+		m_HomeMesh->UploadToGPU();
 	}
 
 	// Texture
@@ -213,6 +278,9 @@ void Triangle::PrepareResources()
 
 		m_MetalplateTex = CreateTexture("MetalplateTex");
 		m_MetalplateTex->LoadFromFile(AssetPath + "textures/metalplate_nomips_rgba.ktx");
+
+		m_HomeTex = CreateTexture("HomeTex");
+		m_HomeTex->LoadFromFile(AssetPath + "textures/viking_room.png");
 	}
 
 	// Shader
@@ -223,7 +291,7 @@ void Triangle::PrepareResources()
 		GpuParameters parameters;
 		{
 			GpuParameters::UniformParameter uniform("PerDraw", 0, VK_SHADER_STAGE_VERTEX_BIT);
-			uniform.valueParameters.emplace_back("ObjectToWorld", GpuParameters::kUniformDataFloat4x4);
+			uniform.valueParameters.emplace_back("ObjectToWorld", kShaderDataFloat4x4);
 			parameters.uniformParameters.push_back(uniform);
 		}
 		m_ColorShader->CreateGpuProgram(parameters);
@@ -243,7 +311,7 @@ void Triangle::PrepareResources()
 		}
 		{
 			GpuParameters::UniformParameter uniform("PerDraw", 0, VK_SHADER_STAGE_VERTEX_BIT);
-			uniform.valueParameters.emplace_back("ObjectToWorld", GpuParameters::kUniformDataFloat4x4);
+			uniform.valueParameters.emplace_back("ObjectToWorld", kShaderDataFloat4x4);
 			parameters.uniformParameters.push_back(uniform);
 		}
 		m_TexShader->CreateGpuProgram(parameters);
@@ -259,10 +327,10 @@ void Triangle::PrepareResources()
 		GpuParameters parameters;
 		{
 			GpuParameters::UniformParameter uniform("PerMaterial", 0, VK_SHADER_STAGE_FRAGMENT_BIT);
-			uniform.valueParameters.emplace_back("DiffuseAlbedo", GpuParameters::kUniformDataFloat4);
-			uniform.valueParameters.emplace_back("FresnelR0", GpuParameters::kUniformDataFloat3);
-			uniform.valueParameters.emplace_back("Roughness", GpuParameters::kUniformDataFloat1);
-			uniform.valueParameters.emplace_back("MatTransform", GpuParameters::kUniformDataFloat4x4);
+			uniform.valueParameters.emplace_back("DiffuseAlbedo", kShaderDataFloat4);
+			uniform.valueParameters.emplace_back("FresnelR0", kShaderDataFloat3);
+			uniform.valueParameters.emplace_back("Roughness", kShaderDataFloat1);
+			uniform.valueParameters.emplace_back("MatTransform", kShaderDataFloat4x4);
 			parameters.uniformParameters.push_back(uniform);
 		}
 		{
@@ -271,19 +339,17 @@ void Triangle::PrepareResources()
 		}
 		{
 			GpuParameters::UniformParameter uniform("PerDraw", 0, VK_SHADER_STAGE_VERTEX_BIT);
-			uniform.valueParameters.emplace_back("ObjectToWorld", GpuParameters::kUniformDataFloat4x4);
+			uniform.valueParameters.emplace_back("ObjectToWorld", kShaderDataFloat4x4);
 			parameters.uniformParameters.push_back(uniform);
 		}
+		//parameters.SCParameters.emplace_back(0, kShaderDataInt1);
+		//parameters.SCParameters.emplace_back(1, kShaderDataInt1);
+		//parameters.SCParameters.emplace_back(2, kShaderDataInt1);
 		m_LitShader->CreateGpuProgram(parameters);
 
 		RenderState renderState;
 
 		m_LitShader->SetRenderState(renderState);
-
-		//m_LitShader->AddSpecializationConstant(0, 1);
-		//m_LitShader->AddSpecializationConstant(1, 1);
-		//// todo, shader中 0<0 会有问题
-		//m_LitShader->AddSpecializationConstant(2, 1);
 	}
 
 	// Material
@@ -301,6 +367,13 @@ void Triangle::PrepareResources()
 		m_LitMat->SetFloat3("FresnelR0", 0.3f, 0.3f, 0.3f);
 		m_LitMat->SetFloat("Roughness", 0.3f);
 		m_LitMat->SetTexture("BaseTexture", m_Crate02Tex);
+
+		m_HomeMat = CreateMaterial("HomeMat");
+		m_HomeMat->SetShader(m_LitShader);
+		m_HomeMat->SetFloat4("DiffuseAlbedo", 1.0f, 1.0f, 1.0f, 1.0f);
+		m_HomeMat->SetFloat3("FresnelR0", 0.3f, 0.3f, 0.3f);
+		m_HomeMat->SetFloat("Roughness", 0.3f);
+		m_HomeMat->SetTexture("BaseTexture", m_HomeTex);
 	}
 
 	// RenderNode
@@ -319,5 +392,10 @@ void Triangle::PrepareResources()
 		m_LitSphereNode->SetMesh(m_SphereMesh);
 		m_LitSphereNode->SetMaterial(m_LitMat);
 		m_LitSphereNode->GetTransform().Scale(0.01f, 0.01f, 0.01f).Translate(0.0f, 0.0f, 0.0f);
+
+		m_HomeNode = CreateRenderNode("HomeNode");
+		m_HomeNode->SetMesh(m_HomeMesh);
+		m_HomeNode->SetMaterial(m_HomeMat);
+		m_HomeNode->GetTransform().Rotate(-1.57f, 1.0f, 0.0f, 0.0f).Rotate(1.57f, 0.0f, 1.0f, 0.0f).Translate(0.0f, -0.3f, 0.3f);
 	}
 }

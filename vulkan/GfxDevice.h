@@ -83,7 +83,7 @@ public:
 
 	GpuProgram* CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode);
 
-	void SetPass(GpuProgram* gpuProgram, RenderState& renderState);
+	void SetPass(GpuProgram* gpuProgram, RenderState& renderState, void* scdata);
 
 	void BindShaderResources(GpuProgram* gpuProgram, int set, ShaderBindings shaderBindings);
 

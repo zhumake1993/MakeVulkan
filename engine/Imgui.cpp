@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include "Tools.h"
 #include "InputManager.h"
+#include "ProfilerManager.h"
 #include "Image.h"
 #include "Buffer.h"
 #include <algorithm>
@@ -88,7 +89,7 @@ Imgui::~Imgui()
 
 void Imgui::Prepare(float deltaTime)
 {
-	//PROFILER(Imgui_Prepare);
+	PROFILER(Imgui_Prepare);
 
 	ImGuiIO& io = ImGui::GetIO();
 
@@ -108,7 +109,7 @@ void Imgui::Prepare(float deltaTime)
 
 void Imgui::Tick()
 {
-	//PROFILER(Imgui_Tick);
+	PROFILER(Imgui_Tick);
 
 	auto& device = GetGfxDevice();
 
@@ -139,7 +140,7 @@ void Imgui::Tick()
 
 void Imgui::Draw()
 {
-	//PROFILER(Imgui_RecordCommandBuffer);
+	PROFILER(Imgui_Draw);
 
 	auto& device = GetGfxDevice();
 
@@ -154,7 +155,7 @@ void Imgui::Draw()
 
 	GpuProgram* gpuProgram = m_Shader->GetGpuProgram();
 
-	device.SetPass(gpuProgram, m_Shader->GetRenderState());
+	device.SetPass(gpuProgram, m_Shader->GetRenderState(), nullptr);
 
 	ShaderBindings shaderBindings;
 	shaderBindings.imageBindings.emplace_back(0, m_FontImage);

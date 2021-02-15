@@ -76,6 +76,19 @@ enum ImageType
 	kImageType3D
 };
 
+enum ShaderDataType
+{
+	kShaderDataFloat1,
+	kShaderDataFloat2,
+	kShaderDataFloat3,
+	kShaderDataFloat4,
+	kShaderDataFloat4x4,
+
+	kShaderDataInt1
+};
+
+uint32_t ShaderDataTypeToSize(ShaderDataType type);
+
 // äÖÈ¾×´Ì¬
 
 struct RasterizationState

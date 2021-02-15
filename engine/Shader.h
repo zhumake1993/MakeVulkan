@@ -5,6 +5,7 @@
 #include "GfxTypes.h"
 
 class GpuProgram;
+class ShaderData;
 
 class Shader
 {
@@ -24,24 +25,9 @@ public:
 	void SetRenderState(RenderState& renderState);
 	RenderState& GetRenderState();
 
-	//void SetUniformBufferDesc(UniformBufferDesc& desc);
-	//UniformBufferDesc& GetUniformBufferDesc();
-
-	//void SetTextureDesc(const std::vector<std::string>& names);
-	//std::vector<std::string>& GetTextureDesc();
-
-	//void AddSpecializationConstant(int id, uint32_t value);
-	//void SetSpecializationConstant(int id, uint32_t value);
-	//VKSpecializationConstant* GetVKSpecializationConstant();
-
-	//VkShaderModule GetVkShaderModuleVert();
-	//VkShaderModule GetVkShaderModuleFrag();
-
-	//std::unordered_map<std::string, UniformElement>& GetUniformElements();
-	//uint32_t GetUniformSize();
-
-	//std::unordered_map<std::string, uint32_t>& GetTextureElements();
-	//uint32_t GetTextureNum();
+	void SetSCFloat(int id, float x);
+	void SetSCInt(int id, int x);
+	void* GetSpecializationData();
 
 public:
 
@@ -58,9 +44,5 @@ private:
 
 	RenderState m_RenderState;
 
-	//UniformBufferDesc m_UniformBufferDesc;
-
-	//std::vector<std::string> m_TextureNames;
-
-	//VKSpecializationConstant* m_SpecializationConstant = nullptr;
+	ShaderData* m_SpecializationShaderData;
 };

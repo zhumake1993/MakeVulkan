@@ -5,12 +5,14 @@
 #include "VKResource.h"
 #include "GfxTypes.h"
 
+class VKGpuProgram;
+
 struct PipelineCI
 {
 	PipelineCI();
 	~PipelineCI(); // 不能有虚函数，否则用memset清空后，虚函数表指针也会被清空
 
-	void Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderState& renderState, VkShaderModule vertexSM, VkShaderModule framentSM);
+	void Reset(VKGpuProgram* vkGpuProgram, RenderState& renderState, void* scdata, VkRenderPass renderPass);
 
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo;
 
@@ -51,7 +53,7 @@ public:
 	PipelineManager(VkDevice vkDevice, GarbageCollector* gc);
 	virtual ~PipelineManager();
 
-	void SetPipelineCI(VkPipelineLayout layout, VkRenderPass renderPass, RenderState& renderState, VkShaderModule vertexSM, VkShaderModule framentSM);
+	void SetPipelineCI(VKGpuProgram* vkGpuProgram, RenderState& renderState, void* scdata, VkRenderPass renderPass);
 
 	VkPipeline CreatePipeline(VertexDescription& vertexDescription);
 

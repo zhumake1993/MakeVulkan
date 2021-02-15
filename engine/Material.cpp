@@ -33,27 +33,25 @@ void Material::SetShader(Shader * shader)
 
 	GpuParameters& gpuParameters = m_Shader->GetGpuProgram()->GetGpuParameters();
 
+	m_ShaderData = new ShaderData();
+
 	for (auto& uniform : gpuParameters.uniformParameters)
 	{
 		if (uniform.name == "PerMaterial")
 		{
-			m_ShaderData = new ShaderData(uniform, gpuParameters.textureParameters);
+			m_ShaderData->SetValueParameter(uniform.valueParameters);
 		}
 	}
 
-	// ¸ÃmaterialÃ»ÓÐuniform
-	if (!m_ShaderData)
-	{
-		m_ShaderData = new ShaderData(gpuParameters.textureParameters);
-	}
+	m_ShaderData->SetTextureParameter(gpuParameters.textureParameters);
 
 	// Buffer
 	auto& device = GetGfxDevice();
-	uint32_t dataSize = m_ShaderData->GetDataSize();
+	uint32_t dataSize = m_ShaderData->GetValueDataSize();
 	if (dataSize > 0)
 	{
 		m_UniformBuffer = device.CreateBuffer(kBufferUsageUniform, kMemoryPropertyHostCoherent, dataSize);
-		device.UpdateBuffer(m_UniformBuffer, m_ShaderData->GetDate(), 0, dataSize);
+		device.UpdateBuffer(m_UniformBuffer, m_ShaderData->GetValueData(), 0, dataSize);
 	}
 }
 
@@ -115,10 +113,10 @@ Buffer * Material::GetUniformBuffer()
 void Material::UpdateUniformBuffer()
 {
 	auto& device = GetGfxDevice();
-	uint32_t dataSize = m_ShaderData->GetDataSize();
+	uint32_t dataSize = m_ShaderData->GetValueDataSize();
 	if (dataSize > 0)
 	{
-		device.UpdateBuffer(m_UniformBuffer, m_ShaderData->GetDate(), 0, dataSize);
+		device.UpdateBuffer(m_UniformBuffer, m_ShaderData->GetValueData(), 0, dataSize);
 	}
 }
 

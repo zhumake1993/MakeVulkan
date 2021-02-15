@@ -166,6 +166,26 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 
 		VK_CHECK_RESULT(vkCreateShaderModule(m_Device, &moduleCreateInfo, nullptr, &m_FragShaderModule));
 	}
+
+	// SpecializationConstant
+
+	uint32_t offset = 0;
+	for (auto& sc : parameters.SCParameters)
+	{
+		VkSpecializationMapEntry entry = {};
+		entry.constantID = sc.id;
+		entry.size = ShaderDataTypeToSize(sc.type);
+		entry.offset = offset;
+
+		offset += static_cast<uint32_t>(entry.size);
+
+		m_SpecializationMapEntries.push_back(entry);
+	}
+
+	m_SpecializationInfo.dataSize = offset;
+	m_SpecializationInfo.mapEntryCount = static_cast<uint32_t>(m_SpecializationMapEntries.size());
+	m_SpecializationInfo.pMapEntries = m_SpecializationMapEntries.data();
+	m_SpecializationInfo.pData = nullptr;
 }
 
 VKGpuProgram::~VKGpuProgram()
@@ -219,4 +239,9 @@ VkDescriptorSetLayout VKGpuProgram::GetDSLPerDraw()
 VkPipelineLayout VKGpuProgram::GetPipelineLayout()
 {
 	return m_PipelineLayout;
+}
+
+VkSpecializationInfo & VKGpuProgram::GetSpecializationInfo()
+{
+	return m_SpecializationInfo;
 }

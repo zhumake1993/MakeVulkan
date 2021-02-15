@@ -4,6 +4,7 @@
 #include "GfxDevice.h"
 #include "DeviceProperties.h"
 #include "InputManager.h"
+#include "ProfilerManager.h"
 
 Engine::Engine(Example* example) :
 	m_Example(example)
@@ -24,10 +25,7 @@ void Engine::Init()
 	CreateGfxDevice();
 
 	// 初始化Manager
-	
-
-	// 初始化Engine
-	//todo
+	CreateProfilerManager();
 
 	// 初始化Example
 	m_Example->Init();
@@ -42,11 +40,9 @@ void Engine::Release()
 	m_Example->Release();
 	RELEASE(m_Example);
 
-	// 清理Engine
-	//todo
-
 	// 清理Manager
-	
+	GetProfilerManager().WriteToFile();
+	ReleaseProfilerManager();
 
 	// 清理GfxDevice
 	ReleaseGfxDevice();
@@ -57,9 +53,12 @@ void Engine::Release()
 
 void Engine::Update()
 {
-	//PROFILER(Engine_TickEngine);
-
 	auto& device = GetGfxDevice();
+
+	// 先更新ProfilerManager
+	GetProfilerManager().Update();
+
+	PROFILER(Engine_Update);
 
 	// 更新逻辑
 	m_Example->Update();

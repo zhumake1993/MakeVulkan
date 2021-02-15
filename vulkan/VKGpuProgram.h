@@ -21,6 +21,8 @@ public:
 
 	VkPipelineLayout GetPipelineLayout();
 
+	VkSpecializationInfo& GetSpecializationInfo();
+
 private:
 
 	VkShaderModule m_VertShaderModule = VK_NULL_HANDLE;
@@ -34,6 +36,10 @@ private:
 
 	// 利用Pipeline Layout Compatibility的特性，在创建实际使用的PipelineLayout之前，就可以绑定Global和PerView
 	VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
+
+	// SpecializationConstant
+	std::vector<VkSpecializationMapEntry> m_SpecializationMapEntries;
+	VkSpecializationInfo m_SpecializationInfo;
 
 	VkDevice m_Device = VK_NULL_HANDLE;
 };

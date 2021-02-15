@@ -1,6 +1,8 @@
 #include "PipelineManager.h"
 #include "VulkanTools.h"
 #include "GarbageCollector.h"
+#include "VKGpuProgram.h"
+#include "ProfilerManager.h"
 
 PipelineCI::PipelineCI()
 {
@@ -11,7 +13,7 @@ PipelineCI::~PipelineCI()
 {
 }
 
-void PipelineCI::Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderState & renderState, VkShaderModule vertexSM, VkShaderModule framentSM)
+void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState& renderState, void* scdata, VkRenderPass renderPass)
 {
 	memset(this, 0, sizeof(*this));
 
@@ -29,7 +31,7 @@ void PipelineCI::Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderS
 	pipelineCreateInfo.pDepthStencilState = &depthStencilStateCreateInfo;
 	pipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
 	pipelineCreateInfo.pDynamicState = &dynamicStateCreateInfo;
-	pipelineCreateInfo.layout = layout;
+	pipelineCreateInfo.layout = vkGpuProgram->GetPipelineLayout();
 	pipelineCreateInfo.renderPass = renderPass;
 	pipelineCreateInfo.subpass = 0;
 	pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
@@ -41,7 +43,7 @@ void PipelineCI::Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderS
 		shaderStageCreateInfos[kVKShaderTypeVertex].pNext = nullptr;
 		shaderStageCreateInfos[kVKShaderTypeVertex].flags = 0;
 		shaderStageCreateInfos[kVKShaderTypeVertex].stage = VK_SHADER_STAGE_VERTEX_BIT;
-		shaderStageCreateInfos[kVKShaderTypeVertex].module = vertexSM;
+		shaderStageCreateInfos[kVKShaderTypeVertex].module = vkGpuProgram->GetVertShaderModule();
 		shaderStageCreateInfos[kVKShaderTypeVertex].pName = "main";
 		shaderStageCreateInfos[kVKShaderTypeVertex].pSpecializationInfo = nullptr;
 
@@ -50,9 +52,18 @@ void PipelineCI::Reset(VkPipelineLayout layout, VkRenderPass renderPass, RenderS
 		shaderStageCreateInfos[kVKShaderTypeFragment].pNext = nullptr;
 		shaderStageCreateInfos[kVKShaderTypeFragment].flags = 0;
 		shaderStageCreateInfos[kVKShaderTypeFragment].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		shaderStageCreateInfos[kVKShaderTypeFragment].module = framentSM;
+		shaderStageCreateInfos[kVKShaderTypeFragment].module = vkGpuProgram->GetFragShaderModule();
 		shaderStageCreateInfos[kVKShaderTypeFragment].pName = "main";
 		shaderStageCreateInfos[kVKShaderTypeFragment].pSpecializationInfo = nullptr;
+
+		// SpecializationConstant
+		// 测试发现很耗。。。不知道为啥
+		if (vkGpuProgram->GetGpuParameters().SCParameters.size() > 0)
+		{
+			VkSpecializationInfo& si = vkGpuProgram->GetSpecializationInfo();
+			si.pData = scdata;
+			shaderStageCreateInfos[kVKShaderTypeFragment].pSpecializationInfo = &si;
+		}
 	}
 
 	{
@@ -178,13 +189,15 @@ PipelineManager::~PipelineManager()
 	RELEASE(m_PipelineCI);
 }
 
-void PipelineManager::SetPipelineCI(VkPipelineLayout layout, VkRenderPass renderPass, RenderState & renderState, VkShaderModule vertexSM, VkShaderModule framentSM)
+void PipelineManager::SetPipelineCI(VKGpuProgram * vkGpuProgram, RenderState & renderState, void* scdata, VkRenderPass renderPass)
 {
-	m_PipelineCI->Reset(layout, renderPass, renderState, vertexSM, framentSM);
+	m_PipelineCI->Reset(vkGpuProgram, renderState, scdata, renderPass);
 }
 
 VkPipeline PipelineManager::CreatePipeline(VertexDescription & vertexDescription)
 {
+	PROFILER(CreatePipeline);
+
 	VKPipeline* pipeline = new VKPipeline(m_Device);
 
 	pipeline->Use(m_GarbageCollector->GetFrameIndex());
@@ -219,7 +232,9 @@ VkPipeline PipelineManager::CreatePipeline(VertexDescription & vertexDescription
 		pipelineCI.vertexInputStateCreateInfo.pVertexAttributeDescriptions = pipelineCI.vertexInputAttributs;
 	}
 
+	PROFILER_BEGIN(CreateGraphicsPipelines);
 	VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineCI.pipelineCreateInfo, nullptr, &pipeline->pipeline));
+	PROFILER_END(CreateGraphicsPipelines);
 
 	return pipeline->pipeline;
 }
