@@ -38,7 +38,7 @@ void Triangle::ConfigDeviceProperties()
 	// 升级Vulkan至1.2.162.1，问题仍在
 
 	// 安卓上VK_LAYER_KHRONOS_validation需要至少NDK r20
-	// 目前我用的NDK r19
+	// 目前我用的NDK r19（现在换成r21b了，但是开启该功能很麻烦，先搁置）
 #if defined(_WIN32)
 	dp.enabledInstanceLayers.push_back("VK_LAYER_KHRONOS_validation");
 #endif
@@ -209,15 +209,15 @@ void Triangle::Draw()
 	// m_LitShader
 
 	SetShader(m_LitShader);
-	//m_LitShader->SetSCInt(0, 1);
+	//m_LitShader->SetSCInt(0, 0);
 	//m_LitShader->SetSCInt(1, 0);
 	//m_LitShader->SetSCInt(2, 0);
 
 	BindMaterial(m_LitMat);
 	DrawRenderNode(m_LitSphereNode);
 
-	BindMaterial(m_HomeMat);
-	DrawRenderNode(m_HomeNode);
+	//BindMaterial(m_HomeMat);
+	//DrawRenderNode(m_HomeNode);
 
 	DrawImgui();
 
@@ -342,9 +342,9 @@ void Triangle::PrepareResources()
 			uniform.valueParameters.emplace_back("ObjectToWorld", kShaderDataFloat4x4);
 			parameters.uniformParameters.push_back(uniform);
 		}
-		//parameters.SCParameters.emplace_back(0, kShaderDataInt1);
-		//parameters.SCParameters.emplace_back(1, kShaderDataInt1);
-		//parameters.SCParameters.emplace_back(2, kShaderDataInt1);
+		parameters.SCParameters.emplace_back(0, kShaderDataInt1);
+		parameters.SCParameters.emplace_back(1, kShaderDataInt1);
+		parameters.SCParameters.emplace_back(2, kShaderDataInt1);
 		m_LitShader->CreateGpuProgram(parameters);
 
 		RenderState renderState;

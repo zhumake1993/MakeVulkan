@@ -66,6 +66,5 @@ private:
 
 	VkDevice m_Device = VK_NULL_HANDLE;
 
-	// todo
-	//VkPipelineCache pipelineCache = VK_NULL_HANDLE;
+	VkPipelineCache m_PipelineCache = VK_NULL_HANDLE;
 };

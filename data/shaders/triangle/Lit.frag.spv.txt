@@ -20,9 +20,16 @@ Lit.frag
 /////////////////////////////////////////////////////
 
 #define MaxLights 16
+
+// 会导致pso的创建非常耗
 layout (constant_id = 0) const int NUM_DIR_LIGHTS = 1;
 layout (constant_id = 1) const int NUM_POINT_LIGHTS = 1;
 layout (constant_id = 2) const int NUM_SPOT_LIGHTS = 1;
+
+//
+//#define NUM_DIR_LIGHTS 1
+//#define NUM_POINT_LIGHTS 0
+//#define NUM_SPOT_LIGHTS 0
 
 struct Light
 {
@@ -520,18 +527,18 @@ void main() {
       718(param):     16(ptr) Variable Function
       721(param):     16(ptr) Variable Function
    724(litColor):    158(ptr) Variable Function
-                              Line 1 194 0
+                              Line 1 201 0
              417:   15(fvec3) Load 416(v_Normal)
              418:   15(fvec3) ExtInst 2(GLSL.std.450) 69(Normalize) 417
                               Store 414(normal) 418
-                              Line 1 197 0
+                              Line 1 204 0
              426:    425(ptr) AccessChain 424 113
              427:   23(fvec4) Load 426
              430:   23(fvec4) Load 429(v_wPos)
              431:   23(fvec4) FSub 427 430
              432:   23(fvec4) ExtInst 2(GLSL.std.450) 69(Normalize) 431
                               Store 419(toEyeW) 432
-                              Line 1 200 0
+                              Line 1 207 0
              439:    438(ptr) AccessChain 437 157
              440:434(Material) Load 439
              441:   23(fvec4) CompositeExtract 440 0
@@ -546,7 +553,7 @@ void main() {
              447:          24 CompositeExtract 440 3
              449:    448(ptr) AccessChain 433(mat) 205
                               Store 449 447
-                              Line 1 201 0
+                              Line 1 208 0
              450:    158(ptr) AccessChain 433(mat) 157
              451:   23(fvec4) Load 450
              456:         453 Load 455(baseTexture)
@@ -555,16 +562,16 @@ void main() {
              462:   23(fvec4) FMul 451 461
              463:    158(ptr) AccessChain 433(mat) 157
                               Store 463 462
-                              Line 1 204 0
+                              Line 1 211 0
              465:    425(ptr) AccessChain 424 205
              466:   23(fvec4) Load 465
              467:    158(ptr) AccessChain 433(mat) 157
              468:   23(fvec4) Load 467
              469:   23(fvec4) FMul 466 468
                               Store 464(ambient) 469
-                              Line 1 207 0
+                              Line 1 214 0
                               Store 470(shadowFactor) 471
-                              Line 1 208 0
+                              Line 1 215 0
              475:    474(ptr) AccessChain 424 196
              476:         421 Load 475
              477:  420(Light) CompositeExtract 476 0
@@ -901,17 +908,17 @@ void main() {
                               Store 721(param) 722
              723:   23(fvec4) FunctionCall 70(ComputeLighting(struct-Light-vf3-f1-vf3-f1-vf3-f11[16];struct-Material-vf4-vf3-f1-mf441;vf3;vf3;vf3;vf3;) 473(param) 711(param) 713(param) 716(param) 718(param) 721(param)
                               Store 472(directLight) 723
-                              Line 1 209 0
+                              Line 1 216 0
              725:   23(fvec4) Load 464(ambient)
              726:   23(fvec4) Load 472(directLight)
              727:   23(fvec4) FAdd 725 726
                               Store 724(litColor) 727
-                              Line 1 212 0
+                              Line 1 219 0
              729:      8(ptr) AccessChain 433(mat) 157 728
              730:    7(float) Load 729
              731:      8(ptr) AccessChain 724(litColor) 728
                               Store 731 730
-                              Line 1 214 0
+                              Line 1 221 0
              734:   23(fvec4) Load 724(litColor)
                               Store 733(o_Color) 734
                               Return
@@ -921,7 +928,7 @@ void main() {
 11(falloffStart):      8(ptr) FunctionParameter
   12(falloffEnd):      8(ptr) FunctionParameter
               14:             Label
-                              Line 1 33 0
+                              Line 1 40 0
               72:    7(float) Load 12(falloffEnd)
               73:    7(float) Load 10(d)
               74:    7(float) FSub 72 73
@@ -940,17 +947,17 @@ void main() {
 84(cosIncidentAngle):      8(ptr) Variable Function
           89(f0):      8(ptr) Variable Function
 92(reflectPercent):     16(ptr) Variable Function
-                              Line 1 41 0
+                              Line 1 48 0
               85:   15(fvec3) Load 19(normal)
               86:   15(fvec3) Load 20(lightVec)
               87:    7(float) Dot 85 86
               88:    7(float) ExtInst 2(GLSL.std.450) 43(FClamp) 87 79 80
                               Store 84(cosIncidentAngle) 88
-                              Line 1 42 0
+                              Line 1 49 0
               90:    7(float) Load 84(cosIncidentAngle)
               91:    7(float) FSub 80 90
                               Store 89(f0) 91
-                              Line 1 43 0
+                              Line 1 50 0
               93:   15(fvec3) Load 18(R0)
               94:   15(fvec3) Load 18(R0)
               95:   15(fvec3) CompositeConstruct 80 80 80
@@ -967,7 +974,7 @@ void main() {
              106:   15(fvec3) VectorTimesScalar 96 105
              107:   15(fvec3) FAdd 93 106
                               Store 92(reflectPercent) 107
-                              Line 1 44 0
+                              Line 1 51 0
              108:   15(fvec3) Load 92(reflectPercent)
                               ReturnValue 108
                               FunctionEnd
@@ -987,22 +994,22 @@ void main() {
       143(param):     16(ptr) Variable Function
       145(param):     16(ptr) Variable Function
  148(specAlbedo):     16(ptr) Variable Function
-                              Line 1 50 0
+                              Line 1 57 0
              114:      8(ptr) AccessChain 32(mat) 113
              115:    7(float) Load 114
              116:    7(float) FSub 80 115
                               Store 111(shininess) 116
-                              Line 1 51 0
+                              Line 1 58 0
              118:    7(float) Load 111(shininess)
              120:    7(float) FMul 118 119
                               Store 117(m) 120
-                              Line 1 52 0
+                              Line 1 59 0
              122:   15(fvec3) Load 31(toEye)
              123:   15(fvec3) Load 29(lightVec)
              124:   15(fvec3) FAdd 122 123
              125:   15(fvec3) ExtInst 2(GLSL.std.450) 69(Normalize) 124
                               Store 121(halfVec) 125
-                              Line 1 54 0
+                              Line 1 61 0
              127:    7(float) Load 117(m)
              129:    7(float) FAdd 127 128
              130:   15(fvec3) Load 121(halfVec)
@@ -1014,7 +1021,7 @@ void main() {
              136:    7(float) FMul 129 135
              137:    7(float) FDiv 136 128
                               Store 126(roughnessFactor) 137
-                              Line 1 55 0
+                              Line 1 62 0
              141:     16(ptr) AccessChain 32(mat) 139
              142:   15(fvec3) Load 141
                               Store 140(param) 142
@@ -1024,19 +1031,19 @@ void main() {
                               Store 145(param) 146
              147:   15(fvec3) FunctionCall 21(SchlickFresnel(vf3;vf3;vf3;) 140(param) 143(param) 145(param)
                               Store 138(fresnelFactor) 147
-                              Line 1 57 0
+                              Line 1 64 0
              149:   15(fvec3) Load 138(fresnelFactor)
              150:    7(float) Load 126(roughnessFactor)
              151:   15(fvec3) VectorTimesScalar 149 150
                               Store 148(specAlbedo) 151
-                              Line 1 61 0
+                              Line 1 68 0
              152:   15(fvec3) Load 148(specAlbedo)
              153:   15(fvec3) Load 148(specAlbedo)
              154:   15(fvec3) CompositeConstruct 80 80 80
              155:   15(fvec3) FAdd 153 154
              156:   15(fvec3) FDiv 152 155
                               Store 148(specAlbedo) 156
-                              Line 1 62 0
+                              Line 1 69 0
              159:    158(ptr) AccessChain 32(mat) 157
              160:   23(fvec4) Load 159
              161:   15(fvec3) VectorShuffle 160 160 0 1 2
@@ -1060,24 +1067,24 @@ void main() {
       186(param):     16(ptr) Variable Function
       188(param):     16(ptr) Variable Function
       190(param):     26(ptr) Variable Function
-                              Line 1 68 0
+                              Line 1 75 0
              169:     16(ptr) AccessChain 38(L) 113
              170:   15(fvec3) Load 169
              171:   15(fvec3) FNegate 170
                               Store 168(lightVec) 171
-                              Line 1 71 0
+                              Line 1 78 0
              173:   15(fvec3) Load 168(lightVec)
              174:   15(fvec3) Load 40(normal)
              175:    7(float) Dot 173 174
              176:    7(float) ExtInst 2(GLSL.std.450) 40(FMax) 175 79
                               Store 172(ndotl) 176
-                              Line 1 72 0
+                              Line 1 79 0
              178:     16(ptr) AccessChain 38(L) 157
              179:   15(fvec3) Load 178
              180:    7(float) Load 172(ndotl)
              181:   15(fvec3) VectorTimesScalar 179 180
                               Store 177(lightStrength) 181
-                              Line 1 73 0
+                              Line 1 80 0
              183:   15(fvec3) Load 177(lightStrength)
                               Store 182(param) 183
              185:   15(fvec3) Load 168(lightVec)
@@ -1111,17 +1118,17 @@ void main() {
       245(param):     16(ptr) Variable Function
       247(param):     16(ptr) Variable Function
       249(param):     26(ptr) Variable Function
-                              Line 1 79 0
+                              Line 1 86 0
              197:     16(ptr) AccessChain 45(L) 196
              198:   15(fvec3) Load 197
              199:   15(fvec3) Load 47(pos)
              200:   15(fvec3) FSub 198 199
                               Store 195(lightVec) 200
-                              Line 1 82 0
+                              Line 1 89 0
              202:   15(fvec3) Load 195(lightVec)
              203:    7(float) ExtInst 2(GLSL.std.450) 66(Length) 202
                               Store 201(d) 203
-                              Line 1 85 0
+                              Line 1 92 0
              204:    7(float) Load 201(d)
              206:      8(ptr) AccessChain 45(L) 205
              207:    7(float) Load 206
@@ -1129,28 +1136,28 @@ void main() {
                               SelectionMerge 211 None
                               BranchConditional 209 210 211
              210:               Label
-                                Line 1 86 0
+                                Line 1 93 0
                                 ReturnValue 212
              211:             Label
-                              Line 1 89 0
+                              Line 1 96 0
              214:    7(float) Load 201(d)
              215:   15(fvec3) Load 195(lightVec)
              216:   15(fvec3) CompositeConstruct 214 214 214
              217:   15(fvec3) FDiv 215 216
                               Store 195(lightVec) 217
-                              Line 1 92 0
+                              Line 1 99 0
              219:   15(fvec3) Load 195(lightVec)
              220:   15(fvec3) Load 48(normal)
              221:    7(float) Dot 219 220
              222:    7(float) ExtInst 2(GLSL.std.450) 40(FMax) 221 79
                               Store 218(ndotl) 222
-                              Line 1 93 0
+                              Line 1 100 0
              224:     16(ptr) AccessChain 45(L) 157
              225:   15(fvec3) Load 224
              226:    7(float) Load 218(ndotl)
              227:   15(fvec3) VectorTimesScalar 225 226
                               Store 223(lightStrength) 227
-                              Line 1 96 0
+                              Line 1 103 0
              230:    7(float) Load 201(d)
                               Store 229(param) 230
              232:      8(ptr) AccessChain 45(L) 139
@@ -1161,12 +1168,12 @@ void main() {
                               Store 234(param) 236
              237:    7(float) FunctionCall 13(CalcAttenuation(f1;f1;f1;) 229(param) 231(param) 234(param)
                               Store 228(att) 237
-                              Line 1 97 0
+                              Line 1 104 0
              238:    7(float) Load 228(att)
              239:   15(fvec3) Load 223(lightStrength)
              240:   15(fvec3) VectorTimesScalar 239 238
                               Store 223(lightStrength) 240
-                              Line 1 99 0
+                              Line 1 106 0
              242:   15(fvec3) Load 223(lightStrength)
                               Store 241(param) 242
              244:   15(fvec3) Load 195(lightVec)
@@ -1201,17 +1208,17 @@ void main() {
       314(param):     16(ptr) Variable Function
       316(param):     16(ptr) Variable Function
       318(param):     26(ptr) Variable Function
-                              Line 1 105 0
+                              Line 1 112 0
              255:     16(ptr) AccessChain 52(L) 196
              256:   15(fvec3) Load 255
              257:   15(fvec3) Load 54(pos)
              258:   15(fvec3) FSub 256 257
                               Store 254(lightVec) 258
-                              Line 1 108 0
+                              Line 1 115 0
              260:   15(fvec3) Load 254(lightVec)
              261:    7(float) ExtInst 2(GLSL.std.450) 66(Length) 260
                               Store 259(d) 261
-                              Line 1 111 0
+                              Line 1 118 0
              262:    7(float) Load 259(d)
              263:      8(ptr) AccessChain 52(L) 205
              264:    7(float) Load 263
@@ -1219,28 +1226,28 @@ void main() {
                               SelectionMerge 267 None
                               BranchConditional 265 266 267
              266:               Label
-                                Line 1 112 0
+                                Line 1 119 0
                                 ReturnValue 212
              267:             Label
-                              Line 1 115 0
+                              Line 1 122 0
              269:    7(float) Load 259(d)
              270:   15(fvec3) Load 254(lightVec)
              271:   15(fvec3) CompositeConstruct 269 269 269
              272:   15(fvec3) FDiv 270 271
                               Store 254(lightVec) 272
-                              Line 1 118 0
+                              Line 1 125 0
              274:   15(fvec3) Load 254(lightVec)
              275:   15(fvec3) Load 55(normal)
              276:    7(float) Dot 274 275
              277:    7(float) ExtInst 2(GLSL.std.450) 40(FMax) 276 79
                               Store 273(ndotl) 277
-                              Line 1 119 0
+                              Line 1 126 0
              279:     16(ptr) AccessChain 52(L) 157
              280:   15(fvec3) Load 279
              281:    7(float) Load 273(ndotl)
              282:   15(fvec3) VectorTimesScalar 280 281
                               Store 278(lightStrength) 282
-                              Line 1 122 0
+                              Line 1 129 0
              285:    7(float) Load 259(d)
                               Store 284(param) 285
              287:      8(ptr) AccessChain 52(L) 139
@@ -1251,12 +1258,12 @@ void main() {
                               Store 289(param) 291
              292:    7(float) FunctionCall 13(CalcAttenuation(f1;f1;f1;) 284(param) 286(param) 289(param)
                               Store 283(att) 292
-                              Line 1 123 0
+                              Line 1 130 0
              293:    7(float) Load 283(att)
              294:   15(fvec3) Load 278(lightStrength)
              295:   15(fvec3) VectorTimesScalar 294 293
                               Store 278(lightStrength) 295
-                              Line 1 126 0
+                              Line 1 133 0
              297:   15(fvec3) Load 254(lightVec)
              298:   15(fvec3) FNegate 297
              299:     16(ptr) AccessChain 52(L) 113
@@ -1267,12 +1274,12 @@ void main() {
              305:    7(float) Load 304
              306:    7(float) ExtInst 2(GLSL.std.450) 26(Pow) 302 305
                               Store 296(spotFactor) 306
-                              Line 1 127 0
+                              Line 1 134 0
              307:    7(float) Load 296(spotFactor)
              308:   15(fvec3) Load 278(lightStrength)
              309:   15(fvec3) VectorTimesScalar 308 307
                               Store 278(lightStrength) 309
-                              Line 1 129 0
+                              Line 1 136 0
              311:   15(fvec3) Load 278(lightStrength)
                               Store 310(param) 311
              313:   15(fvec3) Load 254(lightVec)
@@ -1310,11 +1317,11 @@ void main() {
       396(param):     16(ptr) Variable Function
       398(param):     16(ptr) Variable Function
       400(param):     16(ptr) Variable Function
-                              Line 1 134 0
+                              Line 1 141 0
                               Store 323(result) 212
-                              Line 1 135 0
+                              Line 1 142 0
                               Store 325(i) 157
-                              Line 1 138 0
+                              Line 1 145 0
                               Store 325(i) 157
                               Branch 326
              326:             Label
@@ -1325,7 +1332,7 @@ void main() {
              333:   208(bool) SLessThan 331 332(NUM_DIR_LIGHTS)
                               BranchConditional 333 327 328
              327:               Label
-                                Line 1 140 0
+                                Line 1 147 0
              334:    112(int)   Load 325(i)
              335:      8(ptr)   AccessChain 69(shadowFactor) 334
              336:    7(float)   Load 335
@@ -1346,13 +1353,13 @@ void main() {
                                 Store 323(result) 350
                                 Branch 329
              329:               Label
-                                Line 1 138 0
+                                Line 1 145 0
              351:    112(int)   Load 325(i)
              352:    112(int)   IAdd 351 139
                                 Store 325(i) 352
                                 Branch 326
              328:             Label
-                              Line 1 143 0
+                              Line 1 150 0
                               Store 325(i) 332(NUM_DIR_LIGHTS)
                               Branch 353
              353:             Label
@@ -1363,7 +1370,7 @@ void main() {
              361:   208(bool) SLessThan 358 360
                               BranchConditional 361 354 355
              354:               Label
-                                Line 1 145 0
+                                Line 1 152 0
              362:    112(int)   Load 325(i)
              364:     36(ptr)   AccessChain 64(gLights) 362
              365:   35(Light)   Load 364
@@ -1382,13 +1389,13 @@ void main() {
                                 Store 323(result) 376
                                 Branch 356
              356:               Label
-                                Line 1 143 0
+                                Line 1 150 0
              377:    112(int)   Load 325(i)
              378:    112(int)   IAdd 377 139
                                 Store 325(i) 378
                                 Branch 353
              355:             Label
-                              Line 1 148 0
+                              Line 1 155 0
                               Store 325(i) 379
                               Branch 380
              380:             Label
@@ -1399,7 +1406,7 @@ void main() {
              389:   208(bool) SLessThan 385 388
                               BranchConditional 389 381 382
              381:               Label
-                                Line 1 150 0
+                                Line 1 157 0
              390:    112(int)   Load 325(i)
              392:     36(ptr)   AccessChain 64(gLights) 390
              393:   35(Light)   Load 392
@@ -1418,13 +1425,13 @@ void main() {
                                 Store 323(result) 404
                                 Branch 383
              383:               Label
-                                Line 1 148 0
+                                Line 1 155 0
              405:    112(int)   Load 325(i)
              406:    112(int)   IAdd 405 139
                                 Store 325(i) 406
                                 Branch 380
              382:             Label
-                              Line 1 153 0
+                              Line 1 160 0
              407:   15(fvec3) Load 323(result)
              408:    7(float) CompositeExtract 407 0
              409:    7(float) CompositeExtract 407 1

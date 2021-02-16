@@ -7,10 +7,7 @@
 struct VKDescriptorSet : public VKResource
 {
 	VKDescriptorSet(VkDevice vkDevice, VkDescriptorPool vkDescriptorPool) :device(vkDevice), descriptorPool(vkDescriptorPool) {}
-	virtual ~VKDescriptorSet()
-	{
-		vkFreeDescriptorSets(device, descriptorPool, 1, &descriptorSet);
-	}
+	virtual ~VKDescriptorSet();
 
 	VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
 

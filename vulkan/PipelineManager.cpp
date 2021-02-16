@@ -182,11 +182,22 @@ PipelineManager::PipelineManager(VkDevice vkDevice, GarbageCollector* gc) :
 	m_GarbageCollector(gc)
 {
 	m_PipelineCI = new PipelineCI();
+
+	VkPipelineCacheCreateInfo cacheCI = {};
+	cacheCI.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+	cacheCI.pNext = nullptr;
+	cacheCI.flags = 0;
+	cacheCI.initialDataSize = 0;
+	cacheCI.pInitialData = nullptr;
+
+	VK_CHECK_RESULT(vkCreatePipelineCache(m_Device, &cacheCI, nullptr, &m_PipelineCache));
 }
 
 PipelineManager::~PipelineManager()
 {
 	RELEASE(m_PipelineCI);
+
+	vkDestroyPipelineCache(m_Device, m_PipelineCache, nullptr);
 }
 
 void PipelineManager::SetPipelineCI(VKGpuProgram * vkGpuProgram, RenderState & renderState, void* scdata, VkRenderPass renderPass)

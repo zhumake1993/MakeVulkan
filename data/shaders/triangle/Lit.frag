@@ -5,9 +5,16 @@
 /////////////////////////////////////////////////////
 
 #define MaxLights 16
+
+// 会导致pso的创建非常耗
 layout (constant_id = 0) const int NUM_DIR_LIGHTS = 1;
 layout (constant_id = 1) const int NUM_POINT_LIGHTS = 1;
 layout (constant_id = 2) const int NUM_SPOT_LIGHTS = 1;
+
+//
+//#define NUM_DIR_LIGHTS 1
+//#define NUM_POINT_LIGHTS 0
+//#define NUM_SPOT_LIGHTS 0
 
 struct Light
 {

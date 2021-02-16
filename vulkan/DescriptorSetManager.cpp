@@ -2,6 +2,11 @@
 #include "VulkanTools.h"
 #include "GarbageCollector.h"
 
+VKDescriptorSet::~VKDescriptorSet()
+{
+	VK_CHECK_RESULT(vkFreeDescriptorSets(device, descriptorPool, 1, &descriptorSet));
+}
+
 DescriptorSetManager::DescriptorSetManager(VkDevice vkDevice, GarbageCollector* gc) :
 	m_Device(vkDevice),
 	m_GarbageCollector(gc)
