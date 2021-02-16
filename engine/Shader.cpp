@@ -49,9 +49,9 @@ void Shader::SetRenderState(RenderState & renderState)
 	m_RenderState = renderState;
 }
 
-RenderState & Shader::GetRenderState()
+RenderState * Shader::GetRenderState()
 {
-	return m_RenderState;
+	return &m_RenderState;
 }
 
 void Shader::SetSCFloat(int id, float x)

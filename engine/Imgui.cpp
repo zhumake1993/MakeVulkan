@@ -161,7 +161,7 @@ void Imgui::Draw()
 	shaderBindings.imageBindings.emplace_back(0, m_FontImage);
 	device.BindShaderResources(gpuProgram, 2, shaderBindings);
 
-	device.BindMeshBuffer(m_VertexBuffer, m_IndexBuffer, m_VertexDes, VK_INDEX_TYPE_UINT16);
+	device.BindMeshBuffer(m_VertexBuffer, m_IndexBuffer, &m_VertexDes, VK_INDEX_TYPE_UINT16);
 
 	// PushConstant
 	float scale[2];

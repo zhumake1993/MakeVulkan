@@ -214,15 +214,12 @@ void Triangle::Draw()
 	// m_LitShader
 
 	SetShader(m_LitShader);
-	//m_LitShader->SetSCInt(0, 0);
-	//m_LitShader->SetSCInt(1, 0);
-	//m_LitShader->SetSCInt(2, 0);
 
 	BindMaterial(m_LitMat);
 	DrawRenderNode(m_LitSphereNode);
 
-	//BindMaterial(m_HomeMat);
-	//DrawRenderNode(m_HomeNode);
+	BindMaterial(m_HomeMat);
+	DrawRenderNode(m_HomeNode);
 
 	DrawImgui();
 
@@ -355,6 +352,8 @@ void Triangle::PrepareResources()
 		RenderState renderState;
 
 		m_LitShader->SetRenderState(renderState);
+
+		m_LitShader->SetSCInt(0, 1);
 	}
 
 	// Material

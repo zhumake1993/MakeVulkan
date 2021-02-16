@@ -13,7 +13,7 @@ PipelineCI::~PipelineCI()
 {
 }
 
-void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState& renderState, void* scdata, VkRenderPass renderPass)
+void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState* renderState, void* scdata, VkRenderPass renderPass)
 {
 	memset(this, 0, sizeof(*this));
 
@@ -102,8 +102,8 @@ void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState& renderState, voi
 		rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
 		rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 		rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
-		rasterizationStateCreateInfo.cullMode = renderState.rasterizationState.cullMode;
-		rasterizationStateCreateInfo.frontFace = renderState.rasterizationState.frontFace;
+		rasterizationStateCreateInfo.cullMode = renderState->rasterizationState.cullMode;
+		rasterizationStateCreateInfo.frontFace = renderState->rasterizationState.frontFace;
 		rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
 		rasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
 		rasterizationStateCreateInfo.depthBiasClamp = 0.0f;
@@ -128,8 +128,8 @@ void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState& renderState, voi
 		depthStencilStateCreateInfo.pNext = nullptr;
 		depthStencilStateCreateInfo.flags = 0;
 
-		depthStencilStateCreateInfo.depthTestEnable = renderState.depthStencilState.depthTestEnable;
-		depthStencilStateCreateInfo.depthWriteEnable = renderState.depthStencilState.depthWriteEnable;
+		depthStencilStateCreateInfo.depthTestEnable = renderState->depthStencilState.depthTestEnable;
+		depthStencilStateCreateInfo.depthWriteEnable = renderState->depthStencilState.depthWriteEnable;
 		depthStencilStateCreateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
 		depthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
 
@@ -144,14 +144,14 @@ void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState& renderState, voi
 	{
 		// Color blend state describes how blend factors are calculated (if used)
 		// We need one blend attachment state per color attachment (even if blending is not used)
-		colorBlendAttachmentState.blendEnable = renderState.blendState.blendEnable;
-		colorBlendAttachmentState.srcColorBlendFactor = renderState.blendState.srcColorBlendFactor;
-		colorBlendAttachmentState.dstColorBlendFactor = renderState.blendState.dstColorBlendFactor;
-		colorBlendAttachmentState.colorBlendOp = renderState.blendState.colorBlendOp;
-		colorBlendAttachmentState.srcAlphaBlendFactor = renderState.blendState.srcAlphaBlendFactor;
-		colorBlendAttachmentState.dstAlphaBlendFactor = renderState.blendState.dstAlphaBlendFactor;
-		colorBlendAttachmentState.alphaBlendOp = renderState.blendState.alphaBlendOp;
-		colorBlendAttachmentState.colorWriteMask = renderState.blendState.colorWriteMask;
+		colorBlendAttachmentState.blendEnable = renderState->blendState.blendEnable;
+		colorBlendAttachmentState.srcColorBlendFactor = renderState->blendState.srcColorBlendFactor;
+		colorBlendAttachmentState.dstColorBlendFactor = renderState->blendState.dstColorBlendFactor;
+		colorBlendAttachmentState.colorBlendOp = renderState->blendState.colorBlendOp;
+		colorBlendAttachmentState.srcAlphaBlendFactor = renderState->blendState.srcAlphaBlendFactor;
+		colorBlendAttachmentState.dstAlphaBlendFactor = renderState->blendState.dstAlphaBlendFactor;
+		colorBlendAttachmentState.alphaBlendOp = renderState->blendState.alphaBlendOp;
+		colorBlendAttachmentState.colorWriteMask = renderState->blendState.colorWriteMask;
 
 		colorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlendStateCreateInfo.pNext = nullptr;
@@ -172,17 +172,14 @@ void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState& renderState, voi
 		dynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 		dynamicStateCreateInfo.pNext = nullptr;
 		dynamicStateCreateInfo.flags = 0;
-		dynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(renderState.dynamicStates.size());
-		dynamicStateCreateInfo.pDynamicStates = renderState.dynamicStates.data();
+		dynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(renderState->dynamicStates.size());
+		dynamicStateCreateInfo.pDynamicStates = renderState->dynamicStates.data();
 	}
 }
 
-PipelineManager::PipelineManager(VkDevice vkDevice, GarbageCollector* gc) :
-	m_Device(vkDevice),
-	m_GarbageCollector(gc)
+PipelineManager::PipelineManager(VkDevice vkDevice) :
+	m_Device(vkDevice)
 {
-	m_PipelineCI = new PipelineCI();
-
 	VkPipelineCacheCreateInfo cacheCI = {};
 	cacheCI.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 	cacheCI.pNext = nullptr;
@@ -195,27 +192,57 @@ PipelineManager::PipelineManager(VkDevice vkDevice, GarbageCollector* gc) :
 
 PipelineManager::~PipelineManager()
 {
-	RELEASE(m_PipelineCI);
+	for (auto& p : m_PSOCache)
+	{
+		vkDestroyPipeline(m_Device, p.second->pipeline, nullptr);
+	}
 
 	vkDestroyPipelineCache(m_Device, m_PipelineCache, nullptr);
 }
 
-void PipelineManager::SetPipelineCI(VKGpuProgram * vkGpuProgram, RenderState & renderState, void* scdata, VkRenderPass renderPass)
+void PipelineManager::Update()
 {
-	m_PipelineCI->Reset(vkGpuProgram, renderState, scdata, renderPass);
+	m_FrameIndex++;
 }
 
-VkPipeline PipelineManager::CreatePipeline(VertexDescription & vertexDescription)
+void PipelineManager::SetPipelineKey(VKGpuProgram * vkGpuProgram, RenderState * renderState, void * scdata, VkRenderPass renderPass)
+{
+	m_PipelineKey.vkGpuProgram = vkGpuProgram;
+	m_PipelineKey.renderState = renderState;
+	m_PipelineKey.scdata = scdata;
+	m_PipelineKey.renderPass = renderPass;
+}
+
+VkPipeline PipelineManager::CreatePipeline(VertexDescription * vertexDescription)
 {
 	PROFILER(CreatePipeline);
 
-	VKPipeline* pipeline = new VKPipeline(m_Device);
+	m_PipelineKey.vertexDescription = vertexDescription;
 
-	pipeline->Use(m_GarbageCollector->GetFrameIndex());
-	m_GarbageCollector->AddResource(pipeline);
-
-	PipelineCI& pipelineCI = *m_PipelineCI;
+	if (m_PSOCache.find(m_PipelineKey) == m_PSOCache.end())
 	{
+		Pipeline* pipeline = CreatePipelineInternal(m_PipelineKey);
+		m_PSOCache[m_PipelineKey] = pipeline;
+		return pipeline->pipeline;
+	}
+	else
+	{
+		return m_PSOCache[m_PipelineKey]->pipeline;
+	}
+}
+
+PipelineManager::Pipeline* PipelineManager::CreatePipelineInternal(PipelineKey & pipelineKey)
+{
+	Pipeline* pipeline = new Pipeline();
+	pipeline->Use(m_FrameIndex);
+
+	PipelineCI pipelineCI;
+
+	pipelineCI.Reset(pipelineKey.vkGpuProgram, pipelineKey.renderState, pipelineKey.scdata, pipelineKey.renderPass);
+
+	{
+		auto& vertexDescription = *pipelineKey.vertexDescription;
+
 		// Inpute attribute bindings describe shader attribute locations and memory layouts
 		uint32_t num = static_cast<uint32_t>(vertexDescription.formats.size());
 		uint32_t stride = 0;
@@ -247,5 +274,5 @@ VkPipeline PipelineManager::CreatePipeline(VertexDescription & vertexDescription
 	VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_Device, m_PipelineCache, 1, &pipelineCI.pipelineCreateInfo, nullptr, &pipeline->pipeline));
 	PROFILER_END(CreateGraphicsPipelines);
 
-	return pipeline->pipeline;
+	return pipeline;
 }

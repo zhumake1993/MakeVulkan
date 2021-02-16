@@ -15,7 +15,7 @@ public:
 	void SetVertexChannels(const std::vector<VertexChannel>& channels);
 	std::vector<VertexChannel>& GetVertexChannels();
 
-	VertexDescription& GetVertexDescription();
+	VertexDescription* GetVertexDescription();
 
 	void LoadFromFile(const std::string& filename);
 
@@ -42,8 +42,7 @@ private:
 
 	std::vector<VertexChannel> m_VertexChannels;
 
-	bool m_IsVertexDescriptionCached = false;
-	VertexDescription m_VertexDescriptionCache;
+	VertexDescription m_VertexDescription;
 
 	std::vector<float> m_Vertices;
 	std::vector<uint32_t> m_Indices;

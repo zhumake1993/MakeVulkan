@@ -16,6 +16,15 @@ Mesh::Mesh(const std::string& name) :
 		kVertexNormal,
 		kVertexTexcoord0
 	};
+
+	uint32_t offset = 0;
+	for (auto channel : m_VertexChannels)
+	{
+		m_VertexDescription.formats.push_back(VertexChannelToFormat(channel));
+		m_VertexDescription.offsets.push_back(offset);
+		offset += VkFormatToSize(VertexChannelToFormat(channel));
+	}
+	m_VertexDescription.stride = offset;
 }
 
 Mesh::~Mesh()
@@ -31,7 +40,18 @@ void Mesh::SetVertexChannels(const std::vector<VertexChannel>& channels)
 	// ±£Ö¤channelµÄË³Ðò
 	std::sort(m_VertexChannels.begin(), m_VertexChannels.end());
 
-	m_IsVertexDescriptionCached = false;
+	m_VertexDescription.formats.clear();
+	m_VertexDescription.offsets.clear();
+	m_VertexDescription.stride = 0;
+
+	uint32_t offset = 0;
+	for (auto channel : m_VertexChannels)
+	{
+		m_VertexDescription.formats.push_back(VertexChannelToFormat(channel));
+		m_VertexDescription.offsets.push_back(offset);
+		offset += VkFormatToSize(VertexChannelToFormat(channel));
+	}
+	m_VertexDescription.stride = offset;
 }
 
 std::vector<VertexChannel>& Mesh::GetVertexChannels()
@@ -39,23 +59,9 @@ std::vector<VertexChannel>& Mesh::GetVertexChannels()
 	return m_VertexChannels;
 }
 
-VertexDescription& Mesh::GetVertexDescription()
+VertexDescription* Mesh::GetVertexDescription()
 {
-	if (m_IsVertexDescriptionCached) {
-		return m_VertexDescriptionCache;
-	}
-
-	uint32_t offset = 0;
-	for (auto channel : m_VertexChannels) {
-		m_VertexDescriptionCache.formats.push_back(VertexChannelToFormat(channel));
-		m_VertexDescriptionCache.offsets.push_back(offset);
-		offset += VkFormatToSize(VertexChannelToFormat(channel));
-	}
-	m_VertexDescriptionCache.stride = offset;
-
-	m_IsVertexDescriptionCached = true;
-
-	return m_VertexDescriptionCache;
+	return &m_VertexDescription;
 }
 
 void Mesh::LoadFromFile(const std::string & filename)

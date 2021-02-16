@@ -12,7 +12,7 @@ struct PipelineCI
 	PipelineCI();
 	~PipelineCI(); // 不能有虚函数，否则用memset清空后，虚函数表指针也会被清空
 
-	void Reset(VKGpuProgram* vkGpuProgram, RenderState& renderState, void* scdata, VkRenderPass renderPass);
+	void Reset(VKGpuProgram* vkGpuProgram, RenderState* renderState, void* scdata, VkRenderPass renderPass);
 
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo;
 
@@ -31,38 +31,77 @@ struct PipelineCI
 	VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo;
 };
 
-struct VKPipeline : public VKResource
+struct PipelineKey
 {
-	VKPipeline(VkDevice vkDevice) :device(vkDevice) {}
-	virtual ~VKPipeline()
+	PipelineKey()
 	{
-		vkDestroyPipeline(device, pipeline, nullptr);
+		memset(this, 0, sizeof(*this));
 	}
 
-	VkPipeline pipeline = VK_NULL_HANDLE;
+	bool operator==(const PipelineKey & p) const
+	{
+		return vkGpuProgram == p.vkGpuProgram
+			&& renderState == p.renderState
+			&& scdata == p.scdata
+			&& renderPass == p.renderPass
+			&& vertexDescription == p.vertexDescription;
+	}
 
-	VkDevice device = VK_NULL_HANDLE;
+	// 为了方便，直接使用指针作为key
+	// 这只是一种粗糙的cache方式（不能动态修改）
+	VKGpuProgram* vkGpuProgram;
+	RenderState* renderState;
+	void* scdata;
+	VkRenderPass renderPass;
+	VertexDescription* vertexDescription;
 };
 
-class GarbageCollector;
+struct PipelineHash
+{
+	size_t operator()(const PipelineKey & p) const
+	{
+		return std::hash<void*>()(p.vkGpuProgram)
+			^ std::hash<void*>()(p.renderState)
+			^ std::hash<void*>()(p.scdata)
+			^ std::hash<VkRenderPass>()(p.renderPass)
+			^ std::hash<void*>()(p.vertexDescription);
+	}
+};
 
 class PipelineManager : public NonCopyable
 {
+
+	struct Pipeline : public VKResource
+	{
+		Pipeline() {}
+		virtual ~Pipeline() {}
+
+		VkPipeline pipeline = VK_NULL_HANDLE;
+	};
+
 public:
 
-	PipelineManager(VkDevice vkDevice, GarbageCollector* gc);
+	PipelineManager(VkDevice vkDevice);
 	virtual ~PipelineManager();
 
-	void SetPipelineCI(VKGpuProgram* vkGpuProgram, RenderState& renderState, void* scdata, VkRenderPass renderPass);
+	void Update();
 
-	VkPipeline CreatePipeline(VertexDescription& vertexDescription);
+	void SetPipelineKey(VKGpuProgram* vkGpuProgram, RenderState* renderState, void* scdata, VkRenderPass renderPass);
+
+	VkPipeline CreatePipeline(VertexDescription* vertexDescription);
 
 private:
 
-	// 当前的PipelineCI
-	PipelineCI* m_PipelineCI = nullptr;
+	Pipeline* CreatePipelineInternal(PipelineKey& pipelineKey);
 
-	GarbageCollector* m_GarbageCollector = nullptr;
+private:
+
+	// 当前的PipelineKey
+	PipelineKey m_PipelineKey;
+
+	std::unordered_map<PipelineKey, Pipeline*, PipelineHash> m_PSOCache;
+
+	uint32_t m_FrameIndex = 0;
 
 	VkDevice m_Device = VK_NULL_HANDLE;
 

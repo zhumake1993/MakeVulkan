@@ -68,7 +68,7 @@ GfxDevice::GfxDevice()
 	m_BufferManager = new BufferManager(m_VKDevice->device, m_GarbageCollector);
 	m_ImageManager = new ImageManager(m_VKDevice->device, m_GarbageCollector);
 	m_DescriptorSetManager = new DescriptorSetManager(m_VKDevice->device);
-	m_PipelineManager = new PipelineManager(m_VKDevice->device, m_GarbageCollector);
+	m_PipelineManager = new PipelineManager(m_VKDevice->device);
 
 	// Depth
 	VkFormat depthFormat = GetSupportedDepthFormat();
@@ -224,6 +224,7 @@ void GfxDevice::Update()
 	PROFILER(GfxDevice_Update);
 
 	m_DescriptorSetManager->Update();
+	m_PipelineManager->Update();
 	m_GarbageCollector->Update();
 
 	m_FrameIndex++;
@@ -487,11 +488,11 @@ GpuProgram * GfxDevice::CreateGpuProgram(GpuParameters& parameters, const std::v
 	return new VKGpuProgram(m_VKDevice->device, parameters, vertCode, fragCode);
 }
 
-void GfxDevice::SetPass(GpuProgram * gpuProgram, RenderState & renderState, void* scdata)
+void GfxDevice::SetPass(GpuProgram * gpuProgram, RenderState * renderState, void* scdata)
 {
 	VKGpuProgram* vkGpuProgram = static_cast<VKGpuProgram*>(gpuProgram);
 
-	m_PipelineManager->SetPipelineCI(vkGpuProgram, renderState, scdata, m_VKRenderPass->renderPass);
+	m_PipelineManager->SetPipelineKey(vkGpuProgram, renderState, scdata, m_VKRenderPass->renderPass);
 }
 
 void GfxDevice::BindShaderResources(GpuProgram * gpuProgram, int set, ShaderBindings shaderBindings)
@@ -596,7 +597,7 @@ void GfxDevice::BindShaderResources(GpuProgram * gpuProgram, int set, ShaderBind
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, vkGpuProgram->GetPipelineLayout(), set, descriptorSet);
 }
 
-void GfxDevice::BindMeshBuffer(Buffer * vertexBuffer, Buffer * indexBuffer, VertexDescription & vertexDescription, VkIndexType indexType)
+void GfxDevice::BindMeshBuffer(Buffer * vertexBuffer, Buffer * indexBuffer, VertexDescription * vertexDescription, VkIndexType indexType)
 {
 	VkPipeline pipeline = m_PipelineManager->CreatePipeline(vertexDescription);
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);

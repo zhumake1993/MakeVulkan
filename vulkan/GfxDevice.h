@@ -83,11 +83,11 @@ public:
 
 	GpuProgram* CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode);
 
-	void SetPass(GpuProgram* gpuProgram, RenderState& renderState, void* scdata);
+	void SetPass(GpuProgram* gpuProgram, RenderState* renderState, void* scdata);
 
 	void BindShaderResources(GpuProgram* gpuProgram, int set, ShaderBindings shaderBindings);
 
-	void BindMeshBuffer(Buffer* vertexBuffer, Buffer* indexBuffer, VertexDescription& vertexDescription, VkIndexType indexType = VK_INDEX_TYPE_UINT32);
+	void BindMeshBuffer(Buffer* vertexBuffer, Buffer* indexBuffer, VertexDescription* vertexDescription, VkIndexType indexType = VK_INDEX_TYPE_UINT32);
 
 	void DrawIndexed(uint32_t indexCount, uint32_t instanceCount = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0);
 

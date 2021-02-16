@@ -23,7 +23,7 @@ public:
 	GpuProgram* GetGpuProgram();
 
 	void SetRenderState(RenderState& renderState);
-	RenderState& GetRenderState();
+	RenderState* GetRenderState();
 
 	void SetSCFloat(int id, float x);
 	void SetSCInt(int id, int x);
