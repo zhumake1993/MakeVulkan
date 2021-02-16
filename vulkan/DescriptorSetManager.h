@@ -4,33 +4,38 @@
 #include "NonCopyable.h"
 #include "VKResource.h"
 
-struct VKDescriptorSet : public VKResource
-{
-	VKDescriptorSet(VkDevice vkDevice, VkDescriptorPool vkDescriptorPool) :device(vkDevice), descriptorPool(vkDescriptorPool) {}
-	virtual ~VKDescriptorSet();
-
-	VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
-
-	VkDevice device = VK_NULL_HANDLE;
-	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
-};
-
-class GarbageCollector;
-
 class DescriptorSetManager : public NonCopyable
 {
+
+	struct DescriptorSet : public VKResource
+	{
+		DescriptorSet() {}
+		virtual ~DescriptorSet() {}
+
+		VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+	};
+
 public:
 
-	DescriptorSetManager(VkDevice vkDevice, GarbageCollector* gc);
+	DescriptorSetManager(VkDevice vkDevice);
 	virtual ~DescriptorSetManager();
+
+	void Update();
 
 	VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetLayout layout);
 
 private:
 
-	VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
+	DescriptorSet* AllocateDescriptorSetInternal(VkDescriptorSetLayout layout);
 
-	GarbageCollector* m_GarbageCollector = nullptr;
+private:
+
+	using SetList = std::list<DescriptorSet*>;
+	std::unordered_map<VkDescriptorSetLayout, SetList> m_SetCache;
+
+	uint32_t m_FrameIndex = 0;
+
+	VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
 
 	VkDevice m_Device = VK_NULL_HANDLE;
 };

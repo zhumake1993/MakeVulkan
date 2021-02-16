@@ -67,7 +67,7 @@ GfxDevice::GfxDevice()
 	m_GarbageCollector = new GarbageCollector();
 	m_BufferManager = new BufferManager(m_VKDevice->device, m_GarbageCollector);
 	m_ImageManager = new ImageManager(m_VKDevice->device, m_GarbageCollector);
-	m_DescriptorSetManager = new DescriptorSetManager(m_VKDevice->device, m_GarbageCollector);
+	m_DescriptorSetManager = new DescriptorSetManager(m_VKDevice->device);
 	m_PipelineManager = new PipelineManager(m_VKDevice->device, m_GarbageCollector);
 
 	// Depth
@@ -223,6 +223,7 @@ void GfxDevice::Update()
 {
 	PROFILER(GfxDevice_Update);
 
+	m_DescriptorSetManager->Update();
 	m_GarbageCollector->Update();
 
 	m_FrameIndex++;

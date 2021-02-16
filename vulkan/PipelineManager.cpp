@@ -244,7 +244,7 @@ VkPipeline PipelineManager::CreatePipeline(VertexDescription & vertexDescription
 	}
 
 	PROFILER_BEGIN(CreateGraphicsPipelines);
-	VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineCI.pipelineCreateInfo, nullptr, &pipeline->pipeline));
+	VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_Device, m_PipelineCache, 1, &pipelineCI.pipelineCreateInfo, nullptr, &pipeline->pipeline));
 	PROFILER_END(CreateGraphicsPipelines);
 
 	return pipeline->pipeline;

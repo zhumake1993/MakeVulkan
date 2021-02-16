@@ -37,6 +37,11 @@ void Triangle::ConfigDeviceProperties()
 	// 使用VK_PRESENT_MODE_FIFO_KHR时，没有观察到内存泄露
 	// 升级Vulkan至1.2.162.1，问题仍在
 
+	// 2021.2.16更新：设置VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT的情况下，vkFreeDescriptorSets似乎不能很好的工作
+	// pc没什么问题，但是安卓上面会崩溃，似乎是没有成功释放set，导致可用set数被耗尽，真实原因未知
+	// 现在采用setcache的方式，问题解决，也没有内存泄露了
+	// 另外，Unity也没有设置VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT，很可能真的是一个bug
+
 	// 安卓上VK_LAYER_KHRONOS_validation需要至少NDK r20
 	// 目前我用的NDK r19（现在换成r21b了，但是开启该功能很麻烦，先搁置）
 #if defined(_WIN32)

@@ -1,15 +1,8 @@
 #include "DescriptorSetManager.h"
 #include "VulkanTools.h"
-#include "GarbageCollector.h"
 
-VKDescriptorSet::~VKDescriptorSet()
-{
-	VK_CHECK_RESULT(vkFreeDescriptorSets(device, descriptorPool, 1, &descriptorSet));
-}
-
-DescriptorSetManager::DescriptorSetManager(VkDevice vkDevice, GarbageCollector* gc) :
-	m_Device(vkDevice),
-	m_GarbageCollector(gc)
+DescriptorSetManager::DescriptorSetManager(VkDevice vkDevice) :
+	m_Device(vkDevice)
 {
 	// DescriptorPool
 
@@ -29,8 +22,8 @@ DescriptorSetManager::DescriptorSetManager(VkDevice vkDevice, GarbageCollector* 
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	descriptorPoolCreateInfo.pNext = nullptr;
-	descriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-	descriptorPoolCreateInfo.maxSets = 1000;
+	descriptorPoolCreateInfo.flags = 0; // ²»µ÷ÓÃVK_CHECK_RESULT(vkFreeDescriptorSets(device, descriptorPool, 1, &descriptorSet));
+	descriptorPoolCreateInfo.maxSets = 100;
 	descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
 	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
 
@@ -44,12 +37,48 @@ DescriptorSetManager::~DescriptorSetManager()
 	m_DescriptorPool = VK_NULL_HANDLE;
 }
 
+void DescriptorSetManager::Update()
+{
+	m_FrameIndex++;
+}
+
 VkDescriptorSet DescriptorSetManager::AllocateDescriptorSet(VkDescriptorSetLayout layout)
 {
-	VKDescriptorSet* descriptorSet = new VKDescriptorSet(m_Device, m_DescriptorPool);
+	if (m_SetCache.find(layout) == m_SetCache.end())
+	{
+		m_SetCache[layout] = SetList();
 
-	descriptorSet->Use(m_GarbageCollector->GetFrameIndex());
-	m_GarbageCollector->AddResource(descriptorSet);
+		DescriptorSet* set = AllocateDescriptorSetInternal(layout);
+		m_SetCache[layout].push_front(set);
+
+		return set->descriptorSet;
+	}
+	else
+	{
+		SetList& setlist = m_SetCache[layout];
+
+		if (setlist.back()->InUse(m_FrameIndex))
+		{
+			DescriptorSet* set = AllocateDescriptorSetInternal(layout);
+			setlist.push_front(set);
+
+			return set->descriptorSet;
+		}
+		else
+		{
+			DescriptorSet* set = setlist.back();
+			setlist.pop_back();
+			setlist.push_front(set);
+
+			return set->descriptorSet;
+		}
+	}
+}
+
+DescriptorSetManager::DescriptorSet* DescriptorSetManager::AllocateDescriptorSetInternal(VkDescriptorSetLayout layout)
+{
+	DescriptorSet* set = new DescriptorSet();
+	set->Use(m_FrameIndex);
 
 	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
 	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -58,7 +87,7 @@ VkDescriptorSet DescriptorSetManager::AllocateDescriptorSet(VkDescriptorSetLayou
 	descriptorSetAllocateInfo.descriptorSetCount = 1;
 	descriptorSetAllocateInfo.pSetLayouts = &layout;
 
-	VK_CHECK_RESULT(vkAllocateDescriptorSets(m_Device, &descriptorSetAllocateInfo, &descriptorSet->descriptorSet));
+	VK_CHECK_RESULT(vkAllocateDescriptorSets(m_Device, &descriptorSetAllocateInfo, &set->descriptorSet));
 
-	return descriptorSet->descriptorSet;
+	return set;
 }
