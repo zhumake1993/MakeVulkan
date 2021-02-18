@@ -24,6 +24,8 @@ class DescriptorSetManager;
 class PipelineManager;
 struct PipelineCI;
 
+class GPUProfilerManager;
+
 class Buffer;
 class Image;
 class GpuProgram;
@@ -93,6 +95,11 @@ public:
 
 	void PushConstants(GpuProgram* gpuProgram, void* data, uint32_t offset, uint32_t size);
 
+	void ResetTimeStamp();
+	void WriteTimeStamp(std::string name);
+	void ResolveTimeStamp();
+	std::string GetLastGPUTimeStamp();
+
 private:
 
 	VkFormat GetSupportedDepthFormat();
@@ -135,6 +142,8 @@ private:
 
 	// 用于传数据
 	VKCommandBuffer* m_UploadCommandBuffer;
+
+	GPUProfilerManager* m_GPUProfilerManager;
 };
 
 void CreateGfxDevice();

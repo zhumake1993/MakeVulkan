@@ -10,7 +10,7 @@ class DescriptorSetManager : public NonCopyable
 	struct DescriptorSet : public VKResource
 	{
 		DescriptorSet() {}
-		virtual ~DescriptorSet() {}
+		~DescriptorSet() {}
 
 		VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
 	};

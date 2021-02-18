@@ -32,6 +32,15 @@ DescriptorSetManager::DescriptorSetManager(VkDevice vkDevice) :
 
 DescriptorSetManager::~DescriptorSetManager()
 {
+	for (auto& pair : m_SetCache)
+	{
+		auto& setlist = pair.second;
+		for (auto itr = setlist.begin(); itr != setlist.end(); itr++)
+		{
+			RELEASE(*itr);
+		}
+	}
+
 	// 销毁DescriptorPool会自动销毁其中分配的Set
 	vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
 	m_DescriptorPool = VK_NULL_HANDLE;

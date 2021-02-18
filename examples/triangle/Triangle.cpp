@@ -151,15 +151,15 @@ void Triangle::Update()
 		auto& profilerMgr = GetProfilerManager();
 		cpuProfiler = profilerMgr.Resolve(m_TimeManager->GetFrameIndex() - 1).ToString();
 
-		//gpuProfiler = GetVulkanDriver().GetGPUProfilerMgr()->GetLastFrameView().ToString();
+		gpuProfiler = GetGfxDevice().GetLastGPUTimeStamp();
 
 		acTime = 0.0f;
 	}
 
-	if (ImGui::CollapsingHeader("Test", ImGuiTreeNodeFlags_DefaultOpen))
+	/*if (ImGui::CollapsingHeader("Test", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		//ImGui::SliderFloat("Slider", &m_Temp, 0, 1);
-	}
+		ImGui::SliderFloat("Slider", &m_Temp, 0, 1);
+	}*/
 
 	if (ImGui::CollapsingHeader("CPU Profiler", ImGuiTreeNodeFlags_None))
 	{
@@ -184,6 +184,8 @@ void Triangle::Draw()
 
 	device.BeginCommandBuffer();
 
+	device.ResetTimeStamp();
+
 	BindGlobalUniformBuffer();
 	BindPerViewUniformBuffer();
 
@@ -191,6 +193,13 @@ void Triangle::Draw()
 	DepthStencil clearDepthStencil(1.0, 0);
 	Rect2D area(0, 0, windowWidth, windowHeight);
 	Viewport viewport(0, 0, windowWidth, windowHeight, 0, 1);
+
+	device.WriteTimeStamp("RenderPass");
+
+	device.WriteTimeStamp("Test1");
+	device.WriteTimeStamp("Test1");
+	device.WriteTimeStamp("Test2");
+	device.WriteTimeStamp("Test2");
 
 	device.BeginRenderPass(area, clearColor, clearDepthStencil);
 
@@ -218,12 +227,14 @@ void Triangle::Draw()
 	BindMaterial(m_LitMat);
 	DrawRenderNode(m_LitSphereNode);
 
-	BindMaterial(m_HomeMat);
-	DrawRenderNode(m_HomeNode);
+	//BindMaterial(m_HomeMat);
+	//DrawRenderNode(m_HomeNode);
 
 	DrawImgui();
 
 	device.EndRenderPass();
+
+	device.WriteTimeStamp("RenderPass");
 
 	device.EndCommandBuffer();
 }

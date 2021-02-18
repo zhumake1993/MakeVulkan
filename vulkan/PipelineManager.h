@@ -74,7 +74,7 @@ class PipelineManager : public NonCopyable
 	struct Pipeline : public VKResource
 	{
 		Pipeline() {}
-		virtual ~Pipeline() {}
+		~Pipeline() {}
 
 		VkPipeline pipeline = VK_NULL_HANDLE;
 	};

@@ -70,6 +70,9 @@ void Engine::Update()
 	device.WaitForPresent();
 	device.AcquireNextImage();
 
+	// 在提交本帧的指令之前resolve，否则本帧写入的时间戳可能会把之前的覆盖
+	device.ResolveTimeStamp();
+
 	// 提交渲染指令
 	m_Example->Draw();
 

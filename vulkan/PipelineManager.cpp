@@ -195,6 +195,7 @@ PipelineManager::~PipelineManager()
 	for (auto& p : m_PSOCache)
 	{
 		vkDestroyPipeline(m_Device, p.second->pipeline, nullptr);
+		RELEASE(p.second);
 	}
 
 	vkDestroyPipelineCache(m_Device, m_PipelineCache, nullptr);

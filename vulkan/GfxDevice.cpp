@@ -22,6 +22,7 @@
 #include "VKGpuProgram.h"
 
 #include "ProfilerManager.h"
+#include "GPUProfilerManager.h"
 
 GfxDevice* gfxDevice;
 
@@ -87,10 +88,15 @@ GfxDevice::GfxDevice()
 
 	// CommandBuffer
 	m_UploadCommandBuffer = new VKCommandBuffer(m_VKDevice->device, m_VKCommandPool->commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+	m_GPUProfilerManager = new GPUProfilerManager(m_VKDevice->device);
 }
 
 GfxDevice::~GfxDevice()
 {
+	m_GPUProfilerManager->WriteToFile();
+	RELEASE(m_GPUProfilerManager);
+
 	vkDestroyDescriptorSetLayout(m_VKDevice->device, VKGpuProgram::GetDSLGlobal(), nullptr);
 	vkDestroyDescriptorSetLayout(m_VKDevice->device, VKGpuProgram::GetDSLPerView(), nullptr);
 
@@ -226,6 +232,8 @@ void GfxDevice::Update()
 	m_DescriptorSetManager->Update();
 	m_PipelineManager->Update();
 	m_GarbageCollector->Update();
+
+	m_GPUProfilerManager->Update();
 
 	m_FrameIndex++;
 	m_FrameResourceIndex = m_FrameIndex % FrameResourcesCount;
@@ -622,6 +630,26 @@ void GfxDevice::PushConstants(GpuProgram * gpuProgram, void * data, uint32_t off
 	VKGpuProgram* vkGpuProgram = static_cast<VKGpuProgram*>(gpuProgram);
 
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->PushConstants(vkGpuProgram->GetPipelineLayout(), vkGpuProgram->GetGpuParameters().pushConstantStage, offset, size, data);
+}
+
+void GfxDevice::ResetTimeStamp()
+{
+	m_GPUProfilerManager->Reset(m_FrameResources[m_FrameResourceIndex].commandBuffer);
+}
+
+void GfxDevice::WriteTimeStamp(std::string name)
+{
+	m_GPUProfilerManager->WriteTimeStamp(m_FrameResources[m_FrameResourceIndex].commandBuffer, name);
+}
+
+void GfxDevice::ResolveTimeStamp()
+{
+	m_GPUProfilerManager->ResolveTimeStamp();
+}
+
+std::string GfxDevice::GetLastGPUTimeStamp()
+{
+	return m_GPUProfilerManager->GetLastFrameView().ToString();
 }
 
 VkFormat GfxDevice::GetSupportedDepthFormat()
