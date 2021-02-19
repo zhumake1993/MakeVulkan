@@ -18,9 +18,9 @@ struct VKCommandBuffer : public NonCopyable
 	void SetScissor(VkRect2D& area);
 
 	void CopyBuffer(VkBuffer src, VkBuffer dst, VkBufferCopy& region);
-	void CopyBufferToImage(VkBuffer src, VkImage dst, uint32_t width, uint32_t height);
+	void CopyBufferToImage(VkBuffer src, VkImage dst, uint32_t width, uint32_t height, std::vector<uint64_t>& mipOffsets);
 
-	void ImageMemoryBarrier(VkImage image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL);
+	void ImageMemoryBarrier(VkImage image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL, uint32_t mipLevels);
 
 	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set, uint32_t offset = -1);
 	void BindPipeline(VkPipelineBindPoint bindPoint, VkPipeline vkPipeline);

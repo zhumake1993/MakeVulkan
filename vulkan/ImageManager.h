@@ -7,8 +7,8 @@
 
 struct VKImage : public VKResource
 {
-	VKImage(VkDevice vkDevice, VkImageType vkImageType, VkFormat vkFormat, uint32_t vkWidth, uint32_t vkHeight, VkImageUsageFlags vkUsage) :
-		device(vkDevice), imageType(vkImageType), format(vkFormat), width(vkWidth), height(vkHeight), usage(vkUsage) {}
+	VKImage(VkDevice vkDevice, VkImageType vkImageType, VkFormat vkFormat, uint32_t vkWidth, uint32_t vkHeight, uint32_t vkMipLevels, VkImageUsageFlags vkUsage) :
+		device(vkDevice), imageType(vkImageType), format(vkFormat), width(vkWidth), height(vkHeight), mipLevels(vkMipLevels), usage(vkUsage) {}
 	virtual ~VKImage()
 	{
 		vkDestroyImage(device, image, nullptr);
@@ -19,6 +19,7 @@ struct VKImage : public VKResource
 	VkFormat format;
 	uint32_t width;
 	uint32_t height;
+	uint32_t mipLevels;
 	VkImageUsageFlags usage;
 
 	VkImage image = VK_NULL_HANDLE;
@@ -94,9 +95,9 @@ public:
 	ImageManager(VkDevice vkDevice, GarbageCollector* gc);
 	~ImageManager();
 
-	VKImage* CreateImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, VkImageUsageFlags usage);
-	VKImageView* CreateView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask);
-	VKImageSampler* CreateSampler();
+	VKImage* CreateImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, VkImageUsageFlags usage);
+	VKImageView* CreateView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels);
+	VKImageSampler* CreateSampler(uint32_t mipLevels, float maxAnisotropy);
 
 private:
 

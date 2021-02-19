@@ -24,9 +24,9 @@ ImageManager::~ImageManager()
 {
 }
 
-VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, VkImageUsageFlags usage)
+VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, VkImageUsageFlags usage)
 {
-	VKImage* image = new VKImage(m_Device, vkImageType, format, width, height, usage);
+	VKImage* image = new VKImage(m_Device, vkImageType, format, width, height, mipLevels, usage);
 
 	// Image
 
@@ -39,7 +39,7 @@ VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, ui
 	imageCI.extent.width = width;
 	imageCI.extent.height = height;
 	imageCI.extent.depth = 1;
-	imageCI.mipLevels = 1;
+	imageCI.mipLevels = mipLevels;
 	imageCI.arrayLayers = 1;
 	imageCI.samples = VK_SAMPLE_COUNT_1_BIT;
 	imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -72,7 +72,7 @@ VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, ui
 	return image;
 }
 
-VKImageView * ImageManager::CreateView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask)
+VKImageView * ImageManager::CreateView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels)
 {
 	VKImageView* view = new VKImageView(m_Device, image, vkImageViewType, vkFormat, vkAspectMask);
 
@@ -89,7 +89,7 @@ VKImageView * ImageManager::CreateView(VkImage image, VkImageViewType vkImageVie
 	imageViewCI.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewCI.subresourceRange.aspectMask = vkAspectMask;
 	imageViewCI.subresourceRange.baseMipLevel = 0;
-	imageViewCI.subresourceRange.levelCount = 1;
+	imageViewCI.subresourceRange.levelCount = mipLevels;
 	imageViewCI.subresourceRange.baseArrayLayer = 0;
 	imageViewCI.subresourceRange.layerCount = 1;
 
@@ -98,7 +98,7 @@ VKImageView * ImageManager::CreateView(VkImage image, VkImageViewType vkImageVie
 	return view;
 }
 
-VKImageSampler * ImageManager::CreateSampler()
+VKImageSampler * ImageManager::CreateSampler(uint32_t mipLevels, float maxAnisotropy)
 {
 	VKImageSampler* sampler = new VKImageSampler(m_Device);
 
@@ -113,13 +113,23 @@ VKImageSampler * ImageManager::CreateSampler()
 	samplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 	samplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 	samplerCI.mipLodBias = 0.0f;
-	samplerCI.anisotropyEnable = VK_FALSE;
-	samplerCI.maxAnisotropy = 1.0f;
+
+	if (maxAnisotropy > 0)
+	{
+		samplerCI.anisotropyEnable = VK_TRUE;
+		samplerCI.maxAnisotropy = maxAnisotropy;
+	}
+	else
+	{
+		samplerCI.anisotropyEnable = VK_FALSE;
+		samplerCI.maxAnisotropy = 1.0f;
+	}
+	
 	samplerCI.compareEnable = VK_FALSE;
-	samplerCI.compareOp = VK_COMPARE_OP_ALWAYS;
+	samplerCI.compareOp = VK_COMPARE_OP_NEVER;
 	samplerCI.minLod = 0.0f;
-	samplerCI.maxLod = 0.0f;
-	samplerCI.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+	samplerCI.maxLod = static_cast<float>(mipLevels);
+	samplerCI.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 	samplerCI.unnormalizedCoordinates = VK_FALSE;
 
 	VK_CHECK_RESULT(vkCreateSampler(m_Device, &samplerCI, nullptr, &sampler->sampler));

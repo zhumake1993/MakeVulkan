@@ -73,25 +73,35 @@ void VKCommandBuffer::CopyBuffer(VkBuffer src, VkBuffer dst, VkBufferCopy & regi
 	vkCmdCopyBuffer(commandBuffer, src, dst, 1, &region);
 }
 
-void VKCommandBuffer::CopyBufferToImage(VkBuffer src, VkImage dst, uint32_t width, uint32_t height)
+void VKCommandBuffer::CopyBufferToImage(VkBuffer src, VkImage dst, uint32_t width, uint32_t height, std::vector<uint64_t>& mipOffsets)
 {
-	VkBufferImageCopy bufferImageCopyInfo = {};
-	bufferImageCopyInfo.bufferOffset = 0;
-	bufferImageCopyInfo.bufferRowLength = 0;
-	bufferImageCopyInfo.bufferImageHeight = 0;
-	bufferImageCopyInfo.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT,0,0,1 };
-	bufferImageCopyInfo.imageOffset = { 0,0,0 };
-	bufferImageCopyInfo.imageExtent = { width,height,1 };
+	std::vector<VkBufferImageCopy> bufferCopyRegions;
+	for (uint32_t i = 0; i < mipOffsets.size(); i++)
+	{
+		VkBufferImageCopy bufferCopyRegion = {};
+		bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		bufferCopyRegion.imageSubresource.mipLevel = i;
+		bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
+		bufferCopyRegion.imageSubresource.layerCount = 1;
+		bufferCopyRegion.imageOffset = { 0,0,0 };
+		bufferCopyRegion.imageExtent.width = width >> i;
+		bufferCopyRegion.imageExtent.height = height >> i;
+		bufferCopyRegion.imageExtent.depth = 1;
+		bufferCopyRegion.bufferOffset = mipOffsets[i];
+		bufferCopyRegion.bufferRowLength = 0;
+		bufferCopyRegion.bufferImageHeight = 0;
+		bufferCopyRegions.push_back(bufferCopyRegion);
+	}
 
-	vkCmdCopyBufferToImage(commandBuffer, src, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopyInfo);
+	vkCmdCopyBufferToImage(commandBuffer, src, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(bufferCopyRegions.size()), bufferCopyRegions.data());
 }
 
-void VKCommandBuffer::ImageMemoryBarrier(VkImage image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL)
+void VKCommandBuffer::ImageMemoryBarrier(VkImage image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL, uint32_t mipLevels)
 {
 	VkImageSubresourceRange imageSubresourceRange = {};
 	imageSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	imageSubresourceRange.baseMipLevel = 0;
-	imageSubresourceRange.levelCount = 1;;
+	imageSubresourceRange.levelCount = mipLevels;
 	imageSubresourceRange.baseArrayLayer = 0;
 	imageSubresourceRange.layerCount = 1;
 

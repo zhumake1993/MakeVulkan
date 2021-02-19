@@ -28,8 +28,9 @@ Imgui::Imgui()
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 	uint64_t dataSize = width * height * 4 * sizeof(char);
 
-	m_FontImage = device.CreateImage(kImageType2D, VK_FORMAT_R8G8B8A8_UNORM, width, height);
-	device.UpdateImage(m_FontImage, pixels, dataSize);
+	m_FontImage = device.CreateImage(kImageType2D, VK_FORMAT_R8G8B8A8_UNORM, width, height, 1);
+	std::vector<uint64_t> mipOffsets = { 0 };
+	device.UpdateImage(m_FontImage, pixels, dataSize, mipOffsets);
 
 	// Vertex buffer
 

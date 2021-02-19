@@ -73,8 +73,8 @@ GfxDevice::GfxDevice()
 
 	// Depth
 	VkFormat depthFormat = GetSupportedDepthFormat();
-	m_DepthImage = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, depthFormat, windowWidth, windowHeight, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-	m_DepthView = m_ImageManager->CreateView(m_DepthImage->image, VK_IMAGE_VIEW_TYPE_2D, m_DepthImage->format, VK_IMAGE_ASPECT_DEPTH_BIT);
+	m_DepthImage = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, depthFormat, windowWidth, windowHeight, 1, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+	m_DepthView = m_ImageManager->CreateView(m_DepthImage->image, VK_IMAGE_VIEW_TYPE_2D, m_DepthImage->format, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
 
 	// RenderPass
 	m_VKRenderPass = new VKRenderPass(m_VKDevice->device, m_VKSwapChain->format.format, depthFormat);
@@ -407,7 +407,7 @@ void GfxDevice::ReleaseBuffer(Buffer * buffer)
 	m_GarbageCollector->AddResource(static_cast<BufferImpl*>(buffer)->GetBuffer());
 }
 
-Image * GfxDevice::CreateImage(ImageType imageType, VkFormat format, uint32_t width, uint32_t height)
+Image * GfxDevice::CreateImage(ImageType imageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels)
 {
 	switch (imageType)
 	{
@@ -417,9 +417,17 @@ Image * GfxDevice::CreateImage(ImageType imageType, VkFormat format, uint32_t wi
 		}
 		case kImageType2D:
 		{
-			VKImage* image = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, format, width, height, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-			VKImageView* view = m_ImageManager->CreateView(image->image, VK_IMAGE_VIEW_TYPE_2D, image->format, VK_IMAGE_ASPECT_COLOR_BIT);
-			VKImageSampler* sammpler = m_ImageManager->CreateSampler();
+			VKImage* image = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, format, width, height, mipLevels, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+			VKImageView* view = m_ImageManager->CreateView(image->image, VK_IMAGE_VIEW_TYPE_2D, image->format, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels);
+
+			auto& dp = GetDeviceProperties();
+			float maxAnisotropy = 0;
+			if (dp.enabledDeviceFeatures.samplerAnisotropy)
+			{
+				maxAnisotropy = dp.deviceProperties.limits.maxSamplerAnisotropy;
+			}
+
+			VKImageSampler* sammpler = m_ImageManager->CreateSampler(mipLevels, maxAnisotropy);
 			return new ImageImpl(imageType, format, width, height, image, view, sammpler);
 			break;
 		}
@@ -436,13 +444,12 @@ Image * GfxDevice::CreateImage(ImageType imageType, VkFormat format, uint32_t wi
 	return nullptr;
 }
 
-void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size)
+void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size, std::vector<uint64_t>& mipOffsets)
 {
 	ImageType imageType = image->GetImageType();
 
 	ImageImpl* imageImpl = static_cast<ImageImpl*>(image);
-
-	VkImage vkImage = imageImpl->GetImage()->image;
+	VKImage* vkImage = imageImpl->GetImage();
 
 	VKBuffer* stagingBuffer = m_BufferManager->GetStagingBuffer();
 
@@ -452,13 +459,13 @@ void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size)
 
 		m_UploadCommandBuffer->Begin();
 
-		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-			0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage->image, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+			0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkImage->mipLevels);
 
-		m_UploadCommandBuffer->CopyBufferToImage(stagingBuffer->buffer, vkImage, imageImpl->GetWidth(), imageImpl->GetHeight());
+		m_UploadCommandBuffer->CopyBufferToImage(stagingBuffer->buffer, vkImage->image, vkImage->width, vkImage->height, mipOffsets);
 
-		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage->image, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vkImage->mipLevels);
 
 		m_UploadCommandBuffer->End();
 

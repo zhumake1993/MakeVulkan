@@ -68,7 +68,7 @@ void Triangle::ConfigDeviceProperties()
 
 	//dp.enabledDeviceFeatures.fillModeNonSolid = VK_TRUE;
 	//dp.enabledDeviceFeatures.wideLines = VK_TRUE;
-	//dp.enabledDeviceFeatures.samplerAnisotropy = VK_TRUE;
+	dp.enabledDeviceFeatures.samplerAnisotropy = VK_TRUE;
 }
 
 void Triangle::Init()
@@ -127,6 +127,8 @@ void Triangle::Update()
 	m_TexCubeNode->GetTransform().Rotate(deltaTime * 0.5f, 0.0f, 1.0f, 0.0f);
 	m_LitSphereNode->GetTransform().Rotate(-deltaTime * 0.5f, 0.0f, 1.0f, 0.0f);
 
+	m_TestMipMat->SetFloat("LodBias", m_LodBias);
+
 	// Imgui
 
 	// UI样例，供学习用
@@ -156,10 +158,10 @@ void Triangle::Update()
 		acTime = 0.0f;
 	}
 
-	/*if (ImGui::CollapsingHeader("Test", ImGuiTreeNodeFlags_DefaultOpen))
+	if (ImGui::CollapsingHeader("LodBias", ImGuiTreeNodeFlags_None))
 	{
-		ImGui::SliderFloat("Slider", &m_Temp, 0, 1);
-	}*/
+		ImGui::SliderFloat("Slider", &m_LodBias, 0, static_cast<float>(m_MetalplateTex->GetMipCount()));
+	}
 
 	if (ImGui::CollapsingHeader("CPU Profiler", ImGuiTreeNodeFlags_None))
 	{
@@ -230,6 +232,13 @@ void Triangle::Draw()
 	//BindMaterial(m_HomeMat);
 	//DrawRenderNode(m_HomeNode);
 
+	//
+
+	SetShader(m_TestMipShader);
+
+	BindMaterial(m_TestMipMat);
+	DrawRenderNode(m_TestMipNode);
+
 	DrawImgui();
 
 	device.EndRenderPass();
@@ -279,6 +288,19 @@ void Triangle::PrepareResources()
 		m_HomeMesh = CreateMesh("HomeMesh");
 		m_HomeMesh->LoadFromFile(AssetPath + "models/viking_room.obj");
 		m_HomeMesh->UploadToGPU();
+
+		m_QuadMesh = CreateMesh("QuadMesh");
+		m_QuadMesh->SetVertexChannels({ kVertexPosition, kVertexNormal, kVertexTexcoord0 });
+		m_QuadMesh->SetVertices({
+			  1.0f,  1.0f, 0.0f , 0.0f, 0.0f, -1.0f , 1.0f, 1.0f ,
+			 -1.0f,  1.0f, 0.0f , 0.0f, 0.0f, -1.0f , 0.0f, 1.0f ,
+			 -1.0f, -1.0f, 0.0f , 0.0f, 0.0f, -1.0f , 0.0f, 0.0f ,
+			  1.0f, -1.0f, 0.0f , 0.0f, 0.0f, -1.0f , 1.0f, 0.0f ,
+			});
+		m_QuadMesh->SetIndices({
+			0,2,1, 0,3,2
+			});
+		m_QuadMesh->UploadToGPU();
 	}
 
 	// Texture
@@ -290,7 +312,7 @@ void Triangle::PrepareResources()
 		m_Crate02Tex->LoadFromFile(AssetPath + "textures/crate02_color_height_rgba.ktx");
 
 		m_MetalplateTex = CreateTexture("MetalplateTex");
-		m_MetalplateTex->LoadFromFile(AssetPath + "textures/metalplate_nomips_rgba.ktx");
+		m_MetalplateTex->LoadFromFile(AssetPath + "textures/metalplate01_rgba.ktx");
 
 		m_HomeTex = CreateTexture("HomeTex");
 		m_HomeTex->LoadFromFile(AssetPath + "textures/viking_room.png");
@@ -366,6 +388,30 @@ void Triangle::PrepareResources()
 
 		m_LitShader->SetSCInt(0, 1);
 	}
+	{
+		m_TestMipShader = CreateShader("TestMipShader");
+		m_TestMipShader->LoadSPV(AssetPath + "shaders/triangle/TestMip.vert.spv", AssetPath + "shaders/triangle/TestMip.frag.spv");
+
+		GpuParameters parameters;
+		{
+			GpuParameters::UniformParameter uniform("PerMaterial", 0, VK_SHADER_STAGE_FRAGMENT_BIT);
+			uniform.valueParameters.emplace_back("LodBias", kShaderDataFloat1);
+			parameters.uniformParameters.push_back(uniform);
+		}
+		{
+			GpuParameters::TextureParameter texture("BaseTexture", 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+			parameters.textureParameters.push_back(texture);
+		}
+		{
+			GpuParameters::UniformParameter uniform("PerDraw", 0, VK_SHADER_STAGE_VERTEX_BIT);
+			uniform.valueParameters.emplace_back("ObjectToWorld", kShaderDataFloat4x4);
+			parameters.uniformParameters.push_back(uniform);
+		}
+		m_TestMipShader->CreateGpuProgram(parameters);
+
+		RenderState renderState;
+		m_TestMipShader->SetRenderState(renderState);
+	}
 
 	// Material
 	{
@@ -389,6 +435,11 @@ void Triangle::PrepareResources()
 		m_HomeMat->SetFloat3("FresnelR0", 0.3f, 0.3f, 0.3f);
 		m_HomeMat->SetFloat("Roughness", 0.3f);
 		m_HomeMat->SetTexture("BaseTexture", m_HomeTex);
+
+		m_TestMipMat = CreateMaterial("TestMipMat");
+		m_TestMipMat->SetShader(m_TestMipShader);
+		m_TestMipMat->SetFloat("LodBias", m_LodBias);
+		m_TestMipMat->SetTexture("BaseTexture", m_MetalplateTex);
 	}
 
 	// RenderNode
@@ -412,5 +463,10 @@ void Triangle::PrepareResources()
 		m_HomeNode->SetMesh(m_HomeMesh);
 		m_HomeNode->SetMaterial(m_HomeMat);
 		m_HomeNode->GetTransform().Rotate(-1.57f, 1.0f, 0.0f, 0.0f).Rotate(1.57f, 0.0f, 1.0f, 0.0f).Translate(0.0f, -0.3f, 0.3f);
+
+		m_TestMipNode = CreateRenderNode("TestMipNode");
+		m_TestMipNode->SetMesh(m_QuadMesh);
+		m_TestMipNode->SetMaterial(m_TestMipMat);
+		m_TestMipNode->GetTransform().Scale(0.1f, 0.1f, 0.1f).Rotate(0.57f, 0.0f, 1.0f, 0.0f).Translate(0.0f, -0.6f, 0.0f);
 	}
 }
