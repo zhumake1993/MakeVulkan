@@ -37,6 +37,10 @@ out gl_PerVertex
 
 layout(location = 0) out vec2 v_Texcoord;
 
+/////////////////////////////////////////////////////
+// Shader
+/////////////////////////////////////////////////////
+
 void main() {
     gl_Position = proj * view * world * vec4(i_Position, 1.0f);
 	v_Texcoord = i_Texcoord;

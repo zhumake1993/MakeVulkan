@@ -229,8 +229,8 @@ void Triangle::Draw()
 	BindMaterial(m_LitMat);
 	DrawRenderNode(m_LitSphereNode);
 
-	//BindMaterial(m_HomeMat);
-	//DrawRenderNode(m_HomeNode);
+	BindMaterial(m_HomeMat);
+	DrawRenderNode(m_HomeNode);
 
 	//
 
@@ -467,6 +467,6 @@ void Triangle::PrepareResources()
 		m_TestMipNode = CreateRenderNode("TestMipNode");
 		m_TestMipNode->SetMesh(m_QuadMesh);
 		m_TestMipNode->SetMaterial(m_TestMipMat);
-		m_TestMipNode->GetTransform().Scale(0.1f, 0.1f, 0.1f).Rotate(0.57f, 0.0f, 1.0f, 0.0f).Translate(0.0f, -0.6f, 0.0f);
+		m_TestMipNode->GetTransform().Scale(0.1f, 0.1f, 0.1f).Rotate(0.57f, 0.0f, 1.0f, 0.0f).Translate(-0.5f, 0.0f, 0.0f);
 	}
 }

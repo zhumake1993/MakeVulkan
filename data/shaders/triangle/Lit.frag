@@ -1,9 +1,5 @@
 #version 450
 
-/////////////////////////////////////////////////////
-// Light
-/////////////////////////////////////////////////////
-
 #define MaxLights 16
 
 layout (constant_id = 0) const int NUM_DIR_LIGHTS = 0;
@@ -27,6 +23,35 @@ struct Material
 	float roughness;
 	mat4 matTransform;
 };
+
+/////////////////////////////////////////////////////
+// Uniform
+/////////////////////////////////////////////////////
+
+layout(set=1, binding=0) uniform PerView {
+    mat4 view;
+    mat4 proj;
+	vec4 eyePos;
+	
+	vec4 ambientLight;
+	// Indices [0, NUM_DIR_LIGHTS) are directional lights;
+	// indices [NUM_DIR_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHTS) are
+	// point lights;
+	// indices [NUM_DIR_LIGHTS+NUM_POINT_LIGHTS,
+	// NUM_DIR_LIGHTS+NUM_POINT_LIGHT+NUM_SPOT_LIGHTS)
+	// are spot lights for a maximum of MaxLights per object.
+	Light lights[MaxLights];
+};
+
+layout(set=2, binding=0) uniform PerMaterial{
+	Material gMaterial;
+};
+
+layout(set=2, binding=1) uniform sampler2D baseTexture;
+
+/////////////////////////////////////////////////////
+// Function
+/////////////////////////////////////////////////////
 
 float CalcAttenuation(float d, float falloffStart, float falloffEnd)
 {
@@ -130,7 +155,7 @@ vec3 ComputeSpotLight(Light L, Material mat, vec3 pos, vec3 normal, vec3 toEye)
 	return BlinnPhong(lightStrength, lightVec, normal, toEye, mat);
 }
 
-vec4 ComputeLighting(Light gLights[MaxLights], Material mat, vec3 pos, vec3 normal, vec3 toEye, vec3 shadowFactor)
+vec4 ComputeLighting(Material mat, vec3 pos, vec3 normal, vec3 toEye, vec3 shadowFactor)
 {
 	vec3 result = vec3(0.0f, 0.0f, 0.0f);
 	int i = 0;
@@ -138,50 +163,33 @@ vec4 ComputeLighting(Light gLights[MaxLights], Material mat, vec3 pos, vec3 norm
 
 	for(i = 0; i < NUM_DIR_LIGHTS; ++i)
 	{
-		result += shadowFactor[i] * ComputeDirectionalLight(gLights[i], mat, normal, toEye);
+		result += shadowFactor[i] * ComputeDirectionalLight(lights[i], mat, normal, toEye);
 	}
 
 	for(i = NUM_DIR_LIGHTS; i < NUM_DIR_LIGHTS+NUM_POINT_LIGHTS; ++i)
 	{
-		result += ComputePointLight(gLights[i], mat, pos, normal, toEye);
+		result += ComputePointLight(lights[i], mat, pos, normal, toEye);
 	}
 
 	for(i = NUM_DIR_LIGHTS + NUM_POINT_LIGHTS; i < NUM_DIR_LIGHTS + NUM_POINT_LIGHTS + NUM_SPOT_LIGHTS; ++i)
 	{
-		result += ComputeSpotLight(gLights[i], mat, pos, normal, toEye);
+		result += ComputeSpotLight(lights[i], mat, pos, normal, toEye);
 	}
 
 	return vec4(result, 0.0f);
 }
 
 /////////////////////////////////////////////////////
-// Uniform
+// Inpuut
 /////////////////////////////////////////////////////
-
-layout(set=1, binding=0) uniform PerView {
-    mat4 view;
-    mat4 proj;
-	vec4 eyePos;
-	
-	vec4 ambientLight;
-	// Indices [0, NUM_DIR_LIGHTS) are directional lights;
-	// indices [NUM_DIR_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHTS) are
-	// point lights;
-	// indices [NUM_DIR_LIGHTS+NUM_POINT_LIGHTS,
-	// NUM_DIR_LIGHTS+NUM_POINT_LIGHT+NUM_SPOT_LIGHTS)
-	// are spot lights for a maximum of MaxLights per object.
-	Light lights[MaxLights];
-};
-
-layout(set=2, binding=0) uniform PerMaterial{
-	Material gMaterial;
-};
-
-layout(set=2, binding=1) uniform sampler2D baseTexture;
 
 layout(location = 0) in vec3 v_Normal;
 layout(location = 1) in vec2 v_Texcoord;
 layout(location = 2) in vec4 v_wPos;
+
+/////////////////////////////////////////////////////
+// Output
+/////////////////////////////////////////////////////
 
 layout(location = 0) out vec4 o_Color;
 
@@ -206,7 +214,7 @@ void main() {
 	
 	// Direct lighting.
 	vec3 shadowFactor = vec3(1.0f, 1.0f, 1.0f);
-	vec4 directLight = ComputeLighting(lights, mat, v_wPos.xyz, normal, toEyeW.xyz, shadowFactor);
+	vec4 directLight = ComputeLighting(mat, v_wPos.xyz, normal, toEyeW.xyz, shadowFactor);
 	vec4 litColor = ambient + directLight;
 	
 	// Common convention to take alpha from diffuse material.
