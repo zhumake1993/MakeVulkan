@@ -1,24 +1,27 @@
 MakeVulkan！
 
-VulkanSDK: 1.2.131.2
+E001BasicCube：一个顶点着色的cube，包含大部分基本功能，一些注释也写在这里
 
-新增vs子工程
-复制startup
+E002Texture：一个使用纹理的cube，没有mipmap
+
+E003DragonLit：实现龙书的光照，使用SpecializationConstant控制每种灯的数量，平行光，点光和聚光各一个
+
+E004Mipmap：mipmap，使用lodbias来控制采样的mip层
+
+
+新增vs子工程：
+复制BasicCube
 改名字
 重新build
 
 新增android子工程：
-复制startup
+复制BasicCube
 删除.cxx和build
-删除startup.iml
-修改cmakelist ：set(name startup)
+删除assets
+删除BasicCube.iml
+修改cmakelist ：set(name BasicCube)
 修改gradle task copyTask
 同步
 
-//todo
-//SetWindowText(global::windowHandle, "Triangle");
-
-
-tiny_obj_loader 的索引有点奇怪，0 1 2 3 4 5 6 。。。。。这样的，待验证
-
+查看安卓上写的文件：
 View -> Tool Windows -> Device File Explorer -> /data/data/com.example.MakeVulkan/GPUProfiler.txt

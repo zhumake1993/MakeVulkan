@@ -61,10 +61,13 @@ protected:
 	RenderNode* CreateRenderNode(const std::string& name);
 
 	void SetShader(Shader* shader);
+
 	void BindGlobalUniformBuffer();
 	void BindPerViewUniformBuffer();
 	void BindMaterial(Material* material);
+
 	void DrawRenderNode(RenderNode* node);
+
 	void UpdateImgui();
 	void DrawImgui();
 

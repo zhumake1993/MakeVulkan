@@ -11,6 +11,7 @@ public:
 	virtual ~Camera();
 
 	glm::vec3 GetPosition();
+	glm::vec3 GetDirection();
 	void LookAt(glm::vec3 pos, glm::vec3 target);
 	void SetLens(float fovY, float aspect, float nearZ, float farZ);
 	void SetAspect(float aspect);

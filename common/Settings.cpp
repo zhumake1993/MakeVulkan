@@ -15,3 +15,9 @@ std::string AssetPath = "C:/Users/1/Desktop/MakeVulkan/data/";
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
 std::string AssetPath = "";
 #endif
+
+#ifdef _WIN32
+#if USE_VISUAL_LEAK_DETECTOR
+#include "vld.h"
+#endif
+#endif

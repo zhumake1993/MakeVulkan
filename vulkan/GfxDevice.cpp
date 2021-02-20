@@ -77,11 +77,11 @@ GfxDevice::GfxDevice()
 	m_DepthView = m_ImageManager->CreateView(m_DepthImage->image, VK_IMAGE_VIEW_TYPE_2D, m_DepthImage->format, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
 
 	// RenderPass
-	m_VKRenderPass = new VKRenderPass(m_VKDevice->device, m_VKSwapChain->format.format, depthFormat);
+	m_VKRenderPass = new VKRenderPass(m_VKDevice->device, dp.ScFormat.format, depthFormat);
 
 	// Framebuffer
-	m_Framebuffers.resize(m_VKSwapChain->numberOfImages);
-	for (size_t i = 0; i < m_VKSwapChain->numberOfImages; ++i)
+	m_Framebuffers.resize(dp.ScNumberOfImages);
+	for (size_t i = 0; i < dp.ScNumberOfImages; ++i)
 	{
 		m_Framebuffers[i] = CreateVkFramebuffer(m_VKRenderPass->renderPass, m_VKSwapChain->swapChainImageViews[i], m_DepthView->view, windowWidth, windowHeight);
 	}
@@ -102,7 +102,7 @@ GfxDevice::~GfxDevice()
 
 	RELEASE(m_UploadCommandBuffer);
 
-	for (size_t i = 0; i < m_VKSwapChain->numberOfImages; ++i)
+	for (size_t i = 0; i < m_Framebuffers.size(); ++i)
 	{
 		vkDestroyFramebuffer(m_VKDevice->device, m_Framebuffers[i], nullptr);
 		m_Framebuffers[i] = VK_NULL_HANDLE;

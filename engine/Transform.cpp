@@ -19,6 +19,11 @@ void Transform::SetMatrix(glm::mat4& m)
 	m_Matrix = m;
 }
 
+glm::vec3 Transform::GetPosition()
+{
+	return m_Matrix[3];
+}
+
 Transform& Transform::Scale(float x, float y, float z)
 {
 	m_Matrix = glm::scale(glm::mat4(1.0f), glm::vec3(x, y, z)) * m_Matrix;
@@ -28,6 +33,7 @@ Transform& Transform::Scale(float x, float y, float z)
 
 Transform& Transform::Rotate(float radian, float x, float y, float z)
 {
+	// 不能写成 m_Matrix = glm::rotate(m_Matrix, radian, glm::vec3(x, y, z)); 似乎跟GLM_FORCE_LEFT_HANDED有关？
 	m_Matrix = glm::rotate(glm::mat4(1.0f), radian, glm::vec3(x, y, z)) * m_Matrix;
 
 	return *this;

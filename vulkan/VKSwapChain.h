@@ -8,13 +8,6 @@ struct VKSwapChain : public NonCopyable
 	VKSwapChain(VkPhysicalDevice physicalDevice, VkDevice vkDevice, VkSurfaceKHR vkSurface);
 	virtual ~VKSwapChain();
 
-	uint32_t						numberOfImages;
-	VkSurfaceFormatKHR				format;
-	VkExtent2D						extent;
-	VkImageUsageFlags				usage;
-	VkSurfaceTransformFlagBitsKHR	transform;
-	VkPresentModeKHR				presentMode;
-
 	VkSwapchainKHR					swapChain = VK_NULL_HANDLE;
 
 	std::vector<VkImage>			swapChainImages;

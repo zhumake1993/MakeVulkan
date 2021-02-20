@@ -463,4 +463,3 @@ void HandleAppCommand(android_app * app, int32_t cmd)
 }
 
 #endif
-
