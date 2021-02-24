@@ -9,9 +9,8 @@ layout(set=1, binding=0) uniform PerView {
     mat4 proj;
 	vec4 eyePos;
 	vec4 ambientLight;
-	vec3 strength; // light color
-	float pad;
-	vec3 direction; // light direction
+	vec4 strength; // light color
+	vec4 direction; // light direction
 };
 
 layout(set=2, binding=0) uniform sampler2D baseTexture;

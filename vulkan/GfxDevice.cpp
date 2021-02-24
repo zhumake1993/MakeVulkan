@@ -73,8 +73,8 @@ GfxDevice::GfxDevice()
 
 	// Depth
 	VkFormat depthFormat = GetSupportedDepthFormat();
-	m_DepthImage = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, depthFormat, windowWidth, windowHeight, 1, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-	m_DepthView = m_ImageManager->CreateView(m_DepthImage->image, VK_IMAGE_VIEW_TYPE_2D, m_DepthImage->format, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
+	m_DepthImage = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, depthFormat, windowWidth, windowHeight, 1, 1, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+	m_DepthView = m_ImageManager->CreateView(m_DepthImage->image, VK_IMAGE_VIEW_TYPE_2D, m_DepthImage->format, VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1);
 
 	// RenderPass
 	m_VKRenderPass = new VKRenderPass(m_VKDevice->device, dp.ScFormat.format, depthFormat);
@@ -407,87 +407,60 @@ void GfxDevice::ReleaseBuffer(Buffer * buffer)
 	m_GarbageCollector->AddResource(static_cast<BufferImpl*>(buffer)->GetBuffer());
 }
 
-Image * GfxDevice::CreateImage(ImageType imageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels)
+Image * GfxDevice::CreateImage(VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount)
 {
-	switch (imageType)
+	VKImage* image = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, format, width, height, mipLevels, layerCount, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+
+	VkImageViewType imageViewType;
+	if (layerCount == 1)
 	{
-		case kImageType1D:
-		{
-			break;
-		}
-		case kImageType2D:
-		{
-			VKImage* image = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, format, width, height, mipLevels, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-			VKImageView* view = m_ImageManager->CreateView(image->image, VK_IMAGE_VIEW_TYPE_2D, image->format, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels);
-
-			auto& dp = GetDeviceProperties();
-			float maxAnisotropy = 0;
-			if (dp.enabledDeviceFeatures.samplerAnisotropy)
-			{
-				maxAnisotropy = dp.deviceProperties.limits.maxSamplerAnisotropy;
-			}
-
-			VKImageSampler* sammpler = m_ImageManager->CreateSampler(mipLevels, maxAnisotropy);
-			return new ImageImpl(imageType, format, width, height, image, view, sammpler);
-			break;
-		}
-		case kImageType3D:
-		{
-			break;
-		}
-		default:
-		{
-			LOG("wrong ImageType.");
-			EXIT;
-		}
+		imageViewType = VK_IMAGE_VIEW_TYPE_2D;
 	}
-	return nullptr;
+	else
+	{
+		imageViewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+	}
+	VKImageView* view = m_ImageManager->CreateView(image->image, imageViewType, image->format, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels, layerCount);
+
+	VKImageSampler* sammpler = m_ImageManager->CreateSampler(mipLevels, 8);
+
+	return new ImageImpl(image, view, sammpler);
 }
 
-void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size, std::vector<uint64_t>& mipOffsets)
+void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size, const std::vector<std::vector<uint64_t>>& offsets)
 {
-	ImageType imageType = image->GetImageType();
-
 	ImageImpl* imageImpl = static_cast<ImageImpl*>(image);
 	VKImage* vkImage = imageImpl->GetImage();
 
 	VKBuffer* stagingBuffer = m_BufferManager->GetStagingBuffer();
 
-	if (imageType == kImageType2D)
-	{
-		stagingBuffer->Update(data, 0, size);
+	stagingBuffer->Update(data, 0, size);
 
-		m_UploadCommandBuffer->Begin();
+	m_UploadCommandBuffer->Begin();
 
-		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage->image, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-			0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkImage->mipLevels);
+	m_UploadCommandBuffer->ImageMemoryBarrier(vkImage->image, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+		0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkImage->mipLevels, vkImage->layerCount);
 
-		m_UploadCommandBuffer->CopyBufferToImage(stagingBuffer->buffer, vkImage->image, vkImage->width, vkImage->height, mipOffsets);
+	m_UploadCommandBuffer->CopyBufferToImage(stagingBuffer->buffer, vkImage->image, vkImage->width, vkImage->height, offsets);
 
-		m_UploadCommandBuffer->ImageMemoryBarrier(vkImage->image, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vkImage->mipLevels);
+	m_UploadCommandBuffer->ImageMemoryBarrier(vkImage->image, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vkImage->mipLevels, vkImage->layerCount);
 
-		m_UploadCommandBuffer->End();
+	m_UploadCommandBuffer->End();
 
-		VkSubmitInfo submitInfo = {};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.pNext = nullptr;
-		submitInfo.waitSemaphoreCount = 0;
-		submitInfo.pWaitSemaphores = nullptr;
-		submitInfo.pWaitDstStageMask = nullptr;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &m_UploadCommandBuffer->commandBuffer;
-		submitInfo.signalSemaphoreCount = 0;
-		submitInfo.pSignalSemaphores = nullptr;
-		VK_CHECK_RESULT(vkQueueSubmit(m_VKDevice->queue, 1, &submitInfo, VK_NULL_HANDLE));
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = nullptr;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = nullptr;
+	submitInfo.pWaitDstStageMask = nullptr;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &m_UploadCommandBuffer->commandBuffer;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = nullptr;
+	VK_CHECK_RESULT(vkQueueSubmit(m_VKDevice->queue, 1, &submitInfo, VK_NULL_HANDLE));
 
-		DeviceWaitIdle();
-	}
-	else
-	{
-		LOG("wrong ImageType.");
-		EXIT;
-	}
+	DeviceWaitIdle();
 }
 
 void GfxDevice::ReleaseImage(Image * image)

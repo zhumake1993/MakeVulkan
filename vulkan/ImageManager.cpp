@@ -4,8 +4,8 @@
 #include "GarbageCollector.h"
 #include "GfxDevice.h"
 
-ImageImpl::ImageImpl(ImageType imageType, VkFormat format, uint32_t width, uint32_t height, VKImage * image, VKImageView * view, VKImageSampler * sampler) :
-	Image(imageType, format, width, height), m_Image(image), m_View(view), m_Sampler(sampler)
+ImageImpl::ImageImpl(VKImage * image, VKImageView * view, VKImageSampler * sampler) :
+	m_Image(image), m_View(view), m_Sampler(sampler)
 {
 }
 
@@ -24,9 +24,9 @@ ImageManager::~ImageManager()
 {
 }
 
-VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, VkImageUsageFlags usage)
+VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, VkImageUsageFlags usage)
 {
-	VKImage* image = new VKImage(m_Device, vkImageType, format, width, height, mipLevels, usage);
+	VKImage* image = new VKImage(m_Device, vkImageType, format, width, height, mipLevels, layerCount, usage);
 
 	// Image
 
@@ -40,7 +40,7 @@ VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, ui
 	imageCI.extent.height = height;
 	imageCI.extent.depth = 1;
 	imageCI.mipLevels = mipLevels;
-	imageCI.arrayLayers = 1;
+	imageCI.arrayLayers = layerCount;
 	imageCI.samples = VK_SAMPLE_COUNT_1_BIT;
 	imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
 	imageCI.usage = usage;
@@ -72,7 +72,7 @@ VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, ui
 	return image;
 }
 
-VKImageView * ImageManager::CreateView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels)
+VKImageView * ImageManager::CreateView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels, uint32_t layerCount)
 {
 	VKImageView* view = new VKImageView(m_Device, image, vkImageViewType, vkFormat, vkAspectMask);
 
@@ -91,7 +91,7 @@ VKImageView * ImageManager::CreateView(VkImage image, VkImageViewType vkImageVie
 	imageViewCI.subresourceRange.baseMipLevel = 0;
 	imageViewCI.subresourceRange.levelCount = mipLevels;
 	imageViewCI.subresourceRange.baseArrayLayer = 0;
-	imageViewCI.subresourceRange.layerCount = 1;
+	imageViewCI.subresourceRange.layerCount = layerCount;
 
 	VK_CHECK_RESULT(vkCreateImageView(m_Device, &imageViewCI, nullptr, &view->view));
 
@@ -114,8 +114,13 @@ VKImageSampler * ImageManager::CreateSampler(uint32_t mipLevels, float maxAnisot
 	samplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 	samplerCI.mipLodBias = 0.0f;
 
-	if (maxAnisotropy > 0)
+	auto& dp = GetDeviceProperties();
+	if (dp.enabledDeviceFeatures.samplerAnisotropy)
 	{
+		if (maxAnisotropy > dp.deviceProperties.limits.maxSamplerAnisotropy)
+		{
+			maxAnisotropy = dp.deviceProperties.limits.maxSamplerAnisotropy;
+		}
 		samplerCI.anisotropyEnable = VK_TRUE;
 		samplerCI.maxAnisotropy = maxAnisotropy;
 	}

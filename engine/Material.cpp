@@ -95,6 +95,13 @@ void Material::SetFloat4x4(const std::string& name, glm::mat4 & mat)
 	m_Dirty = true;
 }
 
+void Material::SetInt(const std::string & name, int x)
+{
+	m_ShaderData->SetInt(name, x);
+
+	m_Dirty = true;
+}
+
 void Material::SetTexture(const std::string& name, Texture * texture)
 {
 	m_ShaderData->SetTexture(name, texture);

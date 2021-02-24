@@ -19,6 +19,11 @@ Imgui::Imgui()
 
 	ImGui::StyleColorsDark();
 
+#if VK_USE_PLATFORM_ANDROID_KHR
+	ImGuiStyle* style = &ImGui::GetStyle();
+	style->ScaleAllSizes(3.0f);
+#endif
+
 	auto& device = GetGfxDevice();
 
 	// font texture, use the default
@@ -28,9 +33,8 @@ Imgui::Imgui()
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 	uint64_t dataSize = width * height * 4 * sizeof(char);
 
-	m_FontImage = device.CreateImage(kImageType2D, VK_FORMAT_R8G8B8A8_UNORM, width, height, 1);
-	std::vector<uint64_t> mipOffsets = { 0 };
-	device.UpdateImage(m_FontImage, pixels, dataSize, mipOffsets);
+	m_FontImage = device.CreateImage(VK_FORMAT_R8G8B8A8_UNORM, width, height, 1, 1);
+	device.UpdateImage(m_FontImage, pixels, dataSize, { {0} });
 
 	// Vertex buffer
 

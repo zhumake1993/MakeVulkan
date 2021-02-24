@@ -74,37 +74,40 @@ void VKCommandBuffer::CopyBuffer(VkBuffer src, VkBuffer dst, VkBufferCopy & regi
 	vkCmdCopyBuffer(commandBuffer, src, dst, 1, &region);
 }
 
-void VKCommandBuffer::CopyBufferToImage(VkBuffer src, VkImage dst, uint32_t width, uint32_t height, std::vector<uint64_t>& mipOffsets)
+void VKCommandBuffer::CopyBufferToImage(VkBuffer src, VkImage dst, uint32_t width, uint32_t height, const std::vector<std::vector<uint64_t>>& offsets)
 {
 	std::vector<VkBufferImageCopy> bufferCopyRegions;
-	for (uint32_t i = 0; i < mipOffsets.size(); i++)
+	for (uint32_t layer = 0; layer < offsets.size(); layer++)
 	{
-		VkBufferImageCopy bufferCopyRegion = {};
-		bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		bufferCopyRegion.imageSubresource.mipLevel = i;
-		bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
-		bufferCopyRegion.imageSubresource.layerCount = 1;
-		bufferCopyRegion.imageOffset = { 0,0,0 };
-		bufferCopyRegion.imageExtent.width = width >> i;
-		bufferCopyRegion.imageExtent.height = height >> i;
-		bufferCopyRegion.imageExtent.depth = 1;
-		bufferCopyRegion.bufferOffset = mipOffsets[i];
-		bufferCopyRegion.bufferRowLength = 0;
-		bufferCopyRegion.bufferImageHeight = 0;
-		bufferCopyRegions.push_back(bufferCopyRegion);
+		for (uint32_t level = 0; level < offsets[0].size(); level++)
+		{
+			VkBufferImageCopy bufferCopyRegion = {};
+			bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			bufferCopyRegion.imageSubresource.mipLevel = level;
+			bufferCopyRegion.imageSubresource.baseArrayLayer = layer;
+			bufferCopyRegion.imageSubresource.layerCount = 1;
+			bufferCopyRegion.imageOffset = { 0,0,0 };
+			bufferCopyRegion.imageExtent.width = width >> level;
+			bufferCopyRegion.imageExtent.height = height >> level;
+			bufferCopyRegion.imageExtent.depth = 1;
+			bufferCopyRegion.bufferOffset = offsets[layer][level];
+			bufferCopyRegion.bufferRowLength = 0;
+			bufferCopyRegion.bufferImageHeight = 0;
+			bufferCopyRegions.push_back(bufferCopyRegion);
+		}
 	}
 
 	vkCmdCopyBufferToImage(commandBuffer, src, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(bufferCopyRegions.size()), bufferCopyRegions.data());
 }
 
-void VKCommandBuffer::ImageMemoryBarrier(VkImage image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL, uint32_t mipLevels)
+void VKCommandBuffer::ImageMemoryBarrier(VkImage image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL, uint32_t mipLevels, uint32_t layerCount)
 {
 	VkImageSubresourceRange imageSubresourceRange = {};
 	imageSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	imageSubresourceRange.baseMipLevel = 0;
 	imageSubresourceRange.levelCount = mipLevels;
 	imageSubresourceRange.baseArrayLayer = 0;
-	imageSubresourceRange.layerCount = 1;
+	imageSubresourceRange.layerCount = layerCount;
 
 	VkImageMemoryBarrier imageMemoryBarrier = {};
 	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;

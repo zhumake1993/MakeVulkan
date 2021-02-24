@@ -115,7 +115,7 @@ void MakeVulkan::Update()
 
 	if (ImGui::CollapsingHeader("LodBias", ImGuiTreeNodeFlags_None))
 	{
-		ImGui::SliderFloat("Slider", &m_LodBias, 0, static_cast<float>(m_Tex->GetMipCount()));
+		ImGui::SliderFloat("Slider", &m_LodBias, 0, static_cast<float>(m_Tex->GetMipCount() - 1));
 	}
 	if (ImGui::CollapsingHeader("CPU Profiler", ImGuiTreeNodeFlags_None))
 	{
@@ -142,8 +142,8 @@ void MakeVulkan::Draw()
 
 	device.ResetTimeStamp();
 
-	BindGlobalUniformBuffer();
-	BindPerViewUniformBuffer();
+	BindGlobalUniformBuffer(&m_UniformDataGlobal, sizeof(UniformDataGlobal));
+	BindPerViewUniformBuffer(&m_UniformDataPerView, sizeof(UniformDataPerView));
 
 	Color clearColor(0, 0, 0, 0);
 	DepthStencil clearDepthStencil(1.0, 0);

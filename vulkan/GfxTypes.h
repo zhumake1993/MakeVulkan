@@ -69,13 +69,6 @@ enum MemoryPropertyType
 	kMemoryPropertyHostCoherent
 };
 
-enum ImageType
-{
-	kImageType1D,
-	kImageType2D,
-	kImageType3D
-};
-
 enum ShaderDataType
 {
 	kShaderDataFloat1,

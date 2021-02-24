@@ -22,6 +22,8 @@ public:
 	void SetFloat4(const std::string& name, float x, float y, float z, float w);
 	void SetFloat4x4(const std::string& name, glm::mat4& mat);
 
+	void SetInt(const std::string& name, int x);
+
 	void* GetValueData();
 	uint32_t GetValueDataSize();
 

@@ -12,6 +12,8 @@ E005Batch：dynamic uniform buffer，实现batch，一种简化版的srp batcher
 
 E006Instancing：GPUInstancing，使用SpecializationConstant控制instance的数量
 
+E007TextureArray：纹理数组
+
 
 新增vs子工程：
 复制BasicCube

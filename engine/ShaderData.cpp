@@ -72,6 +72,14 @@ void ShaderData::SetFloat4x4(const std::string& name, glm::mat4 & mat)
 	memcpy(addr, &mat, sizeof(glm::mat4));
 }
 
+void ShaderData::SetInt(const std::string & name, int x)
+{
+	uint32_t offset = m_ValueOffsetMap[name];
+
+	int* addr = reinterpret_cast<int*>(m_ValueData + offset);
+	*(addr + 0) = x;
+}
+
 void * ShaderData::GetValueData()
 {
 	return m_ValueData;
