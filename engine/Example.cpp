@@ -212,7 +212,7 @@ void Example::DrawRenderNode(RenderNode * node)
 				}
 			}
 
-			GetGfxDevice().BindUniformBuffer(gpuProgram, 3, uniform.binding, shaderData.GetValueData(), shaderData.GetValueDataSize());
+			device.BindUniformBuffer(gpuProgram, 3, uniform.binding, shaderData.GetValueData(), shaderData.GetValueDataSize());
 		}
 	}
 
@@ -330,6 +330,19 @@ void Example::DrawBatch(std::vector<RenderNode*> nodes)
 	}
 	
 	device.DrawBatch(drawBatchs);
+}
+
+void Example::DrawInstanced(Mesh * mesh, Shader* shader, void * data, uint64_t size, uint32_t instanceCount)
+{
+	auto& device = GetGfxDevice();
+
+	GpuProgram* gpuProgram = shader->GetGpuProgram();
+
+	// ¼ÙÉèbinding=0
+	device.BindUniformBuffer(gpuProgram, 3, 0, data, size);
+
+	device.BindMeshBuffer(mesh->GetVertexBuffer(), mesh->GetIndexBuffer(), mesh->GetVertexDescription());
+	device.DrawIndexed(mesh->GetIndexCount(), instanceCount);
 }
 
 void Example::UpdateImgui()

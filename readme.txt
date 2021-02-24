@@ -10,6 +10,8 @@ E004Mipmap：mipmap，使用lodbias来控制采样的mip层
 
 E005Batch：dynamic uniform buffer，实现batch，一种简化版的srp batcher
 
+E006Instancing：GPUInstancing，使用SpecializationConstant控制instance的数量
+
 
 新增vs子工程：
 复制BasicCube

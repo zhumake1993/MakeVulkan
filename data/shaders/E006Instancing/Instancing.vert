@@ -1,5 +1,7 @@
 #version 450
 
+layout (constant_id = 0) const int INSTANCECOUNT = 1;
+
 /////////////////////////////////////////////////////
 // Uniform
 /////////////////////////////////////////////////////
@@ -14,7 +16,7 @@ layout(set=1, binding=0) uniform PerView {
 };
 
 layout(set=3, binding=0) uniform PerDraw {
-    mat4 world;
+    mat4 world[INSTANCECOUNT];
 };
 
 layout(location = 0) in vec3 i_Position;
@@ -28,6 +30,6 @@ out gl_PerVertex
 layout(location = 0) out vec2 v_Texcoord;
 
 void main() {
-    gl_Position = proj * view * world * vec4(i_Position, 1.0f);
+    gl_Position = proj * view * world[gl_InstanceIndex] * vec4(i_Position, 1.0f);
 	v_Texcoord = i_Texcoord;
 }

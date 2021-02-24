@@ -1,4 +1,4 @@
-#include "E004Mipmap.h"
+#include "E006Instancing.h"
 #include "Application.h"
 #include "DeviceProperties.h"
 #include "GfxTypes.h"
@@ -44,7 +44,6 @@ void MakeVulkan::ConfigDeviceProperties()
 	dp.enabledDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
 	// 添加DeviceFeature
-	dp.enabledDeviceFeatures.samplerAnisotropy = VK_TRUE;
 }
 
 void MakeVulkan::Init()
@@ -55,7 +54,7 @@ void MakeVulkan::Init()
 
 	// Camera
 	m_Camera = new Camera();
-	m_Camera->LookAt(glm::vec3(0.0f, 0.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	m_Camera->LookAt(glm::vec3(1.5f, 1.5f, -5.0f), glm::vec3(1.5f, 1.5f, 0.0f));
 	m_Camera->SetLens(glm::radians(60.0f), 1.0f * windowWidth / windowHeight, 0.1f, 256.0f);
 #if defined(_WIN32)
 	m_Camera->SetSpeed(3.0f, 0.005f);
@@ -85,9 +84,6 @@ void MakeVulkan::Update()
 
 	m_UniformDataPerView.view = m_Camera->GetView();
 	m_UniformDataPerView.proj = m_Camera->GetProj();
-	m_UniformDataPerView.eyePos = glm::vec4(m_Camera->GetPosition(), 1.0f);
-
-	m_Mat->SetFloat("LodBias", m_LodBias);
 
 	// Imgui
 
@@ -113,10 +109,6 @@ void MakeVulkan::Update()
 		acTime = 0.0f;
 	}
 
-	if (ImGui::CollapsingHeader("LodBias", ImGuiTreeNodeFlags_None))
-	{
-		ImGui::SliderFloat("Slider", &m_LodBias, 0, static_cast<float>(m_Tex->GetMipCount()));
-	}
 	if (ImGui::CollapsingHeader("CPU Profiler", ImGuiTreeNodeFlags_None))
 	{
 		ImGui::TextUnformatted(cpuProfiler.c_str());
@@ -142,8 +134,8 @@ void MakeVulkan::Draw()
 
 	device.ResetTimeStamp();
 
-	BindGlobalUniformBuffer();
-	BindPerViewUniformBuffer();
+	BindGlobalUniformBuffer(&m_UniformDataGlobal, sizeof(UniformDataGlobal));
+	BindPerViewUniformBuffer(&m_UniformDataPerView, sizeof(UniformDataPerView));
 
 	Color clearColor(0, 0, 0, 0);
 	DepthStencil clearDepthStencil(1.0, 0);
@@ -160,7 +152,8 @@ void MakeVulkan::Draw()
 	SetShader(m_Shader);
 
 	BindMaterial(m_Mat);
-	DrawRenderNode(m_Node);
+
+	DrawInstanced(m_Mesh, m_Shader, m_InstanceData, m_InstanceSize, 100);
 
 	DrawImgui();
 
@@ -175,39 +168,62 @@ void MakeVulkan::PrepareResources()
 {
 	// Mesh
 	{
-		m_Mesh = CreateMesh("QuadMesh");
-		m_Mesh->SetVertexChannels({ kVertexPosition, kVertexNormal, kVertexTexcoord0 });
-		m_Mesh->SetVertices({
-			  1.0f,  1.0f, 0.0f , 0.0f, 0.0f, -1.0f , 1.0f, 1.0f ,
-			 -1.0f,  1.0f, 0.0f , 0.0f, 0.0f, -1.0f , 0.0f, 1.0f ,
-			 -1.0f, -1.0f, 0.0f , 0.0f, 0.0f, -1.0f , 0.0f, 0.0f ,
-			  1.0f, -1.0f, 0.0f , 0.0f, 0.0f, -1.0f , 1.0f, 0.0f ,
-			});
-		m_Mesh->SetIndices({
-			0,2,1, 0,3,2
-			});
+		// 自定义顶点buffer的结构和数据
+		m_Mesh = CreateMesh("Mesh");
+		m_Mesh->SetVertexChannels({ kVertexPosition, kVertexTexcoord0 });
+		std::vector<float> vertices = {
+			 -1.0f, -1.0f,  -1.0f , 0.0f, 1.0f , // 前
+			 -1.0f,  1.0f,  -1.0f , 0.0f, 0.0f ,
+			  1.0f,  1.0f,  -1.0f , 1.0f, 0.0f ,
+			  1.0f,  -1.0f,  -1.0f , 1.0f, 1.0f ,
+
+			  1.0f, -1.0f,  1.0f , 0.0f, 1.0f , // 后
+			 1.0f,  1.0f,  1.0f , 0.0f, 0.0f ,
+			  -1.0f,  1.0f,  1.0f , 1.0f, 0.0f ,
+			  -1.0f,  -1.0f,  1.0f , 1.0f, 1.0f ,
+
+			  -1.0f, -1.0f,  1.0f , 0.0f, 1.0f , // 左
+			 -1.0f,  1.0f,  1.0f , 0.0f, 0.0f ,
+			  -1.0f,  1.0f,  -1.0f , 1.0f, 0.0f ,
+			  -1.0f,  -1.0f,  -1.0f , 1.0f, 1.0f ,
+
+			  1.0f, -1.0f,  -1.0f , 0.0f, 1.0f , // 右
+			 1.0f,  1.0f,  -1.0f , 0.0f, 0.0f ,
+			  1.0f,  1.0f,  1.0f , 1.0f, 0.0f ,
+			  1.0f,  -1.0f,  1.0f , 1.0f, 1.0f ,
+
+			  -1.0f, 1.0f,  -1.0f , 0.0f, 1.0f , // 上
+			 -1.0f,  1.0f,  1.0f , 0.0f, 0.0f ,
+			  1.0f,  1.0f,  1.0f , 1.0f, 0.0f ,
+			  1.0f,  1.0f,  -1.0f , 1.0f, 1.0f ,
+
+			  -1.0f, -1.0f,  1.0f , 0.0f, 1.0f , // 下
+			 -1.0f,  -1.0f,  -1.0f , 0.0f, 0.0f ,
+			  1.0f,  -1.0f,  -1.0f , 1.0f, 0.0f ,
+			  1.0f,  -1.0f,  1.0f , 1.0f, 1.0f ,
+		};
+		std::vector<uint32_t> indices = {
+			0,1,2, 0,2,3, 4,5,6,  4,6,7, 8,9,10, 8,10,11, 12,13,14, 12,14,15, 16,17,18, 16,18,19, 20,21,22, 20,22,23
+		};
+		m_Mesh->SetVertices(vertices);
+		m_Mesh->SetIndices(indices);
 		m_Mesh->UploadToGPU();
 	}
 
 	// Texture
 	{
 		m_Tex = CreateTexture("Tex");
-		m_Tex->LoadFromFile(AssetPath + "textures/metalplate01_rgba.ktx");
+		m_Tex->LoadFromFile(AssetPath + "textures/texture.png");
 	}
 
 	// Shader
 	{
 		m_Shader = CreateShader("Shader");
-		m_Shader->LoadSPV(AssetPath + "shaders/E004Mipmap/Mip.vert.spv", AssetPath + "shaders/E004Mipmap/Mip.frag.spv");
+		m_Shader->LoadSPV(AssetPath + "shaders/E006Instancing/Instancing.vert.spv", AssetPath + "shaders/E006Instancing/Instancing.frag.spv");
 
 		GpuParameters parameters;
 		{
-			GpuParameters::UniformParameter uniform("PerMaterial", 0, VK_SHADER_STAGE_FRAGMENT_BIT);
-			uniform.valueParameters.emplace_back("LodBias", kShaderDataFloat1);
-			parameters.uniformParameters.push_back(uniform);
-		}
-		{
-			GpuParameters::TextureParameter texture("BaseTexture", 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+			GpuParameters::TextureParameter texture("BaseTexture", 0, VK_SHADER_STAGE_FRAGMENT_BIT);
 			parameters.textureParameters.push_back(texture);
 		}
 		{
@@ -215,25 +231,38 @@ void MakeVulkan::PrepareResources()
 			uniform.valueParameters.emplace_back("ObjectToWorld", kShaderDataFloat4x4);
 			parameters.uniformParameters.push_back(uniform);
 		}
+		parameters.SCParameters.emplace_back(0, kShaderDataInt1);
 		m_Shader->CreateGpuProgram(parameters);
 
 		RenderState renderState;
+
 		m_Shader->SetRenderState(renderState);
+
+		m_Shader->SetSCInt(0, 100);
 	}
 
 	// Material
 	{
 		m_Mat = CreateMaterial("Mat");
 		m_Mat->SetShader(m_Shader);
-		m_Mat->SetFloat("LodBias", m_LodBias);
 		m_Mat->SetTexture("BaseTexture", m_Tex);
 	}
 
-	// RenderNode
+	// Instance
 	{
-		m_Node = CreateRenderNode("Node");
-		m_Node->SetMesh(m_Mesh);
-		m_Node->SetMaterial(m_Mat);
+		m_InstanceSize = 100 * sizeof(InstanceData);
+		m_InstanceData = new InstanceData[100];
+
+		for (int i = 0; i < 10; i++)
+		{
+			for (int j = 0; j < 10; j++)
+			{
+				Transform transform;
+				transform.Scale(0.1f, 0.1f, 0.1f).Translate(i * 0.3f, j * 0.3f, 0.0f);
+
+				m_InstanceData[i * 10 + j].model = transform.GetMatrix();
+			}
+		}
 	}
 }
 
