@@ -27,6 +27,7 @@ public:
 	Buffer* GetVertexBuffer();
 	Buffer* GetIndexBuffer();
 	uint32_t GetIndexCount();
+	VkIndexType GetIndexType();
 
 private:
 
@@ -49,4 +50,6 @@ private:
 
 	Buffer* m_VertexBuffer = nullptr;
 	Buffer* m_IndexBuffer = nullptr;
+
+	VkIndexType m_IndexType = VK_INDEX_TYPE_UINT32;
 };

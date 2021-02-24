@@ -22,7 +22,8 @@ struct VKCommandBuffer : public NonCopyable
 
 	void ImageMemoryBarrier(VkImage image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL, uint32_t mipLevels);
 
-	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set, uint32_t offset = -1);
+	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set);
+	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set, const std::vector<uint32_t>& offsets);
 	void BindPipeline(VkPipelineBindPoint bindPoint, VkPipeline vkPipeline);
 	
 	void BindVertexBuffer(uint32_t bind, VkBuffer vkBuffer);

@@ -8,6 +8,8 @@ E003DragonLit：实现龙书的光照，使用SpecializationConstant控制每种
 
 E004Mipmap：mipmap，使用lodbias来控制采样的mip层
 
+E005Batch：dynamic uniform buffer，实现batch，一种简化版的srp batcher
+
 
 新增vs子工程：
 复制BasicCube

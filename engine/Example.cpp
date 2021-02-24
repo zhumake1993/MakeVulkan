@@ -10,6 +10,7 @@
 #include "ProfilerManager.h"
 #include "ShaderData.h"
 #include "Imgui.h"
+#include "DeviceProperties.h"
 
 // Place the least frequently changing descriptor sets near the start of the pipeline layout, and place the descriptor sets representing the most frequently changing resources near the end. 
 // When pipelines are switched, only the descriptor set bindings that have been invalidated will need to be updated and the remainder of the descriptor set bindings will remain in place.
@@ -116,33 +117,31 @@ RenderNode * Example::CreateRenderNode(const std::string& name)
 	return renderNode;
 }
 
+void Example::BindGlobalUniformBuffer(void * data, uint64_t size)
+{
+	if (size > 0)
+	{
+		GetGfxDevice().BindUniformBuffer(m_DummyShader->GetGpuProgram(), 0, 0, data, size);
+	}
+}
+
+void Example::BindPerViewUniformBuffer(void * data, uint64_t size)
+{
+	if (size > 0)
+	{
+		GetGfxDevice().BindUniformBuffer(m_DummyShader->GetGpuProgram(), 1, 0, data, size);
+	}
+}
+
 void Example::SetShader(Shader * shader)
 {
-	PROFILER(Example_SetShader);
-
 	auto& device = GetGfxDevice();
 
 	device.SetPass(shader->GetGpuProgram(), shader->GetRenderState(), shader->GetSpecializationData());
 }
 
-void Example::BindGlobalUniformBuffer()
-{
-	ShaderBindings shaderBindings;
-	shaderBindings.uniformDataBindings.emplace_back(0, &m_UniformDataGlobal, sizeof(UniformDataGlobal));
-	GetGfxDevice().BindShaderResources(m_DummyShader->GetGpuProgram(), 0, shaderBindings);
-}
-
-void Example::BindPerViewUniformBuffer()
-{
-	ShaderBindings shaderBindings;
-	shaderBindings.uniformDataBindings.emplace_back(0, &m_UniformDataPerView, sizeof(UniformDataPerView));
-	GetGfxDevice().BindShaderResources(m_DummyShader->GetGpuProgram(), 1, shaderBindings);
-}
-
 void Example::BindMaterial(Material * material)
 {
-	PROFILER(Example_BindMaterial);
-
 	auto& device = GetGfxDevice();
 
 	if (material->IsDirty())
@@ -155,7 +154,7 @@ void Example::BindMaterial(Material * material)
 	GpuParameters& gpuParameters = gpuProgram->GetGpuParameters();
 	ShaderData* shaderData = material->GetShaderData();
 
-	ShaderBindings shaderBindings;
+	MaterialBindData materialBindData;
 	
 	int binding = -1;
 	for (auto& uniform : gpuParameters.uniformParameters)
@@ -172,23 +171,21 @@ void Example::BindMaterial(Material * material)
 
 		Buffer* buffer = material->GetUniformBuffer();
 
-		shaderBindings.uniformBufferBindings.emplace_back(binding, buffer);
+		materialBindData.uniformBufferBindings.emplace_back(binding, buffer);
 	}
 
 	for (auto& texture : gpuParameters.textureParameters)
 	{
 		Texture* tex = shaderData->GetTexture(texture.name);
 
-		shaderBindings.imageBindings.emplace_back(texture.binding, tex->GetImage());
+		materialBindData.imageBindings.emplace_back(texture.binding, tex->GetImage());
 	}
 
-	device.BindShaderResources(gpuProgram, 2, shaderBindings);
+	device.BindMaterial(gpuProgram, materialBindData);
 }
 
 void Example::DrawRenderNode(RenderNode * node)
 {
-	PROFILER(Example_DrawRenderNode);
-
 	auto& device = GetGfxDevice();
 
 	GpuProgram* gpuProgram = node->GetMaterial()->GetShader()->GetGpuProgram();
@@ -215,17 +212,124 @@ void Example::DrawRenderNode(RenderNode * node)
 				}
 			}
 
-			ShaderBindings shaderBindings;
-			shaderBindings.uniformDataBindings.emplace_back(uniform.binding, shaderData.GetValueData(), shaderData.GetValueDataSize());
-			device.BindShaderResources(gpuProgram, 3, shaderBindings);
+			GetGfxDevice().BindUniformBuffer(gpuProgram, 3, uniform.binding, shaderData.GetValueData(), shaderData.GetValueDataSize());
 		}
 	}
-
-	PROFILER(BindMeshBuffer);
 
 	Mesh* mesh = node->GetMesh();
 	device.BindMeshBuffer(mesh->GetVertexBuffer(), mesh->GetIndexBuffer(), mesh->GetVertexDescription());
 	device.DrawIndexed(mesh->GetIndexCount());
+}
+
+void Example::DrawBatch(std::vector<RenderNode*> nodes)
+{
+	if (nodes.size() == 0)return;
+
+	auto& device = GetGfxDevice();
+
+	DrawBatchs drawBatchs;
+
+	GpuProgram* gpuProgram = nodes[0]->GetMaterial()->GetShader()->GetGpuProgram();
+	GpuParameters& gpuParameters = gpuProgram->GetGpuParameters();
+
+	drawBatchs.gpuProgram = gpuProgram;
+
+	// 找到PerDraw
+	GpuParameters::UniformParameter uniformPerDraw;
+	for (auto& uniform : gpuParameters.uniformParameters)
+	{
+		if (uniform.name == "PerDraw")
+		{
+			uniformPerDraw = uniform;
+			break;
+		}
+	}
+
+	// 计算PerDraw的size
+	size_t sizePerDraw = 0;
+	for (auto& vp : uniformPerDraw.valueParameters)
+	{
+		if (vp.name == "ObjectToWorld")
+		{
+			sizePerDraw += sizeof(glm::mat4);
+		}
+		else
+		{
+			LOGE("not support.");
+		}
+	}
+
+	// offset必须是minUniformBufferOffsetAlignment的倍数
+	auto& dp = GetDeviceProperties();
+	size_t minUboAlignment = dp.deviceProperties.limits.minUniformBufferOffsetAlignment;
+	drawBatchs.alignedUniformSize = (sizePerDraw + minUboAlignment - 1) & ~(minUboAlignment - 1);
+
+	// uniform buffer
+	drawBatchs.uniformBinding = 0;
+	drawBatchs.uniformSize = nodes.size() * drawBatchs.alignedUniformSize;
+	drawBatchs.uniformData = AlignedAlloc(drawBatchs.uniformSize, drawBatchs.alignedUniformSize); // 需要么？
+
+	// 收集数据
+	char* dst = reinterpret_cast<char*>(drawBatchs.uniformData);
+	for (size_t i = 0; i < nodes.size(); i++)
+	{
+		char* currDst = dst;
+		for (auto& vp : uniformPerDraw.valueParameters)
+		{
+			if (vp.name == "ObjectToWorld")
+			{
+				glm::mat4& mat = nodes[i]->GetTransform().GetMatrix();
+				memcpy(currDst, &mat, sizeof(glm::mat4));
+				currDst += sizeof(glm::mat4);
+			}
+			else
+			{
+				LOGE("not support.");
+			}
+		}
+
+		dst += drawBatchs.alignedUniformSize;
+	}
+
+	// DrawItem
+	for (size_t i = 0; i < nodes.size(); i++)
+	{
+		drawBatchs.drawItems.emplace_back();
+		DrawItem& drawItem = drawBatchs.drawItems.back();
+
+		// mesh buffer
+		Mesh* mesh = nodes[i]->GetMesh();
+
+		size_t drawBufferIndex = 0;
+		for (; drawBufferIndex < drawBatchs.drawBuffers.size(); drawBufferIndex++)
+		{
+			if (drawBatchs.drawBuffers[drawBufferIndex].vertexBuffer == mesh->GetVertexBuffer())
+			{
+				break;
+			}
+		}
+
+		if (drawBufferIndex < drawBatchs.drawBuffers.size())
+		{
+			drawItem.drawBufferIndex = drawBufferIndex;
+		}
+		else
+		{
+			// new mesh
+			drawBatchs.drawBuffers.emplace_back();
+			DrawBuffer& drawBuffer = drawBatchs.drawBuffers.back();
+
+			drawBuffer.vertexBuffer = mesh->GetVertexBuffer();
+			drawBuffer.indexBuffer = mesh->GetIndexBuffer();
+			drawBuffer.vertexDescription = mesh->GetVertexDescription();
+			drawBuffer.indexType = mesh->GetIndexType();
+			drawBuffer.indexCount = mesh->GetIndexCount();
+
+			drawItem.drawBufferIndex = drawBufferIndex;
+		}
+	}
+	
+	device.DrawBatch(drawBatchs);
 }
 
 void Example::UpdateImgui()

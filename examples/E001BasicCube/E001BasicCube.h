@@ -2,6 +2,16 @@
 
 #include "Example.h"
 
+struct UniformDataGlobal
+{
+};
+
+struct UniformDataPerView
+{
+	alignas(16) glm::mat4 view;
+	alignas(16) glm::mat4 proj;
+};
+
 class MakeVulkan : public Example
 {
 
@@ -21,6 +31,9 @@ private:
 	void PrepareResources();
 
 private:
+
+	UniformDataGlobal m_UniformDataGlobal;
+	UniformDataPerView m_UniformDataPerView;
 
 	Mesh* m_Mesh;
 	Shader* m_Shader;

@@ -39,6 +39,14 @@ Transform& Transform::Rotate(float radian, float x, float y, float z)
 	return *this;
 }
 
+Transform & Transform::RotateLocal(float radian, float x, float y, float z)
+{
+	// ²Î¿¼£ºhttps://stackoverflow.com/questions/21923482/rotate-and-translate-object-in-local-and-global-orientation-using-glm
+	m_Matrix = m_Matrix * glm::rotate(glm::mat4(1.0f), radian, glm::vec3(x, y, z));
+
+	return *this;
+}
+
 Transform& Transform::Translate(float x, float y, float z)
 {
 	m_Matrix = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z)) * m_Matrix;

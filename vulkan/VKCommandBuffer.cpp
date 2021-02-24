@@ -1,5 +1,6 @@
 #include "VKCommandBuffer.h"
 #include "VulkanTools.h"
+#include "DeviceProperties.h"
 
 VKCommandBuffer::VKCommandBuffer(VkDevice vkDevice, VkCommandPool vkCommandPool, VkCommandBufferLevel level) :
 	device(vkDevice),
@@ -120,11 +121,30 @@ void VKCommandBuffer::ImageMemoryBarrier(VkImage image, VkPipelineStageFlags src
 	vkCmdPipelineBarrier(commandBuffer, srcPSF, dstPSF, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 }
 
-void VKCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set, uint32_t offset)
+void VKCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set)
+{
+	BindDescriptorSet(bindPoint, pipelineLayout, index, set, {});
+}
+
+void VKCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set, const std::vector<uint32_t>& offsets)
 {
 	// Each element of pDynamicOffsets which corresponds to a descriptor binding with type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
 	// must be a multiple of VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment
-	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, index, 1, &set, offset == -1 ? 0 : 1, &offset);
+
+	if (offsets.size() > 0)
+	{
+		auto& dp = GetDeviceProperties();
+
+		for (auto offset : offsets)
+		{
+			if (offset % dp.deviceProperties.limits.minUniformBufferOffsetAlignment != 0)
+			{
+				LOGE("offset must be a multiple of VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment");
+			}
+		}
+	}
+
+	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, index, 1, &set, static_cast<uint32_t>(offsets.size()), offsets.data());
 }
 
 void VKCommandBuffer::BindPipeline(VkPipelineBindPoint bindPoint, VkPipeline vkPipeline)

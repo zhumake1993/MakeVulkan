@@ -158,9 +158,7 @@ void Imgui::Draw()
 
 	device.SetPass(gpuProgram, m_Shader->GetRenderState(), nullptr);
 
-	ShaderBindings shaderBindings;
-	shaderBindings.imageBindings.emplace_back(0, m_FontImage);
-	device.BindShaderResources(gpuProgram, 2, shaderBindings);
+	GetGfxDevice().BindImage(gpuProgram, 0, m_FontImage);
 
 	device.BindMeshBuffer(m_VertexBuffer, m_IndexBuffer, &m_VertexDes, VK_INDEX_TYPE_UINT16);
 

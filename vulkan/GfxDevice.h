@@ -4,6 +4,7 @@
 #include "NonCopyable.h"
 #include "GfxTypes.h"
 #include "GpuProgram.h"
+#include "GfxDeviceObjects.h"
 
 struct VKInstance;
 struct VKSurface;
@@ -16,6 +17,7 @@ struct VKRenderPass;
 struct VKBuffer;
 struct VKImage;
 struct VKImageView;
+class ImageImpl;
 
 class GarbageCollector;
 class BufferManager;
@@ -87,11 +89,17 @@ public:
 
 	void SetPass(GpuProgram* gpuProgram, RenderState* renderState, void* scdata);
 
-	void BindShaderResources(GpuProgram* gpuProgram, int set, ShaderBindings shaderBindings);
+	void BindUniformBuffer(GpuProgram* gpuProgram, int set, int binding, void* data, uint64_t size);
+
+	void BindImage(GpuProgram* gpuProgram, int binding, void* image);
+
+	void BindMaterial(GpuProgram* gpuProgram, MaterialBindData& data);
 
 	void BindMeshBuffer(Buffer* vertexBuffer, Buffer* indexBuffer, VertexDescription* vertexDescription, VkIndexType indexType = VK_INDEX_TYPE_UINT32);
 
 	void DrawIndexed(uint32_t indexCount, uint32_t instanceCount = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0);
+
+	void DrawBatch(DrawBatchs& drawBatchs);
 
 	void PushConstants(GpuProgram* gpuProgram, void* data, uint32_t offset, uint32_t size);
 
@@ -109,6 +117,9 @@ private:
 	VkSemaphore CreateVKSemaphore();
 
 	VkFence CreateVKFence(bool signaled);
+
+	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, VKBuffer* vkBuffer, uint64_t offset = 0, uint64_t range = VK_WHOLE_SIZE);
+	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, ImageImpl* imageImpl);
 
 private:
 

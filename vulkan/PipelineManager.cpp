@@ -216,8 +216,6 @@ void PipelineManager::SetPipelineKey(VKGpuProgram * vkGpuProgram, RenderState * 
 
 VkPipeline PipelineManager::CreatePipeline(VertexDescription * vertexDescription)
 {
-	PROFILER(CreatePipeline);
-
 	m_PipelineKey.vertexDescription = vertexDescription;
 
 	if (m_PSOCache.find(m_PipelineKey) == m_PSOCache.end())
@@ -271,9 +269,7 @@ PipelineManager::Pipeline* PipelineManager::CreatePipelineInternal(PipelineKey &
 		pipelineCI.vertexInputStateCreateInfo.pVertexAttributeDescriptions = pipelineCI.vertexInputAttributs;
 	}
 
-	PROFILER_BEGIN(CreateGraphicsPipelines);
 	VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_Device, m_PipelineCache, 1, &pipelineCI.pipelineCreateInfo, nullptr, &pipeline->pipeline));
-	PROFILER_END(CreateGraphicsPipelines);
 
 	return pipeline;
 }

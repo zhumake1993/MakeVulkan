@@ -164,6 +164,11 @@ uint32_t Mesh::GetIndexCount()
 	return static_cast<uint32_t>(m_Indices.size());
 }
 
+VkIndexType Mesh::GetIndexType()
+{
+	return m_IndexType;
+}
+
 bool Mesh::HasVertexChannel(VertexChannel channel)
 {
 	return std::find(m_VertexChannels.begin(), m_VertexChannels.end(), channel) != m_VertexChannels.end();
