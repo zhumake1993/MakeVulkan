@@ -81,8 +81,8 @@ public:
 	void FlushBuffer(Buffer* buffer);
 	void ReleaseBuffer(Buffer* buffer);
 
-	Image* CreateImage(VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount);
-	void UpdateImage(Image* image, void* data, uint64_t size, const std::vector<std::vector<uint64_t>>& offsets);
+	Image* CreateImage(VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount);
+	void UpdateImage(Image* image, void* data, uint64_t size, const std::vector<std::vector<std::vector<uint64_t>>>& offsets);
 	void ReleaseImage(Image* image);
 
 	GpuProgram* CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode);

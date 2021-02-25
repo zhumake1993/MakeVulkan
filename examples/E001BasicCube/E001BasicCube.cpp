@@ -130,7 +130,6 @@ void MakeVulkan::Update()
 	{
 		ImGui::TextUnformatted(cpuProfiler.c_str());
 	}
-
 	if (ImGui::CollapsingHeader("GPU Profiler", ImGuiTreeNodeFlags_None))
 	{
 		ImGui::TextUnformatted(gpuProfiler.c_str());

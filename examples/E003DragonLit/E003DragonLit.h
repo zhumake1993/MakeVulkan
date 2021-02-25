@@ -48,6 +48,9 @@ private:
 
 private:
 
+	UniformDataGlobal m_UniformDataGlobal;
+	UniformDataPerView m_UniformDataPerView;
+
 	Mesh* m_Mesh;
 	Texture* m_Tex;
 	Shader* m_Shader;

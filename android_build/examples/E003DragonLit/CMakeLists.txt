@@ -43,8 +43,8 @@ add_library (base STATIC ${common_sources} ${vulkan_sources} ${engine_sources} $
 target_link_libraries(base vulkan_lib)
 
 # Khronos texture format (https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/)
-# 暂时用绝对路径吧
-target_link_libraries(base C:/Users/1/Desktop/MakeVulkan/external/ktx/lib/liblibktx.a)
+# CMAKE_CURRENT_SOURCE_DIR是CMakeList.txt所在的目录
+target_link_libraries(base ${CMAKE_CURRENT_SOURCE_DIR}/../../../external/ktx/lib/liblibktx.a)
 
 # 这里不能用test作为lib的名字，似乎跟重命名有关，原因不明
 file(GLOB main_sources ${top_dir}/examples/${name}/*.h ${top_dir}/examples/${name}/*.cpp)

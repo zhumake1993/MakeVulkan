@@ -18,9 +18,12 @@ Texture::~Texture()
 	RELEASE(m_Image);
 }
 
-void Texture::LoadFromFile(const std::string& filename, VkFormat format)
+void Texture::LoadFromFile(const std::string& filename, VkFormat format, bool isCubemap)
 {
 	m_ImageData.clear();
+
+	m_Format = format;
+	m_FaceCount = isCubemap ? 6 : 1;
 
 	size_t last = filename.find_last_of('.');
 	std::string suffix = filename.substr(last + 1);
@@ -35,7 +38,7 @@ void Texture::LoadFromFile(const std::string& filename, VkFormat format)
 
 	auto& device = GetGfxDevice();
 
-	m_Image = device.CreateImage(format, m_Width, m_Height, m_MipLevels, m_LayerCount);
+	m_Image = device.CreateImage(format, m_Width, m_Height, m_MipLevels, m_LayerCount, m_FaceCount);
 	device.UpdateImage(m_Image, m_ImageData.data(), m_ImageData.size(), m_Offsets);
 }
 
@@ -63,7 +66,7 @@ void Texture::ReadImageUsingSTB(const std::string& filename)
 	m_Width = tmpWidth;
 	m_Height = tmpHeight;
 	m_MipLevels = 1;
-	m_Offsets = { {0} };
+	m_Offsets = { { {0} } };
 
 	m_ImageData.resize(dataSize);
 	memcpy(m_ImageData.data(), imageData, dataSize);
@@ -90,19 +93,45 @@ void Texture::ReadImageUsingKTX(const std::string& filename)
 
 	m_ImageData.resize(dataSize);
 	memcpy(m_ImageData.data(), ktxTextureData, dataSize);
-	
-	// 计算每个layer，每个mip的offset，vkCmdCopyBufferToImage需要
-	m_Offsets.resize(m_LayerCount);
-	for (uint32_t layer = 0; layer < m_LayerCount; layer++)
-	{
-		m_Offsets[layer].resize(m_MipLevels);
-		for (uint32_t level = 0; level < m_MipLevels; level++)
-		{
-			ktx_size_t offset;
-			KTX_error_code result = ktxTexture_GetImageOffset(ktxTexture, level, layer, 0, &offset);
-			assert(result == KTX_SUCCESS);
 
-			m_Offsets[layer][level] = static_cast<uint64_t>(offset);
+	/*
+		Cube map arrays in ktx are stored with a layout like this:
+		- Mip Level 0
+			- Layer 0 (= Cube map 0)
+				- Face +X
+				- Face -X
+				- Face +Y
+				- Face -Y
+				- Face +Z
+				- Face -Z
+			- Layer 1 (= Cube map 1)
+				- Face +X
+				...
+		- Mip Level 1
+			- Layer 0 (= Cube map 0)
+				- Face +X
+				...
+			- Layer 1 (= Cube map 1)
+				- Face +X
+				...
+	*/
+	
+	// 计算每个face, 每个layer，每个mip的offset，vkCmdCopyBufferToImage需要
+	m_Offsets.resize(m_FaceCount);
+	for (uint32_t face = 0; face < m_FaceCount; face++)
+	{
+		m_Offsets[face].resize(m_LayerCount);
+		for (uint32_t layer = 0; layer < m_LayerCount; layer++)
+		{
+			m_Offsets[face][layer].resize(m_MipLevels);
+			for (uint32_t level = 0; level < m_MipLevels; level++)
+			{
+				ktx_size_t offset;
+				KTX_error_code result = ktxTexture_GetImageOffset(ktxTexture, level, layer, face, &offset);
+				assert(result == KTX_SUCCESS);
+
+				m_Offsets[face][layer][level] = static_cast<uint64_t>(offset);
+			}
 		}
 	}
 

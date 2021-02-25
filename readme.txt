@@ -14,6 +14,8 @@ E006Instancing：GPUInstancing，使用SpecializationConstant控制instance的�
 
 E007TextureArray：纹理数组
 
+E007Cubemap：Cubemap和CubemapArray
+
 
 新增vs子工程：
 复制BasicCube

@@ -122,7 +122,7 @@ void MakeVulkan::Update()
 
 	if (ImGui::CollapsingHeader("TextureIndex", ImGuiTreeNodeFlags_None))
 	{
-		ImGui::SliderInt("Slider", &m_TextureIndex, 0, static_cast<int>(m_Tex->GetLayerCount()) - 1);
+		ImGui::SliderInt("Texture", &m_TextureIndex, 0, static_cast<int>(m_Tex->GetLayerCount()) - 1);
 	}
 	if (ImGui::CollapsingHeader("CPU Profiler", ImGuiTreeNodeFlags_None))
 	{

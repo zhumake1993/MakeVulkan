@@ -12,7 +12,7 @@ public:
 	Texture(const std::string& name);
 	virtual ~Texture();
 
-	void LoadFromFile(const std::string& filename, VkFormat format = VK_FORMAT_R8G8B8A8_UNORM);
+	void LoadFromFile(const std::string& filename, VkFormat format = VK_FORMAT_R8G8B8A8_UNORM, bool isCubemap = false);
 
 	Image* GetImage();
 
@@ -34,11 +34,13 @@ private:
 	std::string m_Name;
 
 	std::vector<char> m_ImageData;
+	VkFormat m_Format;
 	uint32_t m_Width;
 	uint32_t m_Height;
 	uint32_t m_MipLevels = 1;
 	uint32_t m_LayerCount = 1;
-	std::vector<std::vector<uint64_t>> m_Offsets;
+	uint32_t m_FaceCount = 1;
+	std::vector<std::vector<std::vector<uint64_t>>> m_Offsets;
 
 	Image* m_Image = nullptr;
 };

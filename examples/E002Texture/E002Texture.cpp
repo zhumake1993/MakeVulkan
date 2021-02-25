@@ -85,7 +85,6 @@ void MakeVulkan::Update()
 
 	m_UniformDataPerView.view = m_Camera->GetView();
 	m_UniformDataPerView.proj = m_Camera->GetProj();
-	m_UniformDataPerView.eyePos = glm::vec4(m_Camera->GetPosition(), 1.0f);
 
 	m_Node->GetTransform().Rotate(-deltaTime * 0.5f, 0.0f, 1.0f, 0.0f);
 
@@ -138,8 +137,8 @@ void MakeVulkan::Draw()
 
 	device.ResetTimeStamp();
 
-	BindGlobalUniformBuffer();
-	BindPerViewUniformBuffer();
+	BindGlobalUniformBuffer(&m_UniformDataGlobal, sizeof(UniformDataGlobal));
+	BindPerViewUniformBuffer(&m_UniformDataPerView, sizeof(UniformDataPerView));
 
 	Color clearColor(0, 0, 0, 0);
 	DepthStencil clearDepthStencil(1.0, 0);

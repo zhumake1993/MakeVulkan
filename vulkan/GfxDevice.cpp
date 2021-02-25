@@ -73,8 +73,8 @@ GfxDevice::GfxDevice()
 
 	// Depth
 	VkFormat depthFormat = GetSupportedDepthFormat();
-	m_DepthImage = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, depthFormat, windowWidth, windowHeight, 1, 1, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-	m_DepthView = m_ImageManager->CreateView(m_DepthImage->image, VK_IMAGE_VIEW_TYPE_2D, m_DepthImage->format, VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1);
+	m_DepthImage = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, depthFormat, windowWidth, windowHeight, 1, 1, 1, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+	m_DepthView = m_ImageManager->CreateView(m_DepthImage->image, VK_IMAGE_VIEW_TYPE_2D, m_DepthImage->format, VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, 1);
 
 	// RenderPass
 	m_VKRenderPass = new VKRenderPass(m_VKDevice->device, dp.ScFormat.format, depthFormat);
@@ -407,27 +407,42 @@ void GfxDevice::ReleaseBuffer(Buffer * buffer)
 	m_GarbageCollector->AddResource(static_cast<BufferImpl*>(buffer)->GetBuffer());
 }
 
-Image * GfxDevice::CreateImage(VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount)
+Image * GfxDevice::CreateImage(VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount)
 {
-	VKImage* image = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, format, width, height, mipLevels, layerCount, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+	VKImage* image = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, format, width, height, mipLevels, layerCount, faceCount, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
 
 	VkImageViewType imageViewType;
 	if (layerCount == 1)
 	{
-		imageViewType = VK_IMAGE_VIEW_TYPE_2D;
+		if (faceCount == 1)
+		{
+			imageViewType = VK_IMAGE_VIEW_TYPE_2D;
+		}
+		else
+		{
+			imageViewType = VK_IMAGE_VIEW_TYPE_CUBE;
+		}
 	}
 	else
 	{
-		imageViewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+		if (faceCount == 1)
+		{
+			imageViewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+		}
+		else
+		{
+			imageViewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+		}
 	}
-	VKImageView* view = m_ImageManager->CreateView(image->image, imageViewType, image->format, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels, layerCount);
+
+	VKImageView* view = m_ImageManager->CreateView(image->image, imageViewType, image->format, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels, layerCount, faceCount);
 
 	VKImageSampler* sammpler = m_ImageManager->CreateSampler(mipLevels, 8);
 
 	return new ImageImpl(image, view, sammpler);
 }
 
-void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size, const std::vector<std::vector<uint64_t>>& offsets)
+void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size, const std::vector<std::vector<std::vector<uint64_t>>>& offsets)
 {
 	ImageImpl* imageImpl = static_cast<ImageImpl*>(image);
 	VKImage* vkImage = imageImpl->GetImage();
@@ -439,12 +454,12 @@ void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size, const std
 	m_UploadCommandBuffer->Begin();
 
 	m_UploadCommandBuffer->ImageMemoryBarrier(vkImage->image, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-		0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkImage->mipLevels, vkImage->layerCount);
+		0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkImage->mipLevels, vkImage->layerCount, vkImage->faceCount);
 
 	m_UploadCommandBuffer->CopyBufferToImage(stagingBuffer->buffer, vkImage->image, vkImage->width, vkImage->height, offsets);
 
 	m_UploadCommandBuffer->ImageMemoryBarrier(vkImage->image, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vkImage->mipLevels, vkImage->layerCount);
+		VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vkImage->mipLevels, vkImage->layerCount, vkImage->faceCount);
 
 	m_UploadCommandBuffer->End();
 
