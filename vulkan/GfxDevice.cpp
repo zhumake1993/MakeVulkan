@@ -71,20 +71,7 @@ GfxDevice::GfxDevice()
 	m_DescriptorSetManager = new DescriptorSetManager(m_VKDevice->device);
 	m_PipelineManager = new PipelineManager(m_VKDevice->device);
 
-	// Depth
-	VkFormat depthFormat = GetSupportedDepthFormat();
-	m_DepthImage = m_ImageManager->CreateImage(VK_IMAGE_TYPE_2D, depthFormat, windowWidth, windowHeight, 1, 1, 1, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-	m_DepthView = m_ImageManager->CreateView(m_DepthImage->image, VK_IMAGE_VIEW_TYPE_2D, m_DepthImage->format, VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, 1);
-
-	// RenderPass
-	m_VKRenderPass = new VKRenderPass(m_VKDevice->device, dp.ScFormat.format, depthFormat);
-
-	// Framebuffer
-	m_Framebuffers.resize(dp.ScNumberOfImages);
-	for (size_t i = 0; i < dp.ScNumberOfImages; ++i)
-	{
-		m_Framebuffers[i] = CreateVkFramebuffer(m_VKRenderPass->renderPass, m_VKSwapChain->swapChainImageViews[i], m_DepthView->view, windowWidth, windowHeight);
-	}
+	dp.depthFormat = GetSupportedDepthFormat();
 
 	// CommandBuffer
 	m_UploadCommandBuffer = new VKCommandBuffer(m_VKDevice->device, m_VKCommandPool->commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
@@ -101,17 +88,6 @@ GfxDevice::~GfxDevice()
 	vkDestroyDescriptorSetLayout(m_VKDevice->device, VKGpuProgram::GetDSLPerView(), nullptr);
 
 	RELEASE(m_UploadCommandBuffer);
-
-	for (size_t i = 0; i < m_Framebuffers.size(); ++i)
-	{
-		vkDestroyFramebuffer(m_VKDevice->device, m_Framebuffers[i], nullptr);
-		m_Framebuffers[i] = VK_NULL_HANDLE;
-	}
-
-	RELEASE(m_VKRenderPass);
-
-	RELEASE(m_DepthImage);
-	RELEASE(m_DepthView);
 
 	RELEASE(m_GarbageCollector);
 	RELEASE(m_BufferManager);
@@ -254,19 +230,15 @@ void GfxDevice::EndCommandBuffer()
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->End();
 }
 
-void GfxDevice::BeginRenderPass(Rect2D& renderArea, Color& clearColor, DepthStencil& clearDepthStencil)
+void GfxDevice::BeginRenderPass(Rect2D& renderArea, std::vector<VkClearValue>& clearValues)
 {
-	std::vector<VkClearValue> clearValues(2);
-	clearValues[0].color = { clearColor.r, clearColor.g, clearColor.b, clearColor.a };
-	clearValues[1].depthStencil = { clearDepthStencil.depth, clearDepthStencil.stencil };
-
 	VkRect2D area = {};
 	area.offset.x = renderArea.x;
 	area.offset.y = renderArea.y;
 	area.extent.width = renderArea.width;
 	area.extent.height = renderArea.height;
 
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BeginRenderPass(m_VKRenderPass->renderPass, m_Framebuffers[m_ImageIndex], area, clearValues);
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->BeginRenderPass(m_VKRenderPass->GetRenderPass(), m_VKRenderPass->GetFramebuffer(), area, clearValues);
 }
 
 void GfxDevice::EndRenderPass()
@@ -495,7 +467,7 @@ void GfxDevice::SetPass(GpuProgram * gpuProgram, RenderState * renderState, void
 {
 	VKGpuProgram* vkGpuProgram = static_cast<VKGpuProgram*>(gpuProgram);
 
-	m_PipelineManager->SetPipelineKey(vkGpuProgram, renderState, scdata, m_VKRenderPass->renderPass);
+	m_PipelineManager->SetPipelineKey(vkGpuProgram, renderState, scdata, m_VKRenderPass->GetRenderPass(), m_VKRenderPass->GetSubPassIndex());
 }
 
 void GfxDevice::BindUniformBuffer(GpuProgram * gpuProgram, int set, int binding, void * data, uint64_t size)
@@ -511,12 +483,19 @@ void GfxDevice::BindUniformBuffer(GpuProgram * gpuProgram, int set, int binding,
 	default:LOGE("wrong set.");
 	}
 
-	VKBuffer* vkBuffer = m_BufferManager->CreateTempBuffer(size);
-	vkBuffer->Update(data, 0, size);
+	if (size > 0)
+	{
+		VKBuffer* vkBuffer = m_BufferManager->CreateTempBuffer(size);
+		vkBuffer->Update(data, 0, size);
 
-	UpdateDescriptorSet(descriptorSet, binding, vkBuffer);
+		UpdateDescriptorSet(descriptorSet, binding, vkBuffer);
 
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, vkGpuProgram->GetPipelineLayout(), set, descriptorSet, {0});
+		m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, vkGpuProgram->GetPipelineLayout(), set, descriptorSet, { 0 });
+	}
+	else
+	{
+		m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, vkGpuProgram->GetPipelineLayout(), set, descriptorSet);
+	}
 }
 
 void GfxDevice::BindImage(GpuProgram * gpuProgram, int binding, void * image)
@@ -555,6 +534,13 @@ void GfxDevice::BindMaterial(GpuProgram * gpuProgram, MaterialBindData & data)
 		UpdateDescriptorSet(descriptorSet, image.binding, static_cast<ImageImpl*>(image.image));
 	}
 
+	uint32_t inputAttachmentIndex = 0;
+	for (auto& inputAttachment : data.inputAttachmentBindings)
+	{
+		UpdateDescriptorSet(descriptorSet, inputAttachment.binding, m_VKRenderPass->GetInputAttachmentImageView(inputAttachmentIndex));
+		inputAttachmentIndex++;
+	}
+
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, vkGpuProgram->GetPipelineLayout(), 2, descriptorSet, offsets);
 }
 
@@ -563,14 +549,17 @@ void GfxDevice::BindMeshBuffer(Buffer * vertexBuffer, Buffer * indexBuffer, Vert
 	VkPipeline pipeline = m_PipelineManager->CreatePipeline(vertexDescription);
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-	VKBuffer* vBuffer = static_cast<BufferImpl*>(vertexBuffer)->GetBuffer();
-	VKBuffer* iBuffer = static_cast<BufferImpl*>(indexBuffer)->GetBuffer();
+	if (vertexDescription)
+	{
+		VKBuffer* vBuffer = static_cast<BufferImpl*>(vertexBuffer)->GetBuffer();
+		VKBuffer* iBuffer = static_cast<BufferImpl*>(indexBuffer)->GetBuffer();
 
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindVertexBuffer(0, vBuffer->buffer);
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindIndexBuffer(iBuffer->buffer, indexType);
+		m_FrameResources[m_FrameResourceIndex].commandBuffer->BindVertexBuffer(0, vBuffer->buffer);
+		m_FrameResources[m_FrameResourceIndex].commandBuffer->BindIndexBuffer(iBuffer->buffer, indexType);
 
-	vBuffer->Use(m_FrameIndex);
-	iBuffer->Use(m_FrameIndex);
+		vBuffer->Use(m_FrameIndex);
+		iBuffer->Use(m_FrameIndex);
+	}
 }
 
 void GfxDevice::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
@@ -643,6 +632,23 @@ void GfxDevice::ResolveTimeStamp()
 std::string GfxDevice::GetLastGPUTimeStamp()
 {
 	return m_GPUProfilerManager->GetLastFrameView().ToString();
+}
+
+void GfxDevice::SetRenderPass(RenderPassDesc & renderPassDesc)
+{
+	PROFILER(GfxDevice_SetRenderPass);
+
+	// RenderPass
+	m_VKRenderPass = new VKRenderPass(m_VKDevice->device, renderPassDesc, m_VKSwapChain->swapChainImageViews[m_ImageIndex], m_ImageManager, m_GarbageCollector);
+
+	m_GarbageCollector->AddResource(m_VKRenderPass);
+	m_VKRenderPass->Use(m_FrameIndex);
+}
+
+void GfxDevice::NextSubpass()
+{
+	vkCmdNextSubpass(m_FrameResources[m_FrameResourceIndex].commandBuffer->commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
+	m_VKRenderPass->NextSubpass();
 }
 
 VkFormat GfxDevice::GetSupportedDepthFormat()
@@ -768,4 +774,26 @@ void GfxDevice::UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t bind
 	imageImpl->GetImage()->Use(m_FrameIndex);
 	imageImpl->GetView()->Use(m_FrameIndex);
 	imageImpl->GetSampler()->Use(m_FrameIndex);
+}
+
+void GfxDevice::UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, VKImageView * imageView)
+{
+	VkDescriptorImageInfo imageInfo;
+	imageInfo.sampler = VK_NULL_HANDLE;
+	imageInfo.imageView = imageView->view;
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	VkWriteDescriptorSet writeDescriptorSet = {};
+	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSet.pNext = nullptr;
+	writeDescriptorSet.dstSet = descriptorSet;
+	writeDescriptorSet.dstBinding = binding;
+	writeDescriptorSet.dstArrayElement = 0;
+	writeDescriptorSet.descriptorCount = 1;
+	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	writeDescriptorSet.pImageInfo = &imageInfo;
+
+	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
+
+	imageView->Use(m_FrameIndex);
 }

@@ -45,6 +45,18 @@ struct GpuParameters
 		VkShaderStageFlags stageFlags;
 	};
 
+	struct InputAttachmentParameter
+	{
+		InputAttachmentParameter(const std::string& _name, int _binding, VkShaderStageFlags _stageFlags) :
+			name(_name), binding(_binding), stageFlags(_stageFlags)
+		{
+		}
+
+		std::string name;
+		int binding;
+		VkShaderStageFlags stageFlags;
+	};
+
 	struct SpecializationConstantParameter
 	{
 		SpecializationConstantParameter(int p1, ShaderDataType p2):
@@ -55,6 +67,7 @@ struct GpuParameters
 
 	std::vector<UniformParameter> uniformParameters;
 	std::vector<TextureParameter> textureParameters;
+	std::vector<InputAttachmentParameter> inputAttachmentParameters;
 
 	// PushConstant
 	// 为了保证Pipeline Layout Compatibility，统一设置128的PushConstant

@@ -14,7 +14,9 @@ E006Instancing：GPUInstancing，使用SpecializationConstant控制instance的�
 
 E007TextureArray：纹理数组
 
-E007Cubemap：Cubemap和CubemapArray
+E008Cubemap：Cubemap和CubemapArray
+
+E009InputAttachments：https://www.saschawillems.de/blog/2018/07/19/vulkan-input-attachments-and-sub-passes/
 
 
 新增vs子工程：

@@ -52,6 +52,10 @@ struct DeviceProperties : public NonCopyable
 	VkImageUsageFlags						ScUsage;
 	VkSurfaceTransformFlagBitsKHR			ScTransform;
 	VkPresentModeKHR						ScPresentMode;
+
+	// Depth
+
+	VkFormat								depthFormat;
 };
 
 void CreateDeviceProperties();

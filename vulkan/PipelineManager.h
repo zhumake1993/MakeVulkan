@@ -12,7 +12,7 @@ struct PipelineCI
 	PipelineCI();
 	~PipelineCI(); // 不能有虚函数，否则用memset清空后，虚函数表指针也会被清空
 
-	void Reset(VKGpuProgram* vkGpuProgram, RenderState* renderState, void* scdata, VkRenderPass renderPass);
+	void Reset(VKGpuProgram* vkGpuProgram, RenderState* renderState, void* scdata, VkRenderPass renderPass, uint32_t subPassIndex);
 
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo;
 
@@ -44,6 +44,7 @@ struct PipelineKey
 			&& renderState == p.renderState
 			&& scdata == p.scdata
 			&& renderPass == p.renderPass
+			&& subPassIndex == p.subPassIndex
 			&& vertexDescription == p.vertexDescription;
 	}
 
@@ -53,6 +54,7 @@ struct PipelineKey
 	RenderState* renderState;
 	void* scdata;
 	VkRenderPass renderPass;
+	uint32_t subPassIndex;
 	VertexDescription* vertexDescription;
 };
 
@@ -64,6 +66,7 @@ struct PipelineHash
 			^ std::hash<void*>()(p.renderState)
 			^ std::hash<void*>()(p.scdata)
 			^ std::hash<VkRenderPass>()(p.renderPass)
+			^ std::hash<uint32_t>()(p.subPassIndex)
 			^ std::hash<void*>()(p.vertexDescription);
 	}
 };
@@ -86,7 +89,7 @@ public:
 
 	void Update();
 
-	void SetPipelineKey(VKGpuProgram* vkGpuProgram, RenderState* renderState, void* scdata, VkRenderPass renderPass);
+	void SetPipelineKey(VKGpuProgram* vkGpuProgram, RenderState* renderState, void* scdata, VkRenderPass renderPass, uint32_t subPassIndex);
 
 	VkPipeline CreatePipeline(VertexDescription* vertexDescription);
 

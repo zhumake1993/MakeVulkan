@@ -74,7 +74,7 @@ void Example::Update()
 
 	m_Imgui->Prepare(m_TimeManager->GetDeltaTime());
 
-	SetShader(m_DummyShader);
+	//SetShader(m_DummyShader);
 }
 
 Mesh * Example::CreateMesh(const std::string& name)
@@ -179,6 +179,11 @@ void Example::BindMaterial(Material * material)
 		Texture* tex = shaderData->GetTexture(texture.name);
 
 		materialBindData.imageBindings.emplace_back(texture.binding, tex->GetImage());
+	}
+
+	for (auto& inputAttachment : gpuParameters.inputAttachmentParameters)
+	{
+		materialBindData.inputAttachmentBindings.emplace_back(inputAttachment.binding);
 	}
 
 	device.BindMaterial(gpuProgram, materialBindData);

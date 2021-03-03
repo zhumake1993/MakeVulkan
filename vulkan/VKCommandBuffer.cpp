@@ -181,10 +181,3 @@ void VKCommandBuffer::PushConstants(VkPipelineLayout pipelineLayout, VkShaderSta
 {
 	vkCmdPushConstants(commandBuffer, pipelineLayout, pcStage, offset, size, data);
 }
-
-
-//
-//void VKCommandBuffer::WriteTimeStamp(std::string name)
-//{
-//	GetVulkanDriver().GetGPUProfilerMgr()->WriteTimeStamp(this, name);
-//}

@@ -13,7 +13,7 @@ struct VKSwapChain;
 struct VKCommandPool;
 
 struct VKCommandBuffer;
-struct VKRenderPass;
+class VKRenderPass;
 struct VKBuffer;
 struct VKImage;
 struct VKImageView;
@@ -70,7 +70,7 @@ public:
 	void BeginCommandBuffer();
 	void EndCommandBuffer();
 
-	void BeginRenderPass(Rect2D& renderArea, Color& clearColor, DepthStencil& clearDepthStencil);
+	void BeginRenderPass(Rect2D& renderArea, std::vector<VkClearValue>& clearValues);
 	void EndRenderPass();
 
 	void SetViewport(Viewport& viewport);
@@ -108,6 +108,9 @@ public:
 	void ResolveTimeStamp();
 	std::string GetLastGPUTimeStamp();
 
+	void SetRenderPass(RenderPassDesc& renderPassDesc);
+	void NextSubpass();
+
 private:
 
 	VkFormat GetSupportedDepthFormat();
@@ -120,6 +123,7 @@ private:
 
 	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, VKBuffer* vkBuffer, uint64_t offset = 0, uint64_t range = VK_WHOLE_SIZE);
 	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, ImageImpl* imageImpl);
+	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, VKImageView* imageView); // InputAttachment只需要view
 
 private:
 
@@ -140,16 +144,12 @@ private:
 	DescriptorSetManager* m_DescriptorSetManager = nullptr;
 	PipelineManager* m_PipelineManager = nullptr;
 
-	// Depth
-	VKImage* m_DepthImage;
-	VKImageView* m_DepthView;
-
 	// RenderPass
 	VKRenderPass* m_VKRenderPass = nullptr;
 
 	// SwapChain中的image数量可能并不等于FrameResourcesCount，所以要单独处理Framebuffer
 	uint32_t m_ImageIndex;
-	std::vector<VkFramebuffer> m_Framebuffers;
+	//std::vector<VkFramebuffer> m_Framebuffers;
 
 	// 用于传数据
 	VKCommandBuffer* m_UploadCommandBuffer;

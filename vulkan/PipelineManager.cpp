@@ -13,7 +13,7 @@ PipelineCI::~PipelineCI()
 {
 }
 
-void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState* renderState, void* scdata, VkRenderPass renderPass)
+void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState* renderState, void* scdata, VkRenderPass renderPass, uint32_t subPassIndex)
 {
 	memset(this, 0, sizeof(*this));
 
@@ -33,7 +33,7 @@ void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState* renderState, voi
 	pipelineCreateInfo.pDynamicState = &dynamicStateCreateInfo;
 	pipelineCreateInfo.layout = vkGpuProgram->GetPipelineLayout();
 	pipelineCreateInfo.renderPass = renderPass;
-	pipelineCreateInfo.subpass = 0;
+	pipelineCreateInfo.subpass = subPassIndex;
 	pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 	pipelineCreateInfo.basePipelineIndex = -1;
 
@@ -206,12 +206,13 @@ void PipelineManager::Update()
 	m_FrameIndex++;
 }
 
-void PipelineManager::SetPipelineKey(VKGpuProgram * vkGpuProgram, RenderState * renderState, void * scdata, VkRenderPass renderPass)
+void PipelineManager::SetPipelineKey(VKGpuProgram * vkGpuProgram, RenderState * renderState, void * scdata, VkRenderPass renderPass, uint32_t subPassIndex)
 {
 	m_PipelineKey.vkGpuProgram = vkGpuProgram;
 	m_PipelineKey.renderState = renderState;
 	m_PipelineKey.scdata = scdata;
 	m_PipelineKey.renderPass = renderPass;
+	m_PipelineKey.subPassIndex = subPassIndex;
 }
 
 VkPipeline PipelineManager::CreatePipeline(VertexDescription * vertexDescription)
@@ -237,8 +238,9 @@ PipelineManager::Pipeline* PipelineManager::CreatePipelineInternal(PipelineKey &
 
 	PipelineCI pipelineCI;
 
-	pipelineCI.Reset(pipelineKey.vkGpuProgram, pipelineKey.renderState, pipelineKey.scdata, pipelineKey.renderPass);
+	pipelineCI.Reset(pipelineKey.vkGpuProgram, pipelineKey.renderState, pipelineKey.scdata, pipelineKey.renderPass, pipelineKey.subPassIndex);
 
+	if(pipelineKey.vertexDescription)
 	{
 		auto& vertexDescription = *pipelineKey.vertexDescription;
 
@@ -267,6 +269,10 @@ PipelineManager::Pipeline* PipelineManager::CreatePipelineInternal(PipelineKey &
 		pipelineCI.vertexInputStateCreateInfo.pVertexBindingDescriptions = pipelineCI.vertexInputBindings;
 		pipelineCI.vertexInputStateCreateInfo.vertexAttributeDescriptionCount = num;
 		pipelineCI.vertexInputStateCreateInfo.pVertexAttributeDescriptions = pipelineCI.vertexInputAttributs;
+	}
+	else
+	{
+		pipelineCI.vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	}
 
 	VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_Device, m_PipelineCache, 1, &pipelineCI.pipelineCreateInfo, nullptr, &pipeline->pipeline));

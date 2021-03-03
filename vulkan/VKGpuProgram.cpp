@@ -96,6 +96,18 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 		bindingsPerMaterial.push_back(binding);
 	}
 
+	for (auto& inputAttachment : parameters.inputAttachmentParameters)
+	{
+		VkDescriptorSetLayoutBinding binding = {};
+		binding.binding = inputAttachment.binding;
+		binding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		binding.descriptorCount = 1;
+		binding.stageFlags = inputAttachment.stageFlags;
+		binding.pImmutableSamplers = nullptr;
+
+		bindingsPerMaterial.push_back(binding);
+	}
+
 	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
 	descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	descriptorSetLayoutCreateInfo.pNext = nullptr;
