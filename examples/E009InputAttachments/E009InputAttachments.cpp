@@ -146,6 +146,9 @@ void MakeVulkan::Update()
 
 	m_Node->GetTransform().Rotate(-deltaTime * 0.5f, 0.0f, 1.0f, 0.0f);
 
+	m_FetchMat->SetFloat4("Para", m_Brightness, m_Contrast, m_DepthMin, m_DepthMax);
+	m_FetchMat->SetInt("Depth", m_FetchDepth ? 1 : 0);
+
 	// Imgui
 
 	auto& dp = GetDeviceProperties();
@@ -170,6 +173,19 @@ void MakeVulkan::Update()
 		acTime = 0.0f;
 	}
 
+	if (ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_None))
+	{
+		ImGui::Checkbox("Fetch Depth", &m_FetchDepth);
+		ImGui::SliderFloat("Brightness", &m_Brightness, 0.0f, 2.0f);
+		ImGui::SliderFloat("Contrast", &m_Contrast, 0.0f, 4.0f);
+		ImGui::SliderFloat("DepthMin", &m_DepthMin, 0.0f, 1.0f);
+		ImGui::SliderFloat("DepthMax", &m_DepthMax, 0.0f, 1.0f);
+
+		if (m_DepthMin > m_DepthMax)
+		{
+			m_DepthMin = m_DepthMax;
+		}
+	}
 	if (ImGui::CollapsingHeader("CPU Profiler", ImGuiTreeNodeFlags_None))
 	{
 		ImGui::TextUnformatted(cpuProfiler.c_str());
@@ -222,11 +238,6 @@ void MakeVulkan::Draw()
 
 	DrawRenderNode(m_Node);
 
-	DrawImgui();
-
-	device.SetViewport(viewport);
-	device.SetScissor(area);
-
 	// second sub pass
 
 	device.NextSubpass();
@@ -238,6 +249,8 @@ void MakeVulkan::Draw()
 	device.BindUniformBuffer(m_FetchShader->GetGpuProgram(), 3, 0, nullptr, 0);
 	device.BindMeshBuffer(nullptr, nullptr, nullptr);
 	device.DrawIndexed(3);
+
+	DrawImgui();
 
 	device.EndRenderPass();
 
@@ -305,6 +318,12 @@ void MakeVulkan::PrepareResources()
 			GpuParameters::InputAttachmentParameter texture("DepthTexture", 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 			parameters.inputAttachmentParameters.push_back(texture);
 		}
+		{
+			GpuParameters::UniformParameter uniform("PerMaterial", 2, VK_SHADER_STAGE_FRAGMENT_BIT);
+			uniform.valueParameters.emplace_back("Para", kShaderDataFloat4);
+			uniform.valueParameters.emplace_back("Depth", kShaderDataInt1);
+			parameters.uniformParameters.push_back(uniform);
+		}
 		m_FetchShader->CreateGpuProgram(parameters);
 
 		RenderState renderState;
@@ -319,6 +338,8 @@ void MakeVulkan::PrepareResources()
 
 		m_FetchMat = CreateMaterial("FetchMat");
 		m_FetchMat->SetShader(m_FetchShader);
+		m_FetchMat->SetFloat4("Para", m_Brightness, m_Contrast, m_DepthMin, m_DepthMax);
+		m_FetchMat->SetInt("Depth", m_FetchDepth ? 1 : 0);
 	}
 
 	// RenderNode

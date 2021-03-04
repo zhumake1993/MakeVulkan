@@ -46,4 +46,10 @@ private:
 	Camera* m_Camera;
 
 	RenderPassDesc m_RenderPassDesc;
+
+	bool m_FetchDepth = false;
+	float m_Brightness = 0.5;
+	float m_Contrast = 1.8f;
+	float m_DepthMin = 0.0f;
+	float m_DepthMax = 1.0f;
 };

@@ -16,7 +16,8 @@ E007TextureArray：纹理数组
 
 E008Cubemap：Cubemap和CubemapArray
 
-E009InputAttachments：https://www.saschawillems.de/blog/2018/07/19/vulkan-input-attachments-and-sub-passes/
+E009InputAttachments：实现fetch
+参考https://www.saschawillems.de/blog/2018/07/19/vulkan-input-attachments-and-sub-passes/
 
 
 新增vs子工程：

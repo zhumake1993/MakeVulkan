@@ -5,8 +5,12 @@ out gl_PerVertex
   vec4 gl_Position;
 };
 
-const vec4 corners[3] = {{-1.0f, -1.0f, 0.0f, 1.0f}, {3.0f, -1.0f, 0.0f, 1.0f}, {-1.0f, 3.0f, 0.0f, 1.0f}};
+vec2 positions[3] = vec2[](
+    vec2(-1.0, -1.0),
+    vec2(3.0, -1.0),
+    vec2(-1.0, 3.0)
+);
 
 void main() {
-    gl_Position = corners[gl_VertexIndex / 2]; // gl_VertexIndex的值是0，2，4
+    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
 }
