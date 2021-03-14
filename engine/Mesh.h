@@ -33,9 +33,8 @@ private:
 
 	bool HasVertexChannel(VertexChannel channel);
 
-public:
-
-	//
+	void LoadUseObj(const std::string& filename);
+	void LoadUseAssimp(const std::string& filename);
 
 private:
 

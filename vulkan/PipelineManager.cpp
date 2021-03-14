@@ -144,22 +144,26 @@ void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState* renderState, voi
 	{
 		// Color blend state describes how blend factors are calculated (if used)
 		// We need one blend attachment state per color attachment (even if blending is not used)
-		colorBlendAttachmentState.blendEnable = renderState->blendState.blendEnable;
-		colorBlendAttachmentState.srcColorBlendFactor = renderState->blendState.srcColorBlendFactor;
-		colorBlendAttachmentState.dstColorBlendFactor = renderState->blendState.dstColorBlendFactor;
-		colorBlendAttachmentState.colorBlendOp = renderState->blendState.colorBlendOp;
-		colorBlendAttachmentState.srcAlphaBlendFactor = renderState->blendState.srcAlphaBlendFactor;
-		colorBlendAttachmentState.dstAlphaBlendFactor = renderState->blendState.dstAlphaBlendFactor;
-		colorBlendAttachmentState.alphaBlendOp = renderState->blendState.alphaBlendOp;
-		colorBlendAttachmentState.colorWriteMask = renderState->blendState.colorWriteMask;
+		colorBlendAttachmentStates.resize(renderState->blendStates.size());
+		for (size_t i = 0; i < renderState->blendStates.size(); i++)
+		{
+			colorBlendAttachmentStates[i].blendEnable = renderState->blendStates[i].blendEnable;
+			colorBlendAttachmentStates[i].srcColorBlendFactor = renderState->blendStates[i].srcColorBlendFactor;
+			colorBlendAttachmentStates[i].dstColorBlendFactor = renderState->blendStates[i].dstColorBlendFactor;
+			colorBlendAttachmentStates[i].colorBlendOp = renderState->blendStates[i].colorBlendOp;
+			colorBlendAttachmentStates[i].srcAlphaBlendFactor = renderState->blendStates[i].srcAlphaBlendFactor;
+			colorBlendAttachmentStates[i].dstAlphaBlendFactor = renderState->blendStates[i].dstAlphaBlendFactor;
+			colorBlendAttachmentStates[i].alphaBlendOp = renderState->blendStates[i].alphaBlendOp;
+			colorBlendAttachmentStates[i].colorWriteMask = renderState->blendStates[i].colorWriteMask;
+		}
 
 		colorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlendStateCreateInfo.pNext = nullptr;
 		colorBlendStateCreateInfo.flags = 0;
 		colorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
 		colorBlendStateCreateInfo.logicOp = VK_LOGIC_OP_COPY;
-		colorBlendStateCreateInfo.attachmentCount = 1;
-		colorBlendStateCreateInfo.pAttachments = &colorBlendAttachmentState;
+		colorBlendStateCreateInfo.attachmentCount = static_cast<uint32_t>(colorBlendAttachmentStates.size());
+		colorBlendStateCreateInfo.pAttachments = colorBlendAttachmentStates.data();
 		float blendConstants[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		memcpy(colorBlendStateCreateInfo.blendConstants, blendConstants, sizeof(blendConstants));
 	}

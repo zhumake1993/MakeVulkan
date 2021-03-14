@@ -63,13 +63,13 @@ Imgui::Imgui()
 	renderState.rasterizationState.cullMode = VK_CULL_MODE_NONE;
 	renderState.rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
-	renderState.blendState.blendEnable = VK_TRUE;
-	renderState.blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-	renderState.blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-	renderState.blendState.colorBlendOp = VK_BLEND_OP_ADD;
-	renderState.blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-	renderState.blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-	renderState.blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+	renderState.blendStates[0].blendEnable = VK_TRUE;
+	renderState.blendStates[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	renderState.blendStates[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	renderState.blendStates[0].colorBlendOp = VK_BLEND_OP_ADD;
+	renderState.blendStates[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	renderState.blendStates[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+	renderState.blendStates[0].alphaBlendOp = VK_BLEND_OP_ADD;
 
 	renderState.depthStencilState.depthTestEnable = VK_FALSE;
 	renderState.depthStencilState.depthWriteEnable = VK_FALSE;

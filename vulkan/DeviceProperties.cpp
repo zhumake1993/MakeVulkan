@@ -77,7 +77,7 @@ void DeviceProperties::Log()
 
 	LOG("available instance extensions ( %d ):", static_cast<int>(availableInstanceExtensions.size()));
 	for (size_t i = 0; i < availableInstanceExtensions.size(); i++) {
-		//LOG(" %s", availableInstanceExtensions[i].extensionName);
+		LOG(" %s", availableInstanceExtensions[i].extensionName);
 	}
 	LOG("\n");
 

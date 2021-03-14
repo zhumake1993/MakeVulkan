@@ -1,0 +1,66 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 26
+
+    defaultConfig {
+        applicationId "com.example.MakeVulkan"
+        minSdkVersion 21
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+
+        // 不然liblibktx.a编不过去
+        ndk {
+            abiFilters "armeabi-v7a"
+        }
+    }
+    // 指定cmake文件的路径
+    externalNativeBuild {
+        cmake {
+            path 'CMakeLists.txt'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    // 指定资源目录
+    sourceSets {
+        main.assets.srcDirs = ['assets']
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+// 拷贝资源
+task copyTask {
+    copy {
+        from '../../../data/shaders/E010SubPasses'
+        into 'assets/shaders/E010SubPasses'
+        include '*.spv'
+    }
+
+    copy {
+        from '../../../data/shaders/imgui'
+        into 'assets/shaders/imgui'
+        include '*.spv'
+    }
+
+    copy {
+        from '../../../data/textures'
+        into 'assets/textures'
+        include '*.*'
+    }
+
+    copy {
+        from '../../../data/models'
+        into 'assets/models'
+        include '*.*'
+    }
+}
+preBuild.dependsOn copyTask

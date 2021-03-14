@@ -66,6 +66,7 @@ void MakeVulkan::Init()
 	Example::Init();
 
 	auto& device = GetGfxDevice();
+	auto& dp = GetDeviceProperties();
 
 	// Camera
 	m_Camera = new Camera();
@@ -78,6 +79,31 @@ void MakeVulkan::Init()
 #endif
 
 	PrepareResources();
+
+	//// RenderPass
+	//{
+	//	// Attachments
+	//	m_RenderPassDesc.attachmentDescs.resize(2);
+	//	std::vector<AttachmentDesc>& attachmentDescs = m_RenderPassDesc.attachmentDescs;
+
+	//	attachmentDescs[0].format = dp.ScFormat.format;
+	//	attachmentDescs[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	//	attachmentDescs[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+	//	attachmentDescs[1].format = dp.depthFormat;
+	//	attachmentDescs[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	//	attachmentDescs[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+	//	// Subpasses
+	//	m_RenderPassDesc.subPassDescs.resize(1);
+	//	std::vector<SubPassDesc>& subPassDescs = m_RenderPassDesc.subPassDescs;
+
+	//	subPassDescs[0].colors = { 0 };
+	//	subPassDescs[0].useDepthStencil = true;
+
+	//	m_RenderPassDesc.present = 0;
+	//	m_RenderPassDesc.depthStencil = 1;
+	//}
 }
 
 void MakeVulkan::Release()
@@ -222,7 +248,6 @@ void MakeVulkan::PrepareResources()
 		m_Shader->CreateGpuProgram(parameters);
 
 		RenderState renderState;
-
 		m_Shader->SetRenderState(renderState);
 	}
 

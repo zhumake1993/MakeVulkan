@@ -26,7 +26,7 @@ struct PipelineCI
 	VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo;
 	VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo;
 	VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo;
-	VkPipelineColorBlendAttachmentState colorBlendAttachmentState;
+	std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachmentStates;
 	VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo;
 	VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo;
 };

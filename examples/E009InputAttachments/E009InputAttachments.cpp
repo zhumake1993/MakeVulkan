@@ -230,7 +230,7 @@ void MakeVulkan::Draw()
 	device.SetViewport(viewport);
 	device.SetScissor(area);
 
-	// first sub pass
+	// First sub pass
 
 	SetShader(m_Shader);
 
@@ -238,7 +238,7 @@ void MakeVulkan::Draw()
 
 	DrawRenderNode(m_Node);
 
-	// second sub pass
+	// Second sub pass
 
 	device.NextSubpass();
 
@@ -248,7 +248,7 @@ void MakeVulkan::Draw()
 
 	device.BindUniformBuffer(m_FetchShader->GetGpuProgram(), 3, 0, nullptr, 0);
 	device.BindMeshBuffer(nullptr, nullptr, nullptr);
-	device.DrawIndexed(3);
+	device.DrawIndexed(3); // gl_VertexIndex的值可能是0 2 4，似乎跟VkIndexType是16位还是32位有关。把DrawImgui放前面，就是0 2 4
 
 	DrawImgui();
 
@@ -327,7 +327,6 @@ void MakeVulkan::PrepareResources()
 		m_FetchShader->CreateGpuProgram(parameters);
 
 		RenderState renderState;
-
 		m_FetchShader->SetRenderState(renderState);
 	}
 
