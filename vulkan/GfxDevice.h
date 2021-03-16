@@ -4,6 +4,7 @@
 #include "NonCopyable.h"
 #include "GfxTypes.h"
 #include "GpuProgram.h"
+#include "GfxDeviceObjects.h"
 
 struct VKInstance;
 struct VKSurface;
@@ -12,10 +13,11 @@ struct VKSwapChain;
 struct VKCommandPool;
 
 struct VKCommandBuffer;
-struct VKRenderPass;
+class VKRenderPass;
 struct VKBuffer;
 struct VKImage;
 struct VKImageView;
+class ImageImpl;
 
 class GarbageCollector;
 class BufferManager;
@@ -68,7 +70,7 @@ public:
 	void BeginCommandBuffer();
 	void EndCommandBuffer();
 
-	void BeginRenderPass(Rect2D& renderArea, Color& clearColor, DepthStencil& clearDepthStencil);
+	void BeginRenderPass(Rect2D& renderArea, std::vector<VkClearValue>& clearValues);
 	void EndRenderPass();
 
 	void SetViewport(Viewport& viewport);
@@ -79,19 +81,25 @@ public:
 	void FlushBuffer(Buffer* buffer);
 	void ReleaseBuffer(Buffer* buffer);
 
-	Image* CreateImage(ImageType imageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels);
-	void UpdateImage(Image* image, void* data, uint64_t size, std::vector<uint64_t>& mipOffsets);
+	Image* CreateImage(VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount);
+	void UpdateImage(Image* image, void* data, uint64_t size, const std::vector<std::vector<std::vector<uint64_t>>>& offsets);
 	void ReleaseImage(Image* image);
 
 	GpuProgram* CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode);
 
 	void SetPass(GpuProgram* gpuProgram, RenderState* renderState, void* scdata);
 
-	void BindShaderResources(GpuProgram* gpuProgram, int set, ShaderBindings shaderBindings);
+	void BindUniformBuffer(GpuProgram* gpuProgram, int set, int binding, void* data, uint64_t size);
+
+	void BindImage(GpuProgram* gpuProgram, int binding, void* image);
+
+	void BindMaterial(GpuProgram* gpuProgram, MaterialBindData& data);
 
 	void BindMeshBuffer(Buffer* vertexBuffer, Buffer* indexBuffer, VertexDescription* vertexDescription, VkIndexType indexType = VK_INDEX_TYPE_UINT32);
 
 	void DrawIndexed(uint32_t indexCount, uint32_t instanceCount = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0);
+
+	void DrawBatch(DrawBatchs& drawBatchs);
 
 	void PushConstants(GpuProgram* gpuProgram, void* data, uint32_t offset, uint32_t size);
 
@@ -99,6 +107,9 @@ public:
 	void WriteTimeStamp(std::string name);
 	void ResolveTimeStamp();
 	std::string GetLastGPUTimeStamp();
+
+	void SetRenderPass(RenderPassDesc& renderPassDesc);
+	void NextSubpass();
 
 private:
 
@@ -109,6 +120,10 @@ private:
 	VkSemaphore CreateVKSemaphore();
 
 	VkFence CreateVKFence(bool signaled);
+
+	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, VKBuffer* vkBuffer, uint64_t offset = 0, uint64_t range = VK_WHOLE_SIZE);
+	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, ImageImpl* imageImpl);
+	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, VKImageView* imageView); // InputAttachment只需要view
 
 private:
 
@@ -129,16 +144,12 @@ private:
 	DescriptorSetManager* m_DescriptorSetManager = nullptr;
 	PipelineManager* m_PipelineManager = nullptr;
 
-	// Depth
-	VKImage* m_DepthImage;
-	VKImageView* m_DepthView;
-
 	// RenderPass
 	VKRenderPass* m_VKRenderPass = nullptr;
 
 	// SwapChain中的image数量可能并不等于FrameResourcesCount，所以要单独处理Framebuffer
 	uint32_t m_ImageIndex;
-	std::vector<VkFramebuffer> m_Framebuffers;
+	//std::vector<VkFramebuffer> m_Framebuffers;
 
 	// 用于传数据
 	VKCommandBuffer* m_UploadCommandBuffer;

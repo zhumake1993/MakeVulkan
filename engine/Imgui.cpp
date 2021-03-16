@@ -19,6 +19,11 @@ Imgui::Imgui()
 
 	ImGui::StyleColorsDark();
 
+#if VK_USE_PLATFORM_ANDROID_KHR
+	ImGuiStyle* style = &ImGui::GetStyle();
+	style->ScaleAllSizes(3.0f);
+#endif
+
 	auto& device = GetGfxDevice();
 
 	// font texture, use the default
@@ -28,9 +33,8 @@ Imgui::Imgui()
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 	uint64_t dataSize = width * height * 4 * sizeof(char);
 
-	m_FontImage = device.CreateImage(kImageType2D, VK_FORMAT_R8G8B8A8_UNORM, width, height, 1);
-	std::vector<uint64_t> mipOffsets = { 0 };
-	device.UpdateImage(m_FontImage, pixels, dataSize, mipOffsets);
+	m_FontImage = device.CreateImage(VK_FORMAT_R8G8B8A8_UNORM, width, height, 1, 1, 1);
+	device.UpdateImage(m_FontImage, pixels, dataSize, { { { 0 } } });
 
 	// Vertex buffer
 
@@ -59,13 +63,13 @@ Imgui::Imgui()
 	renderState.rasterizationState.cullMode = VK_CULL_MODE_NONE;
 	renderState.rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
-	renderState.blendState.blendEnable = VK_TRUE;
-	renderState.blendState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-	renderState.blendState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-	renderState.blendState.colorBlendOp = VK_BLEND_OP_ADD;
-	renderState.blendState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-	renderState.blendState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-	renderState.blendState.alphaBlendOp = VK_BLEND_OP_ADD;
+	renderState.blendStates[0].blendEnable = VK_TRUE;
+	renderState.blendStates[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	renderState.blendStates[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	renderState.blendStates[0].colorBlendOp = VK_BLEND_OP_ADD;
+	renderState.blendStates[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	renderState.blendStates[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+	renderState.blendStates[0].alphaBlendOp = VK_BLEND_OP_ADD;
 
 	renderState.depthStencilState.depthTestEnable = VK_FALSE;
 	renderState.depthStencilState.depthWriteEnable = VK_FALSE;
@@ -158,9 +162,7 @@ void Imgui::Draw()
 
 	device.SetPass(gpuProgram, m_Shader->GetRenderState(), nullptr);
 
-	ShaderBindings shaderBindings;
-	shaderBindings.imageBindings.emplace_back(0, m_FontImage);
-	device.BindShaderResources(gpuProgram, 2, shaderBindings);
+	GetGfxDevice().BindImage(gpuProgram, 0, m_FontImage);
 
 	device.BindMeshBuffer(m_VertexBuffer, m_IndexBuffer, &m_VertexDes, VK_INDEX_TYPE_UINT16);
 

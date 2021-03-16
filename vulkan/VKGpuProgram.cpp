@@ -21,7 +21,7 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 
 			VkDescriptorSetLayoutBinding binding;
 			binding.binding = 0;
-			binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 			binding.descriptorCount = 1;
 			binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 			binding.pImmutableSamplers = nullptr;
@@ -42,7 +42,7 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 
 			VkDescriptorSetLayoutBinding binding;
 			binding.binding = 0;
-			binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 			binding.descriptorCount = 1;
 			binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 			binding.pImmutableSamplers = nullptr;
@@ -60,7 +60,7 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 		{
 			VkDescriptorSetLayoutBinding binding = {};
 			binding.binding = uniform.binding;
-			binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; // or VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC?
+			binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 			binding.descriptorCount = 1;
 			binding.stageFlags = uniform.stageFlags;
 			binding.pImmutableSamplers = nullptr;
@@ -71,7 +71,7 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 		{
 			VkDescriptorSetLayoutBinding binding = {};
 			binding.binding = uniform.binding;
-			binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; // or VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC?
+			binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 			binding.descriptorCount = 1;
 			binding.stageFlags = uniform.stageFlags;
 			binding.pImmutableSamplers = nullptr;
@@ -91,6 +91,18 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 		binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		binding.descriptorCount = 1;
 		binding.stageFlags = texture.stageFlags;
+		binding.pImmutableSamplers = nullptr;
+
+		bindingsPerMaterial.push_back(binding);
+	}
+
+	for (auto& inputAttachment : parameters.inputAttachmentParameters)
+	{
+		VkDescriptorSetLayoutBinding binding = {};
+		binding.binding = inputAttachment.binding;
+		binding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		binding.descriptorCount = 1;
+		binding.stageFlags = inputAttachment.stageFlags;
 		binding.pImmutableSamplers = nullptr;
 
 		bindingsPerMaterial.push_back(binding);

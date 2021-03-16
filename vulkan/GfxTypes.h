@@ -69,13 +69,6 @@ enum MemoryPropertyType
 	kMemoryPropertyHostCoherent
 };
 
-enum ImageType
-{
-	kImageType1D,
-	kImageType2D,
-	kImageType3D
-};
-
 enum ShaderDataType
 {
 	kShaderDataFloat1,
@@ -117,8 +110,11 @@ struct BlendState
 
 struct RenderState
 {
+	RenderState() : blendStates(1)
+	{}
+
 	RasterizationState rasterizationState;
-	BlendState blendState;
+	std::vector<BlendState> blendStates;
 	DepthStencilState depthStencilState;
 	std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT , VK_DYNAMIC_STATE_SCISSOR };
 };

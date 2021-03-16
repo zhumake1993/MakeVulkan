@@ -7,8 +7,8 @@
 
 struct VKImage : public VKResource
 {
-	VKImage(VkDevice vkDevice, VkImageType vkImageType, VkFormat vkFormat, uint32_t vkWidth, uint32_t vkHeight, uint32_t vkMipLevels, VkImageUsageFlags vkUsage) :
-		device(vkDevice), imageType(vkImageType), format(vkFormat), width(vkWidth), height(vkHeight), mipLevels(vkMipLevels), usage(vkUsage) {}
+	VKImage(VkDevice vkDevice, VkImageType vkImageType, VkFormat vkFormat, uint32_t vkWidth, uint32_t vkHeight, uint32_t vkMipLevels, uint32_t _layerCount, uint32_t _faceCount, VkImageUsageFlags vkUsage) :
+		device(vkDevice), imageType(vkImageType), format(vkFormat), width(vkWidth), height(vkHeight), mipLevels(vkMipLevels), layerCount(_layerCount), faceCount(_faceCount), usage(vkUsage) {}
 	virtual ~VKImage()
 	{
 		vkDestroyImage(device, image, nullptr);
@@ -20,6 +20,8 @@ struct VKImage : public VKResource
 	uint32_t width;
 	uint32_t height;
 	uint32_t mipLevels;
+	uint32_t layerCount;
+	uint32_t faceCount;
 	VkImageUsageFlags usage;
 
 	VkImage image = VK_NULL_HANDLE;
@@ -67,7 +69,7 @@ class ImageImpl : public Image
 {
 public:
 
-	ImageImpl(ImageType imageType, VkFormat format, uint32_t width, uint32_t height, VKImage* image, VKImageView* view, VKImageSampler* sampler);
+	ImageImpl(VKImage* image, VKImageView* view, VKImageSampler* sampler);
 	virtual ~ImageImpl();
 
 	VKImage* GetImage() { return m_Image; }
@@ -95,8 +97,8 @@ public:
 	ImageManager(VkDevice vkDevice, GarbageCollector* gc);
 	~ImageManager();
 
-	VKImage* CreateImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, VkImageUsageFlags usage);
-	VKImageView* CreateView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels);
+	VKImage* CreateImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, VkImageUsageFlags usage);
+	VKImageView* CreateView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount);
 	VKImageSampler* CreateSampler(uint32_t mipLevels, float maxAnisotropy);
 
 private:

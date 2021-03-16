@@ -49,6 +49,10 @@ include_directories(external/ktx/include)
 file(GLOB imgui_sources external/imgui/*.h external/imgui/*.cpp external/imgui/*.hpp)
 source_group("imgui" FILES ${imgui_sources})
 
+# Assimp
+# 安卓上面死活编不过去。。。
+#include_directories(external/assimp)
+
 # 生成链接库
 add_library (base ${common_sources} ${vulkan_sources} ${engine_sources} ${imgui_sources})
 
@@ -58,6 +62,14 @@ add_library (base ${common_sources} ${vulkan_sources} ${engine_sources} ${imgui_
 # Khronos texture format (https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/)
 # 这里不能直接使用相对路径
 target_link_libraries(base ${PROJECT_SOURCE_DIR}/external/ktx/lib/ktx.lib)
+
+# Assimp
+#target_link_libraries(base ${PROJECT_SOURCE_DIR}/external/assimp/assimp-vc140-mt.lib)
+# Assimp还需要dll，需要copy到可执行目录
+#add_custom_command(TARGET base POST_BUILD        						# Adds a post-build event to MyTest
+#    COMMAND ${CMAKE_COMMAND} -E copy 									# which executes "cmake - E copy_if_different..."
+#        "${PROJECT_SOURCE_DIR}/external/assimp/assimp-vc140-mt.dll"     # <--this is in-file
+#        $<TARGET_FILE_DIR:base>)                 						# <--this is out-file path
 
 # 查找所有的example
 file(GLOB EXAMPLES RELATIVE ${PROJECT_SOURCE_DIR}/examples/ examples/*)

@@ -150,34 +150,30 @@ VKSwapChain::VKSwapChain(VkPhysicalDevice physicalDevice, VkDevice vkDevice, VkS
 {
 	CheckSurfaceStats(physicalDevice, vkSurface);
 
-	numberOfImages = GetSwapChainNumImages();
-	format = GetSwapChainFormat();
-	extent = GetSwapChainExtent();
-	usage = GetSwapChainUsageFlags();
-	transform = GetSwapChainTransform();
-	presentMode = GetSwapChainPresentMode();
+	auto& dp = GetDeviceProperties();
+
+	dp.ScNumberOfImages = GetSwapChainNumImages();
+	dp.ScFormat = GetSwapChainFormat();
+	dp.ScExtent = GetSwapChainExtent();
+	dp.ScUsage = GetSwapChainUsageFlags();
+	dp.ScTransform = GetSwapChainTransform();
+	dp.ScPresentMode = GetSwapChainPresentMode();
 
 	// 跟全屏有关，这里我们不使用
 	VkSwapchainKHR oldSwapChain = VK_NULL_HANDLE;
 
-	if ((extent.width == 0) || (extent.height == 0)) {
+	if ((dp.ScExtent.width == 0) || (dp.ScExtent.height == 0)) {
 		// Current surface size is (0, 0) so we can't create a swap chain and render anything (CanRender == false)
 		// But we don't wont to kill the application as this situation may occur i.e. when window gets minimized
+		LOGE("extent is 0"); // 直接退出
 		return;
 	}
 
-	LOG("numberOfImages: %d\n", numberOfImages);
-	LOG("format: %d %d\n", format.format, format.colorSpace);
-	LOG("extent: %d %d\n", extent.width, extent.height);
-	LOG("usage: %d\n", usage);
-	LOG("transform: %d\n", transform);
-	LOG("presentMode: %d\n", presentMode);
-
-	if (windowWidth != extent.width || windowHeight != extent.height)
+	// 实际的屏幕分辨率可能不一样
+	if (windowWidth != dp.ScExtent.width || windowHeight != dp.ScExtent.height)
 	{
-		LOG("windowWidth or windowHeight has been changed.");
-		windowWidth = extent.width;
-		windowHeight = extent.height;
+		windowWidth = dp.ScExtent.width;
+		windowHeight = dp.ScExtent.height;
 	}
 
 	VkSwapchainCreateInfoKHR swapchainCI = {};
@@ -185,18 +181,18 @@ VKSwapChain::VKSwapChain(VkPhysicalDevice physicalDevice, VkDevice vkDevice, VkS
 	swapchainCI.pNext = nullptr;
 	swapchainCI.flags = 0;
 	swapchainCI.surface = vkSurface;
-	swapchainCI.minImageCount = numberOfImages;
-	swapchainCI.imageFormat = format.format;
-	swapchainCI.imageColorSpace = format.colorSpace;
-	swapchainCI.imageExtent = extent;
+	swapchainCI.minImageCount = dp.ScNumberOfImages;
+	swapchainCI.imageFormat = dp.ScFormat.format;
+	swapchainCI.imageColorSpace = dp.ScFormat.colorSpace;
+	swapchainCI.imageExtent = dp.ScExtent;
 	swapchainCI.imageArrayLayers = 1;
-	swapchainCI.imageUsage = usage;
+	swapchainCI.imageUsage = dp.ScUsage;
 	swapchainCI.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	swapchainCI.queueFamilyIndexCount = 0;
 	swapchainCI.pQueueFamilyIndices = nullptr;
-	swapchainCI.preTransform = transform;
+	swapchainCI.preTransform = dp.ScTransform;
 	swapchainCI.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-	swapchainCI.presentMode = presentMode;
+	swapchainCI.presentMode = dp.ScPresentMode;
 	swapchainCI.clipped = VK_TRUE;
 	swapchainCI.oldSwapchain = oldSwapChain;
 
@@ -232,10 +228,9 @@ VKSwapChain::VKSwapChain(VkPhysicalDevice physicalDevice, VkDevice vkDevice, VkS
 
 	// 创建SwapChain时提供的参数是minImageCount，实际的image数量可能不一样
 	// 尤其是使用VK_PRESENT_MODE_MAILBOX_KHR的时候
-	if (numberOfImages != imageCount)
+	if (dp.ScNumberOfImages != imageCount)
 	{
-		LOG("numberOfImages has been changed.");
-		numberOfImages = imageCount;
+		dp.ScNumberOfImages = imageCount;
 	}
 
 	swapChainImageViews.resize(imageCount);
@@ -247,7 +242,7 @@ VKSwapChain::VKSwapChain(VkPhysicalDevice physicalDevice, VkDevice vkDevice, VkS
 		colorAttachmentView.flags = 0;
 		colorAttachmentView.image = swapChainImages[i];
 		colorAttachmentView.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		colorAttachmentView.format = format.format;
+		colorAttachmentView.format = dp.ScFormat.format;
 		colorAttachmentView.components = {
 			VK_COMPONENT_SWIZZLE_R,
 			VK_COMPONENT_SWIZZLE_G,

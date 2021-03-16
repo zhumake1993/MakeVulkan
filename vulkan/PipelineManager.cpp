@@ -13,7 +13,7 @@ PipelineCI::~PipelineCI()
 {
 }
 
-void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState* renderState, void* scdata, VkRenderPass renderPass)
+void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState* renderState, void* scdata, VkRenderPass renderPass, uint32_t subPassIndex)
 {
 	memset(this, 0, sizeof(*this));
 
@@ -33,7 +33,7 @@ void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState* renderState, voi
 	pipelineCreateInfo.pDynamicState = &dynamicStateCreateInfo;
 	pipelineCreateInfo.layout = vkGpuProgram->GetPipelineLayout();
 	pipelineCreateInfo.renderPass = renderPass;
-	pipelineCreateInfo.subpass = 0;
+	pipelineCreateInfo.subpass = subPassIndex;
 	pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 	pipelineCreateInfo.basePipelineIndex = -1;
 
@@ -144,22 +144,26 @@ void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState* renderState, voi
 	{
 		// Color blend state describes how blend factors are calculated (if used)
 		// We need one blend attachment state per color attachment (even if blending is not used)
-		colorBlendAttachmentState.blendEnable = renderState->blendState.blendEnable;
-		colorBlendAttachmentState.srcColorBlendFactor = renderState->blendState.srcColorBlendFactor;
-		colorBlendAttachmentState.dstColorBlendFactor = renderState->blendState.dstColorBlendFactor;
-		colorBlendAttachmentState.colorBlendOp = renderState->blendState.colorBlendOp;
-		colorBlendAttachmentState.srcAlphaBlendFactor = renderState->blendState.srcAlphaBlendFactor;
-		colorBlendAttachmentState.dstAlphaBlendFactor = renderState->blendState.dstAlphaBlendFactor;
-		colorBlendAttachmentState.alphaBlendOp = renderState->blendState.alphaBlendOp;
-		colorBlendAttachmentState.colorWriteMask = renderState->blendState.colorWriteMask;
+		colorBlendAttachmentStates.resize(renderState->blendStates.size());
+		for (size_t i = 0; i < renderState->blendStates.size(); i++)
+		{
+			colorBlendAttachmentStates[i].blendEnable = renderState->blendStates[i].blendEnable;
+			colorBlendAttachmentStates[i].srcColorBlendFactor = renderState->blendStates[i].srcColorBlendFactor;
+			colorBlendAttachmentStates[i].dstColorBlendFactor = renderState->blendStates[i].dstColorBlendFactor;
+			colorBlendAttachmentStates[i].colorBlendOp = renderState->blendStates[i].colorBlendOp;
+			colorBlendAttachmentStates[i].srcAlphaBlendFactor = renderState->blendStates[i].srcAlphaBlendFactor;
+			colorBlendAttachmentStates[i].dstAlphaBlendFactor = renderState->blendStates[i].dstAlphaBlendFactor;
+			colorBlendAttachmentStates[i].alphaBlendOp = renderState->blendStates[i].alphaBlendOp;
+			colorBlendAttachmentStates[i].colorWriteMask = renderState->blendStates[i].colorWriteMask;
+		}
 
 		colorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlendStateCreateInfo.pNext = nullptr;
 		colorBlendStateCreateInfo.flags = 0;
 		colorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
 		colorBlendStateCreateInfo.logicOp = VK_LOGIC_OP_COPY;
-		colorBlendStateCreateInfo.attachmentCount = 1;
-		colorBlendStateCreateInfo.pAttachments = &colorBlendAttachmentState;
+		colorBlendStateCreateInfo.attachmentCount = static_cast<uint32_t>(colorBlendAttachmentStates.size());
+		colorBlendStateCreateInfo.pAttachments = colorBlendAttachmentStates.data();
 		float blendConstants[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		memcpy(colorBlendStateCreateInfo.blendConstants, blendConstants, sizeof(blendConstants));
 	}
@@ -206,18 +210,17 @@ void PipelineManager::Update()
 	m_FrameIndex++;
 }
 
-void PipelineManager::SetPipelineKey(VKGpuProgram * vkGpuProgram, RenderState * renderState, void * scdata, VkRenderPass renderPass)
+void PipelineManager::SetPipelineKey(VKGpuProgram * vkGpuProgram, RenderState * renderState, void * scdata, VkRenderPass renderPass, uint32_t subPassIndex)
 {
 	m_PipelineKey.vkGpuProgram = vkGpuProgram;
 	m_PipelineKey.renderState = renderState;
 	m_PipelineKey.scdata = scdata;
 	m_PipelineKey.renderPass = renderPass;
+	m_PipelineKey.subPassIndex = subPassIndex;
 }
 
 VkPipeline PipelineManager::CreatePipeline(VertexDescription * vertexDescription)
 {
-	PROFILER(CreatePipeline);
-
 	m_PipelineKey.vertexDescription = vertexDescription;
 
 	if (m_PSOCache.find(m_PipelineKey) == m_PSOCache.end())
@@ -239,8 +242,9 @@ PipelineManager::Pipeline* PipelineManager::CreatePipelineInternal(PipelineKey &
 
 	PipelineCI pipelineCI;
 
-	pipelineCI.Reset(pipelineKey.vkGpuProgram, pipelineKey.renderState, pipelineKey.scdata, pipelineKey.renderPass);
+	pipelineCI.Reset(pipelineKey.vkGpuProgram, pipelineKey.renderState, pipelineKey.scdata, pipelineKey.renderPass, pipelineKey.subPassIndex);
 
+	if(pipelineKey.vertexDescription)
 	{
 		auto& vertexDescription = *pipelineKey.vertexDescription;
 
@@ -270,10 +274,12 @@ PipelineManager::Pipeline* PipelineManager::CreatePipelineInternal(PipelineKey &
 		pipelineCI.vertexInputStateCreateInfo.vertexAttributeDescriptionCount = num;
 		pipelineCI.vertexInputStateCreateInfo.pVertexAttributeDescriptions = pipelineCI.vertexInputAttributs;
 	}
+	else
+	{
+		pipelineCI.vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	}
 
-	PROFILER_BEGIN(CreateGraphicsPipelines);
 	VK_CHECK_RESULT(vkCreateGraphicsPipelines(m_Device, m_PipelineCache, 1, &pipelineCI.pipelineCreateInfo, nullptr, &pipeline->pipeline));
-	PROFILER_END(CreateGraphicsPipelines);
 
 	return pipeline;
 }

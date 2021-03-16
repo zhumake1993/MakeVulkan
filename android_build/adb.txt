@@ -1,0 +1,2006 @@
+--------- beginning of crash
+--------- beginning of system
+--------- beginning of main
+03-10 14:37:27.310 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.310 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.310 23022 23103 E Unity   : 
+03-10 14:37:27.310 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.310 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.310 23022 23103 I Unity   : 
+03-10 14:37:27.310 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.310 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.310 23022 23104 I Unity   : 
+03-10 14:37:27.310 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.310 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.310 23022 23103 I Unity   : 
+03-10 14:37:27.311 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.311 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.311 23022 23103 I Unity   : 
+03-10 14:37:27.311 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.311 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.311 23022 23103 E Unity   : 
+03-10 14:37:27.311 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.311 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.311 23022 23103 E Unity   : 
+03-10 14:37:27.311 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.311 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.311 23022 23103 E Unity   : 
+03-10 14:37:27.311 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.311 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.311 23022 23104 I Unity   : 
+03-10 14:37:27.312 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.312 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.312 23022 23103 I Unity   : 
+03-10 14:37:27.312 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.312 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.312 23022 23103 I Unity   : 
+03-10 14:37:27.312 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.312 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.312 23022 23103 I Unity   : 
+03-10 14:37:27.312 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.312 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.312 23022 23103 I Unity   : 
+03-10 14:37:27.312 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.312 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.312 23022 23103 I Unity   : 
+03-10 14:37:27.312 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.312 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.312 23022 23103 E Unity   : 
+03-10 14:37:27.312 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.312 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.312 23022 23103 E Unity   : 
+03-10 14:37:27.312 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.312 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.312 23022 23103 E Unity   : 
+03-10 14:37:27.312 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.312 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.312 23022 23103 I Unity   : 
+03-10 14:37:27.313 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.313 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.313 23022 23104 I Unity   : 
+03-10 14:37:27.313 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.313 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.313 23022 23103 I Unity   : 
+03-10 14:37:27.319 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.319 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.319 23022 23103 I Unity   : 
+03-10 14:37:27.319 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.319 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.319 23022 23103 E Unity   : 
+03-10 14:37:27.319 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.319 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.319 23022 23103 E Unity   : 
+03-10 14:37:27.319 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.319 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.319 23022 23103 E Unity   : 
+03-10 14:37:27.319 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.319 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.319 23022 23104 I Unity   : 
+03-10 14:37:27.320 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.320 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.320 23022 23103 I Unity   : 
+03-10 14:37:27.320 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.320 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.320 23022 23103 I Unity   : 
+03-10 14:37:27.320 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.320 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.320 23022 23103 I Unity   : 
+03-10 14:37:27.320 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.320 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.320 23022 23103 I Unity   : 
+03-10 14:37:27.320 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.320 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.320 23022 23103 I Unity   : 
+03-10 14:37:27.320 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.320 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.320 23022 23103 E Unity   : 
+03-10 14:37:27.320 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.320 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.320 23022 23103 E Unity   : 
+03-10 14:37:27.320 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.320 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.320 23022 23103 E Unity   : 
+03-10 14:37:27.320 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.320 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.320 23022 23103 I Unity   : 
+03-10 14:37:27.320 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.320 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.320 23022 23104 I Unity   : 
+03-10 14:37:27.320 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.320 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.320 23022 23103 I Unity   : 
+03-10 14:37:27.321 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.321 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.321 23022 23103 I Unity   : 
+03-10 14:37:27.321 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.321 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.321 23022 23103 E Unity   : 
+03-10 14:37:27.321 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.321 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.321 23022 23103 E Unity   : 
+03-10 14:37:27.321 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.321 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.321 23022 23103 E Unity   : 
+03-10 14:37:27.321 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.321 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.321 23022 23104 I Unity   : 
+03-10 14:37:27.322 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.322 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.322 23022 23103 I Unity   : 
+03-10 14:37:27.322 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.322 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.322 23022 23103 I Unity   : 
+03-10 14:37:27.322 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.322 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.322 23022 23103 I Unity   : 
+03-10 14:37:27.322 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.322 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.322 23022 23103 I Unity   : 
+03-10 14:37:27.323 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.323 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.323 23022 23103 I Unity   : 
+03-10 14:37:27.323 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.323 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.323 23022 23103 E Unity   : 
+03-10 14:37:27.323 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.323 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.323 23022 23103 E Unity   : 
+03-10 14:37:27.323 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.323 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.323 23022 23103 E Unity   : 
+03-10 14:37:27.323 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.323 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.323 23022 23103 I Unity   : 
+03-10 14:37:27.323 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.323 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.323 23022 23103 I Unity   : 
+03-10 14:37:27.323 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.323 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.323 23022 23104 I Unity   : 
+03-10 14:37:27.324 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.324 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.324 23022 23103 I Unity   : 
+03-10 14:37:27.324 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.324 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.324 23022 23103 E Unity   : 
+03-10 14:37:27.324 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.324 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.324 23022 23103 E Unity   : 
+03-10 14:37:27.324 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.324 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.324 23022 23103 E Unity   : 
+03-10 14:37:27.324 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.324 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.324 23022 23104 I Unity   : 
+03-10 14:37:27.325 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.325 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.325 23022 23103 I Unity   : 
+03-10 14:37:27.325 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.325 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.325 23022 23103 I Unity   : 
+03-10 14:37:27.325 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.325 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.325 23022 23103 I Unity   : 
+03-10 14:37:27.325 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.325 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.325 23022 23103 I Unity   : 
+03-10 14:37:27.325 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.325 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.325 23022 23103 I Unity   : 
+03-10 14:37:27.325 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.325 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.325 23022 23103 E Unity   : 
+03-10 14:37:27.325 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.325 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.325 23022 23103 E Unity   : 
+03-10 14:37:27.325 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.325 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.325 23022 23103 E Unity   : 
+03-10 14:37:27.325 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.325 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.325 23022 23103 I Unity   : 
+03-10 14:37:27.325 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.325 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.325 23022 23104 I Unity   : 
+03-10 14:37:27.325 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.325 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.325 23022 23103 I Unity   : 
+03-10 14:37:27.326 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.326 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.326 23022 23103 I Unity   : 
+03-10 14:37:27.326 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.326 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.326 23022 23103 E Unity   : 
+03-10 14:37:27.326 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.326 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.326 23022 23103 E Unity   : 
+03-10 14:37:27.326 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.326 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.326 23022 23103 E Unity   : 
+03-10 14:37:27.326 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.326 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.326 23022 23104 I Unity   : 
+03-10 14:37:27.327 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.327 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.327 23022 23103 I Unity   : 
+03-10 14:37:27.328 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.328 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.328 23022 23103 I Unity   : 
+03-10 14:37:27.328 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.328 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.328 23022 23103 I Unity   : 
+03-10 14:37:27.328 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.328 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.328 23022 23103 I Unity   : 
+03-10 14:37:27.328 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.328 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.328 23022 23103 I Unity   : 
+03-10 14:37:27.328 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.328 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.328 23022 23103 E Unity   : 
+03-10 14:37:27.328 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.328 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.328 23022 23103 E Unity   : 
+03-10 14:37:27.328 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.328 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.328 23022 23103 E Unity   : 
+03-10 14:37:27.328 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.328 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.328 23022 23103 I Unity   : 
+03-10 14:37:27.328 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.328 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.328 23022 23104 I Unity   : 
+03-10 14:37:27.328 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.328 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.328 23022 23103 I Unity   : 
+03-10 14:37:27.335 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.335 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.335 23022 23103 I Unity   : 
+03-10 14:37:27.335 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.335 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.335 23022 23103 E Unity   : 
+03-10 14:37:27.335 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.335 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.335 23022 23103 E Unity   : 
+03-10 14:37:27.335 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.335 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.335 23022 23103 E Unity   : 
+03-10 14:37:27.335 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.335 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.335 23022 23104 I Unity   : 
+03-10 14:37:27.336 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.336 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.336 23022 23103 I Unity   : 
+03-10 14:37:27.336 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.336 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.336 23022 23103 I Unity   : 
+03-10 14:37:27.336 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.336 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.336 23022 23103 I Unity   : 
+03-10 14:37:27.336 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.336 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.336 23022 23103 I Unity   : 
+03-10 14:37:27.336 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.336 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.336 23022 23103 I Unity   : 
+03-10 14:37:27.336 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.336 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.336 23022 23103 E Unity   : 
+03-10 14:37:27.336 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.336 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.336 23022 23103 E Unity   : 
+03-10 14:37:27.336 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.336 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.336 23022 23103 E Unity   : 
+03-10 14:37:27.336 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.336 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.336 23022 23103 I Unity   : 
+03-10 14:37:27.336 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.336 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.336 23022 23103 I Unity   : 
+03-10 14:37:27.336 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.336 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.336 23022 23104 I Unity   : 
+03-10 14:37:27.337 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.337 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.337 23022 23103 I Unity   : 
+03-10 14:37:27.337 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.337 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.337 23022 23103 E Unity   : 
+03-10 14:37:27.337 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.337 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.337 23022 23103 E Unity   : 
+03-10 14:37:27.337 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.337 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.337 23022 23103 E Unity   : 
+03-10 14:37:27.337 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.337 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.337 23022 23104 I Unity   : 
+03-10 14:37:27.339 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.339 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.339 23022 23103 I Unity   : 
+03-10 14:37:27.340 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.340 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.340 23022 23103 I Unity   : 
+03-10 14:37:27.340 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.340 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.340 23022 23103 I Unity   : 
+03-10 14:37:27.340 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.340 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.340 23022 23103 I Unity   : 
+03-10 14:37:27.340 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.340 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.340 23022 23103 I Unity   : 
+03-10 14:37:27.340 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.340 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.340 23022 23103 E Unity   : 
+03-10 14:37:27.340 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.340 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.340 23022 23103 E Unity   : 
+03-10 14:37:27.340 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.340 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.340 23022 23103 E Unity   : 
+03-10 14:37:27.340 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.340 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.340 23022 23104 I Unity   : 
+03-10 14:37:27.340 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.340 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.340 23022 23103 I Unity   : 
+03-10 14:37:27.340 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.340 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.340 23022 23103 I Unity   : 
+03-10 14:37:27.340 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.340 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.340 23022 23103 I Unity   : 
+03-10 14:37:27.341 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.341 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.341 23022 23103 E Unity   : 
+03-10 14:37:27.341 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.341 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.341 23022 23103 E Unity   : 
+03-10 14:37:27.341 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.341 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.341 23022 23103 E Unity   : 
+03-10 14:37:27.341 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.341 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.341 23022 23104 I Unity   : 
+03-10 14:37:27.341 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.341 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.341 23022 23103 I Unity   : 
+03-10 14:37:27.341 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.341 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.341 23022 23103 I Unity   : 
+03-10 14:37:27.341 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.341 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.341 23022 23103 I Unity   : 
+03-10 14:37:27.341 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.341 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.341 23022 23103 I Unity   : 
+03-10 14:37:27.341 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.341 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.341 23022 23103 I Unity   : 
+03-10 14:37:27.341 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.341 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.341 23022 23103 E Unity   : 
+03-10 14:37:27.342 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.342 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.342 23022 23103 E Unity   : 
+03-10 14:37:27.342 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.342 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.342 23022 23103 E Unity   : 
+03-10 14:37:27.342 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.342 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.342 23022 23103 I Unity   : 
+03-10 14:37:27.342 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.342 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.342 23022 23103 I Unity   : 
+03-10 14:37:27.342 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.342 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.342 23022 23104 I Unity   : 
+03-10 14:37:27.342 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.342 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.342 23022 23103 I Unity   : 
+03-10 14:37:27.342 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.342 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.342 23022 23103 E Unity   : 
+03-10 14:37:27.342 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.342 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.342 23022 23103 E Unity   : 
+03-10 14:37:27.342 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.342 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.342 23022 23103 E Unity   : 
+03-10 14:37:27.343 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.343 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.343 23022 23104 I Unity   : 
+03-10 14:37:27.343 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.343 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.343 23022 23103 I Unity   : 
+03-10 14:37:27.343 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.343 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.343 23022 23103 I Unity   : 
+03-10 14:37:27.343 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.343 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.343 23022 23103 I Unity   : 
+03-10 14:37:27.343 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.343 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.343 23022 23103 I Unity   : 
+03-10 14:37:27.343 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.343 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.343 23022 23103 I Unity   : 
+03-10 14:37:27.343 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.343 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.343 23022 23103 E Unity   : 
+03-10 14:37:27.343 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.343 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.343 23022 23103 E Unity   : 
+03-10 14:37:27.343 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.343 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.343 23022 23103 E Unity   : 
+03-10 14:37:27.343 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.343 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.343 23022 23103 I Unity   : 
+03-10 14:37:27.343 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.343 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.343 23022 23103 I Unity   : 
+03-10 14:37:27.343 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.343 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.343 23022 23104 I Unity   : 
+03-10 14:37:27.352 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.352 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.352 23022 23103 I Unity   : 
+03-10 14:37:27.352 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.352 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.352 23022 23103 E Unity   : 
+03-10 14:37:27.352 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.352 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.352 23022 23103 E Unity   : 
+03-10 14:37:27.352 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.352 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.352 23022 23103 E Unity   : 
+03-10 14:37:27.352 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.352 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.352 23022 23104 I Unity   : 
+03-10 14:37:27.353 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.353 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.353 23022 23103 I Unity   : 
+03-10 14:37:27.353 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.353 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.353 23022 23103 I Unity   : 
+03-10 14:37:27.353 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.353 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.353 23022 23103 I Unity   : 
+03-10 14:37:27.353 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.353 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.353 23022 23103 I Unity   : 
+03-10 14:37:27.353 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.353 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.353 23022 23103 I Unity   : 
+03-10 14:37:27.353 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.353 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.353 23022 23103 E Unity   : 
+03-10 14:37:27.353 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.353 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.353 23022 23103 E Unity   : 
+03-10 14:37:27.353 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.353 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.353 23022 23103 E Unity   : 
+03-10 14:37:27.353 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.353 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.353 23022 23103 I Unity   : 
+03-10 14:37:27.353 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.353 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.353 23022 23104 I Unity   : 
+03-10 14:37:27.353 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.353 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.353 23022 23103 I Unity   : 
+03-10 14:37:27.353 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.353 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.353 23022 23103 I Unity   : 
+03-10 14:37:27.354 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.354 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.354 23022 23103 E Unity   : 
+03-10 14:37:27.354 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.354 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.354 23022 23103 E Unity   : 
+03-10 14:37:27.354 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.354 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.354 23022 23103 E Unity   : 
+03-10 14:37:27.354 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.354 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.354 23022 23104 I Unity   : 
+03-10 14:37:27.354 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.354 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.354 23022 23103 I Unity   : 
+03-10 14:37:27.354 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.354 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.354 23022 23103 I Unity   : 
+03-10 14:37:27.354 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.354 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.354 23022 23103 I Unity   : 
+03-10 14:37:27.354 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.354 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.354 23022 23103 I Unity   : 
+03-10 14:37:27.354 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.354 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.354 23022 23103 I Unity   : 
+03-10 14:37:27.354 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.354 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.354 23022 23103 E Unity   : 
+03-10 14:37:27.354 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.354 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.354 23022 23103 E Unity   : 
+03-10 14:37:27.354 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.354 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.354 23022 23103 E Unity   : 
+03-10 14:37:27.354 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.354 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.354 23022 23103 I Unity   : 
+03-10 14:37:27.354 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.354 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.354 23022 23104 I Unity   : 
+03-10 14:37:27.354 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.354 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.354 23022 23103 I Unity   : 
+03-10 14:37:27.355 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.355 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.355 23022 23103 I Unity   : 
+03-10 14:37:27.355 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.355 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.355 23022 23103 E Unity   : 
+03-10 14:37:27.355 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.355 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.355 23022 23103 E Unity   : 
+03-10 14:37:27.355 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.355 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.355 23022 23103 E Unity   : 
+03-10 14:37:27.355 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.355 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.355 23022 23104 I Unity   : 
+03-10 14:37:27.356 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.356 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.356 23022 23103 I Unity   : 
+03-10 14:37:27.356 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.356 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.356 23022 23103 I Unity   : 
+03-10 14:37:27.357 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.357 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.357 23022 23103 I Unity   : 
+03-10 14:37:27.357 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.357 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.357 23022 23103 I Unity   : 
+03-10 14:37:27.357 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.357 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.357 23022 23103 I Unity   : 
+03-10 14:37:27.357 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.357 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.357 23022 23103 E Unity   : 
+03-10 14:37:27.357 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.357 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.357 23022 23103 E Unity   : 
+03-10 14:37:27.357 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.357 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.357 23022 23103 E Unity   : 
+03-10 14:37:27.357 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.357 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.357 23022 23104 I Unity   : 
+03-10 14:37:27.357 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.357 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.357 23022 23103 I Unity   : 
+03-10 14:37:27.357 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.357 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.357 23022 23103 I Unity   : 
+03-10 14:37:27.357 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.357 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.357 23022 23103 I Unity   : 
+03-10 14:37:27.358 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.358 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.358 23022 23103 E Unity   : 
+03-10 14:37:27.358 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.358 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.358 23022 23103 E Unity   : 
+03-10 14:37:27.358 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.358 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.358 23022 23103 E Unity   : 
+03-10 14:37:27.358 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.358 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.358 23022 23104 I Unity   : 
+03-10 14:37:27.358 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.358 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.358 23022 23103 I Unity   : 
+03-10 14:37:27.358 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.358 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.358 23022 23103 I Unity   : 
+03-10 14:37:27.358 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.358 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.358 23022 23103 I Unity   : 
+03-10 14:37:27.358 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.358 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.358 23022 23103 I Unity   : 
+03-10 14:37:27.359 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.359 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.359 23022 23103 I Unity   : 
+03-10 14:37:27.359 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.359 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.359 23022 23103 E Unity   : 
+03-10 14:37:27.359 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.359 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.359 23022 23103 E Unity   : 
+03-10 14:37:27.359 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.359 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.359 23022 23103 E Unity   : 
+03-10 14:37:27.359 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.359 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.359 23022 23103 I Unity   : 
+03-10 14:37:27.359 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.359 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.359 23022 23103 I Unity   : 
+03-10 14:37:27.359 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.359 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.359 23022 23104 I Unity   : 
+03-10 14:37:27.359 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.359 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.359 23022 23103 I Unity   : 
+03-10 14:37:27.359 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.359 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.359 23022 23103 E Unity   : 
+03-10 14:37:27.359 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.359 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.359 23022 23103 E Unity   : 
+03-10 14:37:27.359 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.359 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.359 23022 23103 E Unity   : 
+03-10 14:37:27.360 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.360 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.360 23022 23104 I Unity   : 
+03-10 14:37:27.360 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.360 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.360 23022 23103 I Unity   : 
+03-10 14:37:27.361 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.361 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.361 23022 23103 I Unity   : 
+03-10 14:37:27.361 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.361 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.361 23022 23103 I Unity   : 
+03-10 14:37:27.361 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.361 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.361 23022 23103 I Unity   : 
+03-10 14:37:27.361 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.361 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.361 23022 23103 I Unity   : 
+03-10 14:37:27.361 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.361 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.361 23022 23103 E Unity   : 
+03-10 14:37:27.361 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.361 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.361 23022 23103 E Unity   : 
+03-10 14:37:27.361 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.361 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.361 23022 23103 E Unity   : 
+03-10 14:37:27.361 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.361 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.361 23022 23103 I Unity   : 
+03-10 14:37:27.361 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.361 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.361 23022 23104 I Unity   : 
+03-10 14:37:27.361 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.361 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.361 23022 23103 I Unity   : 
+03-10 14:37:27.369 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.369 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.369 23022 23103 I Unity   : 
+03-10 14:37:27.369 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.369 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.369 23022 23103 E Unity   : 
+03-10 14:37:27.369 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.369 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.369 23022 23103 E Unity   : 
+03-10 14:37:27.369 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.369 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.369 23022 23103 E Unity   : 
+03-10 14:37:27.369 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.369 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.369 23022 23104 I Unity   : 
+03-10 14:37:27.370 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.370 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.370 23022 23103 I Unity   : 
+03-10 14:37:27.370 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.370 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.370 23022 23103 I Unity   : 
+03-10 14:37:27.370 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.370 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.370 23022 23103 I Unity   : 
+03-10 14:37:27.370 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.370 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.370 23022 23103 I Unity   : 
+03-10 14:37:27.370 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.370 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.370 23022 23103 I Unity   : 
+03-10 14:37:27.370 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.370 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.370 23022 23103 E Unity   : 
+03-10 14:37:27.370 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.370 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.370 23022 23103 E Unity   : 
+03-10 14:37:27.370 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.370 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.370 23022 23103 E Unity   : 
+03-10 14:37:27.370 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.370 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.370 23022 23103 I Unity   : 
+03-10 14:37:27.370 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.370 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.370 23022 23103 I Unity   : 
+03-10 14:37:27.370 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.370 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.370 23022 23104 I Unity   : 
+03-10 14:37:27.371 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.371 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.371 23022 23103 I Unity   : 
+03-10 14:37:27.371 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.371 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.371 23022 23103 E Unity   : 
+03-10 14:37:27.371 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.371 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.371 23022 23103 E Unity   : 
+03-10 14:37:27.371 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.371 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.371 23022 23103 E Unity   : 
+03-10 14:37:27.371 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.371 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.371 23022 23104 I Unity   : 
+03-10 14:37:27.372 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.372 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.372 23022 23103 I Unity   : 
+03-10 14:37:27.372 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.372 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.372 23022 23103 I Unity   : 
+03-10 14:37:27.372 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.372 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.372 23022 23103 I Unity   : 
+03-10 14:37:27.372 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.372 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.372 23022 23103 I Unity   : 
+03-10 14:37:27.372 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.372 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.372 23022 23103 I Unity   : 
+03-10 14:37:27.372 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.372 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.372 23022 23103 E Unity   : 
+03-10 14:37:27.372 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.372 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.372 23022 23103 E Unity   : 
+03-10 14:37:27.372 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.372 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.372 23022 23103 E Unity   : 
+03-10 14:37:27.372 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.372 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.372 23022 23103 I Unity   : 
+03-10 14:37:27.372 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.372 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.372 23022 23103 I Unity   : 
+03-10 14:37:27.372 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.372 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.372 23022 23104 I Unity   : 
+03-10 14:37:27.373 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.373 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.373 23022 23103 I Unity   : 
+03-10 14:37:27.373 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.373 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.373 23022 23103 E Unity   : 
+03-10 14:37:27.373 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.373 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.373 23022 23103 E Unity   : 
+03-10 14:37:27.373 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.373 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.373 23022 23103 E Unity   : 
+03-10 14:37:27.373 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.373 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.373 23022 23104 I Unity   : 
+03-10 14:37:27.374 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.374 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.374 23022 23103 I Unity   : 
+03-10 14:37:27.375 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.375 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.375 23022 23103 I Unity   : 
+03-10 14:37:27.375 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.375 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.375 23022 23103 I Unity   : 
+03-10 14:37:27.375 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.375 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.375 23022 23103 I Unity   : 
+03-10 14:37:27.375 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.375 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.375 23022 23103 I Unity   : 
+03-10 14:37:27.375 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.375 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.375 23022 23103 E Unity   : 
+03-10 14:37:27.375 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.375 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.375 23022 23103 E Unity   : 
+03-10 14:37:27.375 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.375 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.375 23022 23103 E Unity   : 
+03-10 14:37:27.375 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.375 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.375 23022 23103 I Unity   : 
+03-10 14:37:27.375 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.375 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.375 23022 23103 I Unity   : 
+03-10 14:37:27.375 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.375 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.375 23022 23104 I Unity   : 
+03-10 14:37:27.376 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.376 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.376 23022 23103 I Unity   : 
+03-10 14:37:27.376 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.376 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.376 23022 23103 E Unity   : 
+03-10 14:37:27.376 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.376 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.376 23022 23103 E Unity   : 
+03-10 14:37:27.376 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.376 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.376 23022 23103 E Unity   : 
+03-10 14:37:27.376 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.376 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.376 23022 23104 I Unity   : 
+03-10 14:37:27.377 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.377 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.377 23022 23103 I Unity   : 
+03-10 14:37:27.377 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.377 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.377 23022 23103 I Unity   : 
+03-10 14:37:27.377 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.377 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.377 23022 23103 I Unity   : 
+03-10 14:37:27.377 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.377 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.377 23022 23103 I Unity   : 
+03-10 14:37:27.377 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.377 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.377 23022 23103 I Unity   : 
+03-10 14:37:27.377 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.377 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.377 23022 23103 E Unity   : 
+03-10 14:37:27.377 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.377 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.377 23022 23103 E Unity   : 
+03-10 14:37:27.377 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.377 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.377 23022 23103 E Unity   : 
+03-10 14:37:27.377 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.377 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.377 23022 23103 I Unity   : 
+03-10 14:37:27.377 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.377 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.377 23022 23104 I Unity   : 
+03-10 14:37:27.377 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.377 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.377 23022 23103 I Unity   : 
+03-10 14:37:27.386 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.386 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.386 23022 23103 I Unity   : 
+03-10 14:37:27.386 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.386 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.386 23022 23103 E Unity   : 
+03-10 14:37:27.386 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.386 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.386 23022 23103 E Unity   : 
+03-10 14:37:27.386 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.386 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.386 23022 23103 E Unity   : 
+03-10 14:37:27.386 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.386 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.386 23022 23104 I Unity   : 
+03-10 14:37:27.403 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.403 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.403 23022 23103 I Unity   : 
+03-10 14:37:27.403 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.403 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.403 23022 23103 I Unity   : 
+03-10 14:37:27.403 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.403 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.403 23022 23103 I Unity   : 
+03-10 14:37:27.403 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.403 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.403 23022 23103 I Unity   : 
+03-10 14:37:27.403 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.403 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.403 23022 23103 I Unity   : 
+03-10 14:37:27.403 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.403 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.403 23022 23103 E Unity   : 
+03-10 14:37:27.403 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.403 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.403 23022 23103 E Unity   : 
+03-10 14:37:27.403 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.403 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.403 23022 23103 E Unity   : 
+03-10 14:37:27.403 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.403 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.403 23022 23103 I Unity   : 
+03-10 14:37:27.403 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.403 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.403 23022 23103 I Unity   : 
+03-10 14:37:27.403 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.403 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.403 23022 23104 I Unity   : 
+03-10 14:37:27.404 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.404 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.404 23022 23103 I Unity   : 
+03-10 14:37:27.404 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.404 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.404 23022 23103 E Unity   : 
+03-10 14:37:27.404 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.404 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.404 23022 23103 E Unity   : 
+03-10 14:37:27.404 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.404 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.404 23022 23103 E Unity   : 
+03-10 14:37:27.404 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.404 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.404 23022 23104 I Unity   : 
+03-10 14:37:27.405 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.405 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.405 23022 23103 I Unity   : 
+03-10 14:37:27.405 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.405 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.405 23022 23103 I Unity   : 
+03-10 14:37:27.405 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.405 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.405 23022 23103 I Unity   : 
+03-10 14:37:27.405 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.405 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.405 23022 23103 I Unity   : 
+03-10 14:37:27.405 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.405 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.405 23022 23103 I Unity   : 
+03-10 14:37:27.405 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.405 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.405 23022 23103 E Unity   : 
+03-10 14:37:27.405 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.405 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.405 23022 23103 E Unity   : 
+03-10 14:37:27.405 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.405 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.405 23022 23103 E Unity   : 
+03-10 14:37:27.405 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.405 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.405 23022 23103 I Unity   : 
+03-10 14:37:27.405 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.405 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.405 23022 23104 I Unity   : 
+03-10 14:37:27.405 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.405 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.405 23022 23103 I Unity   : 
+03-10 14:37:27.406 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.406 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.406 23022 23103 I Unity   : 
+03-10 14:37:27.406 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.406 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.406 23022 23103 E Unity   : 
+03-10 14:37:27.406 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.406 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.406 23022 23103 E Unity   : 
+03-10 14:37:27.406 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.406 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.406 23022 23103 E Unity   : 
+03-10 14:37:27.407 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.407 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.407 23022 23104 I Unity   : 
+03-10 14:37:27.408 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.408 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.408 23022 23103 I Unity   : 
+03-10 14:37:27.409 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.409 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.409 23022 23103 I Unity   : 
+03-10 14:37:27.409 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.409 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.409 23022 23103 I Unity   : 
+03-10 14:37:27.409 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.409 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.409 23022 23103 I Unity   : 
+03-10 14:37:27.409 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.409 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.409 23022 23103 I Unity   : 
+03-10 14:37:27.409 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.409 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.409 23022 23103 E Unity   : 
+03-10 14:37:27.409 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.409 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.409 23022 23103 E Unity   : 
+03-10 14:37:27.409 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.409 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.409 23022 23103 E Unity   : 
+03-10 14:37:27.409 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.409 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.409 23022 23103 I Unity   : 
+03-10 14:37:27.409 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.409 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.409 23022 23103 I Unity   : 
+03-10 14:37:27.409 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.409 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.409 23022 23104 I Unity   : 
+03-10 14:37:27.409 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.409 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.409 23022 23103 I Unity   : 
+03-10 14:37:27.409 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.409 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.409 23022 23103 E Unity   : 
+03-10 14:37:27.409 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.409 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.409 23022 23103 E Unity   : 
+03-10 14:37:27.409 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.409 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.409 23022 23103 E Unity   : 
+03-10 14:37:27.409 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.409 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.409 23022 23104 I Unity   : 
+03-10 14:37:27.410 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.410 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.410 23022 23103 I Unity   : 
+03-10 14:37:27.410 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.410 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.410 23022 23103 I Unity   : 
+03-10 14:37:27.410 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.410 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.410 23022 23103 I Unity   : 
+03-10 14:37:27.410 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.410 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.410 23022 23103 I Unity   : 
+03-10 14:37:27.410 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.410 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.410 23022 23103 I Unity   : 
+03-10 14:37:27.410 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.410 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.410 23022 23103 E Unity   : 
+03-10 14:37:27.410 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.410 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.410 23022 23103 E Unity   : 
+03-10 14:37:27.410 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.410 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.410 23022 23103 E Unity   : 
+03-10 14:37:27.410 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.410 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.410 23022 23103 I Unity   : 
+03-10 14:37:27.410 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.410 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.410 23022 23103 I Unity   : 
+03-10 14:37:27.410 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.410 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.410 23022 23104 I Unity   : 
+03-10 14:37:27.418 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.418 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.418 23022 23103 I Unity   : 
+03-10 14:37:27.418 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.418 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.418 23022 23103 E Unity   : 
+03-10 14:37:27.418 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.418 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.418 23022 23103 E Unity   : 
+03-10 14:37:27.418 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.418 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.418 23022 23103 E Unity   : 
+03-10 14:37:27.418 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.418 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.418 23022 23104 I Unity   : 
+03-10 14:37:27.419 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.419 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.419 23022 23103 I Unity   : 
+03-10 14:37:27.419 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.419 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.419 23022 23103 I Unity   : 
+03-10 14:37:27.419 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.419 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.419 23022 23103 I Unity   : 
+03-10 14:37:27.419 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.419 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.419 23022 23103 I Unity   : 
+03-10 14:37:27.419 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.419 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.419 23022 23103 I Unity   : 
+03-10 14:37:27.419 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.419 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.419 23022 23103 E Unity   : 
+03-10 14:37:27.419 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.419 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.419 23022 23103 E Unity   : 
+03-10 14:37:27.419 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.419 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.419 23022 23103 E Unity   : 
+03-10 14:37:27.419 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.419 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.419 23022 23103 I Unity   : 
+03-10 14:37:27.419 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.419 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.419 23022 23103 I Unity   : 
+03-10 14:37:27.419 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.419 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.419 23022 23104 I Unity   : 
+03-10 14:37:27.420 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.420 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.420 23022 23103 I Unity   : 
+03-10 14:37:27.420 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.420 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.420 23022 23103 E Unity   : 
+03-10 14:37:27.420 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.420 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.420 23022 23103 E Unity   : 
+03-10 14:37:27.420 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.420 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.420 23022 23103 E Unity   : 
+03-10 14:37:27.420 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.420 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.420 23022 23104 I Unity   : 
+03-10 14:37:27.421 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.421 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.421 23022 23103 I Unity   : 
+03-10 14:37:27.421 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.421 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.421 23022 23103 I Unity   : 
+03-10 14:37:27.421 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.421 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.421 23022 23103 I Unity   : 
+03-10 14:37:27.421 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.421 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.421 23022 23103 I Unity   : 
+03-10 14:37:27.421 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.421 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.421 23022 23103 I Unity   : 
+03-10 14:37:27.421 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.421 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.421 23022 23103 E Unity   : 
+03-10 14:37:27.421 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.421 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.421 23022 23103 E Unity   : 
+03-10 14:37:27.421 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.421 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.421 23022 23103 E Unity   : 
+03-10 14:37:27.421 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.421 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.421 23022 23103 I Unity   : 
+03-10 14:37:27.421 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.421 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.421 23022 23104 I Unity   : 
+03-10 14:37:27.421 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.421 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.421 23022 23103 I Unity   : 
+03-10 14:37:27.421 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.421 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.421 23022 23103 I Unity   : 
+03-10 14:37:27.421 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.421 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.421 23022 23103 E Unity   : 
+03-10 14:37:27.421 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.421 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.421 23022 23103 E Unity   : 
+03-10 14:37:27.422 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.422 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.422 23022 23103 E Unity   : 
+03-10 14:37:27.422 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.422 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.422 23022 23104 I Unity   : 
+03-10 14:37:27.422 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.422 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.422 23022 23103 I Unity   : 
+03-10 14:37:27.422 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.422 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.422 23022 23103 I Unity   : 
+03-10 14:37:27.422 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.422 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.422 23022 23103 I Unity   : 
+03-10 14:37:27.422 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.422 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.422 23022 23103 I Unity   : 
+03-10 14:37:27.422 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.422 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.422 23022 23103 I Unity   : 
+03-10 14:37:27.422 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.422 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.422 23022 23103 E Unity   : 
+03-10 14:37:27.422 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.422 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.422 23022 23103 E Unity   : 
+03-10 14:37:27.422 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.422 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.422 23022 23103 E Unity   : 
+03-10 14:37:27.422 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.422 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.422 23022 23103 I Unity   : 
+03-10 14:37:27.422 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.422 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.422 23022 23103 I Unity   : 
+03-10 14:37:27.423 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.423 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.423 23022 23104 I Unity   : 
+03-10 14:37:27.423 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.423 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.423 23022 23103 I Unity   : 
+03-10 14:37:27.423 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.423 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.423 23022 23103 E Unity   : 
+03-10 14:37:27.423 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.423 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.423 23022 23103 E Unity   : 
+03-10 14:37:27.423 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.423 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.423 23022 23103 E Unity   : 
+03-10 14:37:27.424 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.424 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.424 23022 23104 I Unity   : 
+03-10 14:37:27.425 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.425 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.425 23022 23103 I Unity   : 
+03-10 14:37:27.425 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.425 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.425 23022 23103 I Unity   : 
+03-10 14:37:27.425 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.425 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.425 23022 23103 I Unity   : 
+03-10 14:37:27.425 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.425 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.425 23022 23103 I Unity   : 
+03-10 14:37:27.425 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.425 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.425 23022 23103 I Unity   : 
+03-10 14:37:27.425 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.425 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.425 23022 23103 E Unity   : 
+03-10 14:37:27.425 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.425 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.425 23022 23103 E Unity   : 
+03-10 14:37:27.425 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.425 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.425 23022 23103 E Unity   : 
+03-10 14:37:27.425 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.425 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.425 23022 23103 I Unity   : 
+03-10 14:37:27.425 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.425 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.425 23022 23103 I Unity   : 
+03-10 14:37:27.425 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.425 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.425 23022 23104 I Unity   : 
+03-10 14:37:27.434 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.434 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.434 23022 23103 I Unity   : 
+03-10 14:37:27.434 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.434 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.434 23022 23103 E Unity   : 
+03-10 14:37:27.434 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.434 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.434 23022 23103 E Unity   : 
+03-10 14:37:27.434 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.434 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.434 23022 23103 E Unity   : 
+03-10 14:37:27.435 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.435 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.435 23022 23104 I Unity   : 
+03-10 14:37:27.438 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.438 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.438 23022 23103 I Unity   : 
+03-10 14:37:27.438 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.438 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.438 23022 23103 I Unity   : 
+03-10 14:37:27.438 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.438 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.438 23022 23103 I Unity   : 
+03-10 14:37:27.438 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.438 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.438 23022 23103 I Unity   : 
+03-10 14:37:27.438 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.438 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.438 23022 23103 I Unity   : 
+03-10 14:37:27.438 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.438 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.438 23022 23103 E Unity   : 
+03-10 14:37:27.438 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.438 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.438 23022 23103 E Unity   : 
+03-10 14:37:27.438 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.438 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.438 23022 23103 E Unity   : 
+03-10 14:37:27.438 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.438 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.438 23022 23103 I Unity   : 
+03-10 14:37:27.438 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.438 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.438 23022 23103 I Unity   : 
+03-10 14:37:27.438 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.438 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.438 23022 23104 I Unity   : 
+03-10 14:37:27.440 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.440 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.440 23022 23103 I Unity   : 
+03-10 14:37:27.440 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.440 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.440 23022 23103 E Unity   : 
+03-10 14:37:27.440 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.440 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.440 23022 23103 E Unity   : 
+03-10 14:37:27.440 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.440 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.440 23022 23103 E Unity   : 
+03-10 14:37:27.440 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.440 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.440 23022 23104 I Unity   : 
+03-10 14:37:27.442 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.442 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.442 23022 23103 I Unity   : 
+03-10 14:37:27.442 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.442 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.442 23022 23103 I Unity   : 
+03-10 14:37:27.442 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.442 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.442 23022 23103 I Unity   : 
+03-10 14:37:27.442 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.442 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.442 23022 23103 I Unity   : 
+03-10 14:37:27.442 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.442 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.442 23022 23103 I Unity   : 
+03-10 14:37:27.442 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.442 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.442 23022 23103 E Unity   : 
+03-10 14:37:27.442 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.442 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.442 23022 23103 E Unity   : 
+03-10 14:37:27.442 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.442 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.442 23022 23103 E Unity   : 
+03-10 14:37:27.442 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.442 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.442 23022 23103 I Unity   : 
+03-10 14:37:27.442 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.442 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.442 23022 23104 I Unity   : 
+03-10 14:37:27.442 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.442 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.442 23022 23103 I Unity   : 
+03-10 14:37:27.451 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.451 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.451 23022 23103 I Unity   : 
+03-10 14:37:27.451 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.451 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.451 23022 23103 E Unity   : 
+03-10 14:37:27.451 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.451 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.451 23022 23103 E Unity   : 
+03-10 14:37:27.451 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.451 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.451 23022 23103 E Unity   : 
+03-10 14:37:27.451 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.451 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.451 23022 23104 I Unity   : 
+03-10 14:37:27.452 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.452 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.452 23022 23103 I Unity   : 
+03-10 14:37:27.453 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.453 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.453 23022 23103 I Unity   : 
+03-10 14:37:27.453 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.453 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.453 23022 23103 I Unity   : 
+03-10 14:37:27.453 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.453 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.453 23022 23103 I Unity   : 
+03-10 14:37:27.453 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.453 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.453 23022 23103 I Unity   : 
+03-10 14:37:27.453 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.453 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.453 23022 23103 E Unity   : 
+03-10 14:37:27.453 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.453 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.453 23022 23103 E Unity   : 
+03-10 14:37:27.453 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.453 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.453 23022 23103 E Unity   : 
+03-10 14:37:27.453 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.453 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.453 23022 23103 I Unity   : 
+03-10 14:37:27.453 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.453 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.453 23022 23103 I Unity   : 
+03-10 14:37:27.453 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.453 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.453 23022 23104 I Unity   : 
+03-10 14:37:27.453 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.453 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.453 23022 23103 I Unity   : 
+03-10 14:37:27.453 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.453 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.453 23022 23103 E Unity   : 
+03-10 14:37:27.453 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.453 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.453 23022 23103 E Unity   : 
+03-10 14:37:27.453 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.453 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.453 23022 23103 E Unity   : 
+03-10 14:37:27.453 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.453 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.453 23022 23104 I Unity   : 
+03-10 14:37:27.454 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.454 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.454 23022 23103 I Unity   : 
+03-10 14:37:27.454 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.454 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.454 23022 23103 I Unity   : 
+03-10 14:37:27.454 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.454 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.454 23022 23103 I Unity   : 
+03-10 14:37:27.454 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.454 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.454 23022 23103 I Unity   : 
+03-10 14:37:27.454 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.454 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.454 23022 23103 I Unity   : 
+03-10 14:37:27.454 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.454 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.454 23022 23103 E Unity   : 
+03-10 14:37:27.454 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.454 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.454 23022 23103 E Unity   : 
+03-10 14:37:27.454 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.454 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.454 23022 23103 E Unity   : 
+03-10 14:37:27.454 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.454 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.454 23022 23103 I Unity   : 
+03-10 14:37:27.454 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.454 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.454 23022 23104 I Unity   : 
+03-10 14:37:27.454 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.454 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.454 23022 23103 I Unity   : 
+03-10 14:37:27.454 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.454 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.454 23022 23103 I Unity   : 
+03-10 14:37:27.454 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.454 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.454 23022 23103 E Unity   : 
+03-10 14:37:27.454 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.454 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.454 23022 23103 E Unity   : 
+03-10 14:37:27.454 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.454 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.454 23022 23103 E Unity   : 
+03-10 14:37:27.454 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.454 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.454 23022 23104 I Unity   : 
+03-10 14:37:27.455 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.455 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.455 23022 23103 I Unity   : 
+03-10 14:37:27.455 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.455 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.455 23022 23103 I Unity   : 
+03-10 14:37:27.455 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.455 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.455 23022 23103 I Unity   : 
+03-10 14:37:27.455 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.455 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.455 23022 23103 I Unity   : 
+03-10 14:37:27.455 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.455 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.455 23022 23103 I Unity   : 
+03-10 14:37:27.455 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.455 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.455 23022 23103 E Unity   : 
+03-10 14:37:27.455 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.455 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.455 23022 23103 E Unity   : 
+03-10 14:37:27.455 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.455 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.455 23022 23103 E Unity   : 
+03-10 14:37:27.455 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.455 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.455 23022 23103 I Unity   : 
+03-10 14:37:27.455 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.455 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.455 23022 23104 I Unity   : 
+03-10 14:37:27.455 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.455 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.455 23022 23103 I Unity   : 
+03-10 14:37:27.456 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.456 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.456 23022 23103 I Unity   : 
+03-10 14:37:27.456 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.456 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.456 23022 23103 E Unity   : 
+03-10 14:37:27.456 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.456 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.456 23022 23103 E Unity   : 
+03-10 14:37:27.456 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.456 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.456 23022 23103 E Unity   : 
+03-10 14:37:27.456 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.456 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.456 23022 23104 I Unity   : 
+03-10 14:37:27.465 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.465 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.465 23022 23103 I Unity   : 
+03-10 14:37:27.465 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.465 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.465 23022 23103 I Unity   : 
+03-10 14:37:27.465 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.465 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.465 23022 23103 I Unity   : 
+03-10 14:37:27.465 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.465 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.465 23022 23103 I Unity   : 
+03-10 14:37:27.465 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.465 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.465 23022 23103 I Unity   : 
+03-10 14:37:27.465 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.465 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.465 23022 23103 E Unity   : 
+03-10 14:37:27.465 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.465 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.465 23022 23103 E Unity   : 
+03-10 14:37:27.465 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.465 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.465 23022 23103 E Unity   : 
+03-10 14:37:27.465 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.465 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.465 23022 23103 I Unity   : 
+03-10 14:37:27.465 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.465 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.465 23022 23104 I Unity   : 
+03-10 14:37:27.465 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.465 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.465 23022 23103 I Unity   : 
+03-10 14:37:27.466 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.466 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.466 23022 23103 I Unity   : 
+03-10 14:37:27.466 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.466 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.466 23022 23103 E Unity   : 
+03-10 14:37:27.466 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.466 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.466 23022 23103 E Unity   : 
+03-10 14:37:27.466 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.466 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.466 23022 23103 E Unity   : 
+03-10 14:37:27.467 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.467 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.467 23022 23104 I Unity   : 
+03-10 14:37:27.468 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.468 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.468 23022 23103 I Unity   : 
+03-10 14:37:27.468 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.468 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.468 23022 23103 I Unity   : 
+03-10 14:37:27.468 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.468 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.468 23022 23103 I Unity   : 
+03-10 14:37:27.468 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.468 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.468 23022 23103 I Unity   : 
+03-10 14:37:27.468 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.468 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.468 23022 23103 I Unity   : 
+03-10 14:37:27.468 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.468 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.468 23022 23103 E Unity   : 
+03-10 14:37:27.468 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.468 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.468 23022 23103 E Unity   : 
+03-10 14:37:27.468 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.468 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.468 23022 23103 E Unity   : 
+03-10 14:37:27.468 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.468 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.468 23022 23103 I Unity   : 
+03-10 14:37:27.468 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.468 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.468 23022 23103 I Unity   : 
+03-10 14:37:27.468 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.468 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.468 23022 23104 I Unity   : 
+03-10 14:37:27.472 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.472 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.472 23022 23103 I Unity   : 
+03-10 14:37:27.472 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.472 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.472 23022 23103 E Unity   : 
+03-10 14:37:27.472 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.472 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.472 23022 23103 E Unity   : 
+03-10 14:37:27.472 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.472 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.472 23022 23103 E Unity   : 
+03-10 14:37:27.472 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.472 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.472 23022 23104 I Unity   : 
+03-10 14:37:27.473 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.473 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.473 23022 23103 I Unity   : 
+03-10 14:37:27.473 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.473 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.473 23022 23103 I Unity   : 
+03-10 14:37:27.473 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.473 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.473 23022 23103 I Unity   : 
+03-10 14:37:27.473 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.473 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.473 23022 23103 I Unity   : 
+03-10 14:37:27.473 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.473 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.473 23022 23103 I Unity   : 
+03-10 14:37:27.473 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.473 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.473 23022 23103 E Unity   : 
+03-10 14:37:27.473 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.473 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.473 23022 23103 E Unity   : 
+03-10 14:37:27.474 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.474 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.474 23022 23103 E Unity   : 
+03-10 14:37:27.474 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.474 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.474 23022 23103 I Unity   : 
+03-10 14:37:27.474 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.474 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.474 23022 23103 I Unity   : 
+03-10 14:37:27.474 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.474 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.474 23022 23104 I Unity   : 
+03-10 14:37:27.475 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.475 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.475 23022 23103 I Unity   : 
+03-10 14:37:27.475 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.475 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.475 23022 23103 E Unity   : 
+03-10 14:37:27.475 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.475 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.475 23022 23103 E Unity   : 
+03-10 14:37:27.475 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.475 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.475 23022 23103 E Unity   : 
+03-10 14:37:27.475 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.475 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.475 23022 23104 I Unity   : 
+03-10 14:37:27.476 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.476 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.476 23022 23103 I Unity   : 
+03-10 14:37:27.476 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.476 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.476 23022 23103 I Unity   : 
+03-10 14:37:27.476 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.476 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.476 23022 23103 I Unity   : 
+03-10 14:37:27.476 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.476 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.476 23022 23103 I Unity   : 
+03-10 14:37:27.476 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.476 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.476 23022 23103 I Unity   : 
+03-10 14:37:27.476 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.476 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.476 23022 23103 E Unity   : 
+03-10 14:37:27.476 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.476 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.476 23022 23103 E Unity   : 
+03-10 14:37:27.476 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.476 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.476 23022 23103 E Unity   : 
+03-10 14:37:27.476 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.476 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.476 23022 23103 I Unity   : 
+03-10 14:37:27.476 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.476 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.476 23022 23104 I Unity   : 
+03-10 14:37:27.476 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.476 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.476 23022 23103 I Unity   : 
+03-10 14:37:27.484 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.484 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.484 23022 23103 I Unity   : 
+03-10 14:37:27.484 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.484 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.484 23022 23103 E Unity   : 
+03-10 14:37:27.484 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.484 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.484 23022 23103 E Unity   : 
+03-10 14:37:27.484 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.484 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.484 23022 23103 E Unity   : 
+03-10 14:37:27.484 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.484 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.484 23022 23104 I Unity   : 
+03-10 14:37:27.485 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.485 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.485 23022 23103 I Unity   : 
+03-10 14:37:27.485 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.485 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.485 23022 23103 I Unity   : 
+03-10 14:37:27.485 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.485 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.485 23022 23103 I Unity   : 
+03-10 14:37:27.485 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.485 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.485 23022 23103 I Unity   : 
+03-10 14:37:27.485 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.485 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.485 23022 23103 I Unity   : 
+03-10 14:37:27.485 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.485 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.485 23022 23103 E Unity   : 
+03-10 14:37:27.485 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.485 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.485 23022 23103 E Unity   : 
+03-10 14:37:27.485 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.485 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.485 23022 23103 E Unity   : 
+03-10 14:37:27.485 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.485 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.485 23022 23103 I Unity   : 
+03-10 14:37:27.485 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.485 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.485 23022 23104 I Unity   : 
+03-10 14:37:27.485 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.485 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.485 23022 23103 I Unity   : 
+03-10 14:37:27.485 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.485 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.485 23022 23103 I Unity   : 
+03-10 14:37:27.485 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.485 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.485 23022 23103 E Unity   : 
+03-10 14:37:27.486 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.486 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.486 23022 23103 E Unity   : 
+03-10 14:37:27.486 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.486 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.486 23022 23103 E Unity   : 
+03-10 14:37:27.486 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.486 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.486 23022 23104 I Unity   : 
+03-10 14:37:27.486 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.486 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.486 23022 23103 I Unity   : 
+03-10 14:37:27.486 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.486 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.486 23022 23103 I Unity   : 
+03-10 14:37:27.486 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.486 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.486 23022 23103 I Unity   : 
+03-10 14:37:27.486 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.486 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.486 23022 23103 I Unity   : 
+03-10 14:37:27.486 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.486 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.486 23022 23103 I Unity   : 
+03-10 14:37:27.486 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.486 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.486 23022 23103 E Unity   : 
+03-10 14:37:27.486 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.486 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.486 23022 23103 E Unity   : 
+03-10 14:37:27.486 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.486 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.486 23022 23103 E Unity   : 
+03-10 14:37:27.486 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.486 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.486 23022 23103 I Unity   : 
+03-10 14:37:27.487 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.487 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.487 23022 23103 I Unity   : 
+03-10 14:37:27.487 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.487 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.487 23022 23104 I Unity   : 
+03-10 14:37:27.487 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.487 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.487 23022 23103 I Unity   : 
+03-10 14:37:27.487 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.487 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.487 23022 23103 E Unity   : 
+03-10 14:37:27.487 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.487 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.487 23022 23103 E Unity   : 
+03-10 14:37:27.487 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.487 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.487 23022 23103 E Unity   : 
+03-10 14:37:27.488 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.488 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.488 23022 23104 I Unity   : 
+03-10 14:37:27.489 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.489 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.489 23022 23103 I Unity   : 
+03-10 14:37:27.490 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.490 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.490 23022 23103 I Unity   : 
+03-10 14:37:27.490 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.490 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.490 23022 23103 I Unity   : 
+03-10 14:37:27.490 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.490 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.490 23022 23103 I Unity   : 
+03-10 14:37:27.490 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.490 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.490 23022 23103 I Unity   : 
+03-10 14:37:27.490 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.490 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.490 23022 23103 E Unity   : 
+03-10 14:37:27.490 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.490 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.490 23022 23103 E Unity   : 
+03-10 14:37:27.490 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.490 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.490 23022 23103 E Unity   : 
+03-10 14:37:27.490 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.490 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.490 23022 23103 I Unity   : 
+03-10 14:37:27.490 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.490 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.490 23022 23103 I Unity   : 
+03-10 14:37:27.490 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.490 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.490 23022 23104 I Unity   : 
+03-10 14:37:27.491 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.491 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.491 23022 23103 I Unity   : 
+03-10 14:37:27.491 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.491 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.491 23022 23103 E Unity   : 
+03-10 14:37:27.491 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.491 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.491 23022 23103 E Unity   : 
+03-10 14:37:27.491 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.491 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.491 23022 23103 E Unity   : 
+03-10 14:37:27.492 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.492 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.492 23022 23104 I Unity   : 
+03-10 14:37:27.492 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.492 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.492 23022 23103 I Unity   : 
+03-10 14:37:27.492 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.492 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.492 23022 23103 I Unity   : 
+03-10 14:37:27.492 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.492 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.492 23022 23103 I Unity   : 
+03-10 14:37:27.492 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.492 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.492 23022 23103 I Unity   : 
+03-10 14:37:27.492 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.492 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.492 23022 23103 I Unity   : 
+03-10 14:37:27.492 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.492 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.492 23022 23103 E Unity   : 
+03-10 14:37:27.492 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.492 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.492 23022 23103 E Unity   : 
+03-10 14:37:27.493 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.493 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.493 23022 23103 E Unity   : 
+03-10 14:37:27.493 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.493 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.493 23022 23103 I Unity   : 
+03-10 14:37:27.493 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.493 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.493 23022 23104 I Unity   : 
+03-10 14:37:27.493 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.493 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.493 23022 23103 I Unity   : 
+03-10 14:37:27.501 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.501 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.501 23022 23103 I Unity   : 
+03-10 14:37:27.501 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.501 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.501 23022 23103 E Unity   : 
+03-10 14:37:27.501 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.501 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.501 23022 23103 E Unity   : 
+03-10 14:37:27.501 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.501 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.501 23022 23103 E Unity   : 
+03-10 14:37:27.502 23022 23022 I Unity   : onPause
+03-10 14:37:27.505 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.505 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.505 23022 23104 I Unity   : 
+03-10 14:37:27.507 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.507 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.507 23022 23103 I Unity   : 
+03-10 14:37:27.507 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.507 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.507 23022 23103 I Unity   : 
+03-10 14:37:27.507 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.507 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.507 23022 23103 I Unity   : 
+03-10 14:37:27.507 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.507 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.507 23022 23103 I Unity   : 
+03-10 14:37:27.507 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.507 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.507 23022 23103 I Unity   : 
+03-10 14:37:27.507 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.507 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.507 23022 23103 E Unity   : 
+03-10 14:37:27.507 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.507 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.507 23022 23103 E Unity   : 
+03-10 14:37:27.507 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.507 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.507 23022 23103 E Unity   : 
+03-10 14:37:27.507 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.507 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.507 23022 23103 I Unity   : 
+03-10 14:37:27.507 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.507 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.507 23022 23103 I Unity   : 
+03-10 14:37:27.508 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.508 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.508 23022 23104 I Unity   : 
+03-10 14:37:27.510 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.510 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.510 23022 23103 I Unity   : 
+03-10 14:37:27.510 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.510 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.510 23022 23103 E Unity   : 
+03-10 14:37:27.510 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.510 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.510 23022 23103 E Unity   : 
+03-10 14:37:27.510 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.510 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.510 23022 23103 E Unity   : 
+03-10 14:37:27.510 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.510 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.510 23022 23104 I Unity   : 
+03-10 14:37:27.511 23022 23055 V Unity   : Java_[...]_nativePause
+03-10 14:37:27.512 23022 23103 I Unity   : [XD_GPU_PROFILER] d 
+03-10 14:37:27.512 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1492)
+03-10 14:37:27.512 23022 23103 I Unity   : 
+03-10 14:37:27.512 23022 23103 I Unity   : [XD_GPU_PROFILER] vkAllocateCommandBuffers 
+03-10 14:37:27.512 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1506)
+03-10 14:37:27.512 23022 23103 I Unity   : 
+03-10 14:37:27.512 23022 23103 I Unity   : [XD_GPU_PROFILER] vkEndCommandBuffer 
+03-10 14:37:27.512 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1519)
+03-10 14:37:27.512 23022 23103 I Unity   : 
+03-10 14:37:27.512 23022 23103 I Unity   : [XD_GPU_PROFILER] vkCreateFence 
+03-10 14:37:27.512 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1529)
+03-10 14:37:27.512 23022 23103 I Unity   : 
+03-10 14:37:27.512 23022 23103 I Unity   : [XD_GPU_PROFILER] vkQueueSubmit 
+03-10 14:37:27.512 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1544)
+03-10 14:37:27.512 23022 23103 I Unity   : 
+03-10 14:37:27.512 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.512 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.512 23022 23103 E Unity   : 
+03-10 14:37:27.512 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.512 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.512 23022 23103 E Unity   : 
+03-10 14:37:27.512 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.512 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.512 23022 23103 E Unity   : 
+03-10 14:37:27.512 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 1111111111111 
+03-10 14:37:27.512 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1551)
+03-10 14:37:27.512 23022 23103 I Unity   : 
+03-10 14:37:27.512 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddLeftFence 
+03-10 14:37:27.512 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1615)
+03-10 14:37:27.512 23022 23104 I Unity   : 
+03-10 14:37:27.512 23022 23103 I Unity   : [XD_GPU_PROFILER] wrong!!! 
+03-10 14:37:27.512 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1554)
+03-10 14:37:27.512 23022 23103 I Unity   : 
+03-10 14:37:27.518 23022 23103 I Unity   : [XD_GPU_PROFILER] vkWaitForFences 0000000000000 
+03-10 14:37:27.518 23022 23103 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1562)
+03-10 14:37:27.518 23022 23103 I Unity   : 
+03-10 14:37:27.518 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.518 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.518 23022 23103 E Unity   : 
+03-10 14:37:27.518 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.518 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 341)
+03-10 14:37:27.518 23022 23103 E Unity   : 
+03-10 14:37:27.518 23022 23103 E Unity   : Assertion failed on expression: 'm_ProducerThreadId == CurrentThread::GetID()' 
+03-10 14:37:27.518 23022 23103 E Unity   : (Filename: .\Runtime/Threads/ThreadedStreamBuffer.h Line: 453)
+03-10 14:37:27.518 23022 23103 E Unity   : 
+03-10 14:37:27.518 23022 23055 D Unity   : Vulkan PSO: Pipeline cache has not changed skipping save handle[c307f890]
+03-10 14:37:27.523 23022 23104 I Unity   : [XD_GPU_PROFILER] kTask_AddRightFence 
+03-10 14:37:27.523 23022 23104 I Unity   : (Filename: .\Runtime/GfxDevice/vulkan/VKTaskExecutor.cpp Line: 1633)
+03-10 14:37:27.523 23022 23104 I Unity   : 
+03-10 14:37:27.531 23022 23055 D Unity   : Sensor :        Accelerometer ( 1) ; 0.000010 / 0.00s ; accelerometer-icm20690 / invensense 
+03-10 14:37:27.536 23022 23022 I Unity   : windowFocusChanged: false
+03-10 14:37:27.536 23022 23055 V Unity   : Java_[...]_nativeFocusChanged(false)
+03-10 14:37:28.101 23022 23055 V Unity   : Java_[...]_nativeRecreateGfxState
+03-10 14:37:28.101 23022 23055 D Unity   : SetWindow 0 0x0

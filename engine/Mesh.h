@@ -27,14 +27,14 @@ public:
 	Buffer* GetVertexBuffer();
 	Buffer* GetIndexBuffer();
 	uint32_t GetIndexCount();
+	VkIndexType GetIndexType();
 
 private:
 
 	bool HasVertexChannel(VertexChannel channel);
 
-public:
-
-	//
+	void LoadUseObj(const std::string& filename);
+	void LoadUseAssimp(const std::string& filename);
 
 private:
 
@@ -49,4 +49,6 @@ private:
 
 	Buffer* m_VertexBuffer = nullptr;
 	Buffer* m_IndexBuffer = nullptr;
+
+	VkIndexType m_IndexType = VK_INDEX_TYPE_UINT32;
 };

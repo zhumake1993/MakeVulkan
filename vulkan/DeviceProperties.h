@@ -45,6 +45,17 @@ struct DeviceProperties : public NonCopyable
 	VkSurfaceCapabilitiesKHR				surfaceCapabilities;
 	std::vector<VkSurfaceFormatKHR>			surfaceFormats;
 	std::vector<VkPresentModeKHR>			presentModes;
+
+	uint32_t								ScNumberOfImages;
+	VkSurfaceFormatKHR						ScFormat;
+	VkExtent2D								ScExtent;
+	VkImageUsageFlags						ScUsage;
+	VkSurfaceTransformFlagBitsKHR			ScTransform;
+	VkPresentModeKHR						ScPresentMode;
+
+	// Depth
+
+	VkFormat								depthFormat;
 };
 
 void CreateDeviceProperties();

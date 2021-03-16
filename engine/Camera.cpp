@@ -16,6 +16,11 @@ glm::vec3 Camera::GetPosition()
 	return m_Position;
 }
 
+glm::vec3 Camera::GetDirection()
+{
+	return m_Look;
+}
+
 void Camera::LookAt(glm::vec3 pos, glm::vec3 target)
 {
 	m_Position = pos;

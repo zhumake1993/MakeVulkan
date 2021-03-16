@@ -19,6 +19,7 @@ struct GpuParameters
 
 	struct UniformParameter
 	{
+		UniformParameter() {}
 		UniformParameter(const std::string& _name, int _binding, VkShaderStageFlags _stageFlags) :
 			name(_name), binding(_binding), stageFlags(_stageFlags)
 		{
@@ -44,6 +45,18 @@ struct GpuParameters
 		VkShaderStageFlags stageFlags;
 	};
 
+	struct InputAttachmentParameter
+	{
+		InputAttachmentParameter(const std::string& _name, int _binding, VkShaderStageFlags _stageFlags) :
+			name(_name), binding(_binding), stageFlags(_stageFlags)
+		{
+		}
+
+		std::string name;
+		int binding;
+		VkShaderStageFlags stageFlags;
+	};
+
 	struct SpecializationConstantParameter
 	{
 		SpecializationConstantParameter(int p1, ShaderDataType p2):
@@ -54,6 +67,7 @@ struct GpuParameters
 
 	std::vector<UniformParameter> uniformParameters;
 	std::vector<TextureParameter> textureParameters;
+	std::vector<InputAttachmentParameter> inputAttachmentParameters;
 
 	// PushConstant
 	// 为了保证Pipeline Layout Compatibility，统一设置128的PushConstant
@@ -76,33 +90,4 @@ public:
 protected:
 
 	GpuParameters m_GpuParameters;
-};
-
-struct ShaderBindings
-{
-	struct UniformDataBinding
-	{
-		UniformDataBinding(int p1, void* p2, uint64_t p3) :binding(p1), data(p2), size(p3) {}
-		int binding;
-		void* data;
-		uint64_t size;
-	};
-
-	struct UniformBufferBinding
-	{
-		UniformBufferBinding(int p1, void* p2) :binding(p1),buffer(p2) {}
-		int binding;
-		void* buffer;
-	};
-
-	struct ImageBinding
-	{
-		ImageBinding(int p1, void* p2) :binding(p1), image(p2) {}
-		int binding;
-		void* image;
-	};
-
-	std::vector<UniformDataBinding> uniformDataBindings;
-	std::vector<UniformBufferBinding> uniformBufferBindings;
-	std::vector<ImageBinding> imageBindings;
 };

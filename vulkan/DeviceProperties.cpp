@@ -65,7 +65,7 @@ void DeviceProperties::Log()
 
 	LOG("available instance layers ( %d ):", static_cast<int>(availableInstanceLayers.size()));
 	for (size_t i = 0; i < availableInstanceLayers.size(); i++) {
-		LOG(" %s", availableInstanceLayers[i].layerName);
+		//LOG(" %s", availableInstanceLayers[i].layerName);
 	}
 	LOG("\n");
 
@@ -99,7 +99,7 @@ void DeviceProperties::Log()
 
 	LOG("available device extensions ( %d ):", static_cast<int>(availableDeviceExtensions.size()));
 	for (size_t i = 0; i < availableDeviceExtensions.size(); i++) {
-		LOG(" %s(%d)", availableDeviceExtensions[i].extensionName, availableDeviceExtensions[i].specVersion);
+		//LOG(" %s(%d)", availableDeviceExtensions[i].extensionName, availableDeviceExtensions[i].specVersion);
 	}
 	LOG("\n");
 
@@ -120,15 +120,12 @@ void DeviceProperties::Log()
 
 	LOG("\nSwapChain:\n");
 
-	LOG("surfaceFormats:\n");
-	for (size_t i = 0; i < surfaceFormats.size(); i++) {
-		LOG(" %d %d", surfaceFormats[i].format, surfaceFormats[i].colorSpace);
-	}
-	LOG("\n");
+	LOG("numberOfImages: %d\n", ScNumberOfImages);
+	LOG("format: %d %d\n", ScFormat.format, ScFormat.colorSpace);
+	LOG("extent: %d %d\n", ScExtent.width, ScExtent.height);
+	LOG("usage: %d\n", ScUsage);
+	LOG("transform: %d\n", ScTransform);
+	LOG("presentMode: %d\n", ScPresentMode);
 
-	LOG("presentModes:\n");
-	for (size_t i = 0; i < presentModes.size(); i++) {
-		LOG(" %d", presentModes[i]);
-	}
 	LOG("\n");
 }
