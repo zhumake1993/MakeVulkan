@@ -16,29 +16,19 @@ layout(set=3, binding=0) uniform PerDraw {
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec3 inColor;
+layout(location = 3) in vec2 inUV;
 
 out gl_PerVertex
 {
   vec4 gl_Position;
 };
 
-layout (location = 0) out vec3 outWorldPos;
-layout (location = 1) out vec3 outNormal;
-layout (location = 2) out vec3 outColor;
+layout (location = 0) out vec3 outColor;
+layout (location = 1) out vec2 outUV;
 
 void main() {
 	gl_Position = proj * view * world * vec4(inPosition, 1.0f);
 	
-	// Vertex position in world space
-	outWorldPos = vec3(world * vec4(inPosition, 1.0f));
-	
-	// GL to Vulkan coord space
-	//outWorldPos.y = -outWorldPos.y;
-	
-	// Normal in world space
-	mat3 mNormal = transpose(inverse(mat3(world)));
-	outNormal = mNormal * normalize(inNormal);	
-	
-	// Currently just vertex color
 	outColor = inColor;
+	outUV = inUV;
 }

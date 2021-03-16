@@ -19,7 +19,7 @@ E008Cubemap：Cubemap和CubemapArray
 E009InputAttachments：实现fetch
 参考https://www.saschawillems.de/blog/2018/07/19/vulkan-input-attachments-and-sub-passes/
 
-E010SubPasses：一个renderpass里面实现deferred shading
+E010SubPasses：一个renderpass里面实现deferred shading。感觉透明物体的实现有点多余，不能直接画么？
 
 E999Test：测试用
 

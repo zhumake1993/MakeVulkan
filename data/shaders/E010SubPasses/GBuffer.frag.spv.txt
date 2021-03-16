@@ -16,8 +16,8 @@ GBuffer.frag
 #version 450
 
 layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec3 inColor;
-layout(location = 2) in vec3 inNormal;
+layout(location = 1) in vec3 inNormal;
+layout(location = 2) in vec3 inColor;
 
 layout (location = 0) out vec4 outColor;
 layout (location = 1) out vec4 outPosition;
@@ -65,10 +65,10 @@ void main() {
                               Name 67  "outColor"
                               Decorate 30(outPosition) Location 1
                               Decorate 33(inPosition) Location 0
-                              Decorate 41(inNormal) Location 2
+                              Decorate 41(inNormal) Location 1
                               Decorate 44(outNormal) Location 2
                               Decorate 50(outAlbedo) Location 3
-                              Decorate 51(inColor) Location 1
+                              Decorate 51(inColor) Location 2
                               Decorate 56(gl_FragCoord) BuiltIn FragCoord
                               Decorate 67(outColor) Location 0
                3:             TypeVoid

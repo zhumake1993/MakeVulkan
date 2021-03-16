@@ -7,10 +7,21 @@ struct UniformDataGlobal
 {
 };
 
+struct Light
+{
+	alignas(16) glm::vec4 position;
+	alignas(16) glm::vec3 color;
+	float radius;
+};
+
 struct UniformDataPerView
 {
 	alignas(16) glm::mat4 view;
 	alignas(16) glm::mat4 proj;
+	alignas(16) glm::vec4 eyePos;
+
+	alignas(16) glm::vec4 ambient;
+	alignas(16) Light lights[128];
 };
 
 class MakeVulkan : public Example
@@ -39,25 +50,22 @@ private:
 	Mesh* m_BuildingMesh;
 	Mesh* m_GlassMesh;
 
-	Texture* m_Tex;
+	Texture* m_GlassTex;
 
 	Shader* m_GBufferShader;
 	Shader* m_CompositionShader;
+	Shader* m_TransparentShader;
 
 	Material* m_GBufferMat;
 	Material* m_CompositionMat;
+	Material* m_TransparentMat;
 
 	RenderNode* m_BuildingNode;
 	RenderNode* m_GlassNode;
 
 	Camera* m_Camera;
 
-	// 0:Position
-	// 1:Color
-	// 2:Normal
-	int m_Mode = 0;
-
-	int m_LightCount = 64;
+	const int m_LightCount = 64; // 暂时不支持动态调整光源数量
 
 	RenderPassDesc m_RenderPassDesc;
 };

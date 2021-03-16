@@ -15,6 +15,7 @@
 #include "Imgui.h"
 #include "ProfilerManager.h"
 #include "GpuProgram.h"
+#include <random>
 
 MakeVulkan::MakeVulkan()
 {
@@ -56,7 +57,7 @@ void MakeVulkan::Init()
 
 	// Camera
 	m_Camera = new Camera();
-	m_Camera->LookAt(glm::vec3(0.0f, 0.0f, -5.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	m_Camera->LookAt(glm::vec3(0.0f, 5.0f, -10.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	m_Camera->SetLens(glm::radians(60.0f), 1.0f * windowWidth / windowHeight, 0.1f, 256.0f);
 #if defined(_WIN32)
 	m_Camera->SetSpeed(3.0f, 0.005f);
@@ -100,7 +101,7 @@ void MakeVulkan::Init()
 		attachmentDescs[4].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
 		// Subpasses
-		m_RenderPassDesc.subPassDescs.resize(2);
+		m_RenderPassDesc.subPassDescs.resize(3);
 		std::vector<SubPassDesc>& subPassDescs = m_RenderPassDesc.subPassDescs;
 
 		subPassDescs[0].colors = { 0,1,2,3 };
@@ -110,12 +111,36 @@ void MakeVulkan::Init()
 		subPassDescs[1].colors = { 0 };
 		subPassDescs[1].useDepthStencil = true;
 
-		/*subPassDescs[2].inputs = { 1 };
+		subPassDescs[2].inputs = { 1 };
 		subPassDescs[2].colors = { 0 };
-		subPassDescs[2].useDepthStencil = true;*/
+		subPassDescs[2].useDepthStencil = true;
 
 		m_RenderPassDesc.present = 0;
 		m_RenderPassDesc.depthStencil = 4;
+	}
+
+	{
+		std::vector<glm::vec3> colors =
+		{
+			glm::vec3(1.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f),
+			glm::vec3(0.0f, 0.0f, 1.0f),
+			glm::vec3(1.0f, 1.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 1.0f),
+			glm::vec3(1.0f, 0.0f, 1.0f),
+			glm::vec3(1.0f, 1.0f, 1.0f)
+		};
+
+		std::default_random_engine rndGen((unsigned)time(nullptr));
+		std::uniform_real_distribution<float> rndDist(-1.0f, 1.0f);
+		std::uniform_int_distribution<uint32_t> rndCol(0, static_cast<uint32_t>(colors.size() - 1));
+
+		for (auto& light : m_UniformDataPerView.lights)
+		{
+			light.position = glm::vec4(rndDist(rndGen) * 10.0f, 0.25f + std::abs(rndDist(rndGen)) * 8.0f, rndDist(rndGen) * 10.0f, 1.0f);
+			light.color = colors[rndCol(rndGen)];
+			light.radius = 1.0f + std::abs(rndDist(rndGen));
+		}
 	}
 }
 
@@ -138,8 +163,14 @@ void MakeVulkan::Update()
 
 	m_UniformDataPerView.view = m_Camera->GetView();
 	m_UniformDataPerView.proj = m_Camera->GetProj();
+	m_UniformDataPerView.eyePos = glm::vec4(m_Camera->GetPosition(), 1.0f);
 
-	m_CompositionMat->SetInt("Mode", m_Mode);
+	m_UniformDataPerView.ambient = glm::vec4(0.2f, 0.2f, 0.2f, 0.0f);
+
+	for (auto& light : m_UniformDataPerView.lights)
+	{
+		light.position = glm::rotate(glm::mat4(1.0f), deltaTime * 0.5f, glm::vec3(0, 1.0f, 0)) * light.position;
+	}
 
 	// Imgui
 
@@ -165,12 +196,6 @@ void MakeVulkan::Update()
 		acTime = 0.0f;
 	}
 
-	if (ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_None))
-	{
-		std::vector<const char*> items = { "Position","Color","Normal" };
-		uint32_t itemCount = static_cast<uint32_t>(items.size());
-		bool res = ImGui::Combo("Mode", &m_Mode, items.data(), itemCount, itemCount);
-	}
 	if (ImGui::CollapsingHeader("CPU Profiler", ImGuiTreeNodeFlags_None))
 	{
 		ImGui::TextUnformatted(cpuProfiler.c_str());
@@ -238,6 +263,16 @@ void MakeVulkan::Draw()
 	device.BindMeshBuffer(nullptr, nullptr, nullptr);
 	device.DrawIndexed(3);
 
+	// Third subpass
+	// Render transparent geometry using a forward pass that compares against depth generted during G-Buffer fill
+
+	device.NextSubpass();
+
+	SetShader(m_TransparentShader);
+
+	BindMaterial(m_TransparentMat);
+	DrawRenderNode(m_GlassNode);
+
 	// gui
 
 	DrawImgui();
@@ -254,20 +289,20 @@ void MakeVulkan::PrepareResources()
 	// Mesh
 	{
 		m_BuildingMesh = CreateMesh("BuildingMesh");
-		m_BuildingMesh->SetVertexChannels({ kVertexPosition, kVertexColor, kVertexNormal });
+		m_BuildingMesh->SetVertexChannels({ kVertexPosition, kVertexNormal, kVertexColor });
 		m_BuildingMesh->LoadFromFile(AssetPath + "models/samplebuilding.obj");
 		m_BuildingMesh->UploadToGPU();
 
 		m_GlassMesh = CreateMesh("GlassMesh");
-		m_GlassMesh->SetVertexChannels({ kVertexPosition, kVertexColor, kVertexNormal });
+		m_GlassMesh->SetVertexChannels({ kVertexPosition, kVertexNormal, kVertexColor, kVertexTexcoord0 });
 		m_GlassMesh->LoadFromFile(AssetPath + "models/samplebuilding_glass.obj");
 		m_GlassMesh->UploadToGPU();
 	}
 
 	// Texture
 	{
-		m_Tex = CreateTexture("Tex");
-		m_Tex->LoadFromFile(AssetPath + "textures/colored_glass_rgba.ktx");
+		m_GlassTex = CreateTexture("GlassTex");
+		m_GlassTex->LoadFromFile(AssetPath + "textures/colored_glass_rgba.ktx");
 	}
 
 	// Shader
@@ -304,15 +339,43 @@ void MakeVulkan::PrepareResources()
 			GpuParameters::InputAttachmentParameter texture("NormalTexture", 2, VK_SHADER_STAGE_FRAGMENT_BIT);
 			parameters.inputAttachmentParameters.push_back(texture);
 		}
-		{
-			GpuParameters::UniformParameter uniform("PerMaterial", 3, VK_SHADER_STAGE_FRAGMENT_BIT);
-			uniform.valueParameters.emplace_back("Mode", kShaderDataInt1);
-			parameters.uniformParameters.push_back(uniform);
-		}
+		parameters.SCParameters.emplace_back(0, kShaderDataInt1);
 		m_CompositionShader->CreateGpuProgram(parameters);
 
 		RenderState renderState;
+		renderState.depthStencilState.depthWriteEnable = VK_FALSE;
 		m_CompositionShader->SetRenderState(renderState);
+
+		m_CompositionShader->SetSCInt(0, m_LightCount);
+	}
+	{
+		m_TransparentShader = CreateShader("TransparentShader");
+		m_TransparentShader->LoadSPV(AssetPath + "shaders/E010SubPasses/Transparent.vert.spv", AssetPath + "shaders/E010SubPasses/Transparent.frag.spv");
+
+		GpuParameters parameters;
+		{
+			GpuParameters::UniformParameter uniform("PerDraw", 0, VK_SHADER_STAGE_VERTEX_BIT);
+			uniform.valueParameters.emplace_back("ObjectToWorld", kShaderDataFloat4x4);
+			parameters.uniformParameters.push_back(uniform);
+		}
+		{
+			GpuParameters::InputAttachmentParameter texture("PositionTexture", 0, VK_SHADER_STAGE_FRAGMENT_BIT);
+			parameters.inputAttachmentParameters.push_back(texture);
+		}
+		{
+			GpuParameters::TextureParameter texture("BaseTexture", 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+			parameters.textureParameters.push_back(texture);
+		}
+		m_TransparentShader->CreateGpuProgram(parameters);
+
+		RenderState renderState;
+		renderState.depthStencilState.depthWriteEnable = VK_FALSE;
+		renderState.rasterizationState.cullMode = VK_CULL_MODE_NONE;
+		renderState.blendStates[0].blendEnable = VK_TRUE;
+		renderState.blendStates[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+		renderState.blendStates[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		renderState.blendStates[0].colorBlendOp = VK_BLEND_OP_ADD;
+		m_TransparentShader->SetRenderState(renderState);
 	}
 
 	// Material
@@ -322,6 +385,10 @@ void MakeVulkan::PrepareResources()
 
 		m_CompositionMat = CreateMaterial("CompositionMat");
 		m_CompositionMat->SetShader(m_CompositionShader);
+
+		m_TransparentMat = CreateMaterial("TransparentMat");
+		m_TransparentMat->SetShader(m_TransparentShader);
+		m_TransparentMat->SetTexture("BaseTexture", m_GlassTex);
 	}
 
 	// RenderNode
@@ -329,6 +396,10 @@ void MakeVulkan::PrepareResources()
 		m_BuildingNode = CreateRenderNode("BuildingNode");
 		m_BuildingNode->SetMesh(m_BuildingMesh);
 		m_BuildingNode->SetMaterial(m_GBufferMat);
+
+		m_GlassNode = CreateRenderNode("GlassNode");
+		m_GlassNode->SetMesh(m_GlassMesh);
+		m_GlassNode->SetMaterial(m_TransparentMat);
 	}
 }
 

@@ -59,5 +59,5 @@ private:
 
 	Camera* m_Camera;
 
-	Transform m_PointLightTransform;
+	Transform m_PointLightTransform; // 并不需要
 };
