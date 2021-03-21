@@ -18,6 +18,7 @@
 #include "ImageManager.h"
 #include "DescriptorSetManager.h"
 #include "PipelineManager.h"
+#include "RenderPassManager.h"
 
 #include "VKGpuProgram.h"
 
@@ -70,6 +71,7 @@ GfxDevice::GfxDevice()
 	m_ImageManager = new ImageManager(m_VKDevice->device, m_GarbageCollector);
 	m_DescriptorSetManager = new DescriptorSetManager(m_VKDevice->device);
 	m_PipelineManager = new PipelineManager(m_VKDevice->device);
+	m_RenderPassManager = new RenderPassManager(m_VKDevice->device);
 
 	dp.depthFormat = GetSupportedDepthFormat();
 
@@ -94,6 +96,7 @@ GfxDevice::~GfxDevice()
 	RELEASE(m_ImageManager);
 	RELEASE(m_DescriptorSetManager);
 	RELEASE(m_PipelineManager);
+	RELEASE(m_RenderPassManager);
 
 	for (size_t i = 0; i < FrameResourcesCount; ++i)
 	{
@@ -456,6 +459,13 @@ void GfxDevice::ReleaseImage(Image * image)
 	m_GarbageCollector->AddResource(imageImpl->GetImage());
 	m_GarbageCollector->AddResource(imageImpl->GetView());
 	m_GarbageCollector->AddResource(imageImpl->GetSampler());
+}
+
+Attachment * GfxDevice::CreateAttachment(uint32_t width, uint32_t height, VkFormat format, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp)
+{
+	VKAttachment* vkAttachment = m_RenderPassManager->CreateAttachment(width, height, format, loadOp, storeOp);
+
+	return vkAttachment;
 }
 
 GpuProgram * GfxDevice::CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode)

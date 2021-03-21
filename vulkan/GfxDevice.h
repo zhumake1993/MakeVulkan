@@ -26,6 +26,9 @@ class DescriptorSetManager;
 class PipelineManager;
 struct PipelineCI;
 
+class Attachment;
+class RenderPassManager;
+
 class GPUProfilerManager;
 
 class Buffer;
@@ -85,6 +88,8 @@ public:
 	void UpdateImage(Image* image, void* data, uint64_t size, const std::vector<std::vector<std::vector<uint64_t>>>& offsets);
 	void ReleaseImage(Image* image);
 
+	Attachment* CreateAttachment(uint32_t width, uint32_t height, VkFormat format, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp);
+
 	GpuProgram* CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode);
 
 	void SetPass(GpuProgram* gpuProgram, RenderState* renderState, void* scdata);
@@ -143,6 +148,7 @@ private:
 	ImageManager* m_ImageManager = nullptr;
 	DescriptorSetManager* m_DescriptorSetManager = nullptr;
 	PipelineManager* m_PipelineManager = nullptr;
+	RenderPassManager* m_RenderPassManager = nullptr;
 
 	// RenderPass
 	VKRenderPass* m_VKRenderPass = nullptr;
