@@ -86,6 +86,7 @@ Imgui::Imgui()
 Imgui::~Imgui()
 {
 	ImGui::DestroyContext();
+	GetGfxDevice().ReleaseImage(m_FontImage);
 	RELEASE(m_FontImage);
 	RELEASE(m_VertexBuffer);
 	RELEASE(m_IndexBuffer);

@@ -15,9 +15,9 @@ struct VKCommandPool;
 struct VKCommandBuffer;
 class VKRenderPass;
 struct VKBuffer;
-struct VKImage;
-struct VKImageView;
-class ImageImpl;
+class VKImage;
+class VKImageView;
+class ImageVulkan;
 
 class GarbageCollector;
 class BufferManager;
@@ -84,7 +84,7 @@ public:
 	void FlushBuffer(Buffer* buffer);
 	void ReleaseBuffer(Buffer* buffer);
 
-	Image* CreateImage(VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount);
+	Image* CreateImage(VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, float maxAnisotropy = 4);
 	void UpdateImage(Image* image, void* data, uint64_t size, const std::vector<std::vector<std::vector<uint64_t>>>& offsets);
 	void ReleaseImage(Image* image);
 
@@ -127,7 +127,7 @@ private:
 	VkFence CreateVKFence(bool signaled);
 
 	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, VKBuffer* vkBuffer, uint64_t offset = 0, uint64_t range = VK_WHOLE_SIZE);
-	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, ImageImpl* imageImpl);
+	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, ImageVulkan* imageVulkan);
 	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, VKImageView* imageView); // InputAttachmentÖ»ÐèÒªview
 
 private:
@@ -138,7 +138,6 @@ private:
 	VKSwapChain* m_VKSwapChain = nullptr;
 	VKCommandPool* m_VKCommandPool = nullptr;
 
-	uint32_t m_FrameIndex = 0;
 	uint32_t m_FrameResourceIndex = 0;
 	std::vector<FrameResource> m_FrameResources;
 

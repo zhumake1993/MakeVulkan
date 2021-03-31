@@ -15,6 +15,7 @@ Texture::Texture(const std::string& name) :
 
 Texture::~Texture()
 {
+	GetGfxDevice().ReleaseImage(m_Image);
 	RELEASE(m_Image);
 }
 

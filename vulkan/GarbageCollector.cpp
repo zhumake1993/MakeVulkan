@@ -25,7 +25,7 @@ void GarbageCollector::Update()
 {
 	for (auto itr = m_PendingResources.begin(); itr != m_PendingResources.end();)
 	{
-		if ((*itr)->InUse(m_FrameIndex))
+		if ((*itr)->InUse())
 		{
 			itr++;
 		}

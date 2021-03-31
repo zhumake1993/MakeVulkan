@@ -6,8 +6,8 @@
 #include "VKResource.h"
 
 class ImageManager;
-struct VKImage;
-struct VKImageView;
+class VKImage;
+class VKImageView;
 class GarbageCollector;
 
 class VKRenderPass : public VKResource
@@ -49,6 +49,8 @@ private:
 	VkFramebuffer m_Framebuffer = VK_NULL_HANDLE;
 
 	uint32_t m_SubPassIndex = 0;
+
+	ImageManager* m_ImageManager = nullptr;
 
 	GarbageCollector* m_GarbageCollector = nullptr;
 

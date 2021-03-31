@@ -1,22 +1,10 @@
 #include "ImageManager.h"
 #include "DeviceProperties.h"
 #include "VulkanTools.h"
-#include "GarbageCollector.h"
 #include "GfxDevice.h"
 
-ImageImpl::ImageImpl(VKImage * image, VKImageView * view, VKImageSampler * sampler) :
-	m_Image(image), m_View(view), m_Sampler(sampler)
-{
-}
-
-ImageImpl::~ImageImpl()
-{
-	GetGfxDevice().ReleaseImage(this);
-}
-
-ImageManager::ImageManager(VkDevice vkDevice, GarbageCollector * gc) :
-	m_Device(vkDevice),
-	m_GarbageCollector(gc)
+ImageManager::ImageManager(VkDevice vkDevice)
+	: m_Device(vkDevice)
 {
 }
 
@@ -24,9 +12,64 @@ ImageManager::~ImageManager()
 {
 }
 
+VKImage * ImageManager::GetImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, VkImageUsageFlags usage)
+{
+	size_t hash
+		= std::hash<VkImageType>()(vkImageType)
+		^ std::hash<VkFormat>()(format)
+		^ std::hash<uint32_t>()(width)
+		^ std::hash<uint32_t>()(height)
+		^ std::hash<uint32_t>()(mipLevels)
+		^ std::hash<uint32_t>()(layerCount)
+		^ std::hash<uint32_t>()(faceCount)
+		^ std::hash<VkImageUsageFlags>()(usage);
+
+	VKImage* image = m_ImagePool.Get(hash);
+	if (image)
+	{
+		return image;
+	}
+	else
+	{
+		VKImage* image = CreateImage(vkImageType, format, width, height, mipLevels, layerCount, faceCount, usage);
+		return image;
+	}
+}
+
+VKImageView * ImageManager::GetImageView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount)
+{
+	//todo
+	return CreateImageView(image, vkImageViewType, vkFormat, vkAspectMask, mipLevels, layerCount, faceCount);
+}
+
+VKImageSampler * ImageManager::GetImageSampler(uint32_t mipLevels, float maxAnisotropy)
+{
+	//todo
+	return CreateImageSampler(mipLevels, maxAnisotropy);
+}
+
+void ImageManager::ReleaseImage(VKImage* image)
+{
+	m_ImagePool.Add(image);
+}
+
+//VKImageView * ImageManager::ReleaseImageView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount)
+//{
+//	return nullptr;
+//}
+
 VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, VkImageUsageFlags usage)
 {
-	VKImage* image = new VKImage(m_Device, vkImageType, format, width, height, mipLevels, layerCount, faceCount, usage);
+	VKImage* image = new VKImage(m_Device);
+
+	image->imageType = vkImageType;
+	image->format = format;
+	image->width = width;
+	image->height = height;
+	image->mipLevels = mipLevels;
+	image->layerCount = layerCount;
+	image->faceCount = faceCount;
+	image->usage = usage;
 
 	// Image
 
@@ -72,9 +115,12 @@ VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, ui
 	return image;
 }
 
-VKImageView * ImageManager::CreateView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount)
+VKImageView * ImageManager::CreateImageView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount)
 {
-	VKImageView* view = new VKImageView(m_Device, image, vkImageViewType, vkFormat, vkAspectMask);
+	VKImageView* view = new VKImageView(m_Device);
+
+	view->imageViewType = vkImageViewType;
+	view->vkAspectMask = vkAspectMask;
 
 	VkImageViewCreateInfo imageViewCI = {};
 	imageViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -98,9 +144,11 @@ VKImageView * ImageManager::CreateView(VkImage image, VkImageViewType vkImageVie
 	return view;
 }
 
-VKImageSampler * ImageManager::CreateSampler(uint32_t mipLevels, float maxAnisotropy)
+VKImageSampler * ImageManager::CreateImageSampler(uint32_t mipLevels, float maxAnisotropy)
 {
 	VKImageSampler* sampler = new VKImageSampler(m_Device);
+
+	sampler->maxAnisotropy = maxAnisotropy;
 
 	VkSamplerCreateInfo samplerCI = {};
 	samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -129,7 +177,7 @@ VKImageSampler * ImageManager::CreateSampler(uint32_t mipLevels, float maxAnisot
 		samplerCI.anisotropyEnable = VK_FALSE;
 		samplerCI.maxAnisotropy = 1.0f;
 	}
-	
+
 	samplerCI.compareEnable = VK_FALSE;
 	samplerCI.compareOp = VK_COMPARE_OP_NEVER;
 	samplerCI.minLod = 0.0f;

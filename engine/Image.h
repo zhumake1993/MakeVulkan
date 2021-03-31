@@ -10,8 +10,4 @@ public:
 
 	Image();
 	virtual ~Image();
-
-protected:
-
-	//
 };

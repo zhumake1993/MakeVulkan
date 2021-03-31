@@ -66,7 +66,7 @@ VkDescriptorSet DescriptorSetManager::AllocateDescriptorSet(VkDescriptorSetLayou
 	{
 		SetList& setlist = m_SetCache[layout];
 
-		if (setlist.back()->InUse(m_FrameIndex))
+		if (setlist.back()->InUse())
 		{
 			DescriptorSet* set = AllocateDescriptorSetInternal(layout);
 			setlist.push_front(set);
@@ -87,7 +87,7 @@ VkDescriptorSet DescriptorSetManager::AllocateDescriptorSet(VkDescriptorSetLayou
 DescriptorSetManager::DescriptorSet* DescriptorSetManager::AllocateDescriptorSetInternal(VkDescriptorSetLayout layout)
 {
 	DescriptorSet* set = new DescriptorSet();
-	set->Use(m_FrameIndex);
+	set->Use();
 
 	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
 	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;

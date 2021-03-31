@@ -5,9 +5,10 @@
 #include "ImageManager.h"
 #include "ProfilerManager.h"
 
-VKRenderPass::VKRenderPass(VkDevice vkDevice, RenderPassDesc& renderPassDesc, VkImageView swapChainImageView, ImageManager* imageManager, GarbageCollector* gc) :
-	m_Device(vkDevice),
-	m_GarbageCollector(gc)
+VKRenderPass::VKRenderPass(VkDevice vkDevice, RenderPassDesc& renderPassDesc, VkImageView swapChainImageView, ImageManager* imageManager, GarbageCollector* gc)
+	: m_Device(vkDevice)
+	, m_ImageManager(imageManager)
+	, m_GarbageCollector(gc)
 {
 	m_RenderPassDesc = renderPassDesc;
 
@@ -87,7 +88,13 @@ VKRenderPass::~VKRenderPass()
 
 	for (size_t i = 0; i < m_Images.size(); i++)
 	{
-		RELEASE(m_Images[i]);
+		//RELEASE(m_Images[i]);
+		//RELEASE(m_ImageViews[i]);
+
+		if (m_Images[i])
+		{
+			m_ImageManager->ReleaseImage(m_Images[i]);
+		}
 		RELEASE(m_ImageViews[i]);
 	}
 }
@@ -279,8 +286,8 @@ void VKRenderPass::ConfigImage(RenderPassDesc& renderPassDesc, VkImageView swapC
 				aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 			}
 
-			m_Images[atta] = imageManager->CreateImage(VK_IMAGE_TYPE_2D, desc.format, windowWidth, windowHeight, 1, 1, 1, usage);
-			m_ImageViews[atta] = imageManager->CreateView(m_Images[atta]->image, VK_IMAGE_VIEW_TYPE_2D, desc.format, aspectMask, 1, 1, 1);
+			m_Images[atta] = imageManager->GetImage(VK_IMAGE_TYPE_2D, desc.format, windowWidth, windowHeight, 1, 1, 1, usage);
+			m_ImageViews[atta] = imageManager->GetImageView(m_Images[atta]->image, VK_IMAGE_VIEW_TYPE_2D, desc.format, aspectMask, 1, 1, 1);
 		}
 	}
 }
