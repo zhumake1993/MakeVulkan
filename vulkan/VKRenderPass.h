@@ -7,7 +7,6 @@
 
 class ImageManager;
 class VKImage;
-class VKImageView;
 class GarbageCollector;
 
 class VKRenderPass : public VKResource
@@ -22,7 +21,7 @@ public:
 
 	uint32_t GetSubPassIndex();
 	void NextSubpass();
-	VKImageView* GetInputAttachmentImageView(uint32_t index);
+	VKImage* GetInputAttachmentImage(uint32_t index);
 
 private:
 
@@ -41,7 +40,6 @@ private:
 private:
 
 	std::vector<VKImage*> m_Images;
-	std::vector<VKImageView*> m_ImageViews;
 
 	VkImageView m_SwapChainImageView;
 

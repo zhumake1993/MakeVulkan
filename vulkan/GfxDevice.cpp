@@ -387,12 +387,7 @@ Image * GfxDevice::CreateImage(VkFormat format, uint32_t width, uint32_t height,
 {
 	ImageVulkan* imageVulkan = new ImageVulkan();
 
-	// Image
-	imageVulkan->m_Image = m_ImageManager->GetImage(VK_IMAGE_TYPE_2D, format, width, height, mipLevels, layerCount, faceCount, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-
-	// ImageView
 	VkImageViewType imageViewType;
-	VkImageAspectFlags vkAspectMask;
 	if (layerCount == 1)
 	{
 		if (faceCount == 1)
@@ -415,8 +410,11 @@ Image * GfxDevice::CreateImage(VkFormat format, uint32_t width, uint32_t height,
 			imageViewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
 		}
 	}
-	vkAspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	imageVulkan->m_ImageView = m_ImageManager->GetImageView(imageVulkan->m_Image->image, imageViewType, format, vkAspectMask, mipLevels, layerCount, faceCount);
+	VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+	// Image
+	imageVulkan->m_Image = m_ImageManager->GetImage(VK_IMAGE_TYPE_2D, format, width, height, mipLevels, layerCount, faceCount, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT
+		, imageViewType, aspectMask);
 
 	// Image Sampler
 	imageVulkan->m_ImageSampler = m_ImageManager->GetImageSampler(mipLevels, maxAnisotropy);
@@ -467,10 +465,6 @@ void GfxDevice::ReleaseImage(Image * image)
 	ImageVulkan* imageVulkan = static_cast<ImageVulkan*>(image);
 
 	m_ImageManager->ReleaseImage(imageVulkan->m_Image);
-
-	m_GarbageCollector->AddResource(imageVulkan->m_ImageView);
-
-	//m_GarbageCollector->AddResource(imageVulkan->GetSampler());
 }
 
 Attachment * GfxDevice::CreateAttachment(uint32_t width, uint32_t height, VkFormat format, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp)
@@ -510,7 +504,7 @@ void GfxDevice::BindUniformBuffer(GpuProgram * gpuProgram, int set, int binding,
 		VKBuffer* vkBuffer = m_BufferManager->CreateTempBuffer(size);
 		vkBuffer->Update(data, 0, size);
 
-		UpdateDescriptorSet(descriptorSet, binding, vkBuffer);
+		UpdateDescriptorSetBuffer(descriptorSet, binding, vkBuffer);
 
 		m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, vkGpuProgram->GetPipelineLayout(), set, descriptorSet, { 0 });
 	}
@@ -526,7 +520,7 @@ void GfxDevice::BindImage(GpuProgram * gpuProgram, int binding, void * image)
 
 	VkDescriptorSet descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerMaterial());
 
-	UpdateDescriptorSet(descriptorSet, binding, static_cast<ImageVulkan*>(image));
+	UpdateDescriptorSetImage(descriptorSet, binding, static_cast<ImageVulkan*>(image));
 
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, vkGpuProgram->GetPipelineLayout(), 2, descriptorSet);
 }
@@ -546,20 +540,20 @@ void GfxDevice::BindMaterial(GpuProgram * gpuProgram, MaterialBindData & data)
 
 		ASSERT(vkBuffer->usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, "not uniform buffer");
 
-		UpdateDescriptorSet(descriptorSet, uniform.binding, vkBuffer);
+		UpdateDescriptorSetBuffer(descriptorSet, uniform.binding, vkBuffer);
 
 		offsets.push_back(0);
 	}
 
 	for (auto& image : data.imageBindings)
 	{
-		UpdateDescriptorSet(descriptorSet, image.binding, static_cast<ImageVulkan*>(image.image));
+		UpdateDescriptorSetImage(descriptorSet, image.binding, static_cast<ImageVulkan*>(image.image));
 	}
 
 	uint32_t inputAttachmentIndex = 0;
 	for (auto& inputAttachment : data.inputAttachmentBindings)
 	{
-		UpdateDescriptorSet(descriptorSet, inputAttachment.binding, m_VKRenderPass->GetInputAttachmentImageView(inputAttachmentIndex));
+		UpdateDescriptorSetInputAttachment(descriptorSet, inputAttachment.binding, m_VKRenderPass->GetInputAttachmentImage(inputAttachmentIndex));
 		inputAttachmentIndex++;
 	}
 
@@ -600,7 +594,7 @@ void GfxDevice::DrawBatch(DrawBatchs & drawBatchs)
 	VKBuffer* vkBuffer = m_BufferManager->CreateTempBuffer(drawBatchs.uniformSize);
 	vkBuffer->Update(drawBatchs.uniformData, 0, drawBatchs.uniformSize);
 
-	UpdateDescriptorSet(descriptorSet, drawBatchs.uniformBinding, vkBuffer, 0, drawBatchs.alignedUniformSize);
+	UpdateDescriptorSetBuffer(descriptorSet, drawBatchs.uniformBinding, vkBuffer, 0, drawBatchs.alignedUniformSize);
 
 	// Draw
 	uint32_t uniformOffset = 0;
@@ -752,7 +746,7 @@ VkFence GfxDevice::CreateVKFence(bool signaled)
 	return fence;
 }
 
-void GfxDevice::UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, VKBuffer * vkBuffer, uint64_t offset, uint64_t range)
+void GfxDevice::UpdateDescriptorSetBuffer(VkDescriptorSet descriptorSet, uint32_t binding, VKBuffer * vkBuffer, uint64_t offset, uint64_t range)
 {
 	VkDescriptorBufferInfo bufferInfo;
 	bufferInfo.buffer = vkBuffer->buffer;
@@ -774,11 +768,11 @@ void GfxDevice::UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t bind
 	vkBuffer->Use();
 }
 
-void GfxDevice::UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, ImageVulkan * imageVulkan)
+void GfxDevice::UpdateDescriptorSetImage(VkDescriptorSet descriptorSet, uint32_t binding, ImageVulkan * imageVulkan)
 {
 	VkDescriptorImageInfo imageInfo;
 	imageInfo.sampler = imageVulkan->m_ImageSampler->sampler;
-	imageInfo.imageView = imageVulkan->m_ImageView->view;
+	imageInfo.imageView = imageVulkan->m_Image->view;
 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkWriteDescriptorSet writeDescriptorSet = {};
@@ -794,15 +788,13 @@ void GfxDevice::UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t bind
 	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
 
 	imageVulkan->m_Image->Use();
-	imageVulkan->m_ImageView->Use();
-	//imageVulkan->m_ImageSampler->Use();
 }
 
-void GfxDevice::UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, VKImageView * imageView)
+void GfxDevice::UpdateDescriptorSetInputAttachment(VkDescriptorSet descriptorSet, uint32_t binding, VKImage* image)
 {
 	VkDescriptorImageInfo imageInfo;
 	imageInfo.sampler = VK_NULL_HANDLE;
-	imageInfo.imageView = imageView->view;
+	imageInfo.imageView = image->view;
 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkWriteDescriptorSet writeDescriptorSet = {};
@@ -817,5 +809,5 @@ void GfxDevice::UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t bind
 
 	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
 
-	imageView->Use();
+	image->Use();
 }

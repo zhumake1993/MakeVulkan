@@ -10,9 +10,15 @@ ImageManager::ImageManager(VkDevice vkDevice)
 
 ImageManager::~ImageManager()
 {
+	for (auto itr = m_ImageSamplerPool.begin(); itr != m_ImageSamplerPool.end(); itr++)
+	{
+		delete itr->second;
+	}
+	m_ImageSamplerPool.clear();
 }
 
-VKImage * ImageManager::GetImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, VkImageUsageFlags usage)
+VKImage * ImageManager::GetImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, VkImageUsageFlags usage
+	, VkImageViewType imageViewType, VkImageAspectFlags aspectMask)
 {
 	size_t hash
 		= std::hash<VkImageType>()(vkImageType)
@@ -22,7 +28,9 @@ VKImage * ImageManager::GetImage(VkImageType vkImageType, VkFormat format, uint3
 		^ std::hash<uint32_t>()(mipLevels)
 		^ std::hash<uint32_t>()(layerCount)
 		^ std::hash<uint32_t>()(faceCount)
-		^ std::hash<VkImageUsageFlags>()(usage);
+		^ std::hash<VkImageUsageFlags>()(usage)
+		^ std::hash<VkImageViewType>()(imageViewType)
+		^ std::hash<VkImageAspectFlags>()(aspectMask);
 
 	VKImage* image = m_ImagePool.Get(hash);
 	if (image)
@@ -31,21 +39,24 @@ VKImage * ImageManager::GetImage(VkImageType vkImageType, VkFormat format, uint3
 	}
 	else
 	{
-		VKImage* image = CreateImage(vkImageType, format, width, height, mipLevels, layerCount, faceCount, usage);
+		VKImage* image = CreateImage(vkImageType, format, width, height, mipLevels, layerCount, faceCount, usage, imageViewType, aspectMask);
 		return image;
 	}
 }
 
-VKImageView * ImageManager::GetImageView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount)
-{
-	//todo
-	return CreateImageView(image, vkImageViewType, vkFormat, vkAspectMask, mipLevels, layerCount, faceCount);
-}
-
 VKImageSampler * ImageManager::GetImageSampler(uint32_t mipLevels, float maxAnisotropy)
 {
-	//todo
-	return CreateImageSampler(mipLevels, maxAnisotropy);
+	size_t hash = std::hash<float>()(maxAnisotropy);
+	if (m_ImageSamplerPool.find(hash) != m_ImageSamplerPool.end())
+	{
+		return m_ImageSamplerPool[hash];
+	}
+	else
+	{
+		VKImageSampler* sampler = CreateImageSampler(mipLevels, maxAnisotropy);
+		m_ImageSamplerPool[hash] = sampler;
+		return sampler;
+	}
 }
 
 void ImageManager::ReleaseImage(VKImage* image)
@@ -53,12 +64,8 @@ void ImageManager::ReleaseImage(VKImage* image)
 	m_ImagePool.Add(image);
 }
 
-//VKImageView * ImageManager::ReleaseImageView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount)
-//{
-//	return nullptr;
-//}
-
-VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, VkImageUsageFlags usage)
+VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, VkImageUsageFlags usage
+	, VkImageViewType imageViewType, VkImageAspectFlags aspectMask)
 {
 	VKImage* image = new VKImage(m_Device);
 
@@ -70,6 +77,8 @@ VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, ui
 	image->layerCount = layerCount;
 	image->faceCount = faceCount;
 	image->usage = usage;
+	image->imageViewType = imageViewType;
+	image->aspectMask = aspectMask;
 
 	// Image
 
@@ -112,36 +121,28 @@ VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, ui
 
 	VK_CHECK_RESULT(vkBindImageMemory(m_Device, image->image, image->memory, 0));
 
-	return image;
-}
-
-VKImageView * ImageManager::CreateImageView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount)
-{
-	VKImageView* view = new VKImageView(m_Device);
-
-	view->imageViewType = vkImageViewType;
-	view->vkAspectMask = vkAspectMask;
+	// ImageView
 
 	VkImageViewCreateInfo imageViewCI = {};
 	imageViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	imageViewCI.pNext = nullptr;
 	imageViewCI.flags = 0;
-	imageViewCI.image = image;
-	imageViewCI.viewType = vkImageViewType;
-	imageViewCI.format = vkFormat;
+	imageViewCI.image = image->image;
+	imageViewCI.viewType = imageViewType;
+	imageViewCI.format = format;
 	imageViewCI.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewCI.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewCI.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewCI.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewCI.subresourceRange.aspectMask = vkAspectMask;
+	imageViewCI.subresourceRange.aspectMask = aspectMask;
 	imageViewCI.subresourceRange.baseMipLevel = 0;
 	imageViewCI.subresourceRange.levelCount = mipLevels;
 	imageViewCI.subresourceRange.baseArrayLayer = 0;
 	imageViewCI.subresourceRange.layerCount = faceCount * layerCount;
 
-	VK_CHECK_RESULT(vkCreateImageView(m_Device, &imageViewCI, nullptr, &view->view));
+	VK_CHECK_RESULT(vkCreateImageView(m_Device, &imageViewCI, nullptr, &image->view));
 
-	return view;
+	return image;
 }
 
 VKImageSampler * ImageManager::CreateImageSampler(uint32_t mipLevels, float maxAnisotropy)

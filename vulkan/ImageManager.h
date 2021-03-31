@@ -18,6 +18,7 @@ public:
 	{
 		vkDestroyImage(device, image, nullptr);
 		vkFreeMemory(device, memory, nullptr);
+		vkDestroyImageView(device, view, nullptr);
 	}
 
 	size_t Hash()
@@ -35,11 +36,14 @@ public:
 			^ std::hash<uint32_t>()(mipLevels)
 			^ std::hash<uint32_t>()(layerCount)
 			^ std::hash<uint32_t>()(faceCount)
-			^ std::hash<VkImageUsageFlags>()(usage);
+			^ std::hash<VkImageUsageFlags>()(usage)
+			^ std::hash<VkImageViewType>()(imageViewType)
+			^ std::hash<VkImageAspectFlags>()(aspectMask);
 
 		return hash;
 	}
 
+	// image
 	VkImageType imageType;
 	VkFormat format;
 	uint32_t width;
@@ -49,33 +53,15 @@ public:
 	uint32_t faceCount;
 	VkImageUsageFlags usage;
 
+	// view
+	// 简单起见，view的属性与image保持一致
+	VkImageViewType imageViewType;
+	VkImageAspectFlags aspectMask;
+
 	size_t hash = 0;
 
 	VkImage image = VK_NULL_HANDLE;
 	VkDeviceMemory memory = VK_NULL_HANDLE;
-
-private:
-
-	VkDevice device = VK_NULL_HANDLE;
-};
-
-class VKImageView : public VKResource
-{
-public:
-
-	VKImageView(VkDevice vkDevice)
-		: device(vkDevice)
-	{
-	}
-
-	virtual ~VKImageView()
-	{
-		vkDestroyImageView(device, view, nullptr);
-	}
-
-	VkImageViewType imageViewType;
-	VkImageAspectFlags vkAspectMask;
-
 	VkImageView view = VK_NULL_HANDLE;
 
 private:
@@ -98,7 +84,21 @@ public:
 		vkDestroySampler(device, sampler, nullptr);
 	}
 
+	size_t Hash()
+	{
+		if (hash)
+		{
+			return hash;
+		}
+
+		hash = std::hash<float>()(maxAnisotropy);
+
+		return hash;
+	}
+
 	float maxAnisotropy;
+
+	size_t hash = 0;
 
 	VkSampler sampler = VK_NULL_HANDLE;
 
@@ -122,7 +122,6 @@ public:
 public:
 
 	VKImage* m_Image;
-	VKImageView* m_ImageView;
 	VKImageSampler* m_ImageSampler;
 };
 
@@ -133,23 +132,25 @@ public:
 	ImageManager(VkDevice vkDevice);
 	~ImageManager();
 
-	VKImage* GetImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, VkImageUsageFlags usage);
-	VKImageView* GetImageView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount);
+	VKImage* GetImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, VkImageUsageFlags usage
+		, VkImageViewType imageViewType, VkImageAspectFlags aspectMask);
+
 	VKImageSampler* GetImageSampler(uint32_t mipLevels, float maxAnisotropy);
 
 	void ReleaseImage(VKImage* image);
-	//VKImageView* ReleaseImageView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount);
 
 private:
 
-	VKImage* CreateImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, VkImageUsageFlags usage);
-	VKImageView* CreateImageView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount);
+	VKImage* CreateImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, VkImageUsageFlags usage
+		, VkImageViewType imageViewType, VkImageAspectFlags aspectMask);
+
 	VKImageSampler* CreateImageSampler(uint32_t mipLevels, float maxAnisotropy);
 
 private:
 
 	ResourcePool<VKImage> m_ImagePool;
 
+	std::unordered_map<size_t, VKImageSampler*> m_ImageSamplerPool;
 
 	VkDevice m_Device = VK_NULL_HANDLE;
 };

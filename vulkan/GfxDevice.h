@@ -16,7 +16,6 @@ struct VKCommandBuffer;
 class VKRenderPass;
 struct VKBuffer;
 class VKImage;
-class VKImageView;
 class ImageVulkan;
 
 class GarbageCollector;
@@ -126,9 +125,9 @@ private:
 
 	VkFence CreateVKFence(bool signaled);
 
-	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, VKBuffer* vkBuffer, uint64_t offset = 0, uint64_t range = VK_WHOLE_SIZE);
-	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, ImageVulkan* imageVulkan);
-	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, VKImageView* imageView); // InputAttachment只需要view
+	void UpdateDescriptorSetBuffer(VkDescriptorSet descriptorSet, uint32_t binding, VKBuffer* vkBuffer, uint64_t offset = 0, uint64_t range = VK_WHOLE_SIZE);
+	void UpdateDescriptorSetImage(VkDescriptorSet descriptorSet, uint32_t binding, ImageVulkan* imageVulkan);
+	void UpdateDescriptorSetInputAttachment(VkDescriptorSet descriptorSet, uint32_t binding, VKImage* image); // InputAttachment只需要view
 
 private:
 

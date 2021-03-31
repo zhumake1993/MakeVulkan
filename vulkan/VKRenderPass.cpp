@@ -49,9 +49,9 @@ VKRenderPass::VKRenderPass(VkDevice vkDevice, RenderPassDesc& renderPassDesc, Vk
 	std::vector<VkImageView> views(attachmentDescs.size());
 	for (size_t i = 0; i < attachmentDescs.size(); i++)
 	{
-		if (m_ImageViews[i])
+		if (m_Images[i])
 		{
-			views[i] = m_ImageViews[i]->view;
+			views[i] = m_Images[i]->view;
 		}
 		else
 		{
@@ -88,14 +88,10 @@ VKRenderPass::~VKRenderPass()
 
 	for (size_t i = 0; i < m_Images.size(); i++)
 	{
-		//RELEASE(m_Images[i]);
-		//RELEASE(m_ImageViews[i]);
-
 		if (m_Images[i])
 		{
 			m_ImageManager->ReleaseImage(m_Images[i]);
 		}
-		RELEASE(m_ImageViews[i]);
 	}
 }
 
@@ -119,11 +115,11 @@ void VKRenderPass::NextSubpass()
 	m_SubPassIndex++;
 }
 
-VKImageView * VKRenderPass::GetInputAttachmentImageView(uint32_t index)
+VKImage * VKRenderPass::GetInputAttachmentImage(uint32_t index)
 {
 	std::vector<SubPassDesc>& subPassDescs = m_RenderPassDesc.subPassDescs;
 	auto& inputs = subPassDescs[m_SubPassIndex].inputs;
-	return m_ImageViews[inputs[index]];
+	return m_Images[inputs[index]];
 }
 
 void VKRenderPass::ConfigAttachmentDescriptions(std::vector<VkAttachmentDescription>& attachmentDescriptions, RenderPassDesc& renderPassDesc)
@@ -239,7 +235,6 @@ void VKRenderPass::ConfigImage(RenderPassDesc& renderPassDesc, VkImageView swapC
 	std::vector<SubPassDesc>& subPassDescs = renderPassDesc.subPassDescs;
 
 	m_Images.resize(attachmentDescs.size());
-	m_ImageViews.resize(attachmentDescs.size());
 
 	for (size_t atta = 0; atta < attachmentDescs.size(); atta++)
 	{
@@ -248,7 +243,6 @@ void VKRenderPass::ConfigImage(RenderPassDesc& renderPassDesc, VkImageView swapC
 		if (atta == renderPassDesc.present)
 		{
 			m_Images[atta] = nullptr;
-			m_ImageViews[atta] = nullptr;
 
 			m_SwapChainImageView = swapChainImageView;
 		}
@@ -286,8 +280,7 @@ void VKRenderPass::ConfigImage(RenderPassDesc& renderPassDesc, VkImageView swapC
 				aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 			}
 
-			m_Images[atta] = imageManager->GetImage(VK_IMAGE_TYPE_2D, desc.format, windowWidth, windowHeight, 1, 1, 1, usage);
-			m_ImageViews[atta] = imageManager->GetImageView(m_Images[atta]->image, VK_IMAGE_VIEW_TYPE_2D, desc.format, aspectMask, 1, 1, 1);
+			m_Images[atta] = imageManager->GetImage(VK_IMAGE_TYPE_2D, desc.format, windowWidth, windowHeight, 1, 1, 1, usage, VK_IMAGE_VIEW_TYPE_2D, aspectMask);
 		}
 	}
 }
