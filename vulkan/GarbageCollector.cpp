@@ -50,5 +50,6 @@ uint32_t GarbageCollector::GetFrameIndex()
 
 void GarbageCollector::AddResource(VKResource * resource)
 {
+	ASSERT(resource, "GarbageCollector adds nullptr.");
 	m_NewResources.push_back(resource);
 }

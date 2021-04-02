@@ -12,6 +12,7 @@ class Camera;
 class Buffer;
 class Imgui;
 class TimeManager;
+class RenderPass;
 
 class Example : public NonCopyable
 {

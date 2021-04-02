@@ -26,6 +26,8 @@ class PipelineManager;
 struct PipelineCI;
 
 class Attachment;
+class RenderPass;
+class RenderPassVulkan;
 class RenderPassManager;
 
 class GPUProfilerManager;
@@ -72,9 +74,6 @@ public:
 	void BeginCommandBuffer();
 	void EndCommandBuffer();
 
-	void BeginRenderPass(Rect2D& renderArea, std::vector<VkClearValue>& clearValues);
-	void EndRenderPass();
-
 	void SetViewport(Viewport& viewport);
 	void SetScissor(Rect2D& scissorArea);
 
@@ -87,7 +86,15 @@ public:
 	void UpdateImage(Image* image, void* data, uint64_t size, const std::vector<std::vector<std::vector<uint64_t>>>& offsets);
 	void ReleaseImage(Image* image);
 
-	Attachment* CreateAttachment(uint32_t width, uint32_t height, VkFormat format, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp);
+	Attachment* CreateAttachment(int typeMask, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp);
+	Attachment* CreateAttachment(int typeMask, VkFormat format, uint32_t width, uint32_t height, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp);
+	void ReleaseAttachment(Attachment* attachment);
+
+	RenderPass* CreateRenderPass(uint32_t width, uint32_t height);
+	void ReleaseRenderPass(RenderPass* renderPass);
+	void BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, std::vector<VkClearValue>& clearValues);
+	void NextSubpass();
+	void EndRenderPass();
 
 	GpuProgram* CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode);
 
@@ -112,9 +119,6 @@ public:
 	void ResolveTimeStamp();
 	std::string GetLastGPUTimeStamp();
 
-	void SetRenderPass(RenderPassDesc& renderPassDesc);
-	void NextSubpass();
-
 private:
 
 	VkFormat GetSupportedDepthFormat();
@@ -127,7 +131,7 @@ private:
 
 	void UpdateDescriptorSetBuffer(VkDescriptorSet descriptorSet, uint32_t binding, VKBuffer* vkBuffer, uint64_t offset = 0, uint64_t range = VK_WHOLE_SIZE);
 	void UpdateDescriptorSetImage(VkDescriptorSet descriptorSet, uint32_t binding, ImageVulkan* imageVulkan);
-	void UpdateDescriptorSetInputAttachment(VkDescriptorSet descriptorSet, uint32_t binding, VKImage* image); // InputAttachment只需要view
+	void UpdateDescriptorSetInputAttachment(VkDescriptorSet descriptorSet, uint32_t binding, VkImageView view); // InputAttachment只需要view
 
 private:
 
@@ -141,19 +145,18 @@ private:
 	std::vector<FrameResource> m_FrameResources;
 
 	// 资源管理器
-	GarbageCollector* m_GarbageCollector = nullptr; // GC
+	GarbageCollector* m_GarbageCollector = nullptr;
 	BufferManager* m_BufferManager = nullptr;
 	ImageManager* m_ImageManager = nullptr;
 	DescriptorSetManager* m_DescriptorSetManager = nullptr;
 	PipelineManager* m_PipelineManager = nullptr;
 	RenderPassManager* m_RenderPassManager = nullptr;
 
-	// RenderPass
-	VKRenderPass* m_VKRenderPass = nullptr;
-
 	// SwapChain中的image数量可能并不等于FrameResourcesCount，所以要单独处理Framebuffer
 	uint32_t m_ImageIndex;
-	//std::vector<VkFramebuffer> m_Framebuffers;
+
+	// 当前的RenderPass
+	RenderPassVulkan* m_CurrentRenderPass = nullptr;
 
 	// 用于传数据
 	VKCommandBuffer* m_UploadCommandBuffer;

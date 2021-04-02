@@ -12,6 +12,7 @@ struct VKCommandBuffer : public NonCopyable
 	void End();
 
 	void BeginRenderPass(VkRenderPass vkRenderPass, VkFramebuffer vkFrameBuffer, VkRect2D& area, std::vector<VkClearValue>& clearValues);
+	void NextSubpass();
 	void EndRenderPass();
 
 	void SetViewport(VkViewport& viewport);

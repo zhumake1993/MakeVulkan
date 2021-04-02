@@ -148,7 +148,7 @@ private:
 
 private:
 
-	ResourcePool<VKImage> m_ImagePool;
+	ResourcePoolOld<VKImage> m_ImagePool;
 
 	std::unordered_map<size_t, VKImageSampler*> m_ImageSamplerPool;
 

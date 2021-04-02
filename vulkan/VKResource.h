@@ -23,7 +23,7 @@ private:
 };
 
 template <class Resource>
-class ResourcePool
+class ResourcePoolOld
 {
 	class PoolEntry
 	{
@@ -64,12 +64,6 @@ class ResourcePool
 
 public:
 
-	~ResourcePool()
-	{
-		int q = 1;
-		m_Pool.clear();
-	}
-
 	Resource* Get(size_t hash)
 	{
 		if (m_Pool.find(hash) != m_Pool.end())
@@ -93,3 +87,4 @@ private:
 
 	std::unordered_map<size_t, PoolEntry> m_Pool;
 };
+

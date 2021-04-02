@@ -12,7 +12,6 @@
 #include "VKCommandPool.h"
 
 #include "VKCommandBuffer.h"
-#include "VKRenderPass.h"
 
 #include "GarbageCollector.h"
 #include "BufferManager.h"
@@ -234,22 +233,6 @@ void GfxDevice::EndCommandBuffer()
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->End();
 }
 
-void GfxDevice::BeginRenderPass(Rect2D& renderArea, std::vector<VkClearValue>& clearValues)
-{
-	VkRect2D area = {};
-	area.offset.x = renderArea.x;
-	area.offset.y = renderArea.y;
-	area.extent.width = renderArea.width;
-	area.extent.height = renderArea.height;
-
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->BeginRenderPass(m_VKRenderPass->GetRenderPass(), m_VKRenderPass->GetFramebuffer(), area, clearValues);
-}
-
-void GfxDevice::EndRenderPass()
-{
-	m_FrameResources[m_FrameResourceIndex].commandBuffer->EndRenderPass();
-}
-
 void GfxDevice::SetViewport(Viewport & viewport)
 {
 	VkViewport port = {};
@@ -467,11 +450,135 @@ void GfxDevice::ReleaseImage(Image * image)
 	m_ImageManager->ReleaseImage(imageVulkan->m_Image);
 }
 
-Attachment * GfxDevice::CreateAttachment(uint32_t width, uint32_t height, VkFormat format, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp)
+Attachment * GfxDevice::CreateAttachment(int typeMask, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp)
 {
-	VKAttachment* vkAttachment = m_RenderPassManager->CreateAttachment(width, height, format, loadOp, storeOp);
+	ASSERT(typeMask & kAttachmentSwapChain, "typeMask does not contain kAttachmentSwapChain flag.");
 
-	return vkAttachment;
+	// 这些有关swapchain变量的获取可以优化
+	AttachmentVulkan* attachmentVK = new AttachmentVulkan(typeMask, GetDeviceProperties().ScFormat.format, windowWidth, windowHeight, loadOp, storeOp);
+
+	attachmentVK->m_Image = new VKImage(VK_NULL_HANDLE);
+	attachmentVK->m_Image->view = m_VKSwapChain->swapChainImageViews[m_ImageIndex];
+
+	return attachmentVK;
+}
+
+Attachment * GfxDevice::CreateAttachment(int typeMask, VkFormat format, uint32_t width, uint32_t height, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp)
+{
+	AttachmentVulkan* attachmentVK = new AttachmentVulkan(typeMask, format, width, height, loadOp, storeOp);
+
+	VkImageUsageFlags usage = 0;
+	VkImageAspectFlags aspectMask = 0;
+
+	if (typeMask & kAttachmentColor)
+	{
+		usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		aspectMask |= VK_IMAGE_ASPECT_COLOR_BIT;
+	}
+
+	if (typeMask & kAttachmentDepth)
+	{
+		usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+	}
+
+	if (typeMask & kAttachmentInput)
+	{
+		usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+	}
+
+	attachmentVK->m_Image = m_ImageManager->GetImage(VK_IMAGE_TYPE_2D, format, width, height, 1, 1, 1, usage, VK_IMAGE_VIEW_TYPE_2D, aspectMask);
+
+	return attachmentVK;
+}
+
+void GfxDevice::ReleaseAttachment(Attachment * attachment)
+{
+	AttachmentVulkan* attachmentVK = static_cast<AttachmentVulkan*>(attachment);
+
+	if (!(attachmentVK->GetTypeMask() & kAttachmentSwapChain))
+	{
+		m_ImageManager->ReleaseImage(attachmentVK->m_Image);
+	}
+	
+	RELEASE(attachmentVK);
+}
+
+RenderPass * GfxDevice::CreateRenderPass(uint32_t width, uint32_t height)
+{
+	return new RenderPassVulkan(width, height);
+}
+
+void GfxDevice::ReleaseRenderPass(RenderPass* renderPass)
+{
+	RenderPassVulkan* renderPassVK = static_cast<RenderPassVulkan*>(renderPass);
+
+	m_RenderPassManager->ReleaseRenderPass(renderPass->GetKey(), renderPassVK->m_RenderPass);
+
+	RELEASE(renderPassVK);
+}
+
+void GfxDevice::BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, std::vector<VkClearValue>& clearValues)
+{
+	PROFILER(GfxDevice_BeginRenderPass);
+
+	m_CurrentRenderPass = static_cast<RenderPassVulkan*>(renderPass);
+
+	m_CurrentRenderPass->m_RenderPass = m_RenderPassManager->GetRenderPass(renderPass->GetKey());
+
+	m_CurrentRenderPass->m_SubpassIndex = 0;
+
+	// Framebuffer
+
+	VKFramebuffer* framebuffer = new VKFramebuffer(m_VKDevice->device);
+
+	std::vector<Attachment*>& attachments = renderPass->GetAttachments();
+	std::vector<VkImageView> views(attachments.size());
+	for (size_t i = 0; i < attachments.size(); i++)
+	{
+		AttachmentVulkan* attachmentVK = static_cast<AttachmentVulkan*>(attachments[i]);
+		views[i] = attachmentVK->m_Image->view;
+
+		attachmentVK->m_Image->Use();
+	}
+
+	VkFramebufferCreateInfo frameBufferCreateInfo = {};
+	frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	frameBufferCreateInfo.pNext = nullptr;
+	frameBufferCreateInfo.flags = 0;
+	frameBufferCreateInfo.renderPass = m_CurrentRenderPass->m_RenderPass->renderPass;
+	frameBufferCreateInfo.attachmentCount = static_cast<uint32_t>(views.size());
+	frameBufferCreateInfo.pAttachments = views.data();
+	frameBufferCreateInfo.width = m_CurrentRenderPass->GetWidth();
+	frameBufferCreateInfo.height = m_CurrentRenderPass->GetHeight();
+	frameBufferCreateInfo.layers = 1;
+
+	VK_CHECK_RESULT(vkCreateFramebuffer(m_VKDevice->device, &frameBufferCreateInfo, nullptr, &framebuffer->framebuffer));
+
+	VkRect2D area = {};
+	area.offset.x = renderArea.x;
+	area.offset.y = renderArea.y;
+	area.extent.width = renderArea.width;
+	area.extent.height = renderArea.height;
+
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->BeginRenderPass(m_CurrentRenderPass->m_RenderPass->renderPass, framebuffer->framebuffer, area, clearValues);
+
+	m_CurrentRenderPass->m_RenderPass->Use();
+
+	framebuffer->Use();
+	m_GarbageCollector->AddResource(framebuffer);
+}
+
+void GfxDevice::NextSubpass()
+{
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->NextSubpass();
+
+	m_CurrentRenderPass->m_SubpassIndex++;
+}
+
+void GfxDevice::EndRenderPass()
+{
+	m_FrameResources[m_FrameResourceIndex].commandBuffer->EndRenderPass();
 }
 
 GpuProgram * GfxDevice::CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode)
@@ -483,7 +590,7 @@ void GfxDevice::SetPass(GpuProgram * gpuProgram, RenderState * renderState, void
 {
 	VKGpuProgram* vkGpuProgram = static_cast<VKGpuProgram*>(gpuProgram);
 
-	m_PipelineManager->SetPipelineKey(vkGpuProgram, renderState, scdata, m_VKRenderPass->GetRenderPass(), m_VKRenderPass->GetSubPassIndex());
+	m_PipelineManager->SetPipelineKey(vkGpuProgram, renderState, scdata, m_CurrentRenderPass->m_RenderPass->renderPass, m_CurrentRenderPass->m_SubpassIndex);
 }
 
 void GfxDevice::BindUniformBuffer(GpuProgram * gpuProgram, int set, int binding, void * data, uint64_t size)
@@ -553,7 +660,7 @@ void GfxDevice::BindMaterial(GpuProgram * gpuProgram, MaterialBindData & data)
 	uint32_t inputAttachmentIndex = 0;
 	for (auto& inputAttachment : data.inputAttachmentBindings)
 	{
-		UpdateDescriptorSetInputAttachment(descriptorSet, inputAttachment.binding, m_VKRenderPass->GetInputAttachmentImage(inputAttachmentIndex));
+		UpdateDescriptorSetInputAttachment(descriptorSet, inputAttachment.binding, m_CurrentRenderPass->GetInputAttachmentImageView(inputAttachmentIndex));
 		inputAttachmentIndex++;
 	}
 
@@ -648,23 +755,6 @@ void GfxDevice::ResolveTimeStamp()
 std::string GfxDevice::GetLastGPUTimeStamp()
 {
 	return m_GPUProfilerManager->GetLastFrameView().ToString();
-}
-
-void GfxDevice::SetRenderPass(RenderPassDesc & renderPassDesc)
-{
-	PROFILER(GfxDevice_SetRenderPass);
-
-	// RenderPass
-	m_VKRenderPass = new VKRenderPass(m_VKDevice->device, renderPassDesc, m_VKSwapChain->swapChainImageViews[m_ImageIndex], m_ImageManager, m_GarbageCollector);
-
-	m_GarbageCollector->AddResource(m_VKRenderPass);
-	m_VKRenderPass->Use();
-}
-
-void GfxDevice::NextSubpass()
-{
-	vkCmdNextSubpass(m_FrameResources[m_FrameResourceIndex].commandBuffer->commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
-	m_VKRenderPass->NextSubpass();
 }
 
 VkFormat GfxDevice::GetSupportedDepthFormat()
@@ -790,11 +880,11 @@ void GfxDevice::UpdateDescriptorSetImage(VkDescriptorSet descriptorSet, uint32_t
 	imageVulkan->m_Image->Use();
 }
 
-void GfxDevice::UpdateDescriptorSetInputAttachment(VkDescriptorSet descriptorSet, uint32_t binding, VKImage* image)
+void GfxDevice::UpdateDescriptorSetInputAttachment(VkDescriptorSet descriptorSet, uint32_t binding, VkImageView view)
 {
 	VkDescriptorImageInfo imageInfo;
 	imageInfo.sampler = VK_NULL_HANDLE;
-	imageInfo.imageView = image->view;
+	imageInfo.imageView = view;
 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkWriteDescriptorSet writeDescriptorSet = {};
@@ -808,6 +898,4 @@ void GfxDevice::UpdateDescriptorSetInputAttachment(VkDescriptorSet descriptorSet
 	writeDescriptorSet.pImageInfo = &imageInfo;
 
 	vkUpdateDescriptorSets(m_VKDevice->device, 1, &writeDescriptorSet, 0, nullptr);
-
-	image->Use();
 }

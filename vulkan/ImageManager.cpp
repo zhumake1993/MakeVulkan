@@ -39,8 +39,7 @@ VKImage * ImageManager::GetImage(VkImageType vkImageType, VkFormat format, uint3
 	}
 	else
 	{
-		VKImage* image = CreateImage(vkImageType, format, width, height, mipLevels, layerCount, faceCount, usage, imageViewType, aspectMask);
-		return image;
+		return CreateImage(vkImageType, format, width, height, mipLevels, layerCount, faceCount, usage, imageViewType, aspectMask);
 	}
 }
 
