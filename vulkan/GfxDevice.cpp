@@ -370,37 +370,47 @@ Image * GfxDevice::CreateImage(VkFormat format, uint32_t width, uint32_t height,
 {
 	ImageVulkan* imageVulkan = new ImageVulkan();
 
-	VkImageViewType imageViewType;
+	imageVulkan->m_ImageType = VK_IMAGE_TYPE_2D;
+	imageVulkan->m_Format = format;
+	imageVulkan->m_Width = width;
+	imageVulkan->m_Height = height;
+	imageVulkan->m_MipLevels = mipLevels;
+	imageVulkan->m_LayerCount = layerCount;
+	imageVulkan->m_FaceCount = faceCount;
+	imageVulkan->m_Usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	imageVulkan->m_AspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
 	if (layerCount == 1)
 	{
 		if (faceCount == 1)
 		{
-			imageViewType = VK_IMAGE_VIEW_TYPE_2D;
+			imageVulkan->m_ImageViewType = VK_IMAGE_VIEW_TYPE_2D;
 		}
 		else
 		{
-			imageViewType = VK_IMAGE_VIEW_TYPE_CUBE;
+			imageVulkan->m_ImageViewType = VK_IMAGE_VIEW_TYPE_CUBE;
 		}
 	}
 	else
 	{
 		if (faceCount == 1)
 		{
-			imageViewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+			imageVulkan->m_ImageViewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
 		}
 		else
 		{
-			imageViewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+			imageVulkan->m_ImageViewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
 		}
 	}
-	VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
 	// Image
-	imageVulkan->m_Image = m_ImageManager->GetImage(VK_IMAGE_TYPE_2D, format, width, height, mipLevels, layerCount, faceCount, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT
-		, imageViewType, aspectMask);
+	imageVulkan->m_Image = m_ImageManager->GetImage(imageVulkan->GetKey());
 
 	// Image Sampler
-	imageVulkan->m_ImageSampler = m_ImageManager->GetImageSampler(mipLevels, maxAnisotropy);
+	ImageSamplerKey imageSamplerKey;
+	imageSamplerKey.mipLevels = mipLevels;
+	imageSamplerKey.maxAnisotropy = maxAnisotropy;
+	imageVulkan->m_ImageSampler = m_ImageManager->GetImageSampler(imageSamplerKey);
 
 	return imageVulkan;
 }
@@ -410,7 +420,6 @@ void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size, const std
 	// 简单起见，假设当前该image的资源并没有被GPU使用中
 
 	ImageVulkan* imageVulkan = static_cast<ImageVulkan*>(image);
-	VKImage* vkImage = imageVulkan->m_Image;
 
 	VKBuffer* stagingBuffer = m_BufferManager->GetStagingBuffer();
 
@@ -418,13 +427,13 @@ void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size, const std
 
 	m_UploadCommandBuffer->Begin();
 
-	m_UploadCommandBuffer->ImageMemoryBarrier(vkImage->image, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-		0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vkImage->mipLevels, vkImage->layerCount, vkImage->faceCount);
+	m_UploadCommandBuffer->ImageMemoryBarrier(imageVulkan->m_Image->image, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+		0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageVulkan->m_MipLevels, imageVulkan->m_LayerCount, imageVulkan->m_FaceCount);
 
-	m_UploadCommandBuffer->CopyBufferToImage(stagingBuffer->buffer, vkImage->image, vkImage->width, vkImage->height, offsets);
+	m_UploadCommandBuffer->CopyBufferToImage(stagingBuffer->buffer, imageVulkan->m_Image->image, imageVulkan->m_Width, imageVulkan->m_Height, offsets);
 
-	m_UploadCommandBuffer->ImageMemoryBarrier(vkImage->image, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vkImage->mipLevels, vkImage->layerCount, vkImage->faceCount);
+	m_UploadCommandBuffer->ImageMemoryBarrier(imageVulkan->m_Image->image, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, imageVulkan->m_MipLevels, imageVulkan->m_LayerCount, imageVulkan->m_FaceCount);
 
 	m_UploadCommandBuffer->End();
 
@@ -447,7 +456,7 @@ void GfxDevice::ReleaseImage(Image * image)
 {
 	ImageVulkan* imageVulkan = static_cast<ImageVulkan*>(image);
 
-	m_ImageManager->ReleaseImage(imageVulkan->m_Image);
+	m_ImageManager->ReleaseImage(imageVulkan->GetKey(), imageVulkan->m_Image);
 }
 
 Attachment * GfxDevice::CreateAttachment(int typeMask, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp)
@@ -467,27 +476,24 @@ Attachment * GfxDevice::CreateAttachment(int typeMask, VkFormat format, uint32_t
 {
 	AttachmentVulkan* attachmentVK = new AttachmentVulkan(typeMask, format, width, height, loadOp, storeOp);
 
-	VkImageUsageFlags usage = 0;
-	VkImageAspectFlags aspectMask = 0;
-
 	if (typeMask & kAttachmentColor)
 	{
-		usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-		aspectMask |= VK_IMAGE_ASPECT_COLOR_BIT;
+		attachmentVK->m_Usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		attachmentVK->m_AspectMask |= VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
 	if (typeMask & kAttachmentDepth)
 	{
-		usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-		aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+		attachmentVK->m_Usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		attachmentVK->m_AspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
 	}
 
 	if (typeMask & kAttachmentInput)
 	{
-		usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+		attachmentVK->m_Usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
 	}
 
-	attachmentVK->m_Image = m_ImageManager->GetImage(VK_IMAGE_TYPE_2D, format, width, height, 1, 1, 1, usage, VK_IMAGE_VIEW_TYPE_2D, aspectMask);
+	attachmentVK->m_Image = m_ImageManager->GetImage(attachmentVK->GetKey());
 
 	return attachmentVK;
 }
@@ -498,7 +504,7 @@ void GfxDevice::ReleaseAttachment(Attachment * attachment)
 
 	if (!(attachmentVK->GetTypeMask() & kAttachmentSwapChain))
 	{
-		m_ImageManager->ReleaseImage(attachmentVK->m_Image);
+		m_ImageManager->ReleaseImage(attachmentVK->GetKey(), attachmentVK->m_Image);
 	}
 	
 	RELEASE(attachmentVK);
@@ -513,7 +519,7 @@ void GfxDevice::ReleaseRenderPass(RenderPass* renderPass)
 {
 	RenderPassVulkan* renderPassVK = static_cast<RenderPassVulkan*>(renderPass);
 
-	m_RenderPassManager->ReleaseRenderPass(renderPass->GetKey(), renderPassVK->m_RenderPass);
+	m_RenderPassManager->ReleaseRenderPass(renderPassVK->GetKey(), renderPassVK->m_RenderPass);
 
 	RELEASE(renderPassVK);
 }
@@ -524,7 +530,7 @@ void GfxDevice::BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, std:
 
 	m_CurrentRenderPass = static_cast<RenderPassVulkan*>(renderPass);
 
-	m_CurrentRenderPass->m_RenderPass = m_RenderPassManager->GetRenderPass(renderPass->GetKey());
+	m_CurrentRenderPass->m_RenderPass = m_RenderPassManager->GetRenderPass(m_CurrentRenderPass->GetKey());
 
 	m_CurrentRenderPass->m_SubpassIndex = 0;
 

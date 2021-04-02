@@ -52,27 +52,3 @@ std::vector<Attachment*>& RenderPass::GetAttachments()
 {
 	return m_Attachments;
 }
-
-RenderPassKey RenderPass::GetKey()
-{
-	RenderPassKey key;
-
-	key.attachments.resize(m_Attachments.size());
-	for (size_t i = 0; i < m_Attachments.size(); i++)
-	{
-		key.attachments[i].typeMask = m_Attachments[i]->GetTypeMask();
-		key.attachments[i].format = m_Attachments[i]->GetFormat();
-		key.attachments[i].loadOp = m_Attachments[i]->GetLoadOp();
-		key.attachments[i].storeOp = m_Attachments[i]->GetStoreOp();
-	}
-
-	key.subpasses.resize(m_Subpasses.size());
-	for (size_t i = 0; i < m_Subpasses.size(); i++)
-	{
-		key.subpasses[i].inputs = m_Subpasses[i].inputs;
-		key.subpasses[i].colors = m_Subpasses[i].colors;
-		key.subpasses[i].depth = m_Subpasses[i].depth;
-	}
-
-	return key;
-}

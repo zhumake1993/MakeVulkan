@@ -1,14 +1,32 @@
 #include "RenderPassManager.h"
 #include "VulkanTools.h"
-#include "ImageManager.h"
 
 AttachmentVulkan::AttachmentVulkan(int typeMask, VkFormat format, uint32_t width, uint32_t height, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp)
 	: Attachment(typeMask, format, width, height, loadOp, storeOp)
+	, m_Usage(0)
+	, m_AspectMask(0)
 {
 }
 
 AttachmentVulkan::~AttachmentVulkan()
 {
+}
+
+ImageKey AttachmentVulkan::GetKey()
+{
+	ImageKey key;
+	key.imageType = VK_IMAGE_TYPE_2D;
+	key.format = m_Format;
+	key.width = m_Width;
+	key.height = m_Height;
+	key.mipLevels = 1;
+	key.layerCount = 1;
+	key.faceCount = 1;
+	key.usage = m_Usage;
+	key.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
+	key.aspectMask = m_AspectMask;
+
+	return key;
 }
 
 RenderPassManager::RenderPassManager(VkDevice vkDevice)
@@ -20,7 +38,7 @@ RenderPassManager::~RenderPassManager()
 {
 }
 
-VKRenderPass * RenderPassManager::GetRenderPass(RenderPassKey & key)
+VKRenderPass * RenderPassManager::GetRenderPass(const RenderPassKey & key)
 {
 	VKRenderPass* renderPass = m_RenderPassPool.Get(key);
 	if (renderPass)
@@ -33,7 +51,7 @@ VKRenderPass * RenderPassManager::GetRenderPass(RenderPassKey & key)
 	}
 }
 
-void RenderPassManager::ReleaseRenderPass(RenderPassKey& key, VKRenderPass * renderPass)
+void RenderPassManager::ReleaseRenderPass(const RenderPassKey& key, VKRenderPass * renderPass)
 {
 	m_RenderPassPool.Add(key, renderPass);
 }
@@ -45,7 +63,7 @@ struct AttachmentReference
 	VkAttachmentReference depthStencil;
 };
 
-VKRenderPass * RenderPassManager::CreateRenderPass(RenderPassKey & key)
+VKRenderPass * RenderPassManager::CreateRenderPass(const RenderPassKey & key)
 {
 	VKRenderPass* renderPass = new VKRenderPass(m_Device);
 
@@ -85,7 +103,7 @@ VKRenderPass * RenderPassManager::CreateRenderPass(RenderPassKey & key)
 	std::vector<VkSubpassDescription> subpassDescriptions(key.subpasses.size());
 	for (size_t pass = 0; pass < subpassDescriptions.size(); pass++)
 	{
-		RenderPassKey::SubpassKey& subpass = key.subpasses[pass];
+		const RenderPassKey::SubpassKey& subpass = key.subpasses[pass];
 		AttachmentReference& reference = attachmentReferences[pass];
 
 		reference.inputs.resize(subpass.inputs.size());
@@ -164,6 +182,30 @@ VKRenderPass * RenderPassManager::CreateRenderPass(RenderPassKey & key)
 	VK_CHECK_RESULT(vkCreateRenderPass(m_Device, &renderPassCI, nullptr, &renderPass->renderPass));
 
 	return renderPass;
+}
+
+RenderPassKey RenderPassVulkan::GetKey()
+{
+	RenderPassKey key;
+
+	key.attachments.resize(m_Attachments.size());
+	for (size_t i = 0; i < m_Attachments.size(); i++)
+	{
+		key.attachments[i].typeMask = m_Attachments[i]->GetTypeMask();
+		key.attachments[i].format = m_Attachments[i]->GetFormat();
+		key.attachments[i].loadOp = m_Attachments[i]->GetLoadOp();
+		key.attachments[i].storeOp = m_Attachments[i]->GetStoreOp();
+	}
+
+	key.subpasses.resize(m_Subpasses.size());
+	for (size_t i = 0; i < m_Subpasses.size(); i++)
+	{
+		key.subpasses[i].inputs = m_Subpasses[i].inputs;
+		key.subpasses[i].colors = m_Subpasses[i].colors;
+		key.subpasses[i].depth = m_Subpasses[i].depth;
+	}
+
+	return key;
 }
 
 VkImageView RenderPassVulkan::GetInputAttachmentImageView(uint32_t inputIndex)

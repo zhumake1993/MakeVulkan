@@ -4,6 +4,7 @@
 #include "NonCopyable.h"
 #include "VKResource.h"
 #include "RenderPass.h"
+#include "ImageManager.h"
 
 class VKImage;
 
@@ -14,7 +15,12 @@ public:
 	AttachmentVulkan(int typeMask, VkFormat format, uint32_t width, uint32_t height, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp);
 	virtual ~AttachmentVulkan();
 
+	ImageKey GetKey();
+
 public:
+
+	VkImageUsageFlags m_Usage;
+	VkImageAspectFlags m_AspectMask;
 
 	VKImage* m_Image;
 };
@@ -61,6 +67,65 @@ private:
 	VkDevice device = VK_NULL_HANDLE;
 };
 
+struct RenderPassKey
+{
+	struct AttachmentKey
+	{
+		bool operator==(const AttachmentKey & other) const
+		{
+			return typeMask == other.typeMask 
+				&& format == other.format 
+				&& loadOp == other.loadOp 
+				&& storeOp == other.storeOp;
+		}
+		int typeMask;
+		VkFormat format;
+		VkAttachmentLoadOp loadOp;
+		VkAttachmentStoreOp storeOp;
+	};
+	struct SubpassKey
+	{
+		bool operator==(const SubpassKey & other) const
+		{
+			return inputs == other.inputs 
+				&& colors == other.colors 
+				&& depth == other.depth;
+		}
+		std::vector<int> inputs;
+		std::vector<int> colors;
+		int depth;
+	};
+	bool operator==(const RenderPassKey & other) const
+	{
+		return attachments == other.attachments
+			&& subpasses == other.subpasses;
+	}
+	std::vector<AttachmentKey> attachments;
+	std::vector<SubpassKey> subpasses;
+};
+
+struct RenderPassKeyHash
+{
+	size_t operator()(const RenderPassKey & renderPassKey) const
+	{
+		size_t hash = 0;
+		for (auto& a : renderPassKey.attachments)
+		{
+			hash ^= std::hash<int>()(a.typeMask) 
+				^ std::hash<int>()(a.format) 
+				^ std::hash<int>()(a.loadOp)
+				^ std::hash<int>()(a.storeOp);
+		}
+		for (auto& s : renderPassKey.subpasses)
+		{
+			hash ^= std::hash<int>()(s.depth);
+			for (auto i : s.inputs) hash ^= std::hash<int>()(i);
+			for (auto c : s.colors) hash ^= std::hash<int>()(c);
+		}
+		return hash;
+	}
+};
+
 class RenderPassVulkan : public RenderPass
 {
 public:
@@ -73,6 +138,8 @@ public:
 	virtual ~RenderPassVulkan()
 	{
 	}
+
+	RenderPassKey GetKey();
 
 	VkImageView GetInputAttachmentImageView(uint32_t inputIndex);
 
@@ -90,13 +157,13 @@ public:
 	RenderPassManager(VkDevice vkDevice);
 	virtual ~RenderPassManager();
 
-	VKRenderPass* GetRenderPass(RenderPassKey& key);
+	VKRenderPass* GetRenderPass(const RenderPassKey& key);
 
-	void ReleaseRenderPass(RenderPassKey& key, VKRenderPass* renderPass);
+	void ReleaseRenderPass(const RenderPassKey& key, VKRenderPass* renderPass);
 
 private:
 
-	VKRenderPass* CreateRenderPass(RenderPassKey& key);
+	VKRenderPass* CreateRenderPass(const RenderPassKey& key);
 
 private:
 

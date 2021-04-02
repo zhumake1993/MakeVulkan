@@ -39,7 +39,7 @@ void Texture::LoadFromFile(const std::string& filename, VkFormat format, bool is
 
 	auto& device = GetGfxDevice();
 
-	m_Image = device.CreateImage(format, m_Width, m_Height, m_MipLevels, m_LayerCount, m_FaceCount);
+	m_Image = device.CreateImage(m_Format, m_Width, m_Height, m_MipLevels, m_LayerCount, m_FaceCount);
 	device.UpdateImage(m_Image, m_ImageData.data(), m_ImageData.size(), m_Offsets);
 }
 
