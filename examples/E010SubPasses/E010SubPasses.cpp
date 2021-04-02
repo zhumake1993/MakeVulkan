@@ -68,58 +68,6 @@ void MakeVulkan::Init()
 
 	PrepareResources();
 
-	//// RenderPass
-	//{
-	//	// Attachments
-	//	m_RenderPassDesc.attachmentDescs.resize(5);
-	//	std::vector<AttachmentDesc>& attachmentDescs = m_RenderPassDesc.attachmentDescs;
-
-	//	// Color attachment
-	//	attachmentDescs[0].format = dp.ScFormat.format;
-	//	attachmentDescs[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	//	attachmentDescs[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-
-	//	// Deferred attachments
-
-	//	// Position
-	//	attachmentDescs[1].format = VK_FORMAT_R16G16B16A16_SFLOAT;
-	//	attachmentDescs[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	//	attachmentDescs[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-	//	// Normals
-	//	attachmentDescs[2].format = VK_FORMAT_R16G16B16A16_SFLOAT;
-	//	attachmentDescs[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	//	attachmentDescs[2].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-	//	// Albedo
-	//	attachmentDescs[3].format = VK_FORMAT_R8G8B8A8_UNORM;
-	//	attachmentDescs[3].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	//	attachmentDescs[3].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-	//	// Depth attachment
-	//	attachmentDescs[4].format = dp.depthFormat;
-	//	attachmentDescs[4].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	//	attachmentDescs[4].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-	//	// Subpasses
-	//	m_RenderPassDesc.subPassDescs.resize(3);
-	//	std::vector<SubPassDesc>& subPassDescs = m_RenderPassDesc.subPassDescs;
-
-	//	subPassDescs[0].colors = { 0,1,2,3 };
-	//	subPassDescs[0].useDepthStencil = true;
-
-	//	subPassDescs[1].inputs = { 1,2,3 };
-	//	subPassDescs[1].colors = { 0 };
-	//	subPassDescs[1].useDepthStencil = true;
-
-	//	subPassDescs[2].inputs = { 1 };
-	//	subPassDescs[2].colors = { 0 };
-	//	subPassDescs[2].useDepthStencil = true;
-
-	//	m_RenderPassDesc.present = 0;
-	//	m_RenderPassDesc.depthStencil = 4;
-	//}
-
 	{
 		std::vector<glm::vec3> colors =
 		{

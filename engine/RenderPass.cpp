@@ -34,12 +34,6 @@ uint32_t RenderPass::GetHeight()
 	return m_Height;
 }
 
-void RenderPass::Reset()
-{
-	m_Attachments.clear();
-	m_Subpasses.clear();
-}
-
 void RenderPass::SetAttachments(const std::vector<Attachment*> attachments)
 {
 	m_Attachments = attachments;

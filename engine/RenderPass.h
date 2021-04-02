@@ -101,8 +101,6 @@ public:
 	uint32_t GetWidth();
 	uint32_t GetHeight();
 
-	void Reset();
-
 	void SetAttachments(const std::vector<Attachment*> attachments);
 	void AddSubpass(const std::vector<int> inputs, const std::vector<int> colors, int depth = -1); // -1表示不用depth，暂时不考虑preserve
 
