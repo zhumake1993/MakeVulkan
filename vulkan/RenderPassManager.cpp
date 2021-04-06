@@ -1,8 +1,8 @@
 #include "RenderPassManager.h"
 #include "VulkanTools.h"
 
-AttachmentVulkan::AttachmentVulkan(int typeMask, VkFormat format, uint32_t width, uint32_t height, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp)
-	: Attachment(typeMask, format, width, height, loadOp, storeOp)
+AttachmentVulkan::AttachmentVulkan(int typeMask, VkFormat format, uint32_t width, uint32_t height)
+	: Attachment(typeMask, format, width, height)
 	, m_Usage(0)
 	, m_AspectMask(0)
 {
@@ -27,6 +27,13 @@ ImageKey AttachmentVulkan::GetKey()
 	key.aspectMask = m_AspectMask;
 
 	return key;
+}
+
+VkImageView RenderPassVulkan::GetInputAttachmentImageView(uint32_t inputIndex)
+{
+	int attachmentIndex = m_RenderPassKey.GetSubpasses()[m_SubpassIndex].inputs[inputIndex];
+	AttachmentVulkan* attachmentVK = static_cast<AttachmentVulkan*>(m_Attachments[attachmentIndex]);
+	return attachmentVK->m_Image->view;
 }
 
 RenderPassManager::RenderPassManager(VkDevice vkDevice)
@@ -67,28 +74,31 @@ VKRenderPass * RenderPassManager::CreateRenderPass(const RenderPassKey & key)
 {
 	VKRenderPass* renderPass = new VKRenderPass(m_Device);
 
+	auto& attachments = key.GetAttachments();
+	auto& subpasses = key.GetSubpasses();
+
 	// Attachments
-	std::vector<VkAttachmentDescription> attachmentDescriptions(key.attachments.size());
+	std::vector<VkAttachmentDescription> attachmentDescriptions(attachments.size());
 	for (size_t i = 0; i < attachmentDescriptions.size(); i++)
 	{
 		attachmentDescriptions[i].flags = 0;
-		attachmentDescriptions[i].format = key.attachments[i].format;
+		attachmentDescriptions[i].format = attachments[i].format;
 		attachmentDescriptions[i].samples = VK_SAMPLE_COUNT_1_BIT;
-		attachmentDescriptions[i].loadOp = key.attachments[i].loadOp;
-		attachmentDescriptions[i].storeOp = key.attachments[i].storeOp;
+		attachmentDescriptions[i].loadOp = attachments[i].loadOp;
+		attachmentDescriptions[i].storeOp = attachments[i].storeOp;
 		attachmentDescriptions[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		attachmentDescriptions[i].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		attachmentDescriptions[i].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-		if (key.attachments[i].typeMask & kAttachmentColor)
+		if (attachments[i].typeMask & kAttachmentColor)
 		{
 			attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		}
-		else if (key.attachments[i].typeMask & kAttachmentDepth)
+		else if (attachments[i].typeMask & kAttachmentDepth)
 		{
 			attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		}
-		else if (key.attachments[i].typeMask & kAttachmentSwapChain)
+		else if (attachments[i].typeMask & kAttachmentSwapChain)
 		{
 			attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 		}
@@ -99,11 +109,11 @@ VKRenderPass * RenderPassManager::CreateRenderPass(const RenderPassKey & key)
 	}
 
 	// Subpasses
-	std::vector<AttachmentReference> attachmentReferences(key.subpasses.size());
-	std::vector<VkSubpassDescription> subpassDescriptions(key.subpasses.size());
+	std::vector<AttachmentReference> attachmentReferences(subpasses.size());
+	std::vector<VkSubpassDescription> subpassDescriptions(subpasses.size());
 	for (size_t pass = 0; pass < subpassDescriptions.size(); pass++)
 	{
-		const RenderPassKey::SubpassKey& subpass = key.subpasses[pass];
+		auto& subpass = subpasses[pass];
 		AttachmentReference& reference = attachmentReferences[pass];
 
 		reference.inputs.resize(subpass.inputs.size());
@@ -138,7 +148,7 @@ VKRenderPass * RenderPassManager::CreateRenderPass(const RenderPassKey & key)
 	}
 
 	// Subpass dependencies
-	std::vector<VkSubpassDependency> dependencies(key.subpasses.size() + 1);
+	std::vector<VkSubpassDependency> dependencies(subpasses.size() + 1);
 
 	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
 	dependencies[0].dstSubpass = 0;
@@ -182,35 +192,4 @@ VKRenderPass * RenderPassManager::CreateRenderPass(const RenderPassKey & key)
 	VK_CHECK_RESULT(vkCreateRenderPass(m_Device, &renderPassCI, nullptr, &renderPass->renderPass));
 
 	return renderPass;
-}
-
-RenderPassKey RenderPassVulkan::GetKey()
-{
-	RenderPassKey key;
-
-	key.attachments.resize(m_Attachments.size());
-	for (size_t i = 0; i < m_Attachments.size(); i++)
-	{
-		key.attachments[i].typeMask = m_Attachments[i]->GetTypeMask();
-		key.attachments[i].format = m_Attachments[i]->GetFormat();
-		key.attachments[i].loadOp = m_Attachments[i]->GetLoadOp();
-		key.attachments[i].storeOp = m_Attachments[i]->GetStoreOp();
-	}
-
-	key.subpasses.resize(m_Subpasses.size());
-	for (size_t i = 0; i < m_Subpasses.size(); i++)
-	{
-		key.subpasses[i].inputs = m_Subpasses[i].inputs;
-		key.subpasses[i].colors = m_Subpasses[i].colors;
-		key.subpasses[i].depth = m_Subpasses[i].depth;
-	}
-
-	return key;
-}
-
-VkImageView RenderPassVulkan::GetInputAttachmentImageView(uint32_t inputIndex)
-{
-	int attachmentIndex = m_Subpasses[m_SubpassIndex].inputs[inputIndex];
-	AttachmentVulkan* attachmentVK = static_cast<AttachmentVulkan*>(m_Attachments[attachmentIndex]);
-	return attachmentVK->m_Image->view;
 }

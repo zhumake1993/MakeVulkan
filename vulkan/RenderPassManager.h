@@ -12,7 +12,7 @@ class AttachmentVulkan : public Attachment
 {
 public:
 
-	AttachmentVulkan(int typeMask, VkFormat format, uint32_t width, uint32_t height, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp);
+	AttachmentVulkan(int typeMask, VkFormat format, uint32_t width, uint32_t height);
 	virtual ~AttachmentVulkan();
 
 	ImageKey GetKey();
@@ -67,79 +67,18 @@ private:
 	VkDevice device = VK_NULL_HANDLE;
 };
 
-struct RenderPassKey
-{
-	struct AttachmentKey
-	{
-		bool operator==(const AttachmentKey & other) const
-		{
-			return typeMask == other.typeMask 
-				&& format == other.format 
-				&& loadOp == other.loadOp 
-				&& storeOp == other.storeOp;
-		}
-		int typeMask;
-		VkFormat format;
-		VkAttachmentLoadOp loadOp;
-		VkAttachmentStoreOp storeOp;
-	};
-	struct SubpassKey
-	{
-		bool operator==(const SubpassKey & other) const
-		{
-			return inputs == other.inputs 
-				&& colors == other.colors 
-				&& depth == other.depth;
-		}
-		std::vector<int> inputs;
-		std::vector<int> colors;
-		int depth;
-	};
-	bool operator==(const RenderPassKey & other) const
-	{
-		return attachments == other.attachments
-			&& subpasses == other.subpasses;
-	}
-	std::vector<AttachmentKey> attachments;
-	std::vector<SubpassKey> subpasses;
-};
-
-struct RenderPassKeyHash
-{
-	size_t operator()(const RenderPassKey & renderPassKey) const
-	{
-		size_t hash = 0;
-		for (auto& a : renderPassKey.attachments)
-		{
-			hash ^= std::hash<int>()(a.typeMask) 
-				^ std::hash<int>()(a.format) 
-				^ std::hash<int>()(a.loadOp)
-				^ std::hash<int>()(a.storeOp);
-		}
-		for (auto& s : renderPassKey.subpasses)
-		{
-			hash ^= std::hash<int>()(s.depth);
-			for (auto i : s.inputs) hash ^= std::hash<int>()(i);
-			for (auto c : s.colors) hash ^= std::hash<int>()(c);
-		}
-		return hash;
-	}
-};
-
 class RenderPassVulkan : public RenderPass
 {
 public:
 
-	RenderPassVulkan(uint32_t width, uint32_t height)
-		: RenderPass(width, height)
+	RenderPassVulkan(RenderPassKey& renderPassKey)
+		: RenderPass(renderPassKey)
 	{
 	}
 
 	virtual ~RenderPassVulkan()
 	{
 	}
-
-	RenderPassKey GetKey();
 
 	VkImageView GetInputAttachmentImageView(uint32_t inputIndex);
 

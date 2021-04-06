@@ -68,6 +68,17 @@ void MakeVulkan::Init()
 
 	PrepareResources();
 
+	RenderPassKey renderPassKey(5, 3, windowWidth, windowHeight);
+	renderPassKey.SetAttachment(0, kAttachmentSwapChain, dp.ScFormat.format, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+	renderPassKey.SetAttachment(1, kAttachmentColor | kAttachmentInput, VK_FORMAT_R16G16B16A16_SFLOAT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+	renderPassKey.SetAttachment(2, kAttachmentColor | kAttachmentInput, VK_FORMAT_R16G16B16A16_SFLOAT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+	renderPassKey.SetAttachment(3, kAttachmentColor | kAttachmentInput, VK_FORMAT_R8G8B8A8_UNORM, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+	renderPassKey.SetAttachment(4, kAttachmentDepth, dp.depthFormat, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+	renderPassKey.SetSubpass(0, {}, { 0,1,2,3 }, 4);
+	renderPassKey.SetSubpass(1, { 1,2,3 }, { 0 }, 4);
+	renderPassKey.SetSubpass(2, { 1 }, { 0 }, 4);
+	m_RenderPass = device.CreateRenderPass(renderPassKey);
+
 	{
 		std::vector<glm::vec3> colors =
 		{
@@ -95,6 +106,7 @@ void MakeVulkan::Init()
 
 void MakeVulkan::Release()
 {
+	RELEASE(m_RenderPass);
 	RELEASE(m_Camera);
 
 	Example::Release();
@@ -177,17 +189,12 @@ void MakeVulkan::Draw()
 
 	// RenderPass
 
-	Attachment* colorAttachment = device.CreateAttachment(kAttachmentSwapChain, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-	Attachment* positionAttachment = device.CreateAttachment(kAttachmentColor | kAttachmentInput, VK_FORMAT_R16G16B16A16_SFLOAT, windowWidth, windowHeight, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
-	Attachment* normalAttachment = device.CreateAttachment(kAttachmentColor | kAttachmentInput, VK_FORMAT_R16G16B16A16_SFLOAT, windowWidth, windowHeight, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
-	Attachment* albedoAttachment = device.CreateAttachment(kAttachmentColor | kAttachmentInput, VK_FORMAT_R8G8B8A8_UNORM, windowWidth, windowHeight, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
-	Attachment* depthAttachment = device.CreateAttachment(kAttachmentDepth, dp.depthFormat, windowWidth, windowHeight, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
-
-	RenderPass* renderpass = device.CreateRenderPass(windowWidth, windowHeight);
-	renderpass->SetAttachments({ colorAttachment, positionAttachment, normalAttachment, albedoAttachment, depthAttachment });
-	renderpass->AddSubpass({}, { 0,1,2,3 }, 4);
-	renderpass->AddSubpass({ 1,2,3 }, { 0 }, 4);
-	renderpass->AddSubpass({ 1 }, { 0 }, 4);
+	Attachment* colorAttachment = device.CreateAttachment(kAttachmentSwapChain);
+	Attachment* positionAttachment = device.CreateAttachment(kAttachmentColor | kAttachmentInput, VK_FORMAT_R16G16B16A16_SFLOAT, windowWidth, windowHeight);
+	Attachment* normalAttachment = device.CreateAttachment(kAttachmentColor | kAttachmentInput, VK_FORMAT_R16G16B16A16_SFLOAT, windowWidth, windowHeight);
+	Attachment* albedoAttachment = device.CreateAttachment(kAttachmentColor | kAttachmentInput, VK_FORMAT_R8G8B8A8_UNORM, windowWidth, windowHeight);
+	Attachment* depthAttachment = device.CreateAttachment(kAttachmentDepth, dp.depthFormat, windowWidth, windowHeight);
+	m_RenderPass->SetAttachments({ colorAttachment, positionAttachment, normalAttachment, albedoAttachment, depthAttachment });
 
 	std::vector<VkClearValue> clearValues(5);
 	clearValues[0].color = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -199,7 +206,7 @@ void MakeVulkan::Draw()
 	Rect2D area(0, 0, windowWidth, windowHeight);
 	Viewport viewport(0, 0, windowWidth, windowHeight, 0, 1);
 
-	device.BeginRenderPass(renderpass, area, clearValues);
+	device.BeginRenderPass(m_RenderPass, area, clearValues);
 
 	// Viewport and Scissor
 
@@ -248,7 +255,6 @@ void MakeVulkan::Draw()
 	device.EndCommandBuffer();
 
 	// release
-	device.ReleaseRenderPass(renderpass);
 	device.ReleaseAttachment(colorAttachment);
 	device.ReleaseAttachment(positionAttachment);
 	device.ReleaseAttachment(normalAttachment);

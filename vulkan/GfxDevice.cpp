@@ -459,43 +459,43 @@ void GfxDevice::ReleaseImage(Image * image)
 	m_ImageManager->ReleaseImage(imageVulkan->GetKey(), imageVulkan->m_Image);
 }
 
-Attachment * GfxDevice::CreateAttachment(int typeMask, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp)
+Attachment * GfxDevice::CreateAttachment(int typeMask, VkFormat format, uint32_t width, uint32_t height)
 {
-	ASSERT(typeMask & kAttachmentSwapChain, "typeMask does not contain kAttachmentSwapChain flag.");
-
-	// 这些有关swapchain变量的获取可以优化
-	AttachmentVulkan* attachmentVK = new AttachmentVulkan(typeMask, GetDeviceProperties().ScFormat.format, windowWidth, windowHeight, loadOp, storeOp);
-
-	attachmentVK->m_Image = new VKImage(VK_NULL_HANDLE);
-	attachmentVK->m_Image->view = m_VKSwapChain->swapChainImageViews[m_ImageIndex];
-
-	return attachmentVK;
-}
-
-Attachment * GfxDevice::CreateAttachment(int typeMask, VkFormat format, uint32_t width, uint32_t height, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp)
-{
-	AttachmentVulkan* attachmentVK = new AttachmentVulkan(typeMask, format, width, height, loadOp, storeOp);
-
-	if (typeMask & kAttachmentColor)
+	if (typeMask & kAttachmentSwapChain)
 	{
-		attachmentVK->m_Usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-		attachmentVK->m_AspectMask |= VK_IMAGE_ASPECT_COLOR_BIT;
-	}
+		// 这些有关swapchain变量的获取可以优化
+		AttachmentVulkan* attachmentVK = new AttachmentVulkan(typeMask, GetDeviceProperties().ScFormat.format, windowWidth, windowHeight);
 
-	if (typeMask & kAttachmentDepth)
+		attachmentVK->m_Image = new VKImage(VK_NULL_HANDLE);
+		attachmentVK->m_Image->view = m_VKSwapChain->swapChainImageViews[m_ImageIndex];
+
+		return attachmentVK;
+	}
+	else
 	{
-		attachmentVK->m_Usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-		attachmentVK->m_AspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+		AttachmentVulkan* attachmentVK = new AttachmentVulkan(typeMask, format, width, height);
+
+		if (typeMask & kAttachmentColor)
+		{
+			attachmentVK->m_Usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+			attachmentVK->m_AspectMask |= VK_IMAGE_ASPECT_COLOR_BIT;
+		}
+
+		if (typeMask & kAttachmentDepth)
+		{
+			attachmentVK->m_Usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			attachmentVK->m_AspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+		}
+
+		if (typeMask & kAttachmentInput)
+		{
+			attachmentVK->m_Usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+		}
+
+		attachmentVK->m_Image = m_ImageManager->GetImage(attachmentVK->GetKey());
+
+		return attachmentVK;
 	}
-
-	if (typeMask & kAttachmentInput)
-	{
-		attachmentVK->m_Usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-	}
-
-	attachmentVK->m_Image = m_ImageManager->GetImage(attachmentVK->GetKey());
-
-	return attachmentVK;
 }
 
 void GfxDevice::ReleaseAttachment(Attachment * attachment)
@@ -510,18 +510,9 @@ void GfxDevice::ReleaseAttachment(Attachment * attachment)
 	RELEASE(attachmentVK);
 }
 
-RenderPass * GfxDevice::CreateRenderPass(uint32_t width, uint32_t height)
+RenderPass * GfxDevice::CreateRenderPass(RenderPassKey& renderPassKey)
 {
-	return new RenderPassVulkan(width, height);
-}
-
-void GfxDevice::ReleaseRenderPass(RenderPass* renderPass)
-{
-	RenderPassVulkan* renderPassVK = static_cast<RenderPassVulkan*>(renderPass);
-
-	m_RenderPassManager->ReleaseRenderPass(renderPassVK->GetKey(), renderPassVK->m_RenderPass);
-
-	RELEASE(renderPassVK);
+	return new RenderPassVulkan(renderPassKey);
 }
 
 void GfxDevice::BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, std::vector<VkClearValue>& clearValues)
@@ -531,7 +522,6 @@ void GfxDevice::BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, std:
 	m_CurrentRenderPass = static_cast<RenderPassVulkan*>(renderPass);
 
 	m_CurrentRenderPass->m_RenderPass = m_RenderPassManager->GetRenderPass(m_CurrentRenderPass->GetKey());
-
 	m_CurrentRenderPass->m_SubpassIndex = 0;
 
 	// Framebuffer
@@ -570,6 +560,7 @@ void GfxDevice::BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, std:
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BeginRenderPass(m_CurrentRenderPass->m_RenderPass->renderPass, framebuffer->framebuffer, area, clearValues);
 
 	m_CurrentRenderPass->m_RenderPass->Use();
+	m_RenderPassManager->ReleaseRenderPass(m_CurrentRenderPass->GetKey(), m_CurrentRenderPass->m_RenderPass);
 
 	framebuffer->Use();
 	m_GarbageCollector->AddResource(framebuffer);

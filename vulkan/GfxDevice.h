@@ -86,12 +86,10 @@ public:
 	void UpdateImage(Image* image, void* data, uint64_t size, const std::vector<std::vector<std::vector<uint64_t>>>& offsets);
 	void ReleaseImage(Image* image);
 
-	Attachment* CreateAttachment(int typeMask, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp);
-	Attachment* CreateAttachment(int typeMask, VkFormat format, uint32_t width, uint32_t height, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp);
+	Attachment* CreateAttachment(int typeMask, VkFormat format = VK_FORMAT_UNDEFINED, uint32_t width = 0, uint32_t height = 0); // kAttachmentSwapChain类型不需要其他参数
 	void ReleaseAttachment(Attachment* attachment);
 
-	RenderPass* CreateRenderPass(uint32_t width, uint32_t height);
-	void ReleaseRenderPass(RenderPass* renderPass);
+	RenderPass* CreateRenderPass(RenderPassKey& renderPassKey);
 	void BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, std::vector<VkClearValue>& clearValues);
 	void NextSubpass();
 	void EndRenderPass();
