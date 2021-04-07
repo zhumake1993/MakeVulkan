@@ -11,6 +11,7 @@
 #include "ShaderData.h"
 #include "Imgui.h"
 #include "DeviceProperties.h"
+#include "Settings.h"
 
 // Place the least frequently changing descriptor sets near the start of the pipeline layout, and place the descriptor sets representing the most frequently changing resources near the end. 
 // When pipelines are switched, only the descriptor set bindings that have been invalidated will need to be updated and the remainder of the descriptor set bindings will remain in place.
@@ -63,6 +64,8 @@ void Example::Release()
 	for (auto p : m_MaterialContainer) { RELEASE(p); }
 	for (auto p : m_RenderNodeContainer) { RELEASE(p); }
 
+	for (auto p : m_TempAttachments) { RELEASE(p); }
+
 	RELEASE(m_DummyShader);
 }
 
@@ -73,8 +76,12 @@ void Example::Update()
 	m_TimeManager->Update();
 
 	m_Imgui->Prepare(m_TimeManager->GetDeltaTime());
+}
 
-	//SetShader(m_DummyShader);
+void Example::UpdateAfterDraw()
+{
+	for (auto p : m_TempAttachments) { RELEASE(p); }
+	m_TempAttachments.clear();
 }
 
 Mesh * Example::CreateMesh(const std::string& name)
@@ -115,6 +122,25 @@ RenderNode * Example::CreateRenderNode(const std::string& name)
 	m_RenderNodeContainer.push_back(renderNode);
 
 	return renderNode;
+}
+
+Attachment * Example::CreateAttachment(int imageTypeMask, VkFormat format, uint32_t width, uint32_t height)
+{
+	if (imageTypeMask & kImageSwapChainBit)
+	{
+		format = GetDeviceProperties().ScFormat.format;
+		width = windowWidth;
+		height = windowHeight;
+	}
+
+	return new Attachment(imageTypeMask, format, width, height);
+}
+
+Attachment * Example::CreateTempAttachment(int imageTypeMask, VkFormat format, uint32_t width, uint32_t height)
+{
+	Attachment* attachment = CreateAttachment(imageTypeMask, format, width, height);
+	m_TempAttachments.push_back(attachment);
+	return attachment;
 }
 
 void Example::BindGlobalUniformBuffer(void * data, uint64_t size)
@@ -176,7 +202,7 @@ void Example::BindMaterial(Material * material)
 
 	for (auto& texture : gpuParameters.textureParameters)
 	{
-		Texture* tex = shaderData->GetTexture(texture.name);
+		TextureBase* tex = shaderData->GetTexture(texture.name);
 
 		materialBindData.imageBindings.emplace_back(texture.binding, tex->GetImage());
 	}

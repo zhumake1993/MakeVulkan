@@ -1,10 +1,40 @@
 #pragma once
 
 #include "Env.h"
+#include "NamedObject.h"
 
 class Image;
 
-class Texture
+class TextureBase : public NamedObject
+{
+public:
+
+	TextureBase(const std::string& name);
+	TextureBase(const std::string& name, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount);
+	virtual ~TextureBase();
+
+	VkFormat GetFormat() { return m_Format; }
+	uint32_t GetWidth() { return m_Width; }
+	uint32_t GetHeight() { return m_Height; }
+	uint32_t GetMipCount() { return m_MipLevels; }
+	uint32_t GetLayerCount() { return m_LayerCount; }
+	uint32_t GetFaceCount() { return m_FaceCount; }
+
+	Image* GetImage() { return m_Image; }
+
+protected:
+
+	VkFormat m_Format;
+	uint32_t m_Width;
+	uint32_t m_Height;
+	uint32_t m_MipLevels;
+	uint32_t m_LayerCount;
+	uint32_t m_FaceCount;
+
+	Image* m_Image = nullptr;
+};
+
+class Texture : public TextureBase
 {
 
 public:
@@ -13,13 +43,6 @@ public:
 	virtual ~Texture();
 
 	void LoadFromFile(const std::string& filename, VkFormat format = VK_FORMAT_R8G8B8A8_UNORM, bool isCubemap = false);
-
-	Image* GetImage();
-
-	uint32_t GetWidth() { return m_Width; }
-	uint32_t GetHeight() { return m_Height; }
-	uint32_t GetMipCount() { return m_MipLevels; }
-	uint32_t GetLayerCount() { return m_LayerCount; }
 
 private:
 
@@ -31,16 +54,14 @@ private:
 
 private:
 
-	std::string m_Name;
-
 	std::vector<char> m_ImageData;
-	VkFormat m_Format;
-	uint32_t m_Width;
-	uint32_t m_Height;
-	uint32_t m_MipLevels = 1;
-	uint32_t m_LayerCount = 1;
-	uint32_t m_FaceCount = 1;
 	std::vector<std::vector<std::vector<uint64_t>>> m_Offsets;
+};
 
-	Image* m_Image = nullptr;
+class Attachment : public TextureBase
+{
+public:
+
+	Attachment(int imageTypeMask, VkFormat format, uint32_t width, uint32_t height);
+	virtual ~Attachment();
 };

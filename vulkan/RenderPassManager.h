@@ -4,26 +4,6 @@
 #include "NonCopyable.h"
 #include "VKResource.h"
 #include "RenderPass.h"
-#include "ImageManager.h"
-
-class VKImage;
-
-class AttachmentVulkan : public Attachment
-{
-public:
-
-	AttachmentVulkan(int typeMask, VkFormat format, uint32_t width, uint32_t height);
-	virtual ~AttachmentVulkan();
-
-	ImageKey GetKey();
-
-public:
-
-	VkImageUsageFlags m_Usage;
-	VkImageAspectFlags m_AspectMask;
-
-	VKImage* m_Image;
-};
 
 class VKRenderPass : public VKResource
 {
@@ -80,6 +60,9 @@ public:
 	{
 	}
 
+	std::vector<Image*>& GetImages();
+
+	// shaderÖÐµÄinput_attachment_index
 	VkImageView GetInputAttachmentImageView(uint32_t inputIndex);
 
 public:

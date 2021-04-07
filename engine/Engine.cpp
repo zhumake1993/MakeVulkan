@@ -79,5 +79,8 @@ void Engine::Update()
 	// Present
 	device.QueueSubmit();
 	device.QueuePresent();
+
+	m_Example->UpdateAfterDraw();
+
 	device.Update();
 }

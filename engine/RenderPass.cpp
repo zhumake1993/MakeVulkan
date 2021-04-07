@@ -1,16 +1,6 @@
 #include "RenderPass.h"
-
-Attachment::Attachment(int typeMask, VkFormat format, uint32_t width, uint32_t height)
-	: m_TypeMask(typeMask)
-	, m_Format(format)
-	, m_Width(width)
-	, m_Height(height)
-{
-}
-
-Attachment::~Attachment()
-{
-}
+#include "Tools.h"
+#include "Texture.h"
 
 RenderPass::RenderPass(RenderPassKey& renderPassKey)
 	: m_RenderPassKey(renderPassKey)
@@ -36,12 +26,19 @@ uint32_t RenderPass::GetHeight()
 	return m_RenderPassKey.GetHeight();
 }
 
-void RenderPass::SetAttachments(const std::vector<Attachment*> attachments)
+void RenderPass::SetAttachments(const std::vector<Attachment*> actualAttachments)
 {
-	m_Attachments = attachments;
-}
+	auto& attachments = m_RenderPassKey.GetAttachments();
 
-std::vector<Attachment*>& RenderPass::GetAttachments()
-{
-	return m_Attachments;
+	ASSERT(attachments.size() == actualAttachments.size(), "attachment num does not match.");
+	m_Images.resize(attachments.size());
+
+	for (size_t i = 0; i < actualAttachments.size(); i++)
+	{
+		ASSERT(actualAttachments[i]->GetFormat() == attachments[i].format, "attachment format does not match.");
+		ASSERT(actualAttachments[i]->GetWidth() == m_RenderPassKey.GetWidth(), "attachment width does not match.");
+		ASSERT(actualAttachments[i]->GetHeight() == m_RenderPassKey.GetHeight(), "attachment height does not match.");
+
+		m_Images[i] = actualAttachments[i]->GetImage();
+	}
 }

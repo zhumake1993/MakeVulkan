@@ -59,6 +59,36 @@ struct DrawBatchs
 	std::vector<DrawItem> drawItems;
 };
 
+// Image
+
+enum ImageTypeMask
+{
+	// Swapchain中的image
+	kImageSwapChainBit			= (1 << 0),
+
+	// 影响VkImageAspectFlags
+	kImageColorAspectBit		= (1 << 1),
+	kImageDepthAspectBit		= (1 << 2),
+
+	// 影响VkImageUsageFlags
+	kImageTransferSrcBit		= (1 << 3),
+	kImageTransferDstBit		= (1 << 4),
+	kImageSampleBit				= (1 << 5), // 在shader中被采样
+	kImageColorAttachmentBit	= (1 << 6), // 在renderpass中作为colorAttachment 
+	kImageDepthAttachmentBit	= (1 << 7), // 在renderpass中作为depthAttachment 
+	kImageInputAttachmentBit	= (1 << 8), // 在renderpass中作为inputAttachment 
+};
+
+// Attachment
+
+enum AttachmentType
+{
+	kAttachmentSwapChain		= (1 << 0),
+	kAttachmentColor			= (1 << 1),
+	kAttachmentDepth			= (1 << 2),
+	kAttachmentSample			= (1 << 3),
+};
+
 // Renderpass
 
 class RenderPassKey
@@ -67,12 +97,12 @@ class RenderPassKey
 	{
 		bool operator==(const AttachmentKey & other) const
 		{
-			return typeMask == other.typeMask
+			return attachmentType == other.attachmentType
 				&& format == other.format
 				&& loadOp == other.loadOp
 				&& storeOp == other.storeOp;
 		}
-		int typeMask;
+		AttachmentType attachmentType;
 		VkFormat format;
 		VkAttachmentLoadOp loadOp;
 		VkAttachmentStoreOp storeOp;
@@ -100,9 +130,9 @@ public:
 	{
 	}
 
-	void SetAttachment(uint32_t index, int typeMask, VkFormat format, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp)
+	void SetAttachment(uint32_t index, AttachmentType attachmentType, VkFormat format, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp)
 	{
-		m_Attachments[index].typeMask = typeMask;
+		m_Attachments[index].attachmentType = attachmentType;
 		m_Attachments[index].format = format;
 		m_Attachments[index].loadOp = loadOp;
 		m_Attachments[index].storeOp = storeOp;
@@ -156,7 +186,7 @@ struct RenderPassKeyHash
 		size_t hash = 0;
 		for (auto& a : renderPassKey.GetAttachments())
 		{
-			hash ^= std::hash<int>()(a.typeMask)
+			hash ^= std::hash<int>()(a.attachmentType)
 				^ std::hash<int>()(a.format)
 				^ std::hash<int>()(a.loadOp)
 				^ std::hash<int>()(a.storeOp);

@@ -33,7 +33,7 @@ Imgui::Imgui()
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 	uint64_t dataSize = width * height * 4 * sizeof(char);
 
-	m_FontImage = device.CreateImage(VK_FORMAT_R8G8B8A8_UNORM, width, height, 1, 1, 1);
+	m_FontImage = device.CreateImage(kImageColorAspectBit | kImageTransferDstBit | kImageSampleBit, VK_FORMAT_R8G8B8A8_UNORM, width, height, 1, 1, 1);
 	device.UpdateImage(m_FontImage, pixels, dataSize, { { { 0 } } });
 
 	// Vertex buffer

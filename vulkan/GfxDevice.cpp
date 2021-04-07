@@ -366,9 +366,13 @@ void GfxDevice::ReleaseBuffer(Buffer * buffer)
 	m_GarbageCollector->AddResource(static_cast<BufferImpl*>(buffer)->GetBuffer());
 }
 
-Image * GfxDevice::CreateImage(VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, float maxAnisotropy)
+Image * GfxDevice::CreateImage(int imageTypeMask, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, float maxAnisotropy)
 {
+	ASSERT(!(imageTypeMask & kImageSwapChainBit), "kAttachmentSwapChain should not be included.");
+
 	ImageVulkan* imageVulkan = new ImageVulkan();
+
+	imageVulkan->m_ImageTypeMask = imageTypeMask;
 
 	imageVulkan->m_ImageType = VK_IMAGE_TYPE_2D;
 	imageVulkan->m_Format = format;
@@ -377,40 +381,57 @@ Image * GfxDevice::CreateImage(VkFormat format, uint32_t width, uint32_t height,
 	imageVulkan->m_MipLevels = mipLevels;
 	imageVulkan->m_LayerCount = layerCount;
 	imageVulkan->m_FaceCount = faceCount;
-	imageVulkan->m_Usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-	imageVulkan->m_AspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	
+	// Usage
+	if (imageTypeMask & kImageTransferSrcBit) imageVulkan->m_Usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	if (imageTypeMask & kImageTransferDstBit) imageVulkan->m_Usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	if (imageTypeMask & kImageSampleBit) imageVulkan->m_Usage |= VK_IMAGE_USAGE_SAMPLED_BIT;
+	if (imageTypeMask & kImageColorAttachmentBit) imageVulkan->m_Usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	if (imageTypeMask & kImageDepthAttachmentBit) imageVulkan->m_Usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+	if (imageTypeMask & kImageInputAttachmentBit) imageVulkan->m_Usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
 
+	// ImageViewType
 	if (layerCount == 1)
 	{
 		if (faceCount == 1)
-		{
 			imageVulkan->m_ImageViewType = VK_IMAGE_VIEW_TYPE_2D;
-		}
 		else
-		{
 			imageVulkan->m_ImageViewType = VK_IMAGE_VIEW_TYPE_CUBE;
-		}
 	}
 	else
 	{
 		if (faceCount == 1)
-		{
 			imageVulkan->m_ImageViewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
-		}
 		else
-		{
 			imageVulkan->m_ImageViewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
-		}
 	}
+
+	// AspectMask
+	if (imageTypeMask & kImageColorAspectBit) imageVulkan->m_AspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	if (imageTypeMask & kImageDepthAspectBit) imageVulkan->m_AspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
 	// Image
 	imageVulkan->m_Image = m_ImageManager->GetImage(imageVulkan->GetKey());
 
 	// Image Sampler
-	ImageSamplerKey imageSamplerKey;
-	imageSamplerKey.mipLevels = mipLevels;
-	imageSamplerKey.maxAnisotropy = maxAnisotropy;
-	imageVulkan->m_ImageSampler = m_ImageManager->GetImageSampler(imageSamplerKey);
+	if (imageTypeMask & kImageSampleBit)
+	{
+		ImageSamplerKey imageSamplerKey;
+		imageSamplerKey.mipLevels = mipLevels;
+		imageSamplerKey.maxAnisotropy = maxAnisotropy;
+		imageVulkan->m_ImageSampler = m_ImageManager->GetImageSampler(imageSamplerKey);
+	}
+
+	return imageVulkan;
+}
+
+Image * GfxDevice::GetSwapchainImage()
+{
+	ImageVulkan* imageVulkan = new ImageVulkan();
+
+	imageVulkan->m_ImageTypeMask = kImageSwapChainBit;
+	imageVulkan->m_Image = new VKImage(VK_NULL_HANDLE);
+	imageVulkan->m_Image->view = m_VKSwapChain->swapChainImageViews[m_ImageIndex];
 
 	return imageVulkan;
 }
@@ -420,6 +441,8 @@ void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size, const std
 	// 简单起见，假设当前该image的资源并没有被GPU使用中
 
 	ImageVulkan* imageVulkan = static_cast<ImageVulkan*>(image);
+
+	ASSERT(imageVulkan->m_ImageTypeMask & kImageTransferDstBit, "kImageTransferDst should be included.");
 
 	VKBuffer* stagingBuffer = m_BufferManager->GetStagingBuffer();
 
@@ -456,58 +479,8 @@ void GfxDevice::ReleaseImage(Image * image)
 {
 	ImageVulkan* imageVulkan = static_cast<ImageVulkan*>(image);
 
-	m_ImageManager->ReleaseImage(imageVulkan->GetKey(), imageVulkan->m_Image);
-}
-
-Attachment * GfxDevice::CreateAttachment(int typeMask, VkFormat format, uint32_t width, uint32_t height)
-{
-	if (typeMask & kAttachmentSwapChain)
-	{
-		// 这些有关swapchain变量的获取可以优化
-		AttachmentVulkan* attachmentVK = new AttachmentVulkan(typeMask, GetDeviceProperties().ScFormat.format, windowWidth, windowHeight);
-
-		attachmentVK->m_Image = new VKImage(VK_NULL_HANDLE);
-		attachmentVK->m_Image->view = m_VKSwapChain->swapChainImageViews[m_ImageIndex];
-
-		return attachmentVK;
-	}
-	else
-	{
-		AttachmentVulkan* attachmentVK = new AttachmentVulkan(typeMask, format, width, height);
-
-		if (typeMask & kAttachmentColor)
-		{
-			attachmentVK->m_Usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-			attachmentVK->m_AspectMask |= VK_IMAGE_ASPECT_COLOR_BIT;
-		}
-
-		if (typeMask & kAttachmentDepth)
-		{
-			attachmentVK->m_Usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-			attachmentVK->m_AspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
-		}
-
-		if (typeMask & kAttachmentInput)
-		{
-			attachmentVK->m_Usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-		}
-
-		attachmentVK->m_Image = m_ImageManager->GetImage(attachmentVK->GetKey());
-
-		return attachmentVK;
-	}
-}
-
-void GfxDevice::ReleaseAttachment(Attachment * attachment)
-{
-	AttachmentVulkan* attachmentVK = static_cast<AttachmentVulkan*>(attachment);
-
-	if (!(attachmentVK->GetTypeMask() & kAttachmentSwapChain))
-	{
-		m_ImageManager->ReleaseImage(attachmentVK->GetKey(), attachmentVK->m_Image);
-	}
-	
-	RELEASE(attachmentVK);
+	if(!(imageVulkan->m_ImageTypeMask & kImageSwapChainBit))
+		m_ImageManager->ReleaseImage(imageVulkan->GetKey(), imageVulkan->m_Image);
 }
 
 RenderPass * GfxDevice::CreateRenderPass(RenderPassKey& renderPassKey)
@@ -528,14 +501,14 @@ void GfxDevice::BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, std:
 
 	VKFramebuffer* framebuffer = new VKFramebuffer(m_VKDevice->device);
 
-	std::vector<Attachment*>& attachments = renderPass->GetAttachments();
-	std::vector<VkImageView> views(attachments.size());
-	for (size_t i = 0; i < attachments.size(); i++)
+	std::vector<Image*>& images = m_CurrentRenderPass->GetImages();
+	std::vector<VkImageView> views(images.size());
+	for (size_t i = 0; i < images.size(); i++)
 	{
-		AttachmentVulkan* attachmentVK = static_cast<AttachmentVulkan*>(attachments[i]);
-		views[i] = attachmentVK->m_Image->view;
+		ImageVulkan* imageVulkan = static_cast<ImageVulkan*>(images[i]);
+		views[i] = imageVulkan->m_Image->view;
 
-		attachmentVK->m_Image->Use();
+		imageVulkan->m_Image->Use();
 	}
 
 	VkFramebufferCreateInfo frameBufferCreateInfo = {};

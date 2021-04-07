@@ -21,7 +21,7 @@ E009InputAttachments：实现fetch
 
 E010SubPasses：一个renderpass里面实现deferred shading。感觉透明物体的实现有点多余，不能直接画么？
 
-E011Offscreen:
+E011Offscreen: 第一个renderpass渲染，第二个renderpass采样之前的渲染结果。还使用了gl_ClipDistance
 
 E999Test：测试用
 

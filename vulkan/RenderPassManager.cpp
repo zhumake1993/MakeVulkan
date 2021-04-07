@@ -1,39 +1,17 @@
 #include "RenderPassManager.h"
 #include "VulkanTools.h"
+#include "ImageManager.h"
 
-AttachmentVulkan::AttachmentVulkan(int typeMask, VkFormat format, uint32_t width, uint32_t height)
-	: Attachment(typeMask, format, width, height)
-	, m_Usage(0)
-	, m_AspectMask(0)
+std::vector<Image*>& RenderPassVulkan::GetImages()
 {
-}
-
-AttachmentVulkan::~AttachmentVulkan()
-{
-}
-
-ImageKey AttachmentVulkan::GetKey()
-{
-	ImageKey key;
-	key.imageType = VK_IMAGE_TYPE_2D;
-	key.format = m_Format;
-	key.width = m_Width;
-	key.height = m_Height;
-	key.mipLevels = 1;
-	key.layerCount = 1;
-	key.faceCount = 1;
-	key.usage = m_Usage;
-	key.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
-	key.aspectMask = m_AspectMask;
-
-	return key;
+	return m_Images;
 }
 
 VkImageView RenderPassVulkan::GetInputAttachmentImageView(uint32_t inputIndex)
 {
 	int attachmentIndex = m_RenderPassKey.GetSubpasses()[m_SubpassIndex].inputs[inputIndex];
-	AttachmentVulkan* attachmentVK = static_cast<AttachmentVulkan*>(m_Attachments[attachmentIndex]);
-	return attachmentVK->m_Image->view;
+	ImageVulkan* imageVulkan = static_cast<ImageVulkan*>(m_Images[attachmentIndex]);
+	return imageVulkan->m_Image->view;
 }
 
 RenderPassManager::RenderPassManager(VkDevice vkDevice)
@@ -90,21 +68,29 @@ VKRenderPass * RenderPassManager::CreateRenderPass(const RenderPassKey & key)
 		attachmentDescriptions[i].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		attachmentDescriptions[i].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-		if (attachments[i].typeMask & kAttachmentColor)
+		switch (attachments[i].attachmentType)
 		{
-			attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		}
-		else if (attachments[i].typeMask & kAttachmentDepth)
-		{
-			attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		}
-		else if (attachments[i].typeMask & kAttachmentSwapChain)
-		{
-			attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-		}
-		else
-		{
-			LOGE("wrong attachment typeMask");
+			case kAttachmentSwapChain:
+			{
+				attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+				break;
+			}
+			case kAttachmentColor:
+			{
+				attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				break;
+			}
+			case kAttachmentDepth:
+			{
+				attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				break;
+			}
+			case kAttachmentSample:
+			{
+				attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				break;
+			}
+			default: LOGE("wrong attachmentType");
 		}
 	}
 

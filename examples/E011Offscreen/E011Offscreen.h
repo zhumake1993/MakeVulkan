@@ -42,21 +42,19 @@ private:
 	UniformDataPerView m_UniformDataPerView;
 
 	Mesh* m_DragonMesh;
-	Mesh* m_PlaneMesh;
 
-	Shader* m_MirrorPhongShader;
 	Shader* m_PhongShader;
+	Shader* m_MiniMapShader;
 
-	Material* m_MirrorPhongMat;
 	Material* m_PhongMat;
+	Material* m_MiniMapMat;
 
-	RenderNode* m_MirrorDragonNode;
 	RenderNode* m_DragonNode;
-	RenderNode* m_PlaneNode;
+
+	RenderPass* m_RenderPassOffscreen;
+	RenderPass* m_RenderPass;
 
 	Camera* m_Camera;
 
-	float m_ClipY = 0.0f;
-
-	RenderPassDesc m_RenderPassOffscreen;
+	float m_ClipY = -6.0f;
 };

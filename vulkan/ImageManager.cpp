@@ -156,7 +156,7 @@ VKImageSampler * ImageManager::CreateImageSampler(const ImageSamplerKey& key)
 	samplerCI.mipLodBias = 0.0f;
 
 	auto& dp = GetDeviceProperties();
-	if (dp.enabledDeviceFeatures.samplerAnisotropy)
+	if (key.maxAnisotropy > 1 && dp.enabledDeviceFeatures.samplerAnisotropy)
 	{
 		samplerCI.anisotropyEnable = VK_TRUE;
 		if (key.maxAnisotropy > dp.deviceProperties.limits.maxSamplerAnisotropy)

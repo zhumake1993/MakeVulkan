@@ -15,7 +15,7 @@
 #include "Imgui.h"
 #include "ProfilerManager.h"
 #include "GpuProgram.h"
-#include <random>
+#include "RenderPass.h"
 
 MakeVulkan::MakeVulkan()
 {
@@ -45,7 +45,9 @@ void MakeVulkan::ConfigDeviceProperties()
 	dp.enabledDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
 	// 添加DeviceFeature
-	dp.enabledDeviceFeatures.shaderClipDistance = VK_TRUE;
+#if defined(_WIN32)
+	dp.enabledDeviceFeatures.shaderClipDistance = VK_TRUE; // 我的手机不支持
+#endif
 }
 
 void MakeVulkan::Init()
@@ -57,7 +59,7 @@ void MakeVulkan::Init()
 
 	// Camera
 	m_Camera = new Camera();
-	m_Camera->LookAt(glm::vec3(0.0f, 12.0f, -20.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	m_Camera->LookAt(glm::vec3(0.0f, 9.0f, -15.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	m_Camera->SetLens(glm::radians(60.0f), 1.0f * windowWidth / windowHeight, 0.1f, 256.0f);
 #if defined(_WIN32)
 	m_Camera->SetSpeed(3.0f, 0.005f);
@@ -67,30 +69,17 @@ void MakeVulkan::Init()
 
 	PrepareResources();
 
-	// RenderPass
-	{
-		// Attachments
-		m_RenderPassOffscreen.attachmentDescs.resize(2);
-		std::vector<AttachmentDesc>& attachmentDescs = m_RenderPassOffscreen.attachmentDescs;
+	RenderPassKey renderPassKeyOffscreen(2, 1, 512, 512);
+	renderPassKeyOffscreen.SetAttachment(0, kAttachmentSample, VK_FORMAT_R8G8B8A8_UNORM, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+	renderPassKeyOffscreen.SetAttachment(1, kAttachmentDepth, dp.depthFormat, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+	renderPassKeyOffscreen.SetSubpass(0, {}, { 0 }, 1);
+	m_RenderPassOffscreen = device.CreateRenderPass(renderPassKeyOffscreen);
 
-		attachmentDescs[0].format = dp.ScFormat.format;
-		attachmentDescs[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		attachmentDescs[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-
-		attachmentDescs[1].format = dp.depthFormat;
-		attachmentDescs[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		attachmentDescs[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-
-		// Subpasses
-		m_RenderPassOffscreen.subPassDescs.resize(1);
-		std::vector<SubPassDesc>& subPassDescs = m_RenderPassOffscreen.subPassDescs;
-
-		subPassDescs[0].colors = { 0 };
-		subPassDescs[0].useDepthStencil = true;
-
-		m_RenderPassOffscreen.present = 0;
-		m_RenderPassOffscreen.depthStencil = 1;
-	}
+	RenderPassKey renderPass(2, 1, windowWidth, windowHeight);
+	renderPass.SetAttachment(0, kAttachmentSwapChain, dp.ScFormat.format, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+	renderPass.SetAttachment(1, kAttachmentDepth, dp.depthFormat, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+	renderPass.SetSubpass(0, {}, { 0 }, 1);
+	m_RenderPass = device.CreateRenderPass(renderPass);
 }
 
 void MakeVulkan::Release()
@@ -118,10 +107,8 @@ void MakeVulkan::Update()
 	m_UniformDataPerView.strength = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
 	m_UniformDataPerView.direction = glm::vec4(1.0f, -1.0f, 0.0f, 0.0f);
 
-	m_MirrorPhongMat->SetFloat2("Clip", 1.0f, m_ClipY);
 	m_PhongMat->SetFloat2("Clip", -1.0f, m_ClipY);
 
-	m_MirrorDragonNode->GetTransform().Rotate(deltaTime * 0.25f, 0.0f, 1.0f, 0.0f);
 	m_DragonNode->GetTransform().Rotate(deltaTime * 0.25f, 0.0f, 1.0f, 0.0f);
 
 	// Imgui
@@ -150,7 +137,7 @@ void MakeVulkan::Update()
 
 	if (ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_None))
 	{
-		ImGui::SliderFloat("ClipY", &m_ClipY, -5.0f, 5.0f);
+		ImGui::SliderFloat("ClipY", &m_ClipY, -6.0f, 6.0f);
 	}
 	if (ImGui::CollapsingHeader("CPU Profiler", ImGuiTreeNodeFlags_None))
 	{
@@ -171,6 +158,7 @@ void MakeVulkan::Draw()
 	PROFILER(Draw);
 
 	auto& device = GetGfxDevice();
+	auto& dp = GetDeviceProperties();
 
 	device.BeginCommandBuffer();
 
@@ -179,35 +167,62 @@ void MakeVulkan::Draw()
 	BindGlobalUniformBuffer(&m_UniformDataGlobal, sizeof(UniformDataGlobal));
 	BindPerViewUniformBuffer(&m_UniformDataPerView, sizeof(UniformDataPerView));
 
+	device.WriteTimeStamp("RenderPass");
+
+	// RenderPassOffscreen
+
+	Attachment* colorAttachmentOffscreen = CreateTempAttachment(kImageColorAspectBit | kImageColorAttachmentBit | kImageSampleBit, VK_FORMAT_R8G8B8A8_UNORM, 512, 512);
+	Attachment* depthAttachmentOffscreen = CreateTempAttachment(kImageDepthAspectBit | kImageDepthAttachmentBit, dp.depthFormat, 512, 512);
+	m_RenderPassOffscreen->SetAttachments({ colorAttachmentOffscreen, depthAttachmentOffscreen });
+
 	std::vector<VkClearValue> clearValues(2);
 	clearValues[0].color = { 0.0f, 0.0f, 0.0f, 0.0f };
 	clearValues[1].depthStencil = { 1.0f, 0 };
 
-	Rect2D area(0, 0, windowWidth, windowHeight);
-	Viewport viewport(0, 0, windowWidth, windowHeight, 0, 1);
+	Rect2D area(0, 0, 512, 512);
+	Viewport viewport(0, 0, 512, 512, 0, 1);
 
-	device.WriteTimeStamp("RenderPass");
-
-	device.SetRenderPass(m_RenderPassOffscreen);
-
-	device.BeginRenderPass(area, clearValues);
+	device.BeginRenderPass(m_RenderPassOffscreen, area, clearValues);
 
 	device.SetViewport(viewport);
 	device.SetScissor(area);
-
-	// First
-
-	SetShader(m_MirrorPhongShader);
-
-	BindMaterial(m_MirrorPhongMat);
-	DrawRenderNode(m_MirrorDragonNode);
-
-	//
 
 	SetShader(m_PhongShader);
 
 	BindMaterial(m_PhongMat);
 	DrawRenderNode(m_DragonNode);
+
+	device.EndRenderPass();
+
+	// RenderPass
+
+	Attachment* colorAttachment = CreateTempAttachment(kImageSwapChainBit);
+	Attachment* depthAttachment = CreateTempAttachment(kImageDepthAspectBit | kImageDepthAttachmentBit, dp.depthFormat, windowWidth, windowHeight);
+	m_RenderPass->SetAttachments({ colorAttachment, depthAttachment });
+
+	area.width = windowWidth;
+	area.height = windowHeight;
+	viewport.width = windowWidth;
+	viewport.height = windowHeight;
+
+	device.BeginRenderPass(m_RenderPass, area, clearValues);
+
+	device.SetViewport(viewport);
+	device.SetScissor(area);
+
+	SetShader(m_PhongShader);
+
+	BindMaterial(m_PhongMat);
+	DrawRenderNode(m_DragonNode);
+
+	SetShader(m_MiniMapShader);
+
+	m_MiniMapMat->SetTexture("BaseTexture", colorAttachmentOffscreen);
+	BindMaterial(m_MiniMapMat);
+	
+	device.BindUniformBuffer(m_MiniMapShader->GetGpuProgram(), 3, 0, nullptr, 0);
+	device.BindMeshBuffer(nullptr, nullptr, nullptr);
+	device.DrawIndexed(6);
 
 	// gui
 
@@ -228,35 +243,9 @@ void MakeVulkan::PrepareResources()
 		m_DragonMesh->SetVertexChannels({ kVertexPosition, kVertexNormal });
 		m_DragonMesh->LoadFromFile(AssetPath + "models/chinesedragon.obj");
 		m_DragonMesh->UploadToGPU();
-
-		m_PlaneMesh = CreateMesh("PlaneMesh");
-		m_PlaneMesh->SetVertexChannels({ kVertexPosition, kVertexNormal });
-		m_PlaneMesh->LoadFromFile(AssetPath + "models/plane.obj");
-		m_PlaneMesh->UploadToGPU();
 	}
 
 	// Shader
-	{
-		m_MirrorPhongShader = CreateShader("MirrorPhongShader");
-		m_MirrorPhongShader->LoadSPV(AssetPath + "shaders/E011Offscreen/Phong.vert.spv", AssetPath + "shaders/E011Offscreen/Phong.frag.spv");
-
-		GpuParameters parameters;
-		{
-			GpuParameters::UniformParameter uniform("PerDraw", 0, VK_SHADER_STAGE_VERTEX_BIT);
-			uniform.valueParameters.emplace_back("ObjectToWorld", kShaderDataFloat4x4);
-			parameters.uniformParameters.push_back(uniform);
-		}
-		{
-			GpuParameters::UniformParameter uniform("PerMaterial", 0, VK_SHADER_STAGE_VERTEX_BIT);
-			uniform.valueParameters.emplace_back("Clip", kShaderDataFloat2);
-			parameters.uniformParameters.push_back(uniform);
-		}
-		m_MirrorPhongShader->CreateGpuProgram(parameters);
-
-		RenderState renderState;
-		renderState.rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;
-		m_MirrorPhongShader->SetRenderState(renderState);
-	}
 	{
 		m_PhongShader = CreateShader("PhongShader");
 		m_PhongShader->LoadSPV(AssetPath + "shaders/E011Offscreen/Phong.vert.spv", AssetPath + "shaders/E011Offscreen/Phong.frag.spv");
@@ -277,33 +266,36 @@ void MakeVulkan::PrepareResources()
 		RenderState renderState;
 		m_PhongShader->SetRenderState(renderState);
 	}
+	{
+		m_MiniMapShader = CreateShader("MiniMapShader");
+		m_MiniMapShader->LoadSPV(AssetPath + "shaders/E011Offscreen/MiniMap.vert.spv", AssetPath + "shaders/E011Offscreen/MiniMap.frag.spv");
+
+		GpuParameters parameters;
+		{
+			GpuParameters::TextureParameter texture("BaseTexture", 0, VK_SHADER_STAGE_FRAGMENT_BIT);
+			parameters.textureParameters.push_back(texture);
+		}
+		m_MiniMapShader->CreateGpuProgram(parameters);
+
+		RenderState renderState;
+		m_MiniMapShader->SetRenderState(renderState);
+	}
 
 	// Material
 	{
-		m_MirrorPhongMat = CreateMaterial("MirrorPhongMat");
-		m_MirrorPhongMat->SetShader(m_MirrorPhongShader);
-		m_MirrorPhongMat->SetFloat2("Clip", 1.0f, m_ClipY);
-
 		m_PhongMat = CreateMaterial("PhongMat");
 		m_PhongMat->SetShader(m_PhongShader);
 		m_PhongMat->SetFloat2("Clip", -1.0f, m_ClipY);
+
+		m_MiniMapMat = CreateMaterial("MiniMapMat");
+		m_MiniMapMat->SetShader(m_MiniMapShader);
 	}
 
 	// RenderNode
 	{
-		m_MirrorDragonNode = CreateRenderNode("MirrorDragonNode");
-		m_MirrorDragonNode->SetMesh(m_DragonMesh);
-		m_MirrorDragonNode->SetMaterial(m_MirrorPhongMat);
-		m_MirrorDragonNode->GetTransform().Scale(1.0f, -1.0f, 1.0f).Translate(0.0f, -6.0f, 0.0f);
-
 		m_DragonNode = CreateRenderNode("DragonNode");
 		m_DragonNode->SetMesh(m_DragonMesh);
 		m_DragonNode->SetMaterial(m_PhongMat);
-		m_DragonNode->GetTransform().Scale(1.0f, 1.0f, 1.0f).Translate(0.0f, 6.0f, 0.0f);
-
-		//m_PlaneNode = CreateRenderNode("PlaneNode");
-		//m_PlaneNode->SetMesh(m_GlassMesh);
-		//m_PlaneNode->SetMaterial(m_TransparentMat);
 	}
 }
 

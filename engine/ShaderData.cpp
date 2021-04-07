@@ -98,7 +98,7 @@ void ShaderData::SetTextureParameter(std::vector<GpuParameters::TextureParameter
 	}
 }
 
-void ShaderData::SetTexture(const std::string& name, Texture * texture)
+void ShaderData::SetTexture(const std::string& name, TextureBase * texture)
 {
 	if (m_TextureMap.find(name) == m_TextureMap.end())
 	{
@@ -108,7 +108,7 @@ void ShaderData::SetTexture(const std::string& name, Texture * texture)
 	m_TextureMap[name] = texture;
 }
 
-Texture * ShaderData::GetTexture(const std::string& name)
+TextureBase * ShaderData::GetTexture(const std::string& name)
 {
 	if (m_TextureMap.find(name) == m_TextureMap.end())
 	{

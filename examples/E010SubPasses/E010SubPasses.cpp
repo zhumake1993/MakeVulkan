@@ -70,9 +70,9 @@ void MakeVulkan::Init()
 
 	RenderPassKey renderPassKey(5, 3, windowWidth, windowHeight);
 	renderPassKey.SetAttachment(0, kAttachmentSwapChain, dp.ScFormat.format, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-	renderPassKey.SetAttachment(1, kAttachmentColor | kAttachmentInput, VK_FORMAT_R16G16B16A16_SFLOAT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
-	renderPassKey.SetAttachment(2, kAttachmentColor | kAttachmentInput, VK_FORMAT_R16G16B16A16_SFLOAT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
-	renderPassKey.SetAttachment(3, kAttachmentColor | kAttachmentInput, VK_FORMAT_R8G8B8A8_UNORM, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+	renderPassKey.SetAttachment(1, kAttachmentColor, VK_FORMAT_R16G16B16A16_SFLOAT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+	renderPassKey.SetAttachment(2, kAttachmentColor, VK_FORMAT_R16G16B16A16_SFLOAT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+	renderPassKey.SetAttachment(3, kAttachmentColor, VK_FORMAT_R8G8B8A8_UNORM, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 	renderPassKey.SetAttachment(4, kAttachmentDepth, dp.depthFormat, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 	renderPassKey.SetSubpass(0, {}, { 0,1,2,3 }, 4);
 	renderPassKey.SetSubpass(1, { 1,2,3 }, { 0 }, 4);
@@ -188,12 +188,11 @@ void MakeVulkan::Draw()
 	device.WriteTimeStamp("RenderPass");
 
 	// RenderPass
-
-	Attachment* colorAttachment = device.CreateAttachment(kAttachmentSwapChain);
-	Attachment* positionAttachment = device.CreateAttachment(kAttachmentColor | kAttachmentInput, VK_FORMAT_R16G16B16A16_SFLOAT, windowWidth, windowHeight);
-	Attachment* normalAttachment = device.CreateAttachment(kAttachmentColor | kAttachmentInput, VK_FORMAT_R16G16B16A16_SFLOAT, windowWidth, windowHeight);
-	Attachment* albedoAttachment = device.CreateAttachment(kAttachmentColor | kAttachmentInput, VK_FORMAT_R8G8B8A8_UNORM, windowWidth, windowHeight);
-	Attachment* depthAttachment = device.CreateAttachment(kAttachmentDepth, dp.depthFormat, windowWidth, windowHeight);
+	Attachment* colorAttachment = CreateTempAttachment(kImageSwapChainBit);
+	Attachment* positionAttachment = CreateTempAttachment(kImageColorAspectBit | kImageColorAttachmentBit | kImageInputAttachmentBit, VK_FORMAT_R16G16B16A16_SFLOAT, windowWidth, windowHeight);
+	Attachment* normalAttachment = CreateTempAttachment(kImageColorAspectBit | kImageColorAttachmentBit | kImageInputAttachmentBit, VK_FORMAT_R16G16B16A16_SFLOAT, windowWidth, windowHeight);
+	Attachment* albedoAttachment = CreateTempAttachment(kImageColorAspectBit | kImageColorAttachmentBit | kImageInputAttachmentBit, VK_FORMAT_R8G8B8A8_UNORM, windowWidth, windowHeight);
+	Attachment* depthAttachment = CreateTempAttachment(kImageDepthAspectBit | kImageDepthAttachmentBit, dp.depthFormat, windowWidth, windowHeight);
 	m_RenderPass->SetAttachments({ colorAttachment, positionAttachment, normalAttachment, albedoAttachment, depthAttachment });
 
 	std::vector<VkClearValue> clearValues(5);
@@ -207,8 +206,6 @@ void MakeVulkan::Draw()
 	Viewport viewport(0, 0, windowWidth, windowHeight, 0, 1);
 
 	device.BeginRenderPass(m_RenderPass, area, clearValues);
-
-	// Viewport and Scissor
 
 	device.SetViewport(viewport);
 	device.SetScissor(area);
@@ -253,13 +250,6 @@ void MakeVulkan::Draw()
 	device.WriteTimeStamp("RenderPass");
 
 	device.EndCommandBuffer();
-
-	// release
-	device.ReleaseAttachment(colorAttachment);
-	device.ReleaseAttachment(positionAttachment);
-	device.ReleaseAttachment(normalAttachment);
-	device.ReleaseAttachment(albedoAttachment);
-	device.ReleaseAttachment(depthAttachment);
 }
 
 void MakeVulkan::PrepareResources()

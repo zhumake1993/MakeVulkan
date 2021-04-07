@@ -135,23 +135,25 @@ public:
 
 public:
 
+	int m_ImageTypeMask = 0;
+
 	// image
-	VkImageType m_ImageType;
-	VkFormat m_Format;
-	uint32_t m_Width;
-	uint32_t m_Height;
-	uint32_t m_MipLevels;
-	uint32_t m_LayerCount;
-	uint32_t m_FaceCount;
-	VkImageUsageFlags m_Usage;
+	VkImageType m_ImageType = VK_IMAGE_TYPE_2D;
+	VkFormat m_Format = VK_FORMAT_UNDEFINED;
+	uint32_t m_Width = 0;
+	uint32_t m_Height = 0;
+	uint32_t m_MipLevels = 1;
+	uint32_t m_LayerCount = 1;
+	uint32_t m_FaceCount = 1;
+	VkImageUsageFlags m_Usage = 0;
 
 	// view
 	// 简单起见，view的属性与image保持一致
-	VkImageViewType m_ImageViewType;
-	VkImageAspectFlags m_AspectMask;
+	VkImageViewType m_ImageViewType = VK_IMAGE_VIEW_TYPE_2D;
+	VkImageAspectFlags m_AspectMask = 0;
 
-	VKImage* m_Image;
-	VKImageSampler* m_ImageSampler;
+	VKImage* m_Image = nullptr;
+	VKImageSampler* m_ImageSampler = nullptr;
 };
 
 class ImageManager : public NonCopyable
