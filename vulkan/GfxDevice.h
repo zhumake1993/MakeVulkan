@@ -15,9 +15,8 @@ struct VKCommandPool;
 struct VKCommandBuffer;
 class VKRenderPass;
 struct VKBuffer;
-struct VKImage;
-struct VKImageView;
-class ImageImpl;
+class VKImage;
+class ImageVulkan;
 
 class GarbageCollector;
 class BufferManager;
@@ -25,6 +24,11 @@ class ImageManager;
 class DescriptorSetManager;
 class PipelineManager;
 struct PipelineCI;
+
+class Attachment;
+class RenderPass;
+class RenderPassVulkan;
+class RenderPassManager;
 
 class GPUProfilerManager;
 
@@ -70,9 +74,6 @@ public:
 	void BeginCommandBuffer();
 	void EndCommandBuffer();
 
-	void BeginRenderPass(Rect2D& renderArea, std::vector<VkClearValue>& clearValues);
-	void EndRenderPass();
-
 	void SetViewport(Viewport& viewport);
 	void SetScissor(Rect2D& scissorArea);
 
@@ -81,9 +82,15 @@ public:
 	void FlushBuffer(Buffer* buffer);
 	void ReleaseBuffer(Buffer* buffer);
 
-	Image* CreateImage(VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount);
+	Image* CreateImage(int imageTypeMask, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, float maxAnisotropy = 1);
+	Image* GetSwapchainImage();
 	void UpdateImage(Image* image, void* data, uint64_t size, const std::vector<std::vector<std::vector<uint64_t>>>& offsets);
 	void ReleaseImage(Image* image);
+
+	RenderPass* CreateRenderPass(RenderPassKey& renderPassKey);
+	void BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, std::vector<VkClearValue>& clearValues);
+	void NextSubpass();
+	void EndRenderPass();
 
 	GpuProgram* CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode);
 
@@ -108,9 +115,6 @@ public:
 	void ResolveTimeStamp();
 	std::string GetLastGPUTimeStamp();
 
-	void SetRenderPass(RenderPassDesc& renderPassDesc);
-	void NextSubpass();
-
 private:
 
 	VkFormat GetSupportedDepthFormat();
@@ -121,9 +125,9 @@ private:
 
 	VkFence CreateVKFence(bool signaled);
 
-	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, VKBuffer* vkBuffer, uint64_t offset = 0, uint64_t range = VK_WHOLE_SIZE);
-	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, ImageImpl* imageImpl);
-	void UpdateDescriptorSet(VkDescriptorSet descriptorSet, uint32_t binding, VKImageView* imageView); // InputAttachment只需要view
+	void UpdateDescriptorSetBuffer(VkDescriptorSet descriptorSet, uint32_t binding, VKBuffer* vkBuffer, uint64_t offset = 0, uint64_t range = VK_WHOLE_SIZE);
+	void UpdateDescriptorSetImage(VkDescriptorSet descriptorSet, uint32_t binding, ImageVulkan* imageVulkan);
+	void UpdateDescriptorSetInputAttachment(VkDescriptorSet descriptorSet, uint32_t binding, VkImageView view); // InputAttachment只需要view
 
 private:
 
@@ -133,23 +137,22 @@ private:
 	VKSwapChain* m_VKSwapChain = nullptr;
 	VKCommandPool* m_VKCommandPool = nullptr;
 
-	uint32_t m_FrameIndex = 0;
 	uint32_t m_FrameResourceIndex = 0;
 	std::vector<FrameResource> m_FrameResources;
 
 	// 资源管理器
-	GarbageCollector* m_GarbageCollector = nullptr; // GC
+	GarbageCollector* m_GarbageCollector = nullptr;
 	BufferManager* m_BufferManager = nullptr;
 	ImageManager* m_ImageManager = nullptr;
 	DescriptorSetManager* m_DescriptorSetManager = nullptr;
 	PipelineManager* m_PipelineManager = nullptr;
-
-	// RenderPass
-	VKRenderPass* m_VKRenderPass = nullptr;
+	RenderPassManager* m_RenderPassManager = nullptr;
 
 	// SwapChain中的image数量可能并不等于FrameResourcesCount，所以要单独处理Framebuffer
 	uint32_t m_ImageIndex;
-	//std::vector<VkFramebuffer> m_Framebuffers;
+
+	// 当前的RenderPass
+	RenderPassVulkan* m_CurrentRenderPass = nullptr;
 
 	// 用于传数据
 	VKCommandBuffer* m_UploadCommandBuffer;

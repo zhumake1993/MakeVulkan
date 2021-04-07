@@ -59,86 +59,144 @@ struct DrawBatchs
 	std::vector<DrawItem> drawItems;
 };
 
+// Image
+
+enum ImageTypeMask
+{
+	// Swapchain中的image
+	kImageSwapChainBit			= (1 << 0),
+
+	// 影响VkImageAspectFlags
+	kImageColorAspectBit		= (1 << 1),
+	kImageDepthAspectBit		= (1 << 2),
+
+	// 影响VkImageUsageFlags
+	kImageTransferSrcBit		= (1 << 3),
+	kImageTransferDstBit		= (1 << 4),
+	kImageSampleBit				= (1 << 5), // 在shader中被采样
+	kImageColorAttachmentBit	= (1 << 6), // 在renderpass中作为colorAttachment 
+	kImageDepthAttachmentBit	= (1 << 7), // 在renderpass中作为depthAttachment 
+	kImageInputAttachmentBit	= (1 << 8), // 在renderpass中作为inputAttachment 
+};
+
+// Attachment
+
+enum AttachmentType
+{
+	kAttachmentSwapChain		= (1 << 0),
+	kAttachmentColor			= (1 << 1),
+	kAttachmentDepth			= (1 << 2),
+	kAttachmentSample			= (1 << 3),
+};
+
 // Renderpass
 
-struct AttachmentDesc
+class RenderPassKey
 {
-	VkFormat format;
-	VkAttachmentLoadOp loadOp;
-	VkAttachmentStoreOp storeOp;
-
-	size_t Hash()
+	struct AttachmentKey
 	{
-		return std::hash<int>()(format) ^ std::hash<int>()(loadOp) ^ std::hash<int>()(storeOp);
+		bool operator==(const AttachmentKey & other) const
+		{
+			return attachmentType == other.attachmentType
+				&& format == other.format
+				&& loadOp == other.loadOp
+				&& storeOp == other.storeOp;
+		}
+		AttachmentType attachmentType;
+		VkFormat format;
+		VkAttachmentLoadOp loadOp;
+		VkAttachmentStoreOp storeOp;
+	};
+	struct SubpassKey
+	{
+		bool operator==(const SubpassKey & other) const
+		{
+			return inputs == other.inputs
+				&& colors == other.colors
+				&& depth == other.depth;
+		}
+		std::vector<int> inputs;
+		std::vector<int> colors;
+		int depth;
+	};
+
+public:
+
+	RenderPassKey(uint32_t attachmentNum, uint32_t subpasseNum, uint32_t width, uint32_t height)
+		: m_Attachments(attachmentNum)
+		, m_Subpasses(subpasseNum)
+		, m_Width(width)
+		, m_Height(height)
+	{
 	}
+
+	void SetAttachment(uint32_t index, AttachmentType attachmentType, VkFormat format, VkAttachmentLoadOp loadOp, VkAttachmentStoreOp storeOp)
+	{
+		m_Attachments[index].attachmentType = attachmentType;
+		m_Attachments[index].format = format;
+		m_Attachments[index].loadOp = loadOp;
+		m_Attachments[index].storeOp = storeOp;
+	}
+
+	void SetSubpass(uint32_t index, const std::vector<int> inputs, const std::vector<int> colors, int depth = -1)  // -1表示不用depth，暂时不考虑preserve
+	{
+		m_Subpasses[index].inputs = inputs;
+		m_Subpasses[index].colors = colors;
+		m_Subpasses[index].depth = depth;
+	}
+
+	const std::vector<AttachmentKey>& GetAttachments() const
+	{
+		return m_Attachments;
+	}
+
+	const std::vector<SubpassKey>& GetSubpasses() const
+	{
+		return m_Subpasses;
+	}
+
+	uint32_t GetWidth()
+	{
+		return m_Width;
+	}
+
+	uint32_t GetHeight()
+	{
+		return m_Height;
+	}
+
+	bool operator==(const RenderPassKey & other) const
+	{
+		return m_Attachments == other.m_Attachments
+			&& m_Subpasses == other.m_Subpasses;
+	}
+
+private:
+
+	std::vector<AttachmentKey> m_Attachments;
+	std::vector<SubpassKey> m_Subpasses;
+	uint32_t m_Width;
+	uint32_t m_Height;
 };
 
-struct SubPassDesc
+struct RenderPassKeyHash
 {
-	std::vector<int> inputs;
-	std::vector<int> colors;
-	bool useDepthStencil = false;
-	std::vector<int> preserves;
-
-	size_t Hash()
+	size_t operator()(const RenderPassKey & renderPassKey) const
 	{
-		size_t hash = std::hash<bool>()(useDepthStencil);
-		for (auto i : inputs)
+		size_t hash = 0;
+		for (auto& a : renderPassKey.GetAttachments())
 		{
-			hash ^= std::hash<int>()(i);
+			hash ^= std::hash<int>()(a.attachmentType)
+				^ std::hash<int>()(a.format)
+				^ std::hash<int>()(a.loadOp)
+				^ std::hash<int>()(a.storeOp);
 		}
-		for (auto i : colors)
+		for (auto& s : renderPassKey.GetSubpasses())
 		{
-			hash ^= std::hash<int>()(i);
-		}
-		for (auto i : preserves)
-		{
-			hash ^= std::hash<int>()(i);
+			hash ^= std::hash<int>()(s.depth);
+			for (auto i : s.inputs) hash ^= std::hash<int>()(i);
+			for (auto c : s.colors) hash ^= std::hash<int>()(c);
 		}
 		return hash;
-	}
-};
-
-struct RenderPassDesc
-{
-	RenderPassDesc()
-	{
-		memset(this, 0, sizeof(*this));
-	}
-
-	size_t Hash()
-	{
-		if (hash)
-		{
-			return hash;
-		}
-
-		hash = std::hash<int>()(present) ^ std::hash<int>()(depthStencil);
-		for (auto& atta : attachmentDescs)
-		{
-			hash ^= atta.Hash();
-		}
-		for (auto& pass : subPassDescs)
-		{
-			hash ^= pass.Hash();
-		}
-
-		return hash;
-	}
-
-	std::vector<AttachmentDesc> attachmentDescs;
-	int present = -1;
-	int depthStencil = -1;
-
-	std::vector<SubPassDesc> subPassDescs;
-
-	size_t hash = 0;
-};
-
-struct RenderPassHash
-{
-	size_t operator()(RenderPassDesc & p)
-	{
-		return p.Hash();
 	}
 };

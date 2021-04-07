@@ -5,6 +5,7 @@
 
 class Mesh;
 class Texture;
+class Attachment;
 class Shader;
 class Material;
 class RenderNode;
@@ -12,6 +13,7 @@ class Camera;
 class Buffer;
 class Imgui;
 class TimeManager;
+class RenderPass;
 
 class Example : public NonCopyable
 {
@@ -25,6 +27,7 @@ public:
 	virtual void Release();
 	virtual void Update();
 	virtual void Draw() = 0;
+	void UpdateAfterDraw();
 
 protected:
 
@@ -33,6 +36,9 @@ protected:
 	Shader* CreateShader(const std::string& name);
 	Material* CreateMaterial(const std::string& name);
 	RenderNode* CreateRenderNode(const std::string& name);
+
+	Attachment* CreateAttachment(int imageTypeMask, VkFormat format = VK_FORMAT_UNDEFINED, uint32_t width = 0, uint32_t height = 0); // kImageSwapChain类型不需要其他参数
+	Attachment* CreateTempAttachment(int imageTypeMask, VkFormat format = VK_FORMAT_UNDEFINED, uint32_t width = 0, uint32_t height = 0);
 
 	void BindGlobalUniformBuffer(void * data, uint64_t size);
 	void BindPerViewUniformBuffer(void * data, uint64_t size);
@@ -63,6 +69,8 @@ private:
 	std::vector<Shader*> m_ShaderContainer;
 	std::vector<Material*> m_MaterialContainer;
 	std::vector<RenderNode*> m_RenderNodeContainer;
+
+	std::vector<Attachment*> m_TempAttachments;
 
 	Shader* m_DummyShader;
 	Imgui* m_Imgui = nullptr;

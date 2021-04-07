@@ -238,7 +238,7 @@ VkPipeline PipelineManager::CreatePipeline(VertexDescription * vertexDescription
 PipelineManager::Pipeline* PipelineManager::CreatePipelineInternal(PipelineKey & pipelineKey)
 {
 	Pipeline* pipeline = new Pipeline();
-	pipeline->Use(m_FrameIndex);
+	pipeline->Use();
 
 	PipelineCI pipelineCI;
 

@@ -102,7 +102,7 @@ void Material::SetInt(const std::string & name, int x)
 	m_Dirty = true;
 }
 
-void Material::SetTexture(const std::string& name, Texture * texture)
+void Material::SetTexture(const std::string& name, TextureBase * texture)
 {
 	m_ShaderData->SetTexture(name, texture);
 }

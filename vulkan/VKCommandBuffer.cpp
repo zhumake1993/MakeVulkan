@@ -54,6 +54,11 @@ void VKCommandBuffer::BeginRenderPass(VkRenderPass vkRenderPass, VkFramebuffer v
 	vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
+void VKCommandBuffer::NextSubpass()
+{
+	vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
+}
+
 void VKCommandBuffer::EndRenderPass()
 {
 	vkCmdEndRenderPass(commandBuffer);

@@ -32,9 +32,6 @@ void main() {
 	// Vertex position in world space
 	outWorldPos = vec3(world * vec4(inPosition, 1.0f));
 	
-	// GL to Vulkan coord space
-	//outWorldPos.y = -outWorldPos.y;
-	
 	// Normal in world space
 	mat3 mNormal = transpose(inverse(mat3(world)));
 	outNormal = mNormal * normalize(inNormal);	

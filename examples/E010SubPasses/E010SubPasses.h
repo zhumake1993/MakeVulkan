@@ -63,9 +63,9 @@ private:
 	RenderNode* m_BuildingNode;
 	RenderNode* m_GlassNode;
 
+	RenderPass* m_RenderPass;
+
 	Camera* m_Camera;
 
 	const int m_LightCount = 64; // 暂时不支持动态调整光源数量
-
-	RenderPassDesc m_RenderPassDesc;
 };

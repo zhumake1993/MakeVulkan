@@ -3,7 +3,7 @@
 #include "Env.h"
 #include "GpuProgram.h"
 
-class Texture;
+class TextureBase;
 
 class ShaderData
 {
@@ -31,9 +31,9 @@ public:
 
 	void SetTextureParameter(std::vector<GpuParameters::TextureParameter>& textureParameters);
 
-	void SetTexture(const std::string& name, Texture* texture);
+	void SetTexture(const std::string& name, TextureBase* texture);
 
-	Texture* GetTexture(const std::string& name);
+	TextureBase* GetTexture(const std::string& name);
 
 	// SpecializationConstant
 
@@ -52,7 +52,7 @@ private:
 	std::unordered_map<std::string, uint32_t> m_ValueOffsetMap;
 
 	// TextureParameter
-	std::unordered_map<std::string, Texture*> m_TextureMap;
+	std::unordered_map<std::string, TextureBase*> m_TextureMap;
 
 	// SpecializationConstant
 	char* m_SCData = nullptr;

@@ -4,7 +4,7 @@
 #include "GpuProgram.h"
 
 class Shader;
-class Texture;
+class TextureBase;
 class ShaderData;
 class Buffer;
 
@@ -29,7 +29,7 @@ public:
 
 	void SetInt(const std::string& name, int x);
 
-	void SetTexture(const std::string& name, Texture* texture);
+	void SetTexture(const std::string& name, TextureBase* texture);
 
 	ShaderData* GetShaderData();
 

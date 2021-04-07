@@ -8,14 +8,41 @@
 
 #include <ktxvulkan.h>
 
-Texture::Texture(const std::string& name) :
-	m_Name(name)
+TextureBase::TextureBase(const std::string & name)
+	: NamedObject(name)
+	, m_Format(VK_FORMAT_UNDEFINED)
+	, m_Width(0)
+	, m_Height(0)
+	, m_MipLevels(1)
+	, m_LayerCount(1)
+	, m_FaceCount(1)
+{
+}
+
+TextureBase::TextureBase(const std::string & name, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount)
+	: NamedObject(name)
+	, m_Format(format)
+	, m_Width(width)
+	, m_Height(height)
+	, m_MipLevels(mipLevels)
+	, m_LayerCount(layerCount)
+	, m_FaceCount(faceCount)
+{
+}
+
+TextureBase::~TextureBase()
+{
+	GetGfxDevice().ReleaseImage(m_Image);
+	RELEASE(m_Image);
+}
+
+Texture::Texture(const std::string& name)
+	: TextureBase(name)
 {
 }
 
 Texture::~Texture()
 {
-	RELEASE(m_Image);
 }
 
 void Texture::LoadFromFile(const std::string& filename, VkFormat format, bool isCubemap)
@@ -38,13 +65,8 @@ void Texture::LoadFromFile(const std::string& filename, VkFormat format, bool is
 
 	auto& device = GetGfxDevice();
 
-	m_Image = device.CreateImage(format, m_Width, m_Height, m_MipLevels, m_LayerCount, m_FaceCount);
+	m_Image = device.CreateImage(kImageColorAspectBit | kImageTransferDstBit | kImageSampleBit, m_Format, m_Width, m_Height, m_MipLevels, m_LayerCount, m_FaceCount);
 	device.UpdateImage(m_Image, m_ImageData.data(), m_ImageData.size(), m_Offsets);
-}
-
-Image * Texture::GetImage()
-{
-	return m_Image;
 }
 
 void Texture::ReadImageUsingSTB(const std::string& filename)
@@ -136,4 +158,21 @@ void Texture::ReadImageUsingKTX(const std::string& filename)
 	}
 
 	ktxTexture_Destroy(ktxTexture);
+}
+
+Attachment::Attachment(int imageTypeMask, VkFormat format, uint32_t width, uint32_t height)
+	: TextureBase("", format, width, height, 1, 1, 1)
+{
+	if (imageTypeMask & kImageSwapChainBit)
+	{
+		m_Image = GetGfxDevice().GetSwapchainImage();
+	}
+	else
+	{
+		m_Image = GetGfxDevice().CreateImage(imageTypeMask, format, width, height, 1, 1, 1);
+	}
+}
+
+Attachment::~Attachment()
+{
 }

@@ -15,6 +15,7 @@
 #include "Imgui.h"
 #include "ProfilerManager.h"
 #include "GpuProgram.h"
+#include "RenderPass.h"
 #include <random>
 
 MakeVulkan::MakeVulkan()
@@ -67,57 +68,16 @@ void MakeVulkan::Init()
 
 	PrepareResources();
 
-	// RenderPass
-	{
-		// Attachments
-		m_RenderPassDesc.attachmentDescs.resize(5);
-		std::vector<AttachmentDesc>& attachmentDescs = m_RenderPassDesc.attachmentDescs;
-
-		// Color attachment
-		attachmentDescs[0].format = dp.ScFormat.format;
-		attachmentDescs[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		attachmentDescs[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-
-		// Deferred attachments
-
-		// Position
-		attachmentDescs[1].format = VK_FORMAT_R16G16B16A16_SFLOAT;
-		attachmentDescs[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		attachmentDescs[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-		// Normals
-		attachmentDescs[2].format = VK_FORMAT_R16G16B16A16_SFLOAT;
-		attachmentDescs[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		attachmentDescs[2].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-		// Albedo
-		attachmentDescs[3].format = VK_FORMAT_R8G8B8A8_UNORM;
-		attachmentDescs[3].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		attachmentDescs[3].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-		// Depth attachment
-		attachmentDescs[4].format = dp.depthFormat;
-		attachmentDescs[4].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		attachmentDescs[4].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-		// Subpasses
-		m_RenderPassDesc.subPassDescs.resize(3);
-		std::vector<SubPassDesc>& subPassDescs = m_RenderPassDesc.subPassDescs;
-
-		subPassDescs[0].colors = { 0,1,2,3 };
-		subPassDescs[0].useDepthStencil = true;
-
-		subPassDescs[1].inputs = { 1,2,3 };
-		subPassDescs[1].colors = { 0 };
-		subPassDescs[1].useDepthStencil = true;
-
-		subPassDescs[2].inputs = { 1 };
-		subPassDescs[2].colors = { 0 };
-		subPassDescs[2].useDepthStencil = true;
-
-		m_RenderPassDesc.present = 0;
-		m_RenderPassDesc.depthStencil = 4;
-	}
+	RenderPassKey renderPassKey(5, 3, windowWidth, windowHeight);
+	renderPassKey.SetAttachment(0, kAttachmentSwapChain, dp.ScFormat.format, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+	renderPassKey.SetAttachment(1, kAttachmentColor, VK_FORMAT_R16G16B16A16_SFLOAT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+	renderPassKey.SetAttachment(2, kAttachmentColor, VK_FORMAT_R16G16B16A16_SFLOAT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+	renderPassKey.SetAttachment(3, kAttachmentColor, VK_FORMAT_R8G8B8A8_UNORM, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+	renderPassKey.SetAttachment(4, kAttachmentDepth, dp.depthFormat, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+	renderPassKey.SetSubpass(0, {}, { 0,1,2,3 }, 4);
+	renderPassKey.SetSubpass(1, { 1,2,3 }, { 0 }, 4);
+	renderPassKey.SetSubpass(2, { 1 }, { 0 }, 4);
+	m_RenderPass = device.CreateRenderPass(renderPassKey);
 
 	{
 		std::vector<glm::vec3> colors =
@@ -146,6 +106,7 @@ void MakeVulkan::Init()
 
 void MakeVulkan::Release()
 {
+	RELEASE(m_RenderPass);
 	RELEASE(m_Camera);
 
 	Example::Release();
@@ -215,6 +176,7 @@ void MakeVulkan::Draw()
 	PROFILER(Draw);
 
 	auto& device = GetGfxDevice();
+	auto& dp = GetDeviceProperties();
 
 	device.BeginCommandBuffer();
 
@@ -222,6 +184,16 @@ void MakeVulkan::Draw()
 
 	BindGlobalUniformBuffer(&m_UniformDataGlobal, sizeof(UniformDataGlobal));
 	BindPerViewUniformBuffer(&m_UniformDataPerView, sizeof(UniformDataPerView));
+
+	device.WriteTimeStamp("RenderPass");
+
+	// RenderPass
+	Attachment* colorAttachment = CreateTempAttachment(kImageSwapChainBit);
+	Attachment* positionAttachment = CreateTempAttachment(kImageColorAspectBit | kImageColorAttachmentBit | kImageInputAttachmentBit, VK_FORMAT_R16G16B16A16_SFLOAT, windowWidth, windowHeight);
+	Attachment* normalAttachment = CreateTempAttachment(kImageColorAspectBit | kImageColorAttachmentBit | kImageInputAttachmentBit, VK_FORMAT_R16G16B16A16_SFLOAT, windowWidth, windowHeight);
+	Attachment* albedoAttachment = CreateTempAttachment(kImageColorAspectBit | kImageColorAttachmentBit | kImageInputAttachmentBit, VK_FORMAT_R8G8B8A8_UNORM, windowWidth, windowHeight);
+	Attachment* depthAttachment = CreateTempAttachment(kImageDepthAspectBit | kImageDepthAttachmentBit, dp.depthFormat, windowWidth, windowHeight);
+	m_RenderPass->SetAttachments({ colorAttachment, positionAttachment, normalAttachment, albedoAttachment, depthAttachment });
 
 	std::vector<VkClearValue> clearValues(5);
 	clearValues[0].color = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -233,11 +205,7 @@ void MakeVulkan::Draw()
 	Rect2D area(0, 0, windowWidth, windowHeight);
 	Viewport viewport(0, 0, windowWidth, windowHeight, 0, 1);
 
-	device.WriteTimeStamp("RenderPass");
-
-	device.SetRenderPass(m_RenderPassDesc);
-
-	device.BeginRenderPass(area, clearValues);
+	device.BeginRenderPass(m_RenderPass, area, clearValues);
 
 	device.SetViewport(viewport);
 	device.SetScissor(area);

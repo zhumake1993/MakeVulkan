@@ -38,7 +38,7 @@ enum VertexChannel
 {
 	kVertexPosition,
 	kVertexNormal,
-	kVertexColor,
+	kVertexColor, // obj并不支持顶点色
 	kVertexTexcoord0,
 
 	kVertexChannelCount

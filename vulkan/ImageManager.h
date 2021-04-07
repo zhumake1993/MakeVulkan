@@ -5,16 +5,91 @@
 #include "Image.h"
 #include "VKResource.h"
 
-struct VKImage : public VKResource
+class VKImage : public VKResource
 {
-	VKImage(VkDevice vkDevice, VkImageType vkImageType, VkFormat vkFormat, uint32_t vkWidth, uint32_t vkHeight, uint32_t vkMipLevels, uint32_t _layerCount, uint32_t _faceCount, VkImageUsageFlags vkUsage) :
-		device(vkDevice), imageType(vkImageType), format(vkFormat), width(vkWidth), height(vkHeight), mipLevels(vkMipLevels), layerCount(_layerCount), faceCount(_faceCount), usage(vkUsage) {}
+public:
+
+	VKImage(VkDevice vkDevice)
+		: device(vkDevice)
+	{
+	}
+
 	virtual ~VKImage()
 	{
 		vkDestroyImage(device, image, nullptr);
 		vkFreeMemory(device, memory, nullptr);
+		vkDestroyImageView(device, view, nullptr);
 	}
 
+	VkImage image = VK_NULL_HANDLE;
+	VkDeviceMemory memory = VK_NULL_HANDLE;
+	VkImageView view = VK_NULL_HANDLE;
+
+private:
+
+	VkDevice device = VK_NULL_HANDLE;
+};
+
+struct ImageSamplerKey
+{
+	bool operator==(const ImageSamplerKey & other) const
+	{
+		return mipLevels == other.mipLevels
+			&& maxAnisotropy == other.maxAnisotropy;
+	}
+	uint32_t mipLevels;
+	float maxAnisotropy;
+};
+
+struct ImageSamplerKeyHash
+{
+	size_t operator()(const ImageSamplerKey & imageSamplerKey) const
+	{
+		return std::hash<uint32_t>()(imageSamplerKey.mipLevels)
+			^ std::hash<float>()(imageSamplerKey.maxAnisotropy);
+	}
+};
+
+// Sampler常驻，不需要继承VKResource
+class VKImageSampler
+{
+public:
+
+	VKImageSampler(VkDevice vkDevice)
+		: device(vkDevice)
+	{
+	}
+
+	virtual ~VKImageSampler()
+	{
+		vkDestroySampler(device, sampler, nullptr);
+	}
+
+	uint32_t m_MipLevels;
+	float m_MaxAnisotropy;
+
+	VkSampler sampler = VK_NULL_HANDLE;
+
+private:
+
+	VkDevice device = VK_NULL_HANDLE;
+};
+
+struct ImageKey
+{
+	bool operator==(const ImageKey & other) const
+	{
+		return imageType == other.imageType
+			&& format == other.format
+			&& width == other.width
+			&& height == other.height
+			&& mipLevels == other.mipLevels
+			&& layerCount == other.layerCount
+			&& faceCount == other.faceCount
+			&& usage == other.usage
+			&& imageViewType == other.imageViewType
+			&& aspectMask == other.aspectMask;
+	}
 	VkImageType imageType;
 	VkFormat format;
 	uint32_t width;
@@ -23,87 +98,88 @@ struct VKImage : public VKResource
 	uint32_t layerCount;
 	uint32_t faceCount;
 	VkImageUsageFlags usage;
-
-	VkImage image = VK_NULL_HANDLE;
-	VkDeviceMemory memory = VK_NULL_HANDLE;
-
-	VkDevice device = VK_NULL_HANDLE;
-};
-
-struct VKImageView : public VKResource
-{
-	VKImageView(VkDevice vkDevice, VkImage vkImage, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask) :
-		device(vkDevice), image(vkImage), imageViewType(vkImageViewType), format(vkFormat), aspectMask(vkAspectMask) {}
-	virtual ~VKImageView()
-	{
-		vkDestroyImageView(device, view, nullptr);
-	}
-
-	VkImage image;
 	VkImageViewType imageViewType;
-	VkFormat format;
 	VkImageAspectFlags aspectMask;
-
-	VkImageView view = VK_NULL_HANDLE;
-
-	VkDevice device = VK_NULL_HANDLE;
 };
 
-struct VKImageSampler : public VKResource
+struct ImageKeyHash
 {
-	VKImageSampler(VkDevice vkDevice) :
-		device(vkDevice)
+	size_t operator()(const ImageKey & imageKey) const
 	{
+		return std::hash<int>()(imageKey.imageType)
+			^ std::hash<int>()(imageKey.format)
+			^ std::hash<uint32_t>()(imageKey.width)
+			^ std::hash<uint32_t>()(imageKey.height)
+			^ std::hash<uint32_t>()(imageKey.mipLevels)
+			^ std::hash<uint32_t>()(imageKey.layerCount)
+			^ std::hash<uint32_t>()(imageKey.faceCount)
+			^ std::hash<VkImageUsageFlags>()(imageKey.usage)
+			^ std::hash<int>()(imageKey.imageViewType)
+			^ std::hash<VkImageAspectFlags>()(imageKey.aspectMask);
 	}
-	virtual ~VKImageSampler()
-	{
-		vkDestroySampler(device, sampler, nullptr);
-	}
-
-	VkSampler sampler = VK_NULL_HANDLE;
-
-	VkDevice device = VK_NULL_HANDLE;
 };
 
-class ImageImpl : public Image
+class ImageVulkan : public Image
 {
 public:
 
-	ImageImpl(VKImage* image, VKImageView* view, VKImageSampler* sampler);
-	virtual ~ImageImpl();
+	ImageVulkan()
+	{
+	}
 
-	VKImage* GetImage() { return m_Image; }
-	void SetImage(VKImage* image) { m_Image = image; }
+	virtual ~ImageVulkan()
+	{
+	}
 
-	VKImageView* GetView() { return m_View; }
-	void SetView(VKImageView* view) { m_View = view; }
+	ImageKey GetKey();
 
-	VKImageSampler* GetSampler() { return m_Sampler; }
-	void SetSampler(VKImageSampler* sampler) { m_Sampler = sampler; }
+public:
 
-private:
+	int m_ImageTypeMask = 0;
 
-	VKImage* m_Image;
-	VKImageView* m_View;
-	VKImageSampler* m_Sampler;
+	// image
+	VkImageType m_ImageType = VK_IMAGE_TYPE_2D;
+	VkFormat m_Format = VK_FORMAT_UNDEFINED;
+	uint32_t m_Width = 0;
+	uint32_t m_Height = 0;
+	uint32_t m_MipLevels = 1;
+	uint32_t m_LayerCount = 1;
+	uint32_t m_FaceCount = 1;
+	VkImageUsageFlags m_Usage = 0;
+
+	// view
+	// 简单起见，view的属性与image保持一致
+	VkImageViewType m_ImageViewType = VK_IMAGE_VIEW_TYPE_2D;
+	VkImageAspectFlags m_AspectMask = 0;
+
+	VKImage* m_Image = nullptr;
+	VKImageSampler* m_ImageSampler = nullptr;
 };
-
-class GarbageCollector;
 
 class ImageManager : public NonCopyable
 {
 public:
 
-	ImageManager(VkDevice vkDevice, GarbageCollector* gc);
+	ImageManager(VkDevice vkDevice);
 	~ImageManager();
 
-	VKImage* CreateImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, VkImageUsageFlags usage);
-	VKImageView* CreateView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount);
-	VKImageSampler* CreateSampler(uint32_t mipLevels, float maxAnisotropy);
+	VKImage* GetImage(const ImageKey& key);
+
+	VKImageSampler* GetImageSampler(const ImageSamplerKey& key);
+
+	void ReleaseImage(const ImageKey& key, VKImage* image);
 
 private:
 
-	GarbageCollector* m_GarbageCollector = nullptr;
+	VKImage* CreateImage(const ImageKey& key);
+
+	VKImageSampler* CreateImageSampler(const ImageSamplerKey& key);
+
+private:
+
+	ResourcePool<ImageKey, VKImage, ImageKeyHash> m_ImagePool;
+
+	std::unordered_map<ImageSamplerKey, VKImageSampler*, ImageSamplerKeyHash> m_ImageSamplerPool;
 
 	VkDevice m_Device = VK_NULL_HANDLE;
 };

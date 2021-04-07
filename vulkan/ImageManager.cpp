@@ -1,49 +1,92 @@
 #include "ImageManager.h"
 #include "DeviceProperties.h"
 #include "VulkanTools.h"
-#include "GarbageCollector.h"
 #include "GfxDevice.h"
 
-ImageImpl::ImageImpl(VKImage * image, VKImageView * view, VKImageSampler * sampler) :
-	m_Image(image), m_View(view), m_Sampler(sampler)
+ImageKey ImageVulkan::GetKey()
 {
+	ImageKey key;
+	key.imageType = m_ImageType;
+	key.format = m_Format;
+	key.width = m_Width;
+	key.height = m_Height;
+	key.mipLevels = m_MipLevels;
+	key.layerCount = m_LayerCount;
+	key.faceCount = m_FaceCount;
+	key.usage = m_Usage;
+	key.imageViewType = m_ImageViewType;
+	key.aspectMask = m_AspectMask;
+
+	return key;
 }
 
-ImageImpl::~ImageImpl()
-{
-	GetGfxDevice().ReleaseImage(this);
-}
 
-ImageManager::ImageManager(VkDevice vkDevice, GarbageCollector * gc) :
-	m_Device(vkDevice),
-	m_GarbageCollector(gc)
+ImageManager::ImageManager(VkDevice vkDevice)
+	: m_Device(vkDevice)
 {
 }
 
 ImageManager::~ImageManager()
 {
+	for (auto itr = m_ImageSamplerPool.begin(); itr != m_ImageSamplerPool.end(); itr++)
+	{
+		delete itr->second;
+	}
+	m_ImageSamplerPool.clear();
 }
 
-VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, VkImageUsageFlags usage)
+VKImage * ImageManager::GetImage(const ImageKey& key)
 {
-	VKImage* image = new VKImage(m_Device, vkImageType, format, width, height, mipLevels, layerCount, faceCount, usage);
+	VKImage* image = m_ImagePool.Get(key);
+	if (image)
+	{
+		return image;
+	}
+	else
+	{
+		return CreateImage(key);
+	}
+}
+
+VKImageSampler * ImageManager::GetImageSampler(const ImageSamplerKey& key)
+{
+	if (m_ImageSamplerPool.find(key) != m_ImageSamplerPool.end())
+	{
+		return m_ImageSamplerPool[key];
+	}
+	else
+	{
+		VKImageSampler* sampler = CreateImageSampler(key);
+		m_ImageSamplerPool[key] = sampler;
+		return sampler;
+	}
+}
+
+void ImageManager::ReleaseImage(const ImageKey& key, VKImage* image)
+{
+	m_ImagePool.Add(key, image);
+}
+
+VKImage * ImageManager::CreateImage(const ImageKey& key)
+{
+	VKImage* image = new VKImage(m_Device);
 
 	// Image
 
 	VkImageCreateInfo imageCI = {};
 	imageCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	imageCI.pNext = nullptr;
-	imageCI.flags = faceCount > 1 ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0;
-	imageCI.imageType = vkImageType;
-	imageCI.format = format;
-	imageCI.extent.width = width;
-	imageCI.extent.height = height;
+	imageCI.flags = key.faceCount > 1 ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0;
+	imageCI.imageType = key.imageType;
+	imageCI.format = key.format;
+	imageCI.extent.width = key.width;
+	imageCI.extent.height = key.height;
 	imageCI.extent.depth = 1;
-	imageCI.mipLevels = mipLevels;
-	imageCI.arrayLayers = faceCount * layerCount; // Cube faces count as array layers in Vulkan
+	imageCI.mipLevels = key.mipLevels;
+	imageCI.arrayLayers = key.faceCount * key.layerCount; // Cube faces count as array layers in Vulkan
 	imageCI.samples = VK_SAMPLE_COUNT_1_BIT;
 	imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageCI.usage = usage;
+	imageCI.usage = key.usage;
 	imageCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	imageCI.queueFamilyIndexCount = 0;
 	imageCI.pQueueFamilyIndices = nullptr;
@@ -69,38 +112,36 @@ VKImage * ImageManager::CreateImage(VkImageType vkImageType, VkFormat format, ui
 
 	VK_CHECK_RESULT(vkBindImageMemory(m_Device, image->image, image->memory, 0));
 
-	return image;
-}
-
-VKImageView * ImageManager::CreateView(VkImage image, VkImageViewType vkImageViewType, VkFormat vkFormat, VkImageAspectFlags vkAspectMask, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount)
-{
-	VKImageView* view = new VKImageView(m_Device, image, vkImageViewType, vkFormat, vkAspectMask);
+	// ImageView
 
 	VkImageViewCreateInfo imageViewCI = {};
 	imageViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	imageViewCI.pNext = nullptr;
 	imageViewCI.flags = 0;
-	imageViewCI.image = image;
-	imageViewCI.viewType = vkImageViewType;
-	imageViewCI.format = vkFormat;
+	imageViewCI.image = image->image;
+	imageViewCI.viewType = key.imageViewType;
+	imageViewCI.format = key.format;
 	imageViewCI.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewCI.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewCI.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewCI.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewCI.subresourceRange.aspectMask = vkAspectMask;
+	imageViewCI.subresourceRange.aspectMask = key.aspectMask;
 	imageViewCI.subresourceRange.baseMipLevel = 0;
-	imageViewCI.subresourceRange.levelCount = mipLevels;
+	imageViewCI.subresourceRange.levelCount = key.mipLevels;
 	imageViewCI.subresourceRange.baseArrayLayer = 0;
-	imageViewCI.subresourceRange.layerCount = faceCount * layerCount;
+	imageViewCI.subresourceRange.layerCount = key.faceCount * key.layerCount;
 
-	VK_CHECK_RESULT(vkCreateImageView(m_Device, &imageViewCI, nullptr, &view->view));
+	VK_CHECK_RESULT(vkCreateImageView(m_Device, &imageViewCI, nullptr, &image->view));
 
-	return view;
+	return image;
 }
 
-VKImageSampler * ImageManager::CreateSampler(uint32_t mipLevels, float maxAnisotropy)
+VKImageSampler * ImageManager::CreateImageSampler(const ImageSamplerKey& key)
 {
 	VKImageSampler* sampler = new VKImageSampler(m_Device);
+
+	sampler->m_MaxAnisotropy = key.maxAnisotropy;
+	sampler->m_MipLevels = key.mipLevels;
 
 	VkSamplerCreateInfo samplerCI = {};
 	samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -115,25 +156,28 @@ VKImageSampler * ImageManager::CreateSampler(uint32_t mipLevels, float maxAnisot
 	samplerCI.mipLodBias = 0.0f;
 
 	auto& dp = GetDeviceProperties();
-	if (dp.enabledDeviceFeatures.samplerAnisotropy)
+	if (key.maxAnisotropy > 1 && dp.enabledDeviceFeatures.samplerAnisotropy)
 	{
-		if (maxAnisotropy > dp.deviceProperties.limits.maxSamplerAnisotropy)
-		{
-			maxAnisotropy = dp.deviceProperties.limits.maxSamplerAnisotropy;
-		}
 		samplerCI.anisotropyEnable = VK_TRUE;
-		samplerCI.maxAnisotropy = maxAnisotropy;
+		if (key.maxAnisotropy > dp.deviceProperties.limits.maxSamplerAnisotropy)
+		{
+			samplerCI.maxAnisotropy = dp.deviceProperties.limits.maxSamplerAnisotropy;
+		}
+		else
+		{
+			samplerCI.maxAnisotropy = key.maxAnisotropy;
+		}
 	}
 	else
 	{
 		samplerCI.anisotropyEnable = VK_FALSE;
 		samplerCI.maxAnisotropy = 1.0f;
 	}
-	
+
 	samplerCI.compareEnable = VK_FALSE;
 	samplerCI.compareOp = VK_COMPARE_OP_NEVER;
 	samplerCI.minLod = 0.0f;
-	samplerCI.maxLod = static_cast<float>(mipLevels);
+	samplerCI.maxLod = static_cast<float>(key.mipLevels);
 	samplerCI.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 	samplerCI.unnormalizedCoordinates = VK_FALSE;
 
