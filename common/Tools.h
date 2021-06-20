@@ -11,11 +11,16 @@
 	}							\
 }
 
-#define ASSERT(x,...)			\
-{								\
-	if(!(x)) LOG(__VA_ARGS__);	\
-	assert(x);					\
-}
+#define ASSERT(x) assert(x);
+
+//#define ASSERT(x)													\
+//{																	\
+//	if(!(x))														\
+//	{																\
+//		LOG("Assert false in %s at line %d", __FILE__, __LINE__);	\
+//	}																\
+//	assert(x);														\
+//}
 
 #define EXIT assert(false)
 

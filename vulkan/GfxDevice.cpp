@@ -11,10 +11,12 @@
 #include "VKSwapChain.h"
 #include "VKCommandPool.h"
 
+#include "VKMemory.h"
+#include "VKBuffer.h"
+
 #include "VKCommandBuffer.h"
 
 #include "GarbageCollector.h"
-#include "BufferManager.h"
 #include "ImageManager.h"
 #include "DescriptorSetManager.h"
 #include "PipelineManager.h"
@@ -65,9 +67,11 @@ GfxDevice::GfxDevice()
 		m_FrameResources[i].fence = CreateVKFence(true);
 	}
 
+	m_MemoryAllocator = new vk::MemoryAllocator(m_VKDevice->device);
+	m_BufferManager = new vk::BufferManager(m_VKDevice->device, *m_MemoryAllocator);
+
 	// 资源管理
 	m_GarbageCollector = new GarbageCollector();
-	m_BufferManager = new BufferManager(m_VKDevice->device, m_GarbageCollector);
 	m_ImageManager = new ImageManager(m_VKDevice->device);
 	m_DescriptorSetManager = new DescriptorSetManager(m_VKDevice->device);
 	m_PipelineManager = new PipelineManager(m_VKDevice->device);
@@ -92,11 +96,13 @@ GfxDevice::~GfxDevice()
 	RELEASE(m_UploadCommandBuffer);
 
 	RELEASE(m_GarbageCollector);
-	RELEASE(m_BufferManager);
 	RELEASE(m_ImageManager);
 	RELEASE(m_DescriptorSetManager);
 	RELEASE(m_PipelineManager);
 	RELEASE(m_RenderPassManager);
+
+	RELEASE(m_BufferManager);
+	RELEASE(m_MemoryAllocator);
 
 	for (size_t i = 0; i < FrameResourcesCount; ++i)
 	{

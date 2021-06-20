@@ -10,7 +10,7 @@
 	if (res != VK_SUCCESS)																							\
 	{																												\
 		LOG("Fatal : VkResult is \" %s \" in %s at line %d", VulkanErrorToString(res).c_str(), __FILE__, __LINE__); \
-		assert(res == VK_SUCCESS);																					\
+		assert(false);																								\
 	}																												\
 }
 

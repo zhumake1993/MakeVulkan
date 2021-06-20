@@ -19,7 +19,6 @@ class VKImage;
 class ImageVulkan;
 
 class GarbageCollector;
-class BufferManager;
 class ImageManager;
 class DescriptorSetManager;
 class PipelineManager;
@@ -37,6 +36,12 @@ class Image;
 class GpuProgram;
 class Shader;
 class Material;
+
+namespace vk
+{
+	class MemoryAllocator;
+	class BufferManager;
+}
 
 class GfxDevice : public NonCopyable
 {
@@ -137,12 +142,15 @@ private:
 	VKSwapChain* m_VKSwapChain = nullptr;
 	VKCommandPool* m_VKCommandPool = nullptr;
 
+	// todo:变成动态
 	uint32_t m_FrameResourceIndex = 0;
 	std::vector<FrameResource> m_FrameResources;
 
+	vk::MemoryAllocator* m_MemoryAllocator = nullptr;
+	vk::BufferManager* m_BufferManager = nullptr;
+
 	// 资源管理器
 	GarbageCollector* m_GarbageCollector = nullptr;
-	BufferManager* m_BufferManager = nullptr;
 	ImageManager* m_ImageManager = nullptr;
 	DescriptorSetManager* m_DescriptorSetManager = nullptr;
 	PipelineManager* m_PipelineManager = nullptr;
