@@ -1,5 +1,4 @@
 #include "Settings.h"
-#include "Env.h"
 
 #if defined(_WIN32)
 std::string consoleTitle = "Console Title";

@@ -81,8 +81,10 @@ public:
 
 	void SetViewport(Viewport& viewport);
 	void SetScissor(Rect2D& scissorArea);
+	
+	// Buffer
+	Buffer* CreateBuffer(GfxBufferUsage bufferUsage, GfxBufferMode bufferMode, uint64_t size);
 
-	Buffer* CreateBuffer(BufferUsageType bufferUsage, MemoryPropertyType memoryProp, uint64_t size);
 	void UpdateBuffer(Buffer* buffer, void* data, uint64_t offset, uint64_t size);
 	void FlushBuffer(Buffer* buffer);
 	void ReleaseBuffer(Buffer* buffer);

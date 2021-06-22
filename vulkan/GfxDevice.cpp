@@ -67,7 +67,13 @@ GfxDevice::GfxDevice()
 		m_FrameResources[i].fence = CreateVKFence(true);
 	}
 
-	m_MemoryAllocator = new vk::MemoryAllocator(m_VKDevice->device);
+	// Memory
+	VkDeviceSize memoryAlignment = 256; // 256可以满足minTexelBufferOffsetAlignment, minUniformBufferOffsetAlignment, minStorageBufferOffsetAlignment的对齐要求
+	// todo:bufferImageGranularity
+	VkDeviceSize memoryBlockSize = 1; //todo:全局设置
+	m_MemoryAllocator = new vk::MemoryAllocator(m_VKDevice->device, memoryBlockSize, memoryAlignment);
+
+	// buffer
 	m_BufferManager = new vk::BufferManager(m_VKDevice->device, *m_MemoryAllocator);
 
 	// 资源管理
@@ -300,6 +306,11 @@ Buffer * GfxDevice::CreateBuffer(BufferUsageType bufferUsage, MemoryPropertyType
 
 	VKBuffer* buffer = m_BufferManager->CreateBuffer(size, usage, memoryProperty);
 	return new BufferImpl(buffer);
+}
+
+Buffer * GfxDevice::CreateBuffer(GfxBufferUsage bufferUsage, GfxBufferMode bufferMode, uint64_t size)
+{
+	
 }
 
 void GfxDevice::UpdateBuffer(Buffer * buffer, void * data, uint64_t offset, uint64_t size)

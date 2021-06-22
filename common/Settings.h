@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Env.h"
+#include <string>
 
 // 使用Visual Leak Detector（仅限PC）
 // 为了方便，我把vld的包含路径直接加到系统的path里去了

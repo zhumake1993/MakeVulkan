@@ -38,7 +38,7 @@ namespace vk
 		ASSERT(memoryTypeIndex > -1);
 
 		Memory memory = m_Allocator.Allocate(memoryTypeIndex, memoryRequirements.size, memoryRequirements.alignment);
-		ASSERT(memory.memory == VK_NULL_HANDLE);
+		ASSERT(memory.IsValid());
 
 		vkBindBufferMemory(m_Device, buffer, memory.memory, memory.offset);
 

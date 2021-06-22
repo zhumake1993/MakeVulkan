@@ -55,18 +55,19 @@ struct VertexDescription
 	uint32_t stride;
 };
 
-enum BufferUsageType
+enum GfxBufferUsage
 {
-	kBufferUsageVertex,
-	kBufferUsageIndex,
-	kBufferUsageUniform
+	kGfxBufferUsageVertex,
+	kGfxBufferUsageIndex,
+	kGfxBufferUsageUniform
 };
 
-enum MemoryPropertyType
+enum GfxBufferMode
 {
-	kMemoryPropertyDeviceLocal,
+	//todo
+	/*kMemoryPropertyDeviceLocal,
 	kMemoryPropertyHostVisible,
-	kMemoryPropertyHostCoherent
+	kMemoryPropertyHostCoherent*/
 };
 
 enum ShaderDataType
