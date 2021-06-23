@@ -1,5 +1,6 @@
 #include "GarbageCollector.h"
-#include "VulkanTools.h"
+#include "VKTools.h"
+#include "Tools.h"
 #include "VKResource.h"
 
 GarbageCollector::GarbageCollector()

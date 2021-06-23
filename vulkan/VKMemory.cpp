@@ -1,6 +1,7 @@
 #include "VKMemory.h"
 #include "DeviceProperties.h"
-#include "VulkanTools.h"
+#include "VKTools.h"
+#include "Tools.h"
 
 namespace vk
 {

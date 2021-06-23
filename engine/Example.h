@@ -55,8 +55,7 @@ protected:
 	// Instancing
 	void DrawInstanced(Mesh* mesh, Shader* shader, void* data, uint64_t size, uint32_t instanceCount);
 
-	void UpdateImgui();
-	void DrawImgui();
+
 
 protected:
 

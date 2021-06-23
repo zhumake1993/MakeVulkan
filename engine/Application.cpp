@@ -1,15 +1,21 @@
 #include "Application.h"
-#include "Settings.h"
+#include "Platforms.h"
+#include "GlobalSettings.h"
 #include "Log.h"
 #include "Engine.h"
-#include "Tools.h"
 #include "InputManager.h"
+#include <stdio.h>
 
-Application* application;
+Application* gApplication = nullptr;
 
-Application::Application(Example* example)
+void SetApplication(Application * application)
 {
-	m_Engine = new Engine(example);
+	gApplication = application;
+}
+
+Application::Application(Engine* engine)
+{
+	m_Engine = engine;
 }
 
 Application::~Application()
@@ -34,14 +40,14 @@ void Application::Init()
 
 #endif
 
-	m_Engine->Init();
+	m_Engine->InitEngine();
 	m_CanRender = true;
 }
 
 void Application::Release()
 {
-	m_Engine->Release();
-	RELEASE(m_Engine);
+	m_Engine->ReleaseEngine();
+	delete m_Engine;
 }
 
 void Application::Run()
@@ -58,8 +64,8 @@ void Application::Run()
 				break;
 			}
 		}
-		if (m_CanRender && !IsIconic(windowHandle)) {
-			m_Engine->Update();
+		if (m_CanRender && !IsIconic(platform::GetWindowHandle())) {
+			m_Engine->UpdateEngine();
 		}
 	}
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
@@ -125,23 +131,25 @@ void Application::SetupConsole()
 	FILE *stream;
 	freopen_s(&stream, "CONOUT$", "w+", stdout);
 	freopen_s(&stream, "CONOUT$", "w+", stderr);
-	SetConsoleTitle(TEXT(consoleTitle.c_str()));
+	SetConsoleTitle(TEXT(GetGlobalSettings().consoleTitle.c_str()));
 }
 
 void Application::SetupWindow()
 {
+	auto& gs = GetGlobalSettings();
+
 	WNDCLASSEX wndClass;
 	wndClass.cbSize = sizeof(WNDCLASSEX);
 	wndClass.style = CS_HREDRAW | CS_VREDRAW;
 	wndClass.lpfnWndProc = WndProc;
 	wndClass.cbClsExtra = 0;
 	wndClass.cbWndExtra = 0;
-	wndClass.hInstance = windowInstance;
+	wndClass.hInstance = platform::GetWindowInstance();
 	wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wndClass.lpszMenuName = NULL;
-	wndClass.lpszClassName = windowClassName.c_str();
+	wndClass.lpszClassName = gs.windowClassName.c_str();
 	wndClass.hIconSm = LoadIcon(NULL, IDI_WINLOGO);
 
 	if (!RegisterClassEx(&wndClass))
@@ -160,14 +168,14 @@ void Application::SetupWindow()
 	RECT windowRect;
 	windowRect.left = 0L;
 	windowRect.top = 0L;
-	windowRect.right = windowWidth;
-	windowRect.bottom = windowHeight;
+	windowRect.right = gs.windowWidth;
+	windowRect.bottom = gs.windowHeight;
 
 	AdjustWindowRectEx(&windowRect, dwStyle, FALSE, dwExStyle);
 
-	windowHandle = CreateWindowEx(0,
-		windowClassName.c_str(),
-		windowTitleName.c_str(),
+	HWND windowHandle = CreateWindowEx(0,
+		gs.windowClassName.c_str(),
+		gs.windowTitleName.c_str(),
 		dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 		0,
 		0,
@@ -175,8 +183,10 @@ void Application::SetupWindow()
 		windowRect.bottom - windowRect.top,
 		NULL,
 		NULL,
-		windowInstance,
+		platform::GetWindowInstance(),
 		NULL);
+
+	platform::SetWindowHandle(windowHandle);
 
 	if (!windowHandle)
 	{
@@ -234,12 +244,12 @@ void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 	case WM_CLOSE:
-		application->DeActivate();
+		gApplication->DeActivate();
 		DestroyWindow(hWnd);
 		PostQuitMessage(0);
 		break;
 	case WM_PAINT:
-		ValidateRect(windowHandle, NULL);
+		ValidateRect(platform::GetWindowHandle(), NULL);
 		break;
 	case WM_KEYDOWN:
 		switch (wParam)

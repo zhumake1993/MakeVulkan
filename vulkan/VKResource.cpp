@@ -1,8 +1,12 @@
 #include "VKResource.h"
 #include "VKFrame.h"
+#include "GlobalSettings.h"
 #include "Tools.h"
+#include "GfxDevice.h"
+#include "GarbageCollector.h"
 
 VKResource::VKResource()
+	: m_GarbageCollector(GetGfxDevice().GetGarbageCollector())
 {
 }
 
@@ -20,7 +24,7 @@ void VKResource::Use()
 	m_FrameIndex = GetFrameIndex();
 }
 
-size_t VKResource::Hash()
+void VKResource::Release()
 {
-	return 0;
+	m_GarbageCollector->AddResource(this);
 }

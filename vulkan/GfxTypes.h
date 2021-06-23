@@ -64,10 +64,8 @@ enum GfxBufferUsage
 
 enum GfxBufferMode
 {
-	//todo
-	/*kMemoryPropertyDeviceLocal,
-	kMemoryPropertyHostVisible,
-	kMemoryPropertyHostCoherent*/
+	kGfxBufferModeDeviceLocal,
+	kGfxBufferModeHostVisible
 };
 
 enum ShaderDataType

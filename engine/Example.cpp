@@ -30,7 +30,7 @@ Example::~Example()
 
 void Example::Init()
 {
-	m_DummyShader = new Shader("DummyShader");
+	/*m_DummyShader = new Shader("DummyShader");
 
 	GpuParameters parameters;
 	{
@@ -46,17 +46,15 @@ void Example::Init()
 		parameters.uniformParameters.push_back(uniform);
 	}
 
-	m_DummyShader->CreateGpuProgram(parameters);
+	m_DummyShader->CreateGpuProgram(parameters);*/
 
-	m_TimeManager = new TimeManager();
+	
 
-	m_Imgui = new Imgui();
 }
 
 void Example::Release()
 {
-	RELEASE(m_Imgui);
-	RELEASE(m_TimeManager);
+
 
 	for (auto p : m_MeshContainer) { RELEASE(p); }
 	for (auto p : m_TextureContainer) { RELEASE(p); }
@@ -73,9 +71,6 @@ void Example::Update()
 {
 	PROFILER(Example_Update);
 
-	m_TimeManager->Update();
-
-	m_Imgui->Prepare(m_TimeManager->GetDeltaTime());
 }
 
 void Example::UpdateAfterDraw()
@@ -374,15 +369,4 @@ void Example::DrawInstanced(Mesh * mesh, Shader* shader, void * data, uint64_t s
 
 	device.BindMeshBuffer(mesh->GetVertexBuffer(), mesh->GetIndexBuffer(), mesh->GetVertexDescription());
 	device.DrawIndexed(mesh->GetIndexCount(), instanceCount);
-}
-
-void Example::UpdateImgui()
-{
-	ImGui::Render();
-	m_Imgui->Tick();
-}
-
-void Example::DrawImgui()
-{
-	m_Imgui->Draw();
 }

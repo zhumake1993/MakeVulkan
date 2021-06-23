@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Env.h"
 #include "NonCopyable.h"
-#include "Settings.h"
+
+class GarbageCollector;
 
 class VKResource : public NonCopyable
 {
@@ -14,12 +14,14 @@ public:
 	bool InUse();
 	void Use();
 
-	virtual size_t Hash();
+	void Release();
 
 private:
 
 	// 在该帧被使用
-	int m_FrameIndex = -FrameResourcesCount;
+	int m_FrameIndex = -999;
+
+	GarbageCollector* m_GarbageCollector;
 };
 
 template <class Key, class Resource, class KeyHash>

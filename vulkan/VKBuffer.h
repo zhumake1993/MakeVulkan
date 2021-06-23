@@ -1,13 +1,16 @@
 #pragma once
 
-#include "Env.h"
+#include "VKIncludes.h"
 #include "NonCopyable.h"
 #include "VKResource.h"
-#include "Buffer.h"
+#include "GfxBuffer.h"
 #include "VKMemory.h"
+#include "GfxTypes.h"
 
 namespace vk
 {
+	class BufferManager;
+
 	class BufferResource : public VKResource
 	{
 		/*VKBuffer(VkDevice vkDevice, VkDeviceSize vkSize, VkBufferUsageFlags vkUsage, VkMemoryPropertyFlags vkMemoryProperty) :
@@ -39,20 +42,24 @@ namespace vk
 		VkDevice device = VK_NULL_HANDLE;*/
 	};
 
-	class VulkanBuffer : public Buffer
+	class VulkanBuffer : public GfxBuffer
 	{
 
 	public:
 
-		/*BufferImpl(VKBuffer* buffer);
-		virtual ~BufferImpl();
+		VulkanBuffer(BufferManager* bufferManager, GfxBufferUsage bufferUsage, GfxBufferMode bufferMode, uint64_t size);
+		virtual ~VulkanBuffer();
 
-		VKBuffer* GetBuffer() { return m_Buffer; }
-		void SetBuffer(VKBuffer* buffer) { m_Buffer = buffer; }*/
+		void Update(void* data, uint64_t offset, uint64_t size);
 
 	private:
 
-		//VKBuffer* m_Buffer;
+		BufferResource * CreateBufferResource();
+
+	private:
+
+		BufferManager* m_BufferManager;
+		BufferResource* m_BufferResource;
 	};
 
 	class BufferManager : NonCopyable

@@ -1,21 +1,25 @@
 #include "E011Offscreen.h"
-#include "Application.h"
-#include "DeviceProperties.h"
-#include "GfxTypes.h"
+#include "GlobalSettings.h"
 #include "GfxDevice.h"
-#include "Settings.h"
-#include "Tools.h"
-#include "Mesh.h"
-#include "Texture.h"
-#include "Shader.h"
-#include "Material.h"
-#include "RenderNode.h"
-#include "Camera.h"
-#include "TimeManager.h"
+
 #include "Imgui.h"
-#include "ProfilerManager.h"
-#include "GpuProgram.h"
-#include "RenderPass.h"
+#include "Camera.h"
+
+//#include "Application.h"
+//#include "DeviceProperties.h"
+//#include "GfxTypes.h"
+//#include "Tools.h"
+//#include "Mesh.h"
+//#include "Texture.h"
+//#include "Shader.h"
+//#include "Material.h"
+//#include "RenderNode.h"
+
+//#include "TimeManager.h"
+//#include "Imgui.h"
+//#include "ProfilerManager.h"
+//#include "GpuProgram.h"
+//#include "RenderPass.h"
 
 MakeVulkan::MakeVulkan()
 {
@@ -25,42 +29,24 @@ MakeVulkan::~MakeVulkan()
 {
 }
 
-void MakeVulkan::ConfigDeviceProperties()
+void MakeVulkan::PreInit()
 {
-	auto& dp = GetDeviceProperties();
+	auto& gs = GetGlobalSettings();
 
 #if defined(_WIN32)
-	dp.enabledInstanceLayers.push_back("VK_LAYER_KHRONOS_validation");
-#endif
-
-	// 添加InstanceExtension
-	dp.enabledInstanceExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-#if defined(_WIN32)
-	dp.enabledInstanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	dp.enabledInstanceExtensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
-#endif
-
-	// 添加DeviceExtension
-	dp.enabledDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-
-	// 添加DeviceFeature
-#if defined(_WIN32)
-	dp.enabledDeviceFeatures.shaderClipDistance = VK_TRUE; // 我的手机不支持
+	gs.enabledDeviceFeatures.shaderClipDistance = VK_TRUE; // 我的手机不支持
 #endif
 }
 
 void MakeVulkan::Init()
 {
-	Example::Init();
-
 	auto& device = GetGfxDevice();
-	auto& dp = GetDeviceProperties();
+	auto& gs = GetGlobalSettings();
 
 	// Camera
 	m_Camera = new Camera();
 	m_Camera->LookAt(glm::vec3(0.0f, 9.0f, -15.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	m_Camera->SetLens(glm::radians(60.0f), 1.0f * windowWidth / windowHeight, 0.1f, 256.0f);
+	m_Camera->SetLens(glm::radians(60.0f), 1.0f * gs.windowWidth / gs.windowHeight, 0.1f, 256.0f);
 #if defined(_WIN32)
 	m_Camera->SetSpeed(3.0f, 0.005f);
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
@@ -75,7 +61,7 @@ void MakeVulkan::Init()
 	renderPassKeyOffscreen.SetSubpass(0, {}, { 0 }, 1);
 	m_RenderPassOffscreen = device.CreateRenderPass(renderPassKeyOffscreen);
 
-	RenderPassKey renderPass(2, 1, windowWidth, windowHeight);
+	RenderPassKey renderPass(2, 1, gs.windowWidth, gs.windowHeight);
 	renderPass.SetAttachment(0, kAttachmentSwapChain, dp.ScFormat.format, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
 	renderPass.SetAttachment(1, kAttachmentDepth, dp.depthFormat, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
 	renderPass.SetSubpass(0, {}, { 0 }, 1);
@@ -150,7 +136,8 @@ void MakeVulkan::Update()
 
 	ImGui::End();
 
-	UpdateImgui();
+	ImGui::Render();
+	m_Imgui->Tick();
 }
 
 void MakeVulkan::Draw()
@@ -226,13 +213,18 @@ void MakeVulkan::Draw()
 
 	// gui
 
-	DrawImgui();
+	m_Imgui->Draw();
 
 	device.EndRenderPass();
 
 	device.WriteTimeStamp("RenderPass");
 
 	device.EndCommandBuffer();
+}
+
+void MakeVulkan::UpdateAfterDraw()
+{
+	// really need??
 }
 
 void MakeVulkan::PrepareResources()
@@ -299,4 +291,21 @@ void MakeVulkan::PrepareResources()
 	}
 }
 
-MAIN(MakeVulkan)
+//MAIN(MakeVulkan)
+
+#include "Platforms.h"
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)		
+{					
+	platform::SetWindowInstance(hInstance);
+
+	Application* application = new Application(new MakeVulkan());
+	SetApplication(application);
+	application->Init();
+	application->Run();
+	application->Release();
+	delete application;
+
+	LOG("Application exits.");
+	system("PAUSE");
+	return 0;
+}

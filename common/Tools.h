@@ -3,26 +3,16 @@
 #include "Env.h"
 #include "Log.h"
 
-#define RELEASE(pointer)		\
-{								\
-	if (pointer != nullptr) {	\
-		delete pointer;			\
-		pointer = nullptr;		\
-	}							\
+#define RELEASE(pointer)	\
+{							\
+	assert(pointer);		\
+	delete pointer;			\
+	pointer = nullptr;		\
 }
 
 #define ASSERT(x) assert(x);
 
-//#define ASSERT(x)													\
-//{																	\
-//	if(!(x))														\
-//	{																\
-//		LOG("Assert false in %s at line %d", __FILE__, __LINE__);	\
-//	}																\
-//	assert(x);														\
-//}
-
-#define EXIT assert(false)
+//#define EXIT assert(false)
 
 #define ALIGN(val, alignment) (((val) + (alignment) - 1) & ~((alignment) - 1))
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Env.h"
+#include <assert.h>
 
 #if defined(_WIN32)
 #define LOG(...) printf(__VA_ARGS__)

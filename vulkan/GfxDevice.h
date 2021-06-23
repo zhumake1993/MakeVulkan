@@ -1,15 +1,13 @@
 #pragma once
 
-#include "Env.h"
+#include <vector>
+#include "VKIncludes.h"
 #include "NonCopyable.h"
+
 #include "GfxTypes.h"
 #include "GpuProgram.h"
 #include "GfxDeviceObjects.h"
 
-struct VKInstance;
-struct VKSurface;
-struct VKDevice;
-struct VKSwapChain;
 struct VKCommandPool;
 
 struct VKCommandBuffer;
@@ -31,14 +29,19 @@ class RenderPassManager;
 
 class GPUProfilerManager;
 
-class Buffer;
 class Image;
 class GpuProgram;
 class Shader;
 class Material;
 
+
+
+class GfxBuffer;
+
 namespace vk
 {
+	class VKContex;
+	class VKSwapChain;
 	class MemoryAllocator;
 	class BufferManager;
 }
@@ -83,11 +86,11 @@ public:
 	void SetScissor(Rect2D& scissorArea);
 	
 	// Buffer
-	Buffer* CreateBuffer(GfxBufferUsage bufferUsage, GfxBufferMode bufferMode, uint64_t size);
+	GfxBuffer* CreateBuffer(GfxBufferUsage bufferUsage, GfxBufferMode bufferMode, uint64_t size);
+	void UpdateBuffer(GfxBuffer* buffer, void* data, uint64_t offset, uint64_t size);
 
-	void UpdateBuffer(Buffer* buffer, void* data, uint64_t offset, uint64_t size);
-	void FlushBuffer(Buffer* buffer);
-	void ReleaseBuffer(Buffer* buffer);
+	void FlushBuffer(GfxBuffer* buffer);
+	void ReleaseBuffer(GfxBuffer* buffer);
 
 	Image* CreateImage(int imageTypeMask, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, float maxAnisotropy = 1);
 	Image* GetSwapchainImage();
@@ -122,6 +125,8 @@ public:
 	void ResolveTimeStamp();
 	std::string GetLastGPUTimeStamp();
 
+	GarbageCollector* GetGarbageCollector();
+
 private:
 
 	VkFormat GetSupportedDepthFormat();
@@ -138,26 +143,27 @@ private:
 
 private:
 
-	VKInstance* m_VKInstance = nullptr;
-	VKSurface* m_VKSurface = nullptr;
-	VKDevice* m_VKDevice = nullptr;
-	VKSwapChain* m_VKSwapChain = nullptr;
+	vk::VKContex* m_VKContex = nullptr;
+	vk::VKSwapChain* m_VKSwapChain = nullptr;
+
+	GarbageCollector* m_GarbageCollector = nullptr;
+	vk::MemoryAllocator* m_MemoryAllocator = nullptr;
+	vk::BufferManager* m_BufferManager = nullptr;
+	ImageManager* m_ImageManager = nullptr;
+
+	// todo
 	VKCommandPool* m_VKCommandPool = nullptr;
 
 	// todo:变成动态
 	uint32_t m_FrameResourceIndex = 0;
 	std::vector<FrameResource> m_FrameResources;
 
-	vk::MemoryAllocator* m_MemoryAllocator = nullptr;
-	vk::BufferManager* m_BufferManager = nullptr;
-
-	// 资源管理器
-	GarbageCollector* m_GarbageCollector = nullptr;
-	ImageManager* m_ImageManager = nullptr;
+	// todo
 	DescriptorSetManager* m_DescriptorSetManager = nullptr;
 	PipelineManager* m_PipelineManager = nullptr;
 	RenderPassManager* m_RenderPassManager = nullptr;
 
+	// todo
 	// SwapChain中的image数量可能并不等于FrameResourcesCount，所以要单独处理Framebuffer
 	uint32_t m_ImageIndex;
 
@@ -168,6 +174,8 @@ private:
 	VKCommandBuffer* m_UploadCommandBuffer;
 
 	GPUProfilerManager* m_GPUProfilerManager;
+
+	VkFormat m_DepthFormat;
 };
 
 void CreateGfxDevice();

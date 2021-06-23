@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Env.h"
+#include "GLMIncludes.h"
+#include "NonCopyable.h"
 
 #if defined(_WIN32)
 
@@ -11,7 +12,7 @@
 #define KEY_Q 0x51
 #define KEY_E 0x45
 
-struct InputManager
+struct InputManager : public NonCopyable
 {
 	bool key_W = false;
 	bool key_S = false;
@@ -29,7 +30,7 @@ struct InputManager
 
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
 
-struct InputManager
+struct InputManager : public NonCopyable
 {
 	// ´¥µãÊýÁ¿
 	int count = 0;

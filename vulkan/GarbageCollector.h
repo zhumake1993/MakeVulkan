@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Env.h"
+#include <list>
 #include "NonCopyable.h"
+#include "VKIncludes.h"
 
 class VKResource;
 
@@ -27,7 +28,4 @@ private:
 	std::list<VKResource*> m_PendingResources;
 
 	uint32_t m_FrameIndex = 0;
-
-	VkDevice m_Device = VK_NULL_HANDLE;
-	VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
 };

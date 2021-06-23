@@ -1,19 +1,42 @@
 #pragma once
 
-#include "Env.h"
+#include <vector>
+#include "VKIncludes.h"
 #include "NonCopyable.h"
 
-struct VKSwapChain : public NonCopyable
+namespace vk
 {
-	VKSwapChain(VkPhysicalDevice physicalDevice, VkDevice vkDevice, VkSurfaceKHR vkSurface);
-	virtual ~VKSwapChain();
+	class VKSwapChain : public NonCopyable
+	{
+	public:
 
-	VkSwapchainKHR					swapChain = VK_NULL_HANDLE;
+		VKSwapChain(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device);
+		~VKSwapChain();
 
-	std::vector<VkImage>			swapChainImages;
-	std::vector<VkImageView>		swapChainImageViews;
+		void CheckQueueSurfaceSupport(VkPhysicalDevice physicalDevice, int index);
 
-private:
+		// todo
+		VkSwapchainKHR& GetSwapChain() { return m_SwapChain; }
+		const VkSwapchainKHR& GetSwapChain() const { return m_SwapChain; }
 
-	VkDevice						device = VK_NULL_HANDLE;
-};
+		void Print();
+
+	private:
+
+		VkSurfaceKHR							m_Surface = VK_NULL_HANDLE;
+		VkSwapchainKHR							m_SwapChain = VK_NULL_HANDLE;
+
+		uint32_t								m_ImageNum;
+		VkSurfaceFormatKHR						m_Format;
+		VkExtent2D								m_Extent;
+		VkImageUsageFlags						m_Usage;
+		VkSurfaceTransformFlagBitsKHR			m_Transform;
+		VkPresentModeKHR						m_PresentMode;
+
+		std::vector<VkImage>					m_SwapChainImages;
+		std::vector<VkImageView>				m_SwapChainImageViews;
+
+		VkInstance								m_Instance = VK_NULL_HANDLE;
+		VkDevice								m_Device = VK_NULL_HANDLE;
+	};
+}
