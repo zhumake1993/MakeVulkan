@@ -1,5 +1,6 @@
 #include "GfxTypes.h"
 #include "Tools.h"
+#include "Log.h"
 
 VkFormat VertexChannelToFormat(VertexChannel channel)
 {
@@ -57,8 +58,7 @@ uint32_t ShaderDataTypeToSize(ShaderDataType type)
 		return 1 * 4;
 		break;
 	default:
-		LOG("wrong UniformDataType");
-		EXIT;
+		LOGE("wrong UniformDataType");
 		return 0;
 	}
 }

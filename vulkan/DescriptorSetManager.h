@@ -1,13 +1,15 @@
 #pragma once
 
-#include "Env.h"
+#include "VKIncludes.h"
 #include "NonCopyable.h"
 #include "VKResource.h"
+#include <list>
+#include <unordered_map>
 
 class DescriptorSetManager : public NonCopyable
 {
 
-	struct DescriptorSet : public VKResource
+	struct DescriptorSet : public vk::VKResource
 	{
 		DescriptorSet() {}
 		~DescriptorSet() {}

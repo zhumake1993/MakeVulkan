@@ -11,7 +11,7 @@
 #include "ShaderData.h"
 #include "Imgui.h"
 #include "DeviceProperties.h"
-#include "Settings.h"
+#include "GlobalSettings.h"
 
 // Place the least frequently changing descriptor sets near the start of the pipeline layout, and place the descriptor sets representing the most frequently changing resources near the end. 
 // When pipelines are switched, only the descriptor set bindings that have been invalidated will need to be updated and the remainder of the descriptor set bindings will remain in place.
@@ -30,26 +30,6 @@ Example::~Example()
 
 void Example::Init()
 {
-	/*m_DummyShader = new Shader("DummyShader");
-
-	GpuParameters parameters;
-	{
-		GpuParameters::UniformParameter uniform("Global", 0, VK_SHADER_STAGE_VERTEX_BIT);
-		uniform.valueParameters.emplace_back("Time", kShaderDataFloat4);
-		parameters.uniformParameters.push_back(uniform);
-	}
-	{
-		GpuParameters::UniformParameter uniform("PerView", 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-		uniform.valueParameters.emplace_back("MatrixView", kShaderDataFloat4x4);
-		uniform.valueParameters.emplace_back("MatrixProj", kShaderDataFloat4x4);
-		uniform.valueParameters.emplace_back("EyePos", kShaderDataFloat4);
-		parameters.uniformParameters.push_back(uniform);
-	}
-
-	m_DummyShader->CreateGpuProgram(parameters);*/
-
-	
-
 }
 
 void Example::Release()
@@ -123,9 +103,11 @@ Attachment * Example::CreateAttachment(int imageTypeMask, VkFormat format, uint3
 {
 	if (imageTypeMask & kImageSwapChainBit)
 	{
-		format = GetDeviceProperties().ScFormat.format;
-		width = windowWidth;
-		height = windowHeight;
+		format = GetGfxDevice().GetSwapchainImage();
+
+		Extent2D extent = GetGfxDevice().GetSwapChainExtent();
+		width = extent.width;
+		height = extent.height;
 	}
 
 	return new Attachment(imageTypeMask, format, width, height);

@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Env.h"
+#include "VKIncludes.h"
 #include "NonCopyable.h"
 #include "VKResource.h"
 #include "GfxTypes.h"
+#include <unordered_map>
 
 class VKGpuProgram;
 
@@ -74,7 +75,7 @@ struct PipelineHash
 class PipelineManager : public NonCopyable
 {
 
-	struct Pipeline : public VKResource
+	struct Pipeline : public vk::VKResource
 	{
 		Pipeline() {}
 		~Pipeline() {}

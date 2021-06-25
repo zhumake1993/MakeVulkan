@@ -1,12 +1,109 @@
 #include "VKBuffer.h"
 #include "VKTools.h"
 #include "Tools.h"
+#include "DeviceProperties.h"
+#include "VKCommandBuffer.h"
 
 namespace vk
 {
 	// ===============================================================================
 	// BufferResource
 	// ===============================================================================
+
+	BufferResource::BufferResource(VkDevice device, MemoryAllocator& allocator, VkBuffer buffer, Memory memory)
+		: m_Device(device)
+		, m_Allocator(allocator)
+		, m_Buffer(buffer)
+		, m_Memory(memory)
+	{
+	}
+
+	BufferResource::~BufferResource()
+	{
+		vkDestroyBuffer(m_Device, m_Buffer, nullptr);
+		m_Allocator.Free(m_Memory);
+	}
+
+	VkBuffer BufferResource::GetBuffer()
+	{
+		return m_Buffer;
+	}
+
+	VkBuffer BufferResource::AccessBuffer()
+	{
+		Use();
+
+		return m_Buffer;
+	}
+
+	void BufferResource::Update(void * data, uint64_t offset, uint64_t size, VKCommandBuffer* cmdBuffer, uint64_t frameIndex, BufferManager* bufferManager)
+	{
+		if (m_Memory.flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+		{
+			memcpy(static_cast<char*>(m_Memory.mapped) + offset, data, size);
+
+			Flush(offset, size);
+		}
+		else
+		{
+			BufferResource* stagingBuffer = bufferManager->CreateStagingBufferResource(size);
+			stagingBuffer->Update(data, offset, size);
+
+			cmdBuffer->Begin();
+
+			VkBufferCopy bufferCopyInfo = {};
+			bufferCopyInfo.srcOffset = 0;
+			bufferCopyInfo.dstOffset = offset;
+			bufferCopyInfo.size = size;
+			cmdBuffer->CopyBuffer(stagingBuffer->GetBuffer(), m_Buffer, bufferCopyInfo);
+
+			// todo
+			// 经测试发现没有这一步也没问题（许多教程也的确没有这一步）
+			// 个人认为是因为调用了DeviceWaitIdle
+			//vkCmdPipelineBarrier
+
+			cmdBuffer->End();
+		}
+	}
+
+	void BufferResource::Flush(VkDeviceSize offset, VkDeviceSize size)
+	{
+		if ((m_Memory.flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0)
+		{
+			VkMappedMemoryRange range = MakeMappedMemoryRange(offset, size);
+
+			vkFlushMappedMemoryRanges(m_Device, 1, &range);
+		}
+	}
+
+	void BufferResource::Invalidate(VkDeviceSize offset, VkDeviceSize size)
+	{
+		if ((m_Memory.flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0)
+		{
+			VkMappedMemoryRange range = MakeMappedMemoryRange(offset, size);
+
+			vkInvalidateMappedMemoryRanges(m_Device, 1, &range);
+		}
+	}
+
+	VkMappedMemoryRange BufferResource::MakeMappedMemoryRange(VkDeviceSize offset, VkDeviceSize size)
+	{
+		VkMappedMemoryRange range = {};
+		range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+		range.pNext = nullptr;
+		range.memory = m_Memory.memory;
+		range.offset = m_Memory.offset + offset;
+
+		if (size = VK_WHOLE_SIZE)
+			range.size = m_Memory.size - offset;
+		else
+			range.size = size;
+
+		ASSERT(range.offset % GetDeviceProperties().deviceProperties.limits.nonCoherentAtomSize == 0);
+		ASSERT(range.size % GetDeviceProperties().deviceProperties.limits.nonCoherentAtomSize == 0);
+
+		return range;
+	}
 
 	// ===============================================================================
 	// VulkanBuffer
@@ -21,56 +118,29 @@ namespace vk
 
 	VulkanBuffer::~VulkanBuffer()
 	{
-		
+		m_BufferResource->Release();
 	}
 
-	void VulkanBuffer::Update(void * data, uint64_t offset, uint64_t size)
+	VkBuffer VulkanBuffer::GetBuffer()
 	{
-		// start
-		if (vkBuffer->InUse())
+		return m_BufferResource->GetBuffer();
+	}
+
+	VkBuffer VulkanBuffer::AccessBuffer()
+	{
+		return m_BufferResource->AccessBuffer();
+	}
+
+	void VulkanBuffer::Update(void* data, uint64_t offset, uint64_t size, VKCommandBuffer* cmdBuffer, uint64_t frameIndex)
+	{
+		if (m_BufferResource->InUse())
 		{
-			m_GarbageCollector->AddResource(vkBuffer);
+			m_BufferResource->Release();
 
-			vkBuffer = m_BufferManager->CreateBuffer(vkBuffer->size, vkBuffer->usage, vkBuffer->memoryProperty);
-
-			bufferImpl->SetBuffer(vkBuffer);
+			m_BufferResource = CreateBufferResource();
 		}
 
-		if (vkBuffer->memoryProperty & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-		{
-			VKBuffer* stagingBuffer = m_BufferManager->GetStagingBuffer();
-			stagingBuffer->Update(data, 0, size);
-
-			m_UploadCommandBuffer->Begin();
-
-			VkBufferCopy bufferCopyInfo = {};
-			bufferCopyInfo.srcOffset = 0;
-			bufferCopyInfo.dstOffset = offset;
-			bufferCopyInfo.size = size;
-			m_UploadCommandBuffer->CopyBuffer(stagingBuffer->buffer, vkBuffer->buffer, bufferCopyInfo);
-
-			// 经测试发现没有这一步也没问题（许多教程也的确没有这一步）
-			// 个人认为是因为调用了DeviceWaitIdle
-			//vkCmdPipelineBarrier
-
-			m_UploadCommandBuffer->End();
-
-			VkSubmitInfo submitInfo = {};
-			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-			submitInfo.pNext = nullptr;
-			submitInfo.waitSemaphoreCount = 0;
-			submitInfo.pWaitSemaphores = nullptr;
-			submitInfo.pWaitDstStageMask = nullptr;
-			submitInfo.commandBufferCount = 1;
-			submitInfo.pCommandBuffers = &m_UploadCommandBuffer->commandBuffer;
-			submitInfo.signalSemaphoreCount = 0;
-			submitInfo.pSignalSemaphores = nullptr;
-			VK_CHECK_RESULT(vkQueueSubmit(m_VKContex->queue, 1, &submitInfo, VK_NULL_HANDLE));
-		}
-		else
-		{
-			vkBuffer->Update(data, offset, size);
-		}
+		m_BufferResource->Update(data, offset, size);
 	}
 
 	BufferResource * VulkanBuffer::CreateBufferResource()
@@ -155,6 +225,16 @@ namespace vk
 		// todo：BufferView
 		// 用于computer buffer
 
-		return new BufferResource();
+		return new BufferResource(m_Device, m_Allocator, buffer, memory);
+	}
+
+	BufferResource * BufferManager::CreateStagingBufferResource(size_t size)
+	{
+		BufferResource* stagingBuffer = CreateBufferResource(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+
+		stagingBuffer->Use();
+		stagingBuffer->Release();
+
+		return stagingBuffer;
 	}
 }

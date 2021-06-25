@@ -1,7 +1,23 @@
 #pragma once
 
-#include "Env.h"
-#include "Log.h"
+#include "VKIncludes.h"
+#include <vector>
+
+struct Extent2D
+{
+	Extent2D(float _width, float _height) :width(_width), height(_height) {}
+	float width;
+	float height;
+};
+
+enum ImageFormat
+{
+	kImageFormat
+};
+
+
+
+
 
 struct Color
 {

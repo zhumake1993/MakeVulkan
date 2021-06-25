@@ -7,39 +7,38 @@
 #include "VKMemory.h"
 #include "GfxTypes.h"
 
+class VKCommandBuffer;
+
 namespace vk
 {
 	class BufferManager;
 
 	class BufferResource : public VKResource
 	{
-		/*VKBuffer(VkDevice vkDevice, VkDeviceSize vkSize, VkBufferUsageFlags vkUsage, VkMemoryPropertyFlags vkMemoryProperty) :
-			device(vkDevice), size(vkSize), usage(vkUsage), memoryProperty(vkMemoryProperty)
-		{
-		}
-		virtual ~VKBuffer()
-		{
-			vkDestroyBuffer(device, buffer, nullptr);
-			vkFreeMemory(device, memory, nullptr);
-		}
+	public:
 
-		void Map(VkDeviceSize offset = 0, VkDeviceSize size = VK_WHOLE_SIZE);
-		void Unmap();
+		BufferResource(VkDevice device, MemoryAllocator& allocator, VkBuffer buffer, Memory memory);
+		virtual ~BufferResource();
 
-		void Update(void * data, VkDeviceSize offset, VkDeviceSize size);
+		VkBuffer GetBuffer();
+
+		VkBuffer AccessBuffer();
+
+		void Update(void* data, uint64_t offset, uint64_t size, VKCommandBuffer* cmdBuffer = nullptr, uint64_t frameIndex = 0, BufferManager* bufferManager = nullptr);
 
 		void Flush(VkDeviceSize offset = 0, VkDeviceSize size = VK_WHOLE_SIZE);
 		void Invalidate(VkDeviceSize offset = 0, VkDeviceSize size = VK_WHOLE_SIZE);
 
-		VkDeviceSize size;
-		VkBufferUsageFlags usage;
-		VkMemoryPropertyFlags memoryProperty;
+	private:
 
-		VkBuffer buffer = VK_NULL_HANDLE;
-		VkDeviceMemory memory = VK_NULL_HANDLE;
-		void* mappedPointer = nullptr;
+		VkMappedMemoryRange MakeMappedMemoryRange(VkDeviceSize offset, VkDeviceSize size);
 
-		VkDevice device = VK_NULL_HANDLE;*/
+	private:
+
+		VkDevice m_Device;
+		MemoryAllocator& m_Allocator;
+		VkBuffer m_Buffer;
+		Memory m_Memory;
 	};
 
 	class VulkanBuffer : public GfxBuffer
@@ -50,7 +49,11 @@ namespace vk
 		VulkanBuffer(BufferManager* bufferManager, GfxBufferUsage bufferUsage, GfxBufferMode bufferMode, uint64_t size);
 		virtual ~VulkanBuffer();
 
-		void Update(void* data, uint64_t offset, uint64_t size);
+		VkBuffer GetBuffer();
+
+		VkBuffer AccessBuffer();
+
+		void Update(void* data, uint64_t offset, uint64_t size, VKCommandBuffer* cmdBuffer, uint64_t frameIndex);
 
 	private:
 
@@ -70,6 +73,7 @@ namespace vk
 		virtual ~BufferManager();
 
 		BufferResource * CreateBufferResource(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memFlags);
+		BufferResource * CreateStagingBufferResource(size_t size);
 
 	private:
 

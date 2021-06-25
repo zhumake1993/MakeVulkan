@@ -3,6 +3,7 @@
 #include "VKIncludes.h"
 #include "NonCopyable.h"
 #include "MkArray.h"
+#include <list>
 
 namespace vk
 {

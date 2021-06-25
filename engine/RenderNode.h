@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Env.h"
 #include "Transform.h"
+#include <string>
 
 class Mesh;
 class Material;

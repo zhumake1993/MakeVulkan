@@ -241,6 +241,8 @@ void Application::LoadVulkan()
 
 void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	auto& inputManager = GetInputManager();
+
 	switch (uMsg)
 	{
 	case WM_CLOSE:

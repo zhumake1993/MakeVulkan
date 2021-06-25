@@ -4,7 +4,7 @@
 #include "GlobalSettings.h"
 
 #include "VKTools.h"
-#include "VKFrame.h"
+#include "VKFence.h"
 
 #include "VKContex.h"
 #include "VKSwapChain.h"
@@ -14,7 +14,7 @@
 
 #include "VKCommandPool.h"
 
-
+#include "VKFormat.h"
 
 #include "VKCommandBuffer.h"
 
@@ -61,7 +61,7 @@ GfxDevice::GfxDevice()
 	m_VKContex->Print();
 	m_VKSwapChain->Print();
 
-	m_GarbageCollector = new GarbageCollector();
+	m_GarbageCollector = new vk::GarbageCollector();
 
 	// Memory
 	VkDeviceSize finalMemoryAlignment = gs.memoryAlignment;
@@ -222,17 +222,34 @@ void GfxDevice::QueuePresent()
 	}
 }
 
+ImageFormat GfxDevice::GetSwapChainFormat()
+{
+	VkSurfaceFormatKHR sf = m_VKSwapChain->GetSurfaceFormat();
+	return vk::VkFormatToImageFormat(sf.format);
+}
+
+Extent2D GfxDevice::GetSwapChainExtent()
+{
+	VkExtent2D extent = m_VKSwapChain->GetExtent2D();
+	return Extent2D(extent.width, extent.height);
+}
+
+ImageFormat GfxDevice::GetDepthFormat()
+{
+	return vk::VkFormatToImageFormat(m_DepthFormat);
+}
+
 void GfxDevice::Update()
 {
 	PROFILER(GfxDevice_Update);
 
 	m_DescriptorSetManager->Update();
 	m_PipelineManager->Update();
-	m_GarbageCollector->Update();
+	m_GarbageCollector->GarbageCollect();
 
 	m_GPUProfilerManager->Update();
 
-	UpdateFrameIndex();
+	vk::GetFrameManager().IncreaseFrameIndex();
 	m_FrameResourceIndex = (m_FrameResourceIndex + 1) % FrameResourcesCount;
 }
 
@@ -284,26 +301,26 @@ void GfxDevice::UpdateBuffer(GfxBuffer * buffer, void * data, uint64_t offset, u
 {
 	auto vulkanBuffer = static_cast<vk::VulkanBuffer*>(buffer);
 
-	vulkanBuffer->Update(data, offset, size);
+	vulkanBuffer->Update(data, offset, size, m_UploadCommandBuffer, vk::GetFrameManager().GetFrameIndex());
 
-	// todo
+	// todo£ºµÍÐ§
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pNext = nullptr;
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = nullptr;
+	submitInfo.pWaitDstStageMask = nullptr;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &m_UploadCommandBuffer->commandBuffer;
+	submitInfo.signalSemaphoreCount = 0;
+	submitInfo.pSignalSemaphores = nullptr;
+	VK_CHECK_RESULT(vkQueueSubmit(m_VKContex->queue, 1, &submitInfo, VK_NULL_HANDLE));
 	DeviceWaitIdle();
 }
 
-void GfxDevice::FlushBuffer(Buffer * buffer)
+void GfxDevice::DeleteBuffer(GfxBuffer * buffer)
 {
-	BufferImpl* bufferImpl = static_cast<BufferImpl*>(buffer);
-
-	VKBuffer* vkBuffer = bufferImpl->GetBuffer();
-
-	ASSERT(vkBuffer->memoryProperty == VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, "only host visible buffer needs flush");
-
-	vkBuffer->Flush();
-}
-
-void GfxDevice::ReleaseBuffer(Buffer * buffer)
-{
-	m_GarbageCollector->AddResource(static_cast<BufferImpl*>(buffer)->GetBuffer());
+	RELEASE(static_cast<vk::VulkanBuffer*>(buffer));
 }
 
 Image * GfxDevice::CreateImage(int imageTypeMask, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, float maxAnisotropy)
@@ -371,7 +388,7 @@ Image * GfxDevice::GetSwapchainImage()
 
 	imageVulkan->m_ImageTypeMask = kImageSwapChainBit;
 	imageVulkan->m_Image = new VKImage(VK_NULL_HANDLE);
-	imageVulkan->m_Image->view = m_VKSwapChain->swapChainImageViews[m_ImageIndex];
+	imageVulkan->m_Image->view = m_VKSwapChain->GetImageView(m_ImageIndex);
 
 	return imageVulkan;
 }
@@ -384,8 +401,7 @@ void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size, const std
 
 	ASSERT(imageVulkan->m_ImageTypeMask & kImageTransferDstBit, "kImageTransferDst should be included.");
 
-	VKBuffer* stagingBuffer = m_BufferManager->GetStagingBuffer();
-
+	vk::BufferResource* stagingBuffer = m_BufferManager->CreateStagingBufferResource(size);
 	stagingBuffer->Update(data, 0, size);
 
 	m_UploadCommandBuffer->Begin();
@@ -393,7 +409,7 @@ void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size, const std
 	m_UploadCommandBuffer->ImageMemoryBarrier(imageVulkan->m_Image->image, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
 		0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageVulkan->m_MipLevels, imageVulkan->m_LayerCount, imageVulkan->m_FaceCount);
 
-	m_UploadCommandBuffer->CopyBufferToImage(stagingBuffer->buffer, imageVulkan->m_Image->image, imageVulkan->m_Width, imageVulkan->m_Height, offsets);
+	m_UploadCommandBuffer->CopyBufferToImage(stagingBuffer->GetBuffer(), imageVulkan->m_Image->image, imageVulkan->m_Width, imageVulkan->m_Height, offsets);
 
 	m_UploadCommandBuffer->ImageMemoryBarrier(imageVulkan->m_Image->image, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 		VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, imageVulkan->m_MipLevels, imageVulkan->m_LayerCount, imageVulkan->m_FaceCount);
@@ -476,7 +492,7 @@ void GfxDevice::BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, std:
 	m_RenderPassManager->ReleaseRenderPass(m_CurrentRenderPass->GetKey(), m_CurrentRenderPass->m_RenderPass);
 
 	framebuffer->Use();
-	m_GarbageCollector->AddResource(framebuffer);
+	m_GarbageCollector->Add(framebuffer);
 }
 
 void GfxDevice::NextSubpass()
@@ -518,10 +534,10 @@ void GfxDevice::BindUniformBuffer(GpuProgram * gpuProgram, int set, int binding,
 
 	if (size > 0)
 	{
-		VKBuffer* vkBuffer = m_BufferManager->CreateTempBuffer(size);
-		vkBuffer->Update(data, 0, size);
+		vk::BufferResource* stagingBuffer = m_BufferManager->CreateStagingBufferResource(size);
+		stagingBuffer->Update(data, 0, size);
 
-		UpdateDescriptorSetBuffer(descriptorSet, binding, vkBuffer);
+		UpdateDescriptorSetBuffer(descriptorSet, binding, stagingBuffer->GetBuffer());
 
 		m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, vkGpuProgram->GetPipelineLayout(), set, descriptorSet, { 0 });
 	}
@@ -552,12 +568,10 @@ void GfxDevice::BindMaterial(GpuProgram * gpuProgram, MaterialBindData & data)
 	
 	for (auto& uniform : data.uniformBufferBindings)
 	{
-		BufferImpl* bufferImpl = static_cast<BufferImpl*>(uniform.buffer);
-		VKBuffer* vkBuffer = bufferImpl->GetBuffer();
+		vk::VulkanBuffer* vulkanBuffer = static_cast<vk::VulkanBuffer*>(uniform.buffer);
+		VkBuffer buffer = vulkanBuffer->AccessBuffer();
 
-		ASSERT(vkBuffer->usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, "not uniform buffer");
-
-		UpdateDescriptorSetBuffer(descriptorSet, uniform.binding, vkBuffer);
+		UpdateDescriptorSetBuffer(descriptorSet, uniform.binding, buffer);
 
 		offsets.push_back(0);
 	}
@@ -577,21 +591,18 @@ void GfxDevice::BindMaterial(GpuProgram * gpuProgram, MaterialBindData & data)
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, vkGpuProgram->GetPipelineLayout(), 2, descriptorSet, offsets);
 }
 
-void GfxDevice::BindMeshBuffer(Buffer * vertexBuffer, Buffer * indexBuffer, VertexDescription * vertexDescription, VkIndexType indexType)
+void GfxDevice::BindMeshBuffer(GfxBuffer * vertexBuffer, GfxBuffer * indexBuffer, VertexDescription * vertexDescription, VkIndexType indexType)
 {
 	VkPipeline pipeline = m_PipelineManager->CreatePipeline(vertexDescription);
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 	if (vertexDescription)
 	{
-		VKBuffer* vBuffer = static_cast<BufferImpl*>(vertexBuffer)->GetBuffer();
-		VKBuffer* iBuffer = static_cast<BufferImpl*>(indexBuffer)->GetBuffer();
+		VkBuffer vBuffer = static_cast<vk::VulkanBuffer*>(vertexBuffer)->AccessBuffer();
+		VkBuffer iBuffer = static_cast<vk::VulkanBuffer*>(indexBuffer)->AccessBuffer();
 
-		m_FrameResources[m_FrameResourceIndex].commandBuffer->BindVertexBuffer(0, vBuffer->buffer);
-		m_FrameResources[m_FrameResourceIndex].commandBuffer->BindIndexBuffer(iBuffer->buffer, indexType);
-
-		vBuffer->Use();
-		iBuffer->Use();
+		m_FrameResources[m_FrameResourceIndex].commandBuffer->BindVertexBuffer(0, vBuffer);
+		m_FrameResources[m_FrameResourceIndex].commandBuffer->BindIndexBuffer(iBuffer, indexType);
 	}
 }
 
@@ -608,10 +619,10 @@ void GfxDevice::DrawBatch(DrawBatchs & drawBatchs)
 
 	VkDescriptorSet descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerDraw());
 
-	VKBuffer* vkBuffer = m_BufferManager->CreateTempBuffer(drawBatchs.uniformSize);
-	vkBuffer->Update(drawBatchs.uniformData, 0, drawBatchs.uniformSize);
+	vk::BufferResource* stagingBuffer = m_BufferManager->CreateStagingBufferResource(drawBatchs.uniformSize);
+	stagingBuffer->Update(drawBatchs.uniformData, 0, drawBatchs.uniformSize);
 
-	UpdateDescriptorSetBuffer(descriptorSet, drawBatchs.uniformBinding, vkBuffer, 0, drawBatchs.alignedUniformSize);
+	UpdateDescriptorSetBuffer(descriptorSet, drawBatchs.uniformBinding, stagingBuffer->GetBuffer(), 0, drawBatchs.alignedUniformSize);
 
 	// Draw
 	uint32_t uniformOffset = 0;
@@ -627,14 +638,11 @@ void GfxDevice::DrawBatch(DrawBatchs & drawBatchs)
 		m_FrameResources[m_FrameResourceIndex].commandBuffer->BindDescriptorSet(VK_PIPELINE_BIND_POINT_GRAPHICS, vkGpuProgram->GetPipelineLayout(), 3, descriptorSet, { uniformOffset });
 		uniformOffset += static_cast<uint32_t>(drawBatchs.alignedUniformSize);
 
-		VKBuffer* vBuffer = static_cast<BufferImpl*>(drawBuffer.vertexBuffer)->GetBuffer();
-		VKBuffer* iBuffer = static_cast<BufferImpl*>(drawBuffer.indexBuffer)->GetBuffer();
+		VkBuffer vBuffer = static_cast<vk::VulkanBuffer*>(drawBuffer.vertexBuffer)->AccessBuffer();
+		VkBuffer iBuffer = static_cast<vk::VulkanBuffer*>(drawBuffer.indexBuffer)->AccessBuffer();
 
-		m_FrameResources[m_FrameResourceIndex].commandBuffer->BindVertexBuffer(0, vBuffer->buffer);
-		m_FrameResources[m_FrameResourceIndex].commandBuffer->BindIndexBuffer(iBuffer->buffer, drawBuffer.indexType);
-
-		vBuffer->Use();
-		iBuffer->Use();
+		m_FrameResources[m_FrameResourceIndex].commandBuffer->BindVertexBuffer(0, vBuffer);
+		m_FrameResources[m_FrameResourceIndex].commandBuffer->BindIndexBuffer(iBuffer, drawBuffer.indexType);
 
 		m_FrameResources[m_FrameResourceIndex].commandBuffer->DrawIndexed(drawBuffer.indexCount, 1, 0, 0, 0);
 	}
@@ -667,7 +675,7 @@ std::string GfxDevice::GetLastGPUTimeStamp()
 	return m_GPUProfilerManager->GetLastFrameView().ToString();
 }
 
-GarbageCollector * GfxDevice::GetGarbageCollector()
+vk::GarbageCollector * GfxDevice::GetGarbageCollector()
 {
 	return m_GarbageCollector;
 }
@@ -695,8 +703,7 @@ VkFormat GfxDevice::GetSupportedDepthFormat()
 		}
 	}
 
-	LOG("Can not find supported depth format");
-	EXIT;
+	LOGE("Can not find supported depth format");
 	return VK_FORMAT_UNDEFINED;
 }
 
@@ -751,10 +758,10 @@ VkFence GfxDevice::CreateVKFence(bool signaled)
 	return fence;
 }
 
-void GfxDevice::UpdateDescriptorSetBuffer(VkDescriptorSet descriptorSet, uint32_t binding, VKBuffer * vkBuffer, uint64_t offset, uint64_t range)
+void GfxDevice::UpdateDescriptorSetBuffer(VkDescriptorSet descriptorSet, uint32_t binding, VkBuffer buffer, uint64_t offset, uint64_t range)
 {
 	VkDescriptorBufferInfo bufferInfo;
-	bufferInfo.buffer = vkBuffer->buffer;
+	bufferInfo.buffer = buffer;
 	bufferInfo.offset = offset;
 	bufferInfo.range = range;
 
@@ -769,8 +776,6 @@ void GfxDevice::UpdateDescriptorSetBuffer(VkDescriptorSet descriptorSet, uint32_
 	writeDescriptorSet.pBufferInfo = &bufferInfo;
 
 	vkUpdateDescriptorSets(m_VKContex->device, 1, &writeDescriptorSet, 0, nullptr);
-
-	vkBuffer->Use();
 }
 
 void GfxDevice::UpdateDescriptorSetImage(VkDescriptorSet descriptorSet, uint32_t binding, ImageVulkan * imageVulkan)

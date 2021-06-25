@@ -19,6 +19,11 @@ namespace vk
 		VkSwapchainKHR& GetSwapChain() { return m_SwapChain; }
 		const VkSwapchainKHR& GetSwapChain() const { return m_SwapChain; }
 
+		VkSurfaceFormatKHR GetSurfaceFormat() { return m_SurfaceFormat; }
+		VkExtent2D GetExtent2D() { return m_Extent; }
+
+		VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }
+
 		void Print();
 
 	private:
@@ -27,7 +32,7 @@ namespace vk
 		VkSwapchainKHR							m_SwapChain = VK_NULL_HANDLE;
 
 		uint32_t								m_ImageNum;
-		VkSurfaceFormatKHR						m_Format;
+		VkSurfaceFormatKHR						m_SurfaceFormat;
 		VkExtent2D								m_Extent;
 		VkImageUsageFlags						m_Usage;
 		VkSurfaceTransformFlagBitsKHR			m_Transform;

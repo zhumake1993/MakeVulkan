@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Env.h"
+#include "VKIncludes.h"
 #include "NonCopyable.h"
 #include "Image.h"
 #include "VKResource.h"
+#include <unordered_map>
 
-class VKImage : public VKResource
+class VKImage : public vk::VKResource
 {
 public:
 

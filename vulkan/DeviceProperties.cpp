@@ -60,6 +60,7 @@ void DeviceProperties::Print()
 	LOG("\tminTexelBufferOffsetAlignment : %d\n", static_cast<int>(deviceProperties.limits.minTexelBufferOffsetAlignment));
 	LOG("\tminStorageBufferOffsetAlignment : %d\n", static_cast<int>(deviceProperties.limits.minStorageBufferOffsetAlignment));
 	LOG("\bufferImageGranularity : %d\n", static_cast<int>(deviceProperties.limits.bufferImageGranularity));
+	LOG("\nonCoherentAtomSize : %d\n", static_cast<int>(deviceProperties.limits.nonCoherentAtomSize));
 	LOG("\ttimestampPeriod : %f\n", deviceProperties.limits.timestampPeriod);
 
 	LOG("available device extensions ( %d ):", static_cast<int>(availableDeviceExtensions.size()));

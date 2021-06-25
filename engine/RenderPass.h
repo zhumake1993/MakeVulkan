@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Env.h"
 #include "GfxDeviceObjects.h"
 
 class Image;

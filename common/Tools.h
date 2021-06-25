@@ -1,13 +1,14 @@
 #pragma once
 
-#include "Env.h"
 #include "Log.h"
+#include <vector>
 
+// pointer有可能是一个表达式，需要先转换成一个变量
 #define RELEASE(pointer)	\
 {							\
-	assert(pointer);		\
-	delete pointer;			\
-	pointer = nullptr;		\
+	auto ptr = pointer;		\
+	assert(ptr);			\
+	delete ptr;				\
 }
 
 #define ASSERT(x) assert(x);

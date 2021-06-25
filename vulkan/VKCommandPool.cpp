@@ -1,5 +1,5 @@
 #include "VKCommandPool.h"
-#include "VulkanTools.h"
+#include "VKTools.h"
 
 VKCommandPool::VKCommandPool(VkDevice vkDevice, VkCommandPoolCreateFlags flags, uint32_t queueFamilyIndex) :
 	device(vkDevice)

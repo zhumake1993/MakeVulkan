@@ -1,8 +1,9 @@
 #pragma once
 
-#include "Env.h"
+#include "VKIncludes.h"
 #include "NonCopyable.h"
-#include "Settings.h"
+#include "GlobalSettings.h"
+#include <list>
 
 struct VKCommandBuffer;
 

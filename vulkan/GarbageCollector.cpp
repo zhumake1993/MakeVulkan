@@ -3,54 +3,41 @@
 #include "Tools.h"
 #include "VKResource.h"
 
-GarbageCollector::GarbageCollector()
+namespace vk
 {
-}
-
-GarbageCollector::~GarbageCollector()
-{
-	for (auto itr = m_NewResources.begin(); itr != m_NewResources.end(); itr++)
+	GarbageCollector::GarbageCollector()
 	{
-		RELEASE(*itr);
 	}
-	m_NewResources.clear();
 
-	for (auto itr = m_PendingResources.begin(); itr != m_PendingResources.end(); itr++)
+	GarbageCollector::~GarbageCollector()
 	{
-		RELEASE(*itr);
-	}
-	m_PendingResources.clear();
-}
-
-void GarbageCollector::Update()
-{
-	for (auto itr = m_PendingResources.begin(); itr != m_PendingResources.end();)
-	{
-		if ((*itr)->InUse())
-		{
-			itr++;
-		}
-		else
+		for (auto itr = m_Resources.begin(); itr != m_Resources.end(); itr++)
 		{
 			RELEASE(*itr);
-			itr = m_PendingResources.erase(itr);
 		}
+		m_Resources.clear();
 	}
 
-	// 新的Resource放在list前部
-	m_PendingResources.splice(m_PendingResources.begin(), m_NewResources);
-	m_NewResources.clear();
+	void GarbageCollector::Add(VKResource * resource)
+	{
+		m_Resources.push_back(resource);
+	}
 
-	m_FrameIndex++;
-}
+	void GarbageCollector::GarbageCollect()
+	{
+		std::list<VKResource*>::iterator itr;
+		for (itr = m_Resources.begin(); itr != m_Resources.end(); ++itr)
+		{
+			if (!(*itr)->InUse())
+			{
+				RELEASE(*itr);
+			}
+			else
+			{
+				break;
+			}
+		}
 
-uint32_t GarbageCollector::GetFrameIndex()
-{
-	return m_FrameIndex;
-}
-
-void GarbageCollector::AddResource(VKResource * resource)
-{
-	ASSERT(resource, "GarbageCollector adds nullptr.");
-	m_NewResources.push_back(resource);
+		m_Resources.erase(m_Resources.begin(), itr);
+	}
 }

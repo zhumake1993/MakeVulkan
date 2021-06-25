@@ -46,4 +46,4 @@ struct InputManager : public NonCopyable
 
 #endif
 
-extern InputManager inputManager;
+InputManager& GetInputManager();

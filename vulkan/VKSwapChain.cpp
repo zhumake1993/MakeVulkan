@@ -36,7 +36,7 @@ uint32_t GetSwapChainImageNum()
 	return imageCount;
 }
 
-VkSurfaceFormatKHR GetSwapChainFormat()
+VkSurfaceFormatKHR GetSwapChainSurfaceFormat()
 {
 	auto& dp = GetDeviceProperties();
 
@@ -197,7 +197,7 @@ vk::VKSwapChain::VKSwapChain(VkInstance instance, VkPhysicalDevice physicalDevic
 	CheckSurfaceStats(physicalDevice, m_Surface);
 
 	m_ImageNum = GetSwapChainImageNum();
-	m_Format = GetSwapChainFormat();
+	m_SurfaceFormat = GetSwapChainSurfaceFormat();
 	m_Extent = GetSwapChainExtent();
 	m_Usage = GetSwapChainUsageFlags();
 	m_Transform = GetSwapChainTransform();
@@ -227,8 +227,8 @@ vk::VKSwapChain::VKSwapChain(VkInstance instance, VkPhysicalDevice physicalDevic
 	swapchainCI.flags = 0;
 	swapchainCI.surface = m_Surface;
 	swapchainCI.minImageCount = m_ImageNum;
-	swapchainCI.imageFormat = m_Format.format;
-	swapchainCI.imageColorSpace = m_Format.colorSpace;
+	swapchainCI.imageFormat = m_SurfaceFormat.format;
+	swapchainCI.imageColorSpace = m_SurfaceFormat.colorSpace;
 	swapchainCI.imageExtent = m_Extent;
 	swapchainCI.imageArrayLayers = 1;
 	swapchainCI.imageUsage = m_Usage;
@@ -261,7 +261,7 @@ vk::VKSwapChain::VKSwapChain(VkInstance instance, VkPhysicalDevice physicalDevic
 		colorAttachmentView.flags = 0;
 		colorAttachmentView.image = m_SwapChainImages[i];
 		colorAttachmentView.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		colorAttachmentView.format = m_Format.format;
+		colorAttachmentView.format = m_SurfaceFormat.format;
 		colorAttachmentView.components = {
 			VK_COMPONENT_SWIZZLE_R,
 			VK_COMPONENT_SWIZZLE_G,
@@ -306,7 +306,7 @@ void vk::VKSwapChain::Print()
 	LOG("[VKSwapChain]\n");
 
 	LOG("image num: %d\n", m_ImageNum);
-	LOG("format: %d %d\n", m_Format.format, m_Format.colorSpace);
+	LOG("surface format: %d %d\n", m_SurfaceFormat.format, m_SurfaceFormat.colorSpace);
 	LOG("extent: %d %d\n", m_Extent.width, m_Extent.height);
 	LOG("usage: %d\n", m_Usage);
 	LOG("transform: %d\n", m_Transform);

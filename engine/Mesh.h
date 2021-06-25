@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Env.h"
 #include "GfxTypes.h"
+#include <string>
+#include <vector>
 
-class Buffer;
+class GfxBuffer;
 
 class Mesh
 {
@@ -24,8 +25,8 @@ public:
 
 	void UploadToGPU();
 
-	Buffer* GetVertexBuffer();
-	Buffer* GetIndexBuffer();
+	GfxBuffer* GetVertexBuffer();
+	GfxBuffer* GetIndexBuffer();
 	uint32_t GetIndexCount();
 	VkIndexType GetIndexType();
 
@@ -47,8 +48,8 @@ private:
 	std::vector<float> m_Vertices;
 	std::vector<uint32_t> m_Indices;
 
-	Buffer* m_VertexBuffer = nullptr;
-	Buffer* m_IndexBuffer = nullptr;
+	GfxBuffer* m_VertexBuffer = nullptr;
+	GfxBuffer* m_IndexBuffer = nullptr;
 
 	VkIndexType m_IndexType = VK_INDEX_TYPE_UINT32;
 };

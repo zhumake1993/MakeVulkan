@@ -2,28 +2,35 @@
 
 #include "NonCopyable.h"
 
-class GarbageCollector;
-
-class VKResource : public NonCopyable
+namespace vk
 {
-public:
+	class GarbageCollector;
 
-	VKResource();
-	virtual ~VKResource();
+	class VKResource : public NonCopyable
+	{
+	public:
 
-	bool InUse();
-	void Use();
+		VKResource();
+		virtual ~VKResource();
 
-	void Release();
+		bool InUse();
+		void Use();
 
-private:
+		void Release();
 
-	// 在该帧被使用
-	int m_FrameIndex = -999;
+	private:
 
-	GarbageCollector* m_GarbageCollector;
-};
+		// 在该帧被使用
+		int m_FrameIndex = -999;
 
+		GarbageCollector* m_GarbageCollector;
+	};
+}
+
+
+//todo
+#include <unordered_map>
+#include <list>
 template <class Key, class Resource, class KeyHash>
 class ResourcePool
 {

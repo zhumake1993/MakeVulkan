@@ -1,5 +1,6 @@
 #include "VKCommandBuffer.h"
-#include "VulkanTools.h"
+#include "VKTools.h"
+#include "Tools.h"
 #include "DeviceProperties.h"
 
 VKCommandBuffer::VKCommandBuffer(VkDevice vkDevice, VkCommandPool vkCommandPool, VkCommandBufferLevel level) :

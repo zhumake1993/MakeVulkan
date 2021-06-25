@@ -1,5 +1,6 @@
 #include "VKGpuProgram.h"
-#include "VulkanTools.h"
+#include "VKTools.h"
+#include "Tools.h"
 #include "DeviceProperties.h"
 
 VkDescriptorSetLayout VKGpuProgram::m_DSLGlobal = VK_NULL_HANDLE;

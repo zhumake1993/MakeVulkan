@@ -1,7 +1,7 @@
 #include "Mesh.h"
 #include "Tools.h"
 #include "GfxDevice.h"
-#include "Buffer.h"
+#include "GfxBuffer.h"
 #include <sstream>
 #include <algorithm>
 
@@ -92,21 +92,21 @@ void Mesh::UploadToGPU()
 
 	// Vertex buffer
 	uint64_t vertexBufferSize = static_cast<uint64_t>(m_Vertices.size()) * sizeof(m_Vertices[0]);
-	m_VertexBuffer = device.CreateBuffer(kBufferUsageVertex, kMemoryPropertyDeviceLocal, vertexBufferSize);
+	m_VertexBuffer = device.CreateBuffer(kGfxBufferUsageVertex, kGfxBufferModeDeviceLocal, vertexBufferSize);
 	device.UpdateBuffer(m_VertexBuffer, m_Vertices.data(), 0, vertexBufferSize);
 
 	// Index buffer
 	uint64_t indexBufferSize = static_cast<uint64_t>(m_Indices.size()) * sizeof(uint32_t);
-	m_IndexBuffer = device.CreateBuffer(kBufferUsageIndex, kMemoryPropertyDeviceLocal, indexBufferSize);
+	m_IndexBuffer = device.CreateBuffer(kGfxBufferUsageIndex, kGfxBufferModeDeviceLocal, indexBufferSize);
 	device.UpdateBuffer(m_IndexBuffer, m_Indices.data(), 0, indexBufferSize);
 }
 
-Buffer * Mesh::GetVertexBuffer()
+GfxBuffer * Mesh::GetVertexBuffer()
 {
 	return m_VertexBuffer;
 }
 
-Buffer * Mesh::GetIndexBuffer()
+GfxBuffer * Mesh::GetIndexBuffer()
 {
 	return m_IndexBuffer;
 }

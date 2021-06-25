@@ -1,5 +1,6 @@
 #include "DescriptorSetManager.h"
-#include "VulkanTools.h"
+#include "VKTools.h"
+#include "Tools.h"
 
 DescriptorSetManager::DescriptorSetManager(VkDevice vkDevice) :
 	m_Device(vkDevice)

@@ -16,7 +16,6 @@ struct VKBuffer;
 class VKImage;
 class ImageVulkan;
 
-class GarbageCollector;
 class ImageManager;
 class DescriptorSetManager;
 class PipelineManager;
@@ -42,6 +41,8 @@ namespace vk
 {
 	class VKContex;
 	class VKSwapChain;
+
+	class GarbageCollector;
 	class MemoryAllocator;
 	class BufferManager;
 }
@@ -75,6 +76,10 @@ public:
 	void QueueSubmit();
 	void QueuePresent();
 
+	ImageFormat GetSwapChainFormat();
+	Extent2D GetSwapChainExtent();
+	ImageFormat GetDepthFormat();
+
 	void Update();
 
 	void DeviceWaitIdle();
@@ -88,9 +93,7 @@ public:
 	// Buffer
 	GfxBuffer* CreateBuffer(GfxBufferUsage bufferUsage, GfxBufferMode bufferMode, uint64_t size);
 	void UpdateBuffer(GfxBuffer* buffer, void* data, uint64_t offset, uint64_t size);
-
-	void FlushBuffer(GfxBuffer* buffer);
-	void ReleaseBuffer(GfxBuffer* buffer);
+	void DeleteBuffer(GfxBuffer* buffer);
 
 	Image* CreateImage(int imageTypeMask, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, float maxAnisotropy = 1);
 	Image* GetSwapchainImage();
@@ -112,7 +115,7 @@ public:
 
 	void BindMaterial(GpuProgram* gpuProgram, MaterialBindData& data);
 
-	void BindMeshBuffer(Buffer* vertexBuffer, Buffer* indexBuffer, VertexDescription* vertexDescription, VkIndexType indexType = VK_INDEX_TYPE_UINT32);
+	void BindMeshBuffer(GfxBuffer* vertexBuffer, GfxBuffer* indexBuffer, VertexDescription* vertexDescription, VkIndexType indexType = VK_INDEX_TYPE_UINT32);
 
 	void DrawIndexed(uint32_t indexCount, uint32_t instanceCount = 1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0);
 
@@ -125,7 +128,7 @@ public:
 	void ResolveTimeStamp();
 	std::string GetLastGPUTimeStamp();
 
-	GarbageCollector* GetGarbageCollector();
+	vk::GarbageCollector* GetGarbageCollector();
 
 private:
 
@@ -137,7 +140,7 @@ private:
 
 	VkFence CreateVKFence(bool signaled);
 
-	void UpdateDescriptorSetBuffer(VkDescriptorSet descriptorSet, uint32_t binding, VKBuffer* vkBuffer, uint64_t offset = 0, uint64_t range = VK_WHOLE_SIZE);
+	void UpdateDescriptorSetBuffer(VkDescriptorSet descriptorSet, uint32_t binding, VkBuffer buffer, uint64_t offset = 0, uint64_t range = VK_WHOLE_SIZE);
 	void UpdateDescriptorSetImage(VkDescriptorSet descriptorSet, uint32_t binding, ImageVulkan* imageVulkan);
 	void UpdateDescriptorSetInputAttachment(VkDescriptorSet descriptorSet, uint32_t binding, VkImageView view); // InputAttachmentÖ»ÐèÒªview
 
@@ -146,7 +149,7 @@ private:
 	vk::VKContex* m_VKContex = nullptr;
 	vk::VKSwapChain* m_VKSwapChain = nullptr;
 
-	GarbageCollector* m_GarbageCollector = nullptr;
+	vk::GarbageCollector* m_GarbageCollector = nullptr;
 	vk::MemoryAllocator* m_MemoryAllocator = nullptr;
 	vk::BufferManager* m_BufferManager = nullptr;
 	ImageManager* m_ImageManager = nullptr;
