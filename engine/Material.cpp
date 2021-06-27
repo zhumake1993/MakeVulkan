@@ -5,7 +5,7 @@
 #include "Tools.h"
 #include "ShaderData.h"
 #include "GfxDevice.h"
-#include "Buffer.h"
+#include "GfxBuffer.h"
 
 Material::Material(const std::string& name) :
 	m_Name(name)
@@ -50,7 +50,7 @@ void Material::SetShader(Shader * shader)
 	uint32_t dataSize = m_ShaderData->GetValueDataSize();
 	if (dataSize > 0)
 	{
-		m_UniformBuffer = device.CreateBuffer(kBufferUsageUniform, kMemoryPropertyHostCoherent, dataSize);
+		m_UniformBuffer = device.CreateBuffer(kGfxBufferUsageUniform, kGfxBufferModeHostVisible, dataSize);
 		device.UpdateBuffer(m_UniformBuffer, m_ShaderData->GetValueData(), 0, dataSize);
 	}
 }
@@ -112,7 +112,7 @@ ShaderData * Material::GetShaderData()
 	return m_ShaderData;
 }
 
-Buffer * Material::GetUniformBuffer()
+GfxBuffer * Material::GetUniformBuffer()
 {
 	return m_UniformBuffer;
 }

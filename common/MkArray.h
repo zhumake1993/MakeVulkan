@@ -1,5 +1,7 @@
 #pragma once
 
+#include <assert.h>
+
 // 参考自vkDOOM3
 // 替代C数组，增加了对索引范围的检查
 template<class T_, int numElements >

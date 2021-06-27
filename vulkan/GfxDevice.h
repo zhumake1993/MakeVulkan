@@ -10,7 +10,7 @@
 
 struct VKCommandPool;
 
-struct VKCommandBuffer;
+class VKCommandBuffer;
 class VKRenderPass;
 struct VKBuffer;
 class VKImage;
@@ -76,9 +76,14 @@ public:
 	void QueueSubmit();
 	void QueuePresent();
 
-	ImageFormat GetSwapChainFormat();
+	/*ImageFormat GetSwapChainFormat();
 	Extent2D GetSwapChainExtent();
-	ImageFormat GetDepthFormat();
+	ImageFormat GetDepthFormat();*/
+
+	// todo:temp
+	VkFormat GetSwapChainFormat();
+	VkExtent2D GetSwapChainExtent();
+	VkFormat GetDepthFormat();
 
 	void Update();
 

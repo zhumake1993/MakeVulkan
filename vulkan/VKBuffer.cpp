@@ -140,7 +140,7 @@ namespace vk
 			m_BufferResource = CreateBufferResource();
 		}
 
-		m_BufferResource->Update(data, offset, size);
+		m_BufferResource->Update(data, offset, size, cmdBuffer, frameIndex, m_BufferManager);
 	}
 
 	BufferResource * VulkanBuffer::CreateBufferResource()

@@ -222,21 +222,36 @@ void GfxDevice::QueuePresent()
 	}
 }
 
-ImageFormat GfxDevice::GetSwapChainFormat()
+//ImageFormat GfxDevice::GetSwapChainFormat()
+//{
+//	VkSurfaceFormatKHR sf = m_VKSwapChain->GetSurfaceFormat();
+//	return vk::VkFormatToImageFormat(sf.format);
+//}
+//
+//Extent2D GfxDevice::GetSwapChainExtent()
+//{
+//	VkExtent2D extent = m_VKSwapChain->GetExtent2D();
+//	return Extent2D(extent.width, extent.height);
+//}
+//
+//ImageFormat GfxDevice::GetDepthFormat()
+//{
+//	return vk::VkFormatToImageFormat(m_DepthFormat);
+//}
+
+VkFormat GfxDevice::GetSwapChainFormat()
 {
-	VkSurfaceFormatKHR sf = m_VKSwapChain->GetSurfaceFormat();
-	return vk::VkFormatToImageFormat(sf.format);
+	return m_VKSwapChain->GetSurfaceFormat().format;
 }
 
-Extent2D GfxDevice::GetSwapChainExtent()
+VkExtent2D GfxDevice::GetSwapChainExtent()
 {
-	VkExtent2D extent = m_VKSwapChain->GetExtent2D();
-	return Extent2D(extent.width, extent.height);
+	return m_VKSwapChain->GetExtent2D();
 }
 
-ImageFormat GfxDevice::GetDepthFormat()
+VkFormat GfxDevice::GetDepthFormat()
 {
-	return vk::VkFormatToImageFormat(m_DepthFormat);
+	return m_DepthFormat;
 }
 
 void GfxDevice::Update()
@@ -325,7 +340,7 @@ void GfxDevice::DeleteBuffer(GfxBuffer * buffer)
 
 Image * GfxDevice::CreateImage(int imageTypeMask, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, float maxAnisotropy)
 {
-	ASSERT(!(imageTypeMask & kImageSwapChainBit), "kAttachmentSwapChain should not be included.");
+	ASSERT(!(imageTypeMask & kImageSwapChainBit));
 
 	ImageVulkan* imageVulkan = new ImageVulkan();
 
@@ -399,7 +414,7 @@ void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size, const std
 
 	ImageVulkan* imageVulkan = static_cast<ImageVulkan*>(image);
 
-	ASSERT(imageVulkan->m_ImageTypeMask & kImageTransferDstBit, "kImageTransferDst should be included.");
+	ASSERT(imageVulkan->m_ImageTypeMask & kImageTransferDstBit);
 
 	vk::BufferResource* stagingBuffer = m_BufferManager->CreateStagingBufferResource(size);
 	stagingBuffer->Update(data, 0, size);

@@ -28,7 +28,7 @@ struct GlobalSettings : public NonCopyable
 	uint32_t	windowHeight;
 #endif
 
-	std::string AssetPath;
+	std::string assetPath;
 
 	// Instance
 	std::string								applicationName;

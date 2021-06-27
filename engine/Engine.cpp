@@ -1,9 +1,12 @@
 #include "Engine.h"
+#include "Tools.h"
 #include "GfxDevice.h"
 #include "ProfilerManager.h"
 #include "InputManager.h"
 #include "TimeManager.h"
+#include "RendererScene.h"
 #include "Imgui.h"
+#include "ResourceManager.h"
 
 Engine::Engine()
 {
@@ -24,6 +27,7 @@ void Engine::InitEngine()
 	CreateProfilerManager();
 
 	m_TimeManager = new TimeManager();
+	m_RendererScene = new RendererScene();
 	m_Imgui = new Imgui();
 
 	// 初始化子类
@@ -42,8 +46,9 @@ void Engine::ReleaseEngine()
 	GetProfilerManager().WriteToFile();
 	ReleaseProfilerManager();
 
-	delete m_TimeManager;
-	delete m_Imgui;
+	RELEASE(m_TimeManager);
+	RELEASE(m_RendererScene);
+	RELEASE(m_Imgui);
 
 	// 清理GfxDevice
 	ReleaseGfxDevice();
@@ -65,7 +70,7 @@ void Engine::UpdateEngine()
 	Update();
 
 	// 必须在游戏逻辑更新完之后再更新输入
-	inputManager.Tick();
+	GetInputManager().Tick();
 
 	// 等待Fence
 	device.WaitForPresent();
@@ -81,7 +86,8 @@ void Engine::UpdateEngine()
 	device.QueueSubmit();
 	device.QueuePresent();
 
-	UpdateAfterDraw();
+	// todo
+	GetResourceManager().ReleaseTempAttachment();
 
 	device.Update();
 }

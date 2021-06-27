@@ -2,6 +2,8 @@
 
 #include "NonCopyable.h"
 #include <chrono>
+#include <list>
+#include <vector>
 
 class ProfilerManager : public NonCopyable
 {

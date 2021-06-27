@@ -153,6 +153,8 @@ namespace vk
 		memory.offset = alignedOffset;
 		memory.size = size;
 		memory.chunk = static_cast<void*>(currentChunk);
+
+		return memory;
 	}
 
 	void MemoryBlock::Free(Memory & memory)
@@ -279,6 +281,8 @@ namespace vk
 	Memory MemoryAllocator::AllocateDedicated(int memoryTypeIndex, VkDeviceSize size)
 	{
 		Memory memory = AllocateMemory(m_Device, memoryTypeIndex, size);
+
+		return memory;
 	}
 
 	void MemoryAllocator::Free(Memory & memory)

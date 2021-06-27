@@ -3,6 +3,7 @@
 #include "VKIncludes.h"
 #include "NonCopyable.h"
 #include "GfxTypes.h"
+#include <vector>
 
 struct GpuParameters
 {

@@ -142,7 +142,7 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 	if (parameters.pushConstantSize > 0)
 	{
 		auto& dp = GetDeviceProperties();
-		ASSERT(parameters.pushConstantSize <= dp.deviceProperties.limits.maxPushConstantsSize, "exceed maxPushConstantsSize.");
+		ASSERT(parameters.pushConstantSize <= dp.deviceProperties.limits.maxPushConstantsSize);
 
 		VkPushConstantRange pushConstantRange = {};
 		pushConstantRange.stageFlags = parameters.pushConstantStage;

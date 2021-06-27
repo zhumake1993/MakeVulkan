@@ -3,6 +3,7 @@
 #include "NonCopyable.h"
 
 class TimeManager;
+class RendererScene;
 class Imgui;
 
 class Engine : public NonCopyable
@@ -23,7 +24,6 @@ protected:
 	virtual void Release() = 0;
 	virtual void Update() = 0;
 	virtual void Draw() = 0;
-	virtual void UpdateAfterDraw() = 0;
 
 private:
 
@@ -32,6 +32,7 @@ private:
 protected:
 
 	TimeManager* m_TimeManager = nullptr;
+	RendererScene* m_RendererScene = nullptr;
 	Imgui* m_Imgui = nullptr;
 
 private:

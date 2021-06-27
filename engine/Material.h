@@ -1,12 +1,13 @@
 #pragma once
 
 #include "GpuProgram.h"
+#include "GLMIncludes.h"
 #include <string>
 
 class Shader;
 class TextureBase;
 class ShaderData;
-class Buffer;
+class GfxBuffer;
 
 class Material
 {
@@ -33,7 +34,7 @@ public:
 
 	ShaderData* GetShaderData();
 
-	Buffer* GetUniformBuffer();
+	GfxBuffer* GetUniformBuffer();
 	void UpdateUniformBuffer();
 
 	bool IsDirty();
@@ -51,7 +52,7 @@ private:
 
 	ShaderData* m_ShaderData = nullptr;
 
-	Buffer* m_UniformBuffer = nullptr;
+	GfxBuffer* m_UniformBuffer = nullptr;
 
 	bool m_Dirty = true;
 };

@@ -1,37 +1,22 @@
 #pragma once
 
-#include "VKIncludes.h"
 #include "NonCopyable.h"
 #include <vector>
-#include <string>
+#include "VKIncludes.h"//todo
 
 class Mesh;
 class Texture;
-class Attachment;
 class Shader;
 class Material;
 class RenderNode;
-class Camera;
-class Buffer;
-class Imgui;
-class TimeManager;
-class RenderPass;
+class Attachment;
 
-class Example : public NonCopyable
+class ResourceManager : public NonCopyable
 {
 public:
 
-	Example();
-	virtual ~Example();
-
-	virtual void ConfigDeviceProperties() = 0;
-	virtual void Init();
-	virtual void Release();
-	virtual void Update();
-	virtual void Draw() = 0;
-	void UpdateAfterDraw();
-
-protected:
+	ResourceManager();
+	virtual ~ResourceManager();
 
 	Mesh* CreateMesh(const std::string& name);
 	Texture* CreateTexture(const std::string& name);
@@ -42,26 +27,8 @@ protected:
 	Attachment* CreateAttachment(int imageTypeMask, VkFormat format = VK_FORMAT_UNDEFINED, uint32_t width = 0, uint32_t height = 0); // kImageSwapChain类型不需要其他参数
 	Attachment* CreateTempAttachment(int imageTypeMask, VkFormat format = VK_FORMAT_UNDEFINED, uint32_t width = 0, uint32_t height = 0);
 
-	void BindGlobalUniformBuffer(void * data, uint64_t size);
-	void BindPerViewUniformBuffer(void * data, uint64_t size);
-
-	void SetShader(Shader* shader);
-
-	void BindMaterial(Material* material);
-
-	void DrawRenderNode(RenderNode* node);
-
-	// 要求相同Material
-	void DrawBatch(std::vector<RenderNode*> nodes);
-
-	// Instancing
-	void DrawInstanced(Mesh* mesh, Shader* shader, void* data, uint64_t size, uint32_t instanceCount);
-
-
-
-protected:
-
-	TimeManager* m_TimeManager;
+	//todo
+	void ReleaseTempAttachment();
 
 private:
 
@@ -72,7 +39,6 @@ private:
 	std::vector<RenderNode*> m_RenderNodeContainer;
 
 	std::vector<Attachment*> m_TempAttachments;
-
-	Shader* m_DummyShader;
-	Imgui* m_Imgui = nullptr;
 };
+
+ResourceManager& GetResourceManager();

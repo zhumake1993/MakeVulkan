@@ -7,8 +7,8 @@
 #define RELEASE(pointer)	\
 {							\
 	auto ptr = pointer;		\
-	assert(ptr);			\
-	delete ptr;				\
+	if(ptr)					\
+		delete ptr;			\
 }
 
 #define ASSERT(x) assert(x);

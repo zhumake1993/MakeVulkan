@@ -83,7 +83,7 @@ void VKCommandBuffer::CopyBuffer(VkBuffer src, VkBuffer dst, VkBufferCopy & regi
 void VKCommandBuffer::CopyBufferToImage(VkBuffer src, VkImage dst, uint32_t width, uint32_t height, const std::vector<std::vector<std::vector<uint64_t>>>& offsets)
 {
 	size_t faceCount = offsets.size();
-	ASSERT(faceCount == 1 || faceCount == 6, "wrong faceCount.");
+	ASSERT(faceCount == 1 || faceCount == 6);
 
 	std::vector<VkBufferImageCopy> bufferCopyRegions;
 	for (uint32_t face = 0; face < offsets.size(); face++)

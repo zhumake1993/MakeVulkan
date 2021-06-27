@@ -1,12 +1,12 @@
 #include "Imgui.h"
 #include "GfxDevice.h"
-#include "Settings.h"
+#include "GlobalSettings.h"
 #include "Shader.h"
 #include "Tools.h"
 #include "InputManager.h"
 #include "ProfilerManager.h"
 #include "Image.h"
-#include "Buffer.h"
+#include "GfxBuffer.h"
 #include <algorithm>
 
 Imgui::Imgui()
@@ -39,17 +39,17 @@ Imgui::Imgui()
 	// Vertex buffer
 
 	uint64_t vertexBufferSize = m_MaxVertexCount * sizeof(ImDrawVert);
-	m_VertexBuffer = device.CreateBuffer(kBufferUsageVertex, kMemoryPropertyHostVisible, vertexBufferSize); // 因为需要每帧更新，这里使用HostVisible，由于一帧内需要多次更新，不使用HostCoherent
+	m_VertexBuffer = device.CreateBuffer(kGfxBufferUsageVertex, kGfxBufferModeHostVisible, vertexBufferSize);
 
 	// Index buffer
 
 	VkDeviceSize indexBufferSize = m_MaxIndexCount * sizeof(ImDrawIdx);
-	m_IndexBuffer = device.CreateBuffer(kBufferUsageIndex, kMemoryPropertyHostVisible, indexBufferSize); // 因为需要每帧更新，这里使用HostVisible，由于一帧内需要多次更新，不使用HostCoherent
+	m_IndexBuffer = device.CreateBuffer(kGfxBufferUsageIndex, kGfxBufferModeHostVisible, indexBufferSize);
 
 	// Shader
 
 	m_Shader = new Shader("ColorShader");
-	m_Shader->LoadSPV(AssetPath + "shaders/imgui/imgui.vert.spv", AssetPath + "shaders/imgui/imgui.frag.spv");
+	m_Shader->LoadSPV(GetGlobalSettings().assetPath + "shaders/imgui/imgui.vert.spv", GetGlobalSettings().assetPath + "shaders/imgui/imgui.frag.spv");
 
 	GpuParameters parameters;
 	{
@@ -99,8 +99,12 @@ void Imgui::Prepare(float deltaTime)
 
 	ImGuiIO& io = ImGui::GetIO();
 
-	io.DisplaySize = ImVec2(static_cast<float>(windowWidth), static_cast<float>(windowHeight));
+	VkExtent2D extent = GetGfxDevice().GetSwapChainExtent();
+
+	io.DisplaySize = ImVec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
 	io.DeltaTime = deltaTime;
+
+	auto& inputManager = GetInputManager();
 
 #if defined(_WIN32)
 	io.MousePos = ImVec2(inputManager.pos.x, inputManager.pos.y);
@@ -139,9 +143,6 @@ void Imgui::Tick()
 		vertexOffset += cmd_list->VtxBuffer.Size * sizeof(ImDrawVert);
 		indexOffset += cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx);
 	}
-
-	device.FlushBuffer(m_VertexBuffer);
-	device.FlushBuffer(m_IndexBuffer);
 }
 
 void Imgui::Draw()

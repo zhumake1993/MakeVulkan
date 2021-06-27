@@ -5,7 +5,7 @@
 #include "GlobalSettings.h"
 #include <list>
 
-struct VKCommandBuffer;
+class VKCommandBuffer;
 
 class GPUProfilerManager : public NonCopyable
 {

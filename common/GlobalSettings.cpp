@@ -18,9 +18,9 @@ GlobalSettings::GlobalSettings()
 #endif
 
 #if defined(_WIN32)
-	AssetPath = "D:/Vulkan/MakeVulkan/data/";
+	assetPath = "D:/Vulkan/MakeVulkan/data/";
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	AssetPath = "";
+	assetPath = "";
 #endif
 
 	// Instance

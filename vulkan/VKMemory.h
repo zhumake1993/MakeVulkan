@@ -9,6 +9,7 @@ namespace vk
 {
 	int FindMemoryTypeIndex(uint32_t memoryTypeBits, VkMemoryPropertyFlags memoryPropertyFlags);
 
+	class MemoryBlock;
 	struct Memory
 	{
 		VkDeviceMemory memory;

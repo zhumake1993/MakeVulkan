@@ -12,9 +12,14 @@ struct Extent2D
 
 enum ImageFormat
 {
-	kImageFormat
-};
+	kImageFormat_R8G8B8A8_UNORM,
 
+	kImageFormat_D32_SFLOAT_S8_UINT,
+	kImageFormat_D32_SFLOAT,
+	kImageFormat_D24_UNORM_S8_UINT,
+	kImageFormat_D16_UNORM_S8_UINT,
+	kImageFormat_D16_UNORM
+};
 
 
 

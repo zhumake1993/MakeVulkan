@@ -41,7 +41,6 @@ public:
 	virtual void Release() override;
 	virtual void Update() override;
 	virtual void Draw() override;
-	virtual void UpdateAfterDraw() override;
 
 private:
 

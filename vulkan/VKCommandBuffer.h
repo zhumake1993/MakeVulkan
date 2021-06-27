@@ -4,8 +4,10 @@
 #include "NonCopyable.h"
 #include <vector>
 
-struct VKCommandBuffer : public NonCopyable
+class VKCommandBuffer : public NonCopyable
 {
+public:
+
 	VKCommandBuffer(VkDevice vkDevice, VkCommandPool vkCommandPool, VkCommandBufferLevel level);
 	virtual ~VKCommandBuffer();
 

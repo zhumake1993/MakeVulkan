@@ -1,4 +1,4 @@
-#include "Example.h"
+#include "RendererScene.h"
 #include "Tools.h"
 #include "GfxDevice.h"
 #include "Mesh.h"
@@ -6,12 +6,8 @@
 #include "Shader.h"
 #include "Material.h"
 #include "RenderNode.h"
-#include "TimeManager.h"
-#include "ProfilerManager.h"
 #include "ShaderData.h"
-#include "Imgui.h"
 #include "DeviceProperties.h"
-#include "GlobalSettings.h"
 
 // Place the least frequently changing descriptor sets near the start of the pipeline layout, and place the descriptor sets representing the most frequently changing resources near the end. 
 // When pipelines are switched, only the descriptor set bindings that have been invalidated will need to be updated and the remainder of the descriptor set bindings will remain in place.
@@ -20,107 +16,32 @@
 // set2存放预定义的uniform：PerMaterial
 // set3存放预定义的texture：PerDraw
 
-Example::Example()
+RendererScene::RendererScene()
 {
-}
+	m_DummyShader = new Shader("DummyShader");
 
-Example::~Example()
-{
-}
-
-void Example::Init()
-{
-}
-
-void Example::Release()
-{
-
-
-	for (auto p : m_MeshContainer) { RELEASE(p); }
-	for (auto p : m_TextureContainer) { RELEASE(p); }
-	for (auto p : m_ShaderContainer) { RELEASE(p); }
-	for (auto p : m_MaterialContainer) { RELEASE(p); }
-	for (auto p : m_RenderNodeContainer) { RELEASE(p); }
-
-	for (auto p : m_TempAttachments) { RELEASE(p); }
-
-	RELEASE(m_DummyShader);
-}
-
-void Example::Update()
-{
-	PROFILER(Example_Update);
-
-}
-
-void Example::UpdateAfterDraw()
-{
-	for (auto p : m_TempAttachments) { RELEASE(p); }
-	m_TempAttachments.clear();
-}
-
-Mesh * Example::CreateMesh(const std::string& name)
-{
-	Mesh* mesh = new Mesh(name);
-	m_MeshContainer.push_back(mesh);
-
-	return mesh;
-}
-
-Texture * Example::CreateTexture(const std::string& name)
-{
-	Texture* texture = new Texture(name);
-	m_TextureContainer.push_back(texture);
-
-	return texture;
-}
-
-Shader * Example::CreateShader(const std::string& name)
-{
-	Shader* shader = new Shader(name);
-	m_ShaderContainer.push_back(shader);
-
-	return shader;
-}
-
-Material * Example::CreateMaterial(const std::string& name)
-{
-	Material* material = new Material(name);
-	m_MaterialContainer.push_back(material);
-
-	return material;
-}
-
-RenderNode * Example::CreateRenderNode(const std::string& name)
-{
-	RenderNode* renderNode = new RenderNode(name);
-	m_RenderNodeContainer.push_back(renderNode);
-
-	return renderNode;
-}
-
-Attachment * Example::CreateAttachment(int imageTypeMask, VkFormat format, uint32_t width, uint32_t height)
-{
-	if (imageTypeMask & kImageSwapChainBit)
+	GpuParameters parameters;
 	{
-		format = GetGfxDevice().GetSwapchainImage();
-
-		Extent2D extent = GetGfxDevice().GetSwapChainExtent();
-		width = extent.width;
-		height = extent.height;
+		GpuParameters::UniformParameter uniform("Global", 0, VK_SHADER_STAGE_VERTEX_BIT);
+		uniform.valueParameters.emplace_back("Time", kShaderDataFloat4);
+		parameters.uniformParameters.push_back(uniform);
+	}
+	{
+		GpuParameters::UniformParameter uniform("PerView", 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+		uniform.valueParameters.emplace_back("MatrixView", kShaderDataFloat4x4);
+		uniform.valueParameters.emplace_back("MatrixProj", kShaderDataFloat4x4);
+		uniform.valueParameters.emplace_back("EyePos", kShaderDataFloat4);
+		parameters.uniformParameters.push_back(uniform);
 	}
 
-	return new Attachment(imageTypeMask, format, width, height);
+	m_DummyShader->CreateGpuProgram(parameters);
 }
 
-Attachment * Example::CreateTempAttachment(int imageTypeMask, VkFormat format, uint32_t width, uint32_t height)
+RendererScene::~RendererScene()
 {
-	Attachment* attachment = CreateAttachment(imageTypeMask, format, width, height);
-	m_TempAttachments.push_back(attachment);
-	return attachment;
 }
 
-void Example::BindGlobalUniformBuffer(void * data, uint64_t size)
+void RendererScene::BindGlobalUniformBuffer(void * data, uint64_t size)
 {
 	if (size > 0)
 	{
@@ -128,7 +49,7 @@ void Example::BindGlobalUniformBuffer(void * data, uint64_t size)
 	}
 }
 
-void Example::BindPerViewUniformBuffer(void * data, uint64_t size)
+void RendererScene::BindPerViewUniformBuffer(void * data, uint64_t size)
 {
 	if (size > 0)
 	{
@@ -136,14 +57,14 @@ void Example::BindPerViewUniformBuffer(void * data, uint64_t size)
 	}
 }
 
-void Example::SetShader(Shader * shader)
+void RendererScene::SetShader(Shader * shader)
 {
 	auto& device = GetGfxDevice();
 
 	device.SetPass(shader->GetGpuProgram(), shader->GetRenderState(), shader->GetSpecializationData());
 }
 
-void Example::BindMaterial(Material * material)
+void RendererScene::BindMaterial(Material * material)
 {
 	auto& device = GetGfxDevice();
 
@@ -158,7 +79,7 @@ void Example::BindMaterial(Material * material)
 	ShaderData* shaderData = material->GetShaderData();
 
 	MaterialBindData materialBindData;
-	
+
 	int binding = -1;
 	for (auto& uniform : gpuParameters.uniformParameters)
 	{
@@ -170,9 +91,9 @@ void Example::BindMaterial(Material * material)
 
 	if (binding != -1)
 	{
-		ASSERT(shaderData->GetValueDataSize() > 0, "empty data");
+		ASSERT(shaderData->GetValueDataSize() > 0);
 
-		Buffer* buffer = material->GetUniformBuffer();
+		GfxBuffer* buffer = material->GetUniformBuffer();
 
 		materialBindData.uniformBufferBindings.emplace_back(binding, buffer);
 	}
@@ -192,7 +113,7 @@ void Example::BindMaterial(Material * material)
 	device.BindMaterial(gpuProgram, materialBindData);
 }
 
-void Example::DrawRenderNode(RenderNode * node)
+void RendererScene::DrawRenderNode(RenderNode * node)
 {
 	auto& device = GetGfxDevice();
 
@@ -229,7 +150,7 @@ void Example::DrawRenderNode(RenderNode * node)
 	device.DrawIndexed(mesh->GetIndexCount());
 }
 
-void Example::DrawBatch(std::vector<RenderNode*> nodes)
+void RendererScene::DrawBatch(std::vector<RenderNode*> nodes)
 {
 	if (nodes.size() == 0)return;
 
@@ -336,11 +257,11 @@ void Example::DrawBatch(std::vector<RenderNode*> nodes)
 			drawItem.drawBufferIndex = drawBufferIndex;
 		}
 	}
-	
+
 	device.DrawBatch(drawBatchs);
 }
 
-void Example::DrawInstanced(Mesh * mesh, Shader* shader, void * data, uint64_t size, uint32_t instanceCount)
+void RendererScene::DrawInstanced(Mesh * mesh, Shader* shader, void * data, uint64_t size, uint32_t instanceCount)
 {
 	auto& device = GetGfxDevice();
 

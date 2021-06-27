@@ -1,7 +1,6 @@
 #include "Camera.h"
 #include "Tools.h"
 #include "InputManager.h"
-#include "Settings.h"
 
 Camera::Camera()
 {
@@ -48,6 +47,8 @@ void Camera::SetSpeed(float moveSpeed, float rotateSpeed)
 
 void Camera::Update(float deltaTime)
 {
+	auto& inputManager = GetInputManager();
+
 #ifdef _WIN32
 
 	glm::vec3 dir = glm::vec3(0.0f, 0.0f, 0.0f);

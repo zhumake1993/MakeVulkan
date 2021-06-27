@@ -4,7 +4,7 @@
 #include "imgui/imgui.h"
 
 class Image;
-class Buffer;
+class GfxBuffer;
 class Shader;
 
 class Imgui
@@ -33,8 +33,8 @@ private:
 
 	const uint32_t m_MaxVertexCount = 65536;
 	const uint32_t m_MaxIndexCount = 65536;
-	Buffer* m_VertexBuffer = nullptr;
-	Buffer* m_IndexBuffer = nullptr;
+	GfxBuffer* m_VertexBuffer = nullptr;
+	GfxBuffer* m_IndexBuffer = nullptr;
 
 	Shader* m_Shader;
 
