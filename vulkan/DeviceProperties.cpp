@@ -63,6 +63,54 @@ void DeviceProperties::Print()
 	LOG("\tnonCoherentAtomSize : %d\n", static_cast<int>(deviceProperties.limits.nonCoherentAtomSize));
 	LOG("\ttimestampPeriod : %f\n", deviceProperties.limits.timestampPeriod);
 
+	LOG("VkPhysicalDeviceMemoryProperties:\n");
+	for (uint32_t i = 0; i < deviceMemoryProperties.memoryHeapCount; i++)
+	{
+		VkMemoryHeap& memoryHeap = deviceMemoryProperties.memoryHeaps[i];
+
+		std::string memoryHeapFlags;
+		if (memoryHeap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
+			memoryHeapFlags += " VK_MEMORY_HEAP_DEVICE_LOCAL_BIT";
+		if (memoryHeap.flags & VK_MEMORY_HEAP_MULTI_INSTANCE_BIT)
+			memoryHeapFlags += " VK_MEMORY_HEAP_MULTI_INSTANCE_BIT";
+		if (memoryHeap.flags & VK_MEMORY_HEAP_MULTI_INSTANCE_BIT_KHR)
+			memoryHeapFlags += " VK_MEMORY_HEAP_MULTI_INSTANCE_BIT_KHR";
+		if (memoryHeapFlags == "")
+			memoryHeapFlags = " None";
+
+		LOG("\tMemory heap %u, size = %llu(%lluMB), flags =%s\n", i, memoryHeap.size, memoryHeap.size / 1048576, memoryHeapFlags.c_str());
+
+		for (uint32_t j = 0; j < deviceMemoryProperties.memoryTypeCount; j++)
+		{
+			VkMemoryType& memoryType = deviceMemoryProperties.memoryTypes[j];
+
+			if (memoryType.heapIndex != i)
+				continue;
+
+			std::string memoryPropertyFlags;
+			if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+				memoryPropertyFlags += " VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT";
+			if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+				memoryPropertyFlags += " VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT";
+			if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+				memoryPropertyFlags += " VK_MEMORY_PROPERTY_HOST_COHERENT_BIT";
+			if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT)
+				memoryPropertyFlags += " VK_MEMORY_PROPERTY_HOST_CACHED_BIT";
+			if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT)
+				memoryPropertyFlags += " VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT";
+			if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_PROTECTED_BIT)
+				memoryPropertyFlags += " VK_MEMORY_PROPERTY_PROTECTED_BIT";
+			if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD)
+				memoryPropertyFlags += " VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD";
+			if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD)
+				memoryPropertyFlags += " VK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD";
+			if (memoryPropertyFlags == "")
+				memoryPropertyFlags = " None";
+
+			LOG("\t\tMemory type %u, flags =%s\n", j, memoryPropertyFlags.c_str());
+		}
+	}
+
 	LOG("available device extensions ( %d ):", static_cast<int>(availableDeviceExtensions.size()));
 	for (size_t i = 0; i < availableDeviceExtensions.size(); i++) {
 		LOG(" %s(%d)", availableDeviceExtensions[i].extensionName, availableDeviceExtensions[i].specVersion);

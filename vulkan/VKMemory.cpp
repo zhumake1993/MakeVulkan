@@ -119,6 +119,8 @@ namespace vk
 
 			if (alignedSize > currentChunk->size)
 				continue;
+
+			break;
 		}
 
 		if (currentChunk == nullptr)
@@ -152,6 +154,10 @@ namespace vk
 		memory = m_Memory;
 		memory.offset = alignedOffset;
 		memory.size = size;
+		
+		if (memory.mapped)
+			memory.mapped = static_cast<char*>(memory.mapped) + alignedOffset;
+
 		memory.chunk = static_cast<void*>(currentChunk);
 
 		return memory;
@@ -182,19 +188,42 @@ namespace vk
 		Chunk* next = currentChunk->next;
 		if (next && !next->allocated)
 		{
-			next->prev = currentChunk->prev;
-			if (currentChunk->prev)
-				currentChunk->prev->next = next;
+			currentChunk->next = next->next;
+			if (next->next)
+			{
+				next->next->prev = currentChunk;
+			}
 
-			next->size += currentChunk->size;
+			currentChunk->size += next->size;
 
-			delete currentChunk;
+			delete next;
 		}
 	}
 
 	void MemoryBlock::Print()
 	{
-		//todo
+		int chunkNum = 0;
+		VkDeviceSize allocatedSize = 0;
+		Chunk* chunk = m_Head;
+		while (chunk)
+		{
+			chunkNum++;
+			if(chunk->allocated)
+				allocatedSize += chunk->size;
+
+			chunk = chunk->next;
+		}
+
+		LOG("\t\tMemoryBlock, alignment = %llu, allocate: %llu/%llu(%f%%), chunk num: %d, chunks: ",m_Alignment, allocatedSize, m_Memory.size, 100.0f*allocatedSize / m_Memory.size, chunkNum);
+
+		chunk = m_Head;
+		while (chunk)
+		{
+			LOG(" [%llu,%llu,%llu,%d]", chunk->offset, chunk->size, chunk->offset + chunk->size, (chunk->allocated ? 1 : 0));
+
+			chunk = chunk->next;
+		}
+		LOG("\n");
 	}
 
 	// ===============================================================================
@@ -245,7 +274,10 @@ namespace vk
 
 	void MemoryTypeAllocator::Print()
 	{
-		//todo
+		for (auto itr = m_MemoryBlocks.begin(); itr != m_MemoryBlocks.end(); itr++)
+		{
+			(*itr)->Print();
+		}
 	}
 
 	// ===============================================================================
@@ -300,11 +332,12 @@ namespace vk
 
 	void MemoryAllocator::Print()
 	{
+		LOG("MemoryAllocator:\n");
 		for (int i = 0; i < VK_MAX_MEMORY_TYPES; i++)
 		{
 			if (m_MemoryTypeAllocators[i])
 			{
-				LOG("MemoryType: %d\n", i);
+				LOG("\tMemoryTypeAllocator, memory type index: %d\n", i);
 				m_MemoryTypeAllocators[i]->Print();
 			}
 		}

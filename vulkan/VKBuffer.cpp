@@ -47,7 +47,7 @@ namespace vk
 		else
 		{
 			BufferResource* stagingBuffer = bufferManager->CreateTransientStagingBufferResource(size);
-			stagingBuffer->Update(data, offset, size);
+			stagingBuffer->Update(data, 0, size);
 
 			cmdBuffer->Begin();
 
@@ -218,9 +218,7 @@ namespace vk
 		int memoryTypeIndex = FindMemoryTypeIndex(memoryRequirements.memoryTypeBits, memFlags);
 		ASSERT(memoryTypeIndex > -1);
 
-		// 先测试其他代码
-		//Memory memory = m_Allocator.Allocate(memoryTypeIndex, memoryRequirements.size, memoryRequirements.alignment);
-		Memory memory = m_Allocator.AllocateDedicated(memoryTypeIndex, memoryRequirements.size);
+		Memory memory = m_Allocator.Allocate(memoryTypeIndex, memoryRequirements.size, memoryRequirements.alignment);
 		ASSERT(memory.IsValid());
 
 		vkBindBufferMemory(m_Device, buffer, memory.memory, memory.offset);

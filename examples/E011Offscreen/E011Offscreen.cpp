@@ -141,6 +141,10 @@ void MakeVulkan::Update()
 	{
 		ImGui::TextUnformatted(gpuProfiler.c_str());
 	}
+	if (ImGui::Button("Memory"))
+	{
+		GetGfxDevice().PrintMemoryAllocatorInfo();
+	}
 
 	ImGui::End();
 

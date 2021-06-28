@@ -133,6 +133,9 @@ public:
 	void ResolveTimeStamp();
 	std::string GetLastGPUTimeStamp();
 
+	// Debug
+	void PrintMemoryAllocatorInfo();
+
 	vk::GarbageCollector* GetGarbageCollector();
 
 private:

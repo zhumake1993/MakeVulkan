@@ -15,7 +15,7 @@ namespace vk
 		VkDeviceMemory memory;
 		VkDeviceSize offset;
 		VkDeviceSize size; // 由于对齐，可能比对应的Chunk的size小
-		void* mapped;
+		void* mapped; // 偏移offset后的指针
 
 		// 注意：该flags是实际的flags，跟申请内存时提供的flags可能不一致
 		// 例如，申请内存时只要求VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT，但是实际的flags可能是VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT

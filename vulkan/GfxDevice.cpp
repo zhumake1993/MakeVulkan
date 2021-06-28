@@ -695,6 +695,11 @@ std::string GfxDevice::GetLastGPUTimeStamp()
 	return m_GPUProfilerManager->GetLastFrameView().ToString();
 }
 
+void GfxDevice::PrintMemoryAllocatorInfo()
+{
+	m_MemoryAllocator->Print();
+}
+
 vk::GarbageCollector * GfxDevice::GetGarbageCollector()
 {
 	return m_GarbageCollector;
