@@ -41,6 +41,9 @@ namespace vk
 		Memory Allocate(VkDeviceSize size, VkDeviceSize alignment);
 		void Free(Memory& memory);
 
+		int GetChunkNum();
+		VkDeviceSize GetAllocatedSize();
+
 		void Print();
 
 	private:
@@ -74,6 +77,10 @@ namespace vk
 		Memory Allocate(VkDeviceSize size, VkDeviceSize alignment);
 		void Free(Memory& memory);
 
+		int GetBlockNum();
+		VkDeviceSize GetAllocatedSize();
+		VkDeviceSize GetTotalSize();
+
 		void Print();
 
 	private:
@@ -96,6 +103,9 @@ namespace vk
 		Memory Allocate(int memoryTypeIndex, VkDeviceSize size, VkDeviceSize alignment);
 		Memory AllocateDedicated(int memoryTypeIndex, VkDeviceSize size);
 		void Free(Memory& memory);
+
+		VkDeviceSize GetAllocatedSize();
+		VkDeviceSize GetTotalSize();
 
 		void Print();
 

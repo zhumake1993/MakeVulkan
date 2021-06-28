@@ -200,23 +200,40 @@ namespace vk
 		}
 	}
 
-	void MemoryBlock::Print()
+	int MemoryBlock::GetChunkNum()
 	{
 		int chunkNum = 0;
-		VkDeviceSize allocatedSize = 0;
 		Chunk* chunk = m_Head;
 		while (chunk)
 		{
 			chunkNum++;
-			if(chunk->allocated)
+			chunk = chunk->next;
+		}
+		return chunkNum;
+	}
+
+	VkDeviceSize MemoryBlock::GetAllocatedSize()
+	{
+		VkDeviceSize allocatedSize = 0;
+		Chunk* chunk = m_Head;
+		while (chunk)
+		{
+			if (chunk->allocated)
 				allocatedSize += chunk->size;
 
 			chunk = chunk->next;
 		}
+		return allocatedSize;
+	}
 
-		LOG("\t\tMemoryBlock, alignment = %llu, allocate: %llu/%llu(%f%%), chunk num: %d, chunks: ",m_Alignment, allocatedSize, m_Memory.size, 100.0f*allocatedSize / m_Memory.size, chunkNum);
+	void MemoryBlock::Print()
+	{
+		int chunkNum = GetChunkNum();
+		VkDeviceSize allocatedSize = GetAllocatedSize();
 
-		chunk = m_Head;
+		LOG("\t\tMemoryBlock, allocate: %llu/%llu(%f%%), chunk num: %d, chunks:", allocatedSize, m_Memory.size, 100.0f * allocatedSize / m_Memory.size, chunkNum);
+
+		Chunk* chunk = m_Head;
 		while (chunk)
 		{
 			LOG(" [%llu,%llu,%llu,%d]", chunk->offset, chunk->size, chunk->offset + chunk->size, (chunk->allocated ? 1 : 0));
@@ -272,8 +289,33 @@ namespace vk
 		// 不过这里我选择保留，因为更注重速度
 	}
 
+	int MemoryTypeAllocator::GetBlockNum()
+	{
+		return static_cast<int>(m_MemoryBlocks.size());
+	}
+
+	VkDeviceSize MemoryTypeAllocator::GetAllocatedSize()
+	{
+		VkDeviceSize allocatedSize = 0;
+		for (auto itr = m_MemoryBlocks.begin(); itr != m_MemoryBlocks.end(); itr++)
+		{
+			allocatedSize += (*itr)->GetAllocatedSize();
+		}
+		return allocatedSize;
+	}
+
+	VkDeviceSize MemoryTypeAllocator::GetTotalSize()
+	{
+		return GetBlockNum() * m_BlockSize;
+	}
+
 	void MemoryTypeAllocator::Print()
 	{
+		int blockNum = GetBlockNum();
+		VkDeviceSize allocatedSize = GetAllocatedSize();
+		VkDeviceSize totalSize = GetTotalSize();
+
+		LOG("\tMemoryTypeAllocator, memoryTypeIndex: %d, allocate: %llu/%llu(%f%%), block num: %d, blocks:\n", m_MemoryTypeIndex, allocatedSize, totalSize, 100.0f * allocatedSize / totalSize, blockNum);
 		for (auto itr = m_MemoryBlocks.begin(); itr != m_MemoryBlocks.end(); itr++)
 		{
 			(*itr)->Print();
@@ -330,16 +372,47 @@ namespace vk
 		}
 	}
 
-	void MemoryAllocator::Print()
+	VkDeviceSize MemoryAllocator::GetAllocatedSize()
 	{
-		LOG("MemoryAllocator:\n");
+		VkDeviceSize allocatedSize = 0;
 		for (int i = 0; i < VK_MAX_MEMORY_TYPES; i++)
 		{
 			if (m_MemoryTypeAllocators[i])
 			{
-				LOG("\tMemoryTypeAllocator, memory type index: %d\n", i);
+				allocatedSize += m_MemoryTypeAllocators[i]->GetAllocatedSize();
+			}
+		}
+		return allocatedSize;
+	}
+
+	VkDeviceSize MemoryAllocator::GetTotalSize()
+	{
+		VkDeviceSize totalSize = 0;
+		for (int i = 0; i < VK_MAX_MEMORY_TYPES; i++)
+		{
+			if (m_MemoryTypeAllocators[i])
+			{
+				totalSize += m_MemoryTypeAllocators[i]->GetTotalSize();
+			}
+		}
+		return totalSize;
+	}
+
+	void MemoryAllocator::Print()
+	{
+		VkDeviceSize allocatedSize = GetAllocatedSize();
+		VkDeviceSize totalSize = GetTotalSize();
+
+		LOG("MemoryAllocator, blockSiize: %llu, alignment: %llu, allocate: %llu/%llu(%f%%)\n", m_BlockSize, m_Alignment, allocatedSize, totalSize, 100.0f * allocatedSize / totalSize);
+		for (int i = 0; i < VK_MAX_MEMORY_TYPES; i++)
+		{
+			if (m_MemoryTypeAllocators[i])
+			{
 				m_MemoryTypeAllocators[i]->Print();
 			}
 		}
+
+		// todo：使用AllocateDedicated的内存也需要被追踪
+		// 另外，其他资源的内存后面也要使用MemoryAllocator
 	}
 }

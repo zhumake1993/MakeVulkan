@@ -45,7 +45,7 @@ struct GlobalSettings : public NonCopyable
 
 	// Memory
 	VkDeviceSize memoryAlignment = 256; // 256可以同时满足minTexelBufferOffsetAlignment, minUniformBufferOffsetAlignment, minStorageBufferOffsetAlignment的对齐要求
-	VkDeviceSize memoryBlockSize = 64 * 1024 * 1024;
+	VkDeviceSize memoryBlockSize = 8 * 1024 * 1024;
 };
 
 GlobalSettings& GetGlobalSettings();
