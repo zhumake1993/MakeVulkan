@@ -14,11 +14,11 @@ namespace vk
 
 		void IncreaseFrameIndex() { ++m_FrameIndex; }
 
-		uint64_t GetFrameIndex() { return m_FrameIndex; }
+		int GetFrameIndex() { return m_FrameIndex; }
 
 	private:
 
-		uint64_t m_FrameIndex = 0;
+		int m_FrameIndex = 0;
 	};
 
 	FrameManager& GetFrameManager();

@@ -76,6 +76,13 @@ void MakeVulkan::Init()
 void MakeVulkan::Release()
 {
 	RELEASE(m_Camera);
+
+	RELEASE(m_DragonMesh);
+	RELEASE(m_PhongShader);
+	RELEASE(m_MiniMapShader);
+	RELEASE(m_PhongMat);
+	RELEASE(m_MiniMapMat);
+	RELEASE(m_DragonNode);
 }
 
 void MakeVulkan::Update()

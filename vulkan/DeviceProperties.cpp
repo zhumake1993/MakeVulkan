@@ -55,12 +55,12 @@ void DeviceProperties::Print()
 	LOG("available physical device num: %d\n", static_cast<int>(physicalDevices.size()));
 	LOG("selected device : %s, Type : %s\n", deviceProperties.deviceName, PhysicalDeviceTypeString(deviceProperties.deviceType).c_str());
 	
-	LOG("VkPhysicalDeviceLimits:");
+	LOG("VkPhysicalDeviceLimits:\n");
 	LOG("\tminUniformBufferOffsetAlignment : %d\n", static_cast<int>(deviceProperties.limits.minUniformBufferOffsetAlignment));
 	LOG("\tminTexelBufferOffsetAlignment : %d\n", static_cast<int>(deviceProperties.limits.minTexelBufferOffsetAlignment));
 	LOG("\tminStorageBufferOffsetAlignment : %d\n", static_cast<int>(deviceProperties.limits.minStorageBufferOffsetAlignment));
-	LOG("\bufferImageGranularity : %d\n", static_cast<int>(deviceProperties.limits.bufferImageGranularity));
-	LOG("\nonCoherentAtomSize : %d\n", static_cast<int>(deviceProperties.limits.nonCoherentAtomSize));
+	LOG("\tbufferImageGranularity : %d\n", static_cast<int>(deviceProperties.limits.bufferImageGranularity));
+	LOG("\tnonCoherentAtomSize : %d\n", static_cast<int>(deviceProperties.limits.nonCoherentAtomSize));
 	LOG("\ttimestampPeriod : %f\n", deviceProperties.limits.timestampPeriod);
 
 	LOG("available device extensions ( %d ):", static_cast<int>(availableDeviceExtensions.size()));
@@ -71,6 +71,8 @@ void DeviceProperties::Print()
 
 	LOG("available queue families ( %d ):\n", static_cast<int>(queueFamilyProperties.size()));
 	for (size_t i = 0; i < queueFamilyProperties.size(); i++) {
-		LOG("queueFlags: %d, queueCount: %d, timestampValidBits: %d\n", queueFamilyProperties[i].queueFlags, queueFamilyProperties[i].queueCount, queueFamilyProperties[i].timestampValidBits);
+		LOG("\tqueueFlags: %d, queueCount: %d, timestampValidBits: %d\n", queueFamilyProperties[i].queueFlags, queueFamilyProperties[i].queueCount, queueFamilyProperties[i].timestampValidBits);
 	}
+
+	LOG("\n");
 }

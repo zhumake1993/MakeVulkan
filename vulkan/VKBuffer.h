@@ -73,7 +73,8 @@ namespace vk
 		virtual ~BufferManager();
 
 		BufferResource * CreateBufferResource(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memFlags);
-		BufferResource * CreateStagingBufferResource(size_t size);
+		BufferResource * CreateTransientStagingBufferResource(size_t size);
+		BufferResource * CreateTransientUniformBufferResource(size_t size);
 
 	private:
 

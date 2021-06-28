@@ -46,7 +46,7 @@ namespace vk
 		}
 		else
 		{
-			BufferResource* stagingBuffer = bufferManager->CreateStagingBufferResource(size);
+			BufferResource* stagingBuffer = bufferManager->CreateTransientStagingBufferResource(size);
 			stagingBuffer->Update(data, offset, size);
 
 			cmdBuffer->Begin();
@@ -63,6 +63,9 @@ namespace vk
 			//vkCmdPipelineBarrier
 
 			cmdBuffer->End();
+
+			// todo
+			cmdBuffer->m_NeedSubmit = true;
 		}
 	}
 
@@ -228,9 +231,18 @@ namespace vk
 		return new BufferResource(m_Device, m_Allocator, buffer, memory);
 	}
 
-	BufferResource * BufferManager::CreateStagingBufferResource(size_t size)
+	BufferResource * BufferManager::CreateTransientStagingBufferResource(size_t size)
 	{
 		BufferResource* stagingBuffer = CreateBufferResource(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+
+		stagingBuffer->Use();
+		stagingBuffer->Release();
+
+		return stagingBuffer;
+	}
+	BufferResource * BufferManager::CreateTransientUniformBufferResource(size_t size)
+	{
+		BufferResource* stagingBuffer = CreateBufferResource(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 		stagingBuffer->Use();
 		stagingBuffer->Release();

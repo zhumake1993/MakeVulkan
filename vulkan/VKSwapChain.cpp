@@ -161,7 +161,7 @@ VkPresentModeKHR GetSwapChainPresentMode()
 	return VK_PRESENT_MODE_MAX_ENUM_KHR;
 }
 
-vk::VKSwapChain::VKSwapChain(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device)
+vk::VKSwapChain::VKSwapChain(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device, int selectedQueueFamilyIndex)
 	: m_Instance(instance)
 	, m_Device(device)
 {
@@ -189,6 +189,12 @@ vk::VKSwapChain::VKSwapChain(VkInstance instance, VkPhysicalDevice physicalDevic
 	VK_CHECK_RESULT(vkCreateAndroidSurfaceKHR(m_Instance, &surfaceCreateInfo, nullptr, &m_Surface));
 
 #endif
+
+	// 检查对present的支持
+
+	VkBool32 supportPresent;
+	vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, selectedQueueFamilyIndex, m_Surface, &supportPresent);
+	ASSERT(supportPresent);
 
 	// SwapChain
 
@@ -280,8 +286,6 @@ vk::VKSwapChain::VKSwapChain(VkInstance instance, VkPhysicalDevice physicalDevic
 
 vk::VKSwapChain::~VKSwapChain()
 {
-	vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
-
 	for (size_t i = 0; i < m_SwapChainImageViews.size(); ++i) {
 		vkDestroyImageView(m_Device, m_SwapChainImageViews[i], nullptr);
 	}
@@ -291,14 +295,8 @@ vk::VKSwapChain::~VKSwapChain()
 	m_SwapChainImages.clear();
 
 	vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
-}
 
-void vk::VKSwapChain::CheckQueueSurfaceSupport(VkPhysicalDevice physicalDevice, int index)
-{
-	VkBool32 supportPresent;
-	vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, index, m_Surface, &supportPresent);
-
-	ASSERT(supportPresent);
+	vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
 }
 
 void vk::VKSwapChain::Print()
@@ -311,4 +309,6 @@ void vk::VKSwapChain::Print()
 	LOG("usage: %d\n", m_Usage);
 	LOG("transform: %d\n", m_Transform);
 	LOG("presentMode: %d\n", m_PresentMode);
+
+	LOG("\n");
 }

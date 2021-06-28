@@ -50,8 +50,7 @@ GfxDevice::GfxDevice()
 {
 	m_VKContex = new vk::VKContex();
 
-	m_VKSwapChain = new vk::VKSwapChain(m_VKContex->instance, m_VKContex->physicalDevice, m_VKContex->device);
-	m_VKSwapChain->CheckQueueSurfaceSupport(m_VKContex->physicalDevice, m_VKContex->selectedQueueFamilyIndex);
+	m_VKSwapChain = new vk::VKSwapChain(m_VKContex->instance, m_VKContex->physicalDevice, m_VKContex->device, m_VKContex->selectedQueueFamilyIndex);
 
 	auto& dp = GetDeviceProperties();
 	auto& gs = GetGlobalSettings();
@@ -66,7 +65,7 @@ GfxDevice::GfxDevice()
 	// Memory
 	VkDeviceSize finalMemoryAlignment = gs.memoryAlignment;
 	// 当linear和optimal资源放在同一块memory中时，需要满足bufferImageGranularity的要求
-	// 如果bufferImageGranularity太大（例如，在Nvidia上会大于4k），那么会造成比较大的内部内存碎片
+	// 如果bufferImageGranularity太大（例如，在Nvidia上可能会大于4k），那么会造成比较大的内部内存碎片
 	// 这种情况下使用多个MemoryAllocator是个好选择。这里选择相对简单的做法
 	VkDeviceSize bufferImageGranularity = dp.deviceProperties.limits.bufferImageGranularity;
 	finalMemoryAlignment = ALIGN(finalMemoryAlignment, bufferImageGranularity);
@@ -78,7 +77,7 @@ GfxDevice::GfxDevice()
 	// image
 	m_ImageManager = new ImageManager(m_VKContex->device);
 
-	m_VKCommandPool = new VKCommandPool(m_VKContex->device, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, m_VKContex->selectedQueueFamilyIndex);;
+	m_VKCommandPool = new VKCommandPool(m_VKContex->device, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, m_VKContex->selectedQueueFamilyIndex);;
 
 	// FrameResource
 	m_FrameResources.resize(FrameResourcesCount);
@@ -112,11 +111,12 @@ GfxDevice::~GfxDevice()
 
 	RELEASE(m_UploadCommandBuffer);
 
-	RELEASE(m_GarbageCollector);
 	RELEASE(m_ImageManager);
 	RELEASE(m_DescriptorSetManager);
 	RELEASE(m_PipelineManager);
 	RELEASE(m_RenderPassManager);
+
+	RELEASE(m_GarbageCollector);
 
 	RELEASE(m_BufferManager);
 	RELEASE(m_MemoryAllocator);
@@ -136,7 +136,7 @@ GfxDevice::~GfxDevice()
 	}
 
 	RELEASE(m_VKCommandPool);
-
+	
 	RELEASE(m_VKSwapChain);
 	RELEASE(m_VKContex);
 }
@@ -319,18 +319,23 @@ void GfxDevice::UpdateBuffer(GfxBuffer * buffer, void * data, uint64_t offset, u
 	vulkanBuffer->Update(data, offset, size, m_UploadCommandBuffer, vk::GetFrameManager().GetFrameIndex());
 
 	// todo：低效
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pNext = nullptr;
-	submitInfo.waitSemaphoreCount = 0;
-	submitInfo.pWaitSemaphores = nullptr;
-	submitInfo.pWaitDstStageMask = nullptr;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &m_UploadCommandBuffer->commandBuffer;
-	submitInfo.signalSemaphoreCount = 0;
-	submitInfo.pSignalSemaphores = nullptr;
-	VK_CHECK_RESULT(vkQueueSubmit(m_VKContex->queue, 1, &submitInfo, VK_NULL_HANDLE));
-	DeviceWaitIdle();
+	if (m_UploadCommandBuffer->m_NeedSubmit)
+	{
+		m_UploadCommandBuffer->m_NeedSubmit = false;
+
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.pNext = nullptr;
+		submitInfo.waitSemaphoreCount = 0;
+		submitInfo.pWaitSemaphores = nullptr;
+		submitInfo.pWaitDstStageMask = nullptr;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &m_UploadCommandBuffer->commandBuffer;
+		submitInfo.signalSemaphoreCount = 0;
+		submitInfo.pSignalSemaphores = nullptr;
+		VK_CHECK_RESULT(vkQueueSubmit(m_VKContex->queue, 1, &submitInfo, VK_NULL_HANDLE));
+		DeviceWaitIdle();
+	}
 }
 
 void GfxDevice::DeleteBuffer(GfxBuffer * buffer)
@@ -416,7 +421,7 @@ void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size, const std
 
 	ASSERT(imageVulkan->m_ImageTypeMask & kImageTransferDstBit);
 
-	vk::BufferResource* stagingBuffer = m_BufferManager->CreateStagingBufferResource(size);
+	vk::BufferResource* stagingBuffer = m_BufferManager->CreateTransientStagingBufferResource(size);
 	stagingBuffer->Update(data, 0, size);
 
 	m_UploadCommandBuffer->Begin();
@@ -549,7 +554,7 @@ void GfxDevice::BindUniformBuffer(GpuProgram * gpuProgram, int set, int binding,
 
 	if (size > 0)
 	{
-		vk::BufferResource* stagingBuffer = m_BufferManager->CreateStagingBufferResource(size);
+		vk::BufferResource* stagingBuffer = m_BufferManager->CreateTransientUniformBufferResource(size);
 		stagingBuffer->Update(data, 0, size);
 
 		UpdateDescriptorSetBuffer(descriptorSet, binding, stagingBuffer->GetBuffer());
@@ -634,7 +639,7 @@ void GfxDevice::DrawBatch(DrawBatchs & drawBatchs)
 
 	VkDescriptorSet descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerDraw());
 
-	vk::BufferResource* stagingBuffer = m_BufferManager->CreateStagingBufferResource(drawBatchs.uniformSize);
+	vk::BufferResource* stagingBuffer = m_BufferManager->CreateTransientUniformBufferResource(drawBatchs.uniformSize);
 	stagingBuffer->Update(drawBatchs.uniformData, 0, drawBatchs.uniformSize);
 
 	UpdateDescriptorSetBuffer(descriptorSet, drawBatchs.uniformBinding, stagingBuffer->GetBuffer(), 0, drawBatchs.alignedUniformSize);

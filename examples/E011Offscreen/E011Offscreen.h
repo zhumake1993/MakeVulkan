@@ -51,15 +51,14 @@ private:
 	UniformDataGlobal m_UniformDataGlobal;
 	UniformDataPerView m_UniformDataPerView;
 
-	Mesh* m_DragonMesh;
+	// Resources
 
-	Shader* m_PhongShader;
-	Shader* m_MiniMapShader;
-
-	Material* m_PhongMat;
-	Material* m_MiniMapMat;
-
-	RenderNode* m_DragonNode;
+	Mesh*		m_DragonMesh;
+	Shader*		m_PhongShader;
+	Shader*		m_MiniMapShader;
+	Material*	m_PhongMat;
+	Material*	m_MiniMapMat;
+	RenderNode*	m_DragonNode;
 
 	RenderPass* m_RenderPassOffscreen;
 	RenderPass* m_RenderPass;

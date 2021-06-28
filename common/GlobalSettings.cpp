@@ -52,7 +52,7 @@ void GlobalSettings::Print()
 	LOG("[GlobalSettings]\n");
 
 #if defined(_WIN32)
-	LOG("window extent: %d x %d\n:", static_cast<int>(windowWidth), static_cast<int>(windowHeight));
+	LOG("window extent: %d x %d\n", static_cast<int>(windowWidth), static_cast<int>(windowHeight));
 #endif
 
 	LOG("enabled instance layer ( %d ):", static_cast<int>(enabledInstanceLayers.size()));
@@ -76,8 +76,10 @@ void GlobalSettings::Print()
 	}
 	LOG("\n");
 
-	LOG("memoryAlignment: %d\n:", static_cast<int>(memoryAlignment));
-	LOG("memoryBlockSize: %d\n:", static_cast<int>(memoryBlockSize));
+	LOG("memoryAlignment: %d\n", static_cast<int>(memoryAlignment));
+	LOG("memoryBlockSize: %d\n", static_cast<int>(memoryBlockSize));
+
+	LOG("\n");
 }
 
 GlobalSettings gGlobalSettings;

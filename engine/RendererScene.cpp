@@ -39,6 +39,7 @@ RendererScene::RendererScene()
 
 RendererScene::~RendererScene()
 {
+	RELEASE(m_DummyShader);
 }
 
 void RendererScene::BindGlobalUniformBuffer(void * data, uint64_t size)

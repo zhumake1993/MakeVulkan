@@ -218,8 +218,8 @@ vk::VKContex::VKContex()
 
 vk::VKContex::~VKContex()
 {
-	vkDestroyInstance(instance, nullptr);
 	vkDestroyDevice(device, nullptr);
+	vkDestroyInstance(instance, nullptr);
 }
 
 void vk::VKContex::Print()
@@ -228,4 +228,6 @@ void vk::VKContex::Print()
 
 	LOG("selected physical device index: %d\n", selectedPhysicalDeviceIndex);
 	LOG("selected queue family index: %d\n", selectedQueueFamilyIndex);
+
+	LOG("\n");
 }

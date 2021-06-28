@@ -10,10 +10,8 @@ namespace vk
 	{
 	public:
 
-		VKSwapChain(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device);
+		VKSwapChain(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device, int selectedQueueFamilyIndex);
 		~VKSwapChain();
-
-		void CheckQueueSurfaceSupport(VkPhysicalDevice physicalDevice, int index);
 
 		// todo
 		VkSwapchainKHR& GetSwapChain() { return m_SwapChain; }

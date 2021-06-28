@@ -37,7 +37,8 @@ public:
 
 	void PushConstants(VkPipelineLayout pipelineLayout, VkShaderStageFlags pcStage, uint32_t offset, uint32_t size, void* data);
 
-	
+	// todo:temp
+	bool m_NeedSubmit = false;
 
 	//// TimeStamp
 	//void WriteTimeStamp(std::string name);
