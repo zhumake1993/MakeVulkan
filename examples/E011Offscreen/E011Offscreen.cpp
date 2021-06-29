@@ -1,5 +1,4 @@
 #include "E011Offscreen.h"
-#include "Application.h"
 #include "GlobalSettings.h"
 #include "GfxDevice.h"
 #include "Tools.h"
@@ -302,21 +301,20 @@ void MakeVulkan::PrepareResources()
 	}
 }
 
-//MAIN(MakeVulkan)
-
 #include "Platforms.h"
+#include "Application.h"
+
+#ifdef _WIN32
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)		
 {					
 	platform::SetWindowInstance(hInstance);
-
-	Application* application = new Application(new MakeVulkan());
-	SetApplication(application);
-	application->Init();
-	application->Run();
-	application->Release();
-	delete application;
-
-	LOG("Application exits.");
-	system("PAUSE");
+	RunApplication(new MakeVulkan());
 	return 0;
 }
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+void android_main(android_app* state)
+{
+	platform::SetAndroidApp(state);
+	RunApplication(new MakeVulkan());
+}
+#endif

@@ -1,21 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <compositeConfiguration>
-          <compositeBuild compositeDefinitionSource="SCRIPT" />
-        </compositeConfiguration>
+        <option name="delegatedBuild" value="false" />
+        <option name="testRunner" value="PLATFORM" />
         <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/examples/triangle" />
+            <option value="$PROJECT_DIR$/examples/E001BasicCube" />
+            <option value="$PROJECT_DIR$/examples/E002Texture" />
+            <option value="$PROJECT_DIR$/examples/E003DragonLit" />
+            <option value="$PROJECT_DIR$/examples/E004Mipmap" />
+            <option value="$PROJECT_DIR$/examples/E005Batch" />
+            <option value="$PROJECT_DIR$/examples/E006Instancing" />
+            <option value="$PROJECT_DIR$/examples/E007TextureArray" />
+            <option value="$PROJECT_DIR$/examples/E008Cubemap" />
+            <option value="$PROJECT_DIR$/examples/E009InputAttachments" />
+            <option value="$PROJECT_DIR$/examples/E010SubPasses" />
+            <option value="$PROJECT_DIR$/examples/E011Offscreen" />
+            <option value="$PROJECT_DIR$/examples/E999Test" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
-        <option name="testRunner" value="PLATFORM" />
       </GradleProjectSettings>
     </option>
   </component>

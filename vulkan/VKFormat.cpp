@@ -17,6 +17,7 @@ namespace vk
 
 		default:LOGE("Wrong ImageFormat.");
 		}
+		return VK_FORMAT_UNDEFINED;
 	}
 
 	ImageFormat VkFormatToImageFormat(VkFormat format)
@@ -33,5 +34,6 @@ namespace vk
 
 		default:LOGE("Wrong VkFormat.");
 		}
+		return kImageFormat_UNDEFINED;
 	}
 }

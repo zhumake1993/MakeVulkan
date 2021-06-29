@@ -4,6 +4,7 @@
 #include <chrono>
 #include <list>
 #include <vector>
+#include <string>
 
 class ProfilerManager : public NonCopyable
 {

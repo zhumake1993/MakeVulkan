@@ -140,6 +140,7 @@ int SelectQueueFamilyIndex(VkPhysicalDevice physicalDevice)
 	}
 
 	LOGE("Could not find a matching queue family index");
+	return -1;
 }
 
 vk::VKContex::VKContex()

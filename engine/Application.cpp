@@ -2,16 +2,12 @@
 #include "Platforms.h"
 #include "GlobalSettings.h"
 #include "Log.h"
+#include "Tools.h"
 #include "Engine.h"
 #include "InputManager.h"
 #include <stdio.h>
 
 Application* gApplication = nullptr;
-
-void SetApplication(Application * application)
-{
-	gApplication = application;
-}
 
 Application::Application(Engine* engine)
 {
@@ -47,7 +43,7 @@ void Application::Init()
 void Application::Release()
 {
 	m_Engine->ReleaseEngine();
-	delete m_Engine;
+	RELEASE(m_Engine);
 }
 
 void Application::Run()
@@ -69,6 +65,7 @@ void Application::Run()
 		}
 	}
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+	android_app* androidApp = platform::GetAndroidApp();
 	while (1)
 	{
 		int events;
@@ -98,7 +95,7 @@ void Application::Run()
 		}
 
 		if (m_CanRender) {
-			m_Engine->Update();
+			m_Engine->UpdateEngine();
 		}
 	}
 #endif
@@ -227,8 +224,7 @@ void Application::LoadVulkan()
 {
 	if (!InitVulkan())
 	{
-		LOG("Vulkan is unavailable, install vulkan and re-start");
-		EXIT;
+		LOGE("Vulkan is unavailable, install vulkan and re-start");
 	}
 	LOG("Vulkan Ready");
 }
@@ -349,6 +345,8 @@ void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void HandleTouchScreenEvent(int32_t action, AInputEvent* event)
 {
+	auto& inputManager = GetInputManager();
+
 	switch (action)
 	{
 	case AMOTION_EVENT_ACTION_UP:
@@ -455,21 +453,52 @@ void HandleAppCommand(android_app * app, int32_t cmd)
 		break;
 	case APP_CMD_INIT_WINDOW:
 		LOG("APP_CMD_INIT_WINDOW");
-		application->Init();
+		gApplication->Init();
 		break;
 	case APP_CMD_LOST_FOCUS:
 		LOG("APP_CMD_LOST_FOCUS");
-		application->DeActivate();
+		gApplication->DeActivate();
 		break;
 	case APP_CMD_GAINED_FOCUS:
 		LOG("APP_CMD_GAINED_FOCUS");
-		application->Activate();
+		gApplication->Activate();
 		break;
 	case APP_CMD_TERM_WINDOW:
 		LOG("APP_CMD_TERM_WINDOW");
-		application->Release();
+		gApplication->Release();
 		break;
 	}
 }
 
 #endif
+
+void RunApplication(Engine * engine)
+{
+#ifdef _WIN32
+
+	gApplication = new Application(engine);
+
+	gApplication->Init();
+	gApplication->Run();
+	gApplication->Release();
+	RELEASE(gApplication);
+
+	LOG("Application exits.");
+	system("PAUSE");
+
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+
+	gApplication = new Application(engine);
+
+	android_app* androidApp = platform::GetAndroidApp();
+	androidApp->userData = gApplication;
+	androidApp->onAppCmd = HandleAppCommand;
+	androidApp->onInputEvent = HandleAppInput;
+	gApplication->Run();
+	gApplication->Release();
+	RELEASE(gApplication);
+
+	LOG("Application exits.");
+
+#endif
+}

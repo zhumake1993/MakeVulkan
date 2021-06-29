@@ -1,5 +1,6 @@
 #include "DeviceProperties.h"
 #include "Log.h"
+#include <string>
 
 DeviceProperties gDeviceProperties;
 

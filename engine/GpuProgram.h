@@ -4,6 +4,7 @@
 #include "NonCopyable.h"
 #include "GfxTypes.h"
 #include <vector>
+#include <string>
 
 struct GpuParameters
 {

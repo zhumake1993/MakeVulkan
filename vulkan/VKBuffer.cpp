@@ -58,8 +58,8 @@ namespace vk
 			cmdBuffer->CopyBuffer(stagingBuffer->GetBuffer(), m_Buffer, bufferCopyInfo);
 
 			// todo
-			// ¾­²âÊÔ·¢ÏÖÃ»ÓĞÕâÒ»²½Ò²Ã»ÎÊÌâ£¨Ğí¶à½Ì³ÌÒ²µÄÈ·Ã»ÓĞÕâÒ»²½£©
-			// ¸öÈËÈÏÎªÊÇÒòÎªµ÷ÓÃÁËDeviceWaitIdle
+			// ç»æµ‹è¯•å‘ç°æ²¡æœ‰è¿™ä¸€æ­¥ä¹Ÿæ²¡é—®é¢˜ï¼ˆè®¸å¤šæ•™ç¨‹ä¹Ÿçš„ç¡®æ²¡æœ‰è¿™ä¸€æ­¥ï¼‰
+			// ä¸ªäººè®¤ä¸ºæ˜¯å› ä¸ºè°ƒç”¨äº†DeviceWaitIdle
 			//vkCmdPipelineBarrier
 
 			cmdBuffer->End();
@@ -97,7 +97,7 @@ namespace vk
 		range.memory = m_Memory.memory;
 		range.offset = m_Memory.offset + offset;
 
-		if (size = VK_WHOLE_SIZE)
+		if (size == VK_WHOLE_SIZE)
 			range.size = m_Memory.size - offset;
 		else
 			range.size = size;
@@ -209,8 +209,8 @@ namespace vk
 		bufferCreateInfo.pQueueFamilyIndices = nullptr;
 		VK_CHECK_RESULT(vkCreateBuffer(m_Device, &bufferCreateInfo, nullptr, &buffer));
 
-		// todo£ºVK_KHR_dedicated_allocation£¬ VK_KHR_get_memory_requirements2
-		// Ò»Ğ©×ÊÔ´Ê¹ÓÃµ¥¶À·ÖÅäµÄÄÚ´æ£¬Ğ§ÂÊ¿ÉÄÜ¸ü¸ß
+		// todoï¼šVK_KHR_dedicated_allocationï¼Œ VK_KHR_get_memory_requirements2
+		// ä¸€äº›èµ„æºä½¿ç”¨å•ç‹¬åˆ†é…çš„å†…å­˜ï¼Œæ•ˆç‡å¯èƒ½æ›´é«˜
 
 		VkMemoryRequirements memoryRequirements;
 		vkGetBufferMemoryRequirements(m_Device, buffer, &memoryRequirements);
@@ -223,8 +223,8 @@ namespace vk
 
 		vkBindBufferMemory(m_Device, buffer, memory.memory, memory.offset);
 
-		// todo£ºBufferView
-		// ÓÃÓÚcomputer buffer
+		// todoï¼šBufferView
+		// ç”¨äºcomputer buffer
 
 		return new BufferResource(m_Device, m_Allocator, buffer, memory);
 	}

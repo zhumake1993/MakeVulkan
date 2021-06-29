@@ -1,6 +1,7 @@
 #include "Camera.h"
 #include "Tools.h"
 #include "InputManager.h"
+#include "GfxDevice.h"
 
 Camera::Camera()
 {
@@ -76,10 +77,12 @@ void Camera::Update(float deltaTime)
 
 	if (inputManager.count > 0) {
 
+		VkExtent2D extent = GetGfxDevice().GetSwapChainExtent();
+
 		float deltaX = inputManager.pos0.x - inputManager.oldPos0.x;
 		float deltaY = inputManager.pos0.y - inputManager.oldPos0.y;
 		
-		if (inputManager.pos0.x < windowWidth / 2) {
+		if (inputManager.pos0.x < extent.width / 2) {
 
 			// ´¥ÃþÆÁÄ»×ó±ß£¬ÒÆ¶¯Î»ÖÃ
 			auto right = glm::cross(m_WorldUp, m_Look);
@@ -101,7 +104,7 @@ void Camera::Update(float deltaTime)
 		deltaX = inputManager.pos1.x - inputManager.oldPos1.x;
 		deltaY = inputManager.pos1.y - inputManager.oldPos1.y;
 
-		if (inputManager.pos1.x < windowWidth / 2) {
+		if (inputManager.pos1.x < extent.width / 2) {
 
 			// ´¥ÃþÆÁÄ»×ó±ß£¬ÒÆ¶¯Î»ÖÃ
 			auto right = glm::cross(m_WorldUp, m_Look);

@@ -44,4 +44,4 @@ private:
 	bool m_CanRender = false;
 };
 
-void SetApplication(Application* application);
+void RunApplication(Engine* engine);

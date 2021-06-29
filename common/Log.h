@@ -5,6 +5,7 @@
 #if defined(_WIN32)
 #define LOG(...) printf(__VA_ARGS__)
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+#include <android/log.h>
 #define LOG(...) ((void)__android_log_print(ANDROID_LOG_INFO, "MakeVulkan", __VA_ARGS__))
 #endif
 

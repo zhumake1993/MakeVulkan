@@ -69,7 +69,11 @@ VkExtent2D GetSwapChainExtent()
 	// If this is so we define the size by ourselves but it must fit within defined confines
 	if (dp.surfaceCapabilities.currentExtent.width == -1)
 	{
+#ifdef _WIN32
 		VkExtent2D swap_chain_extent = { GetGlobalSettings().windowWidth, GetGlobalSettings().windowHeight };
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+		VkExtent2D swap_chain_extent = { 0, 0 };
+#endif
 
 		if (swap_chain_extent.width < dp.surfaceCapabilities.minImageExtent.width)
 			swap_chain_extent.width = dp.surfaceCapabilities.minImageExtent.width;
