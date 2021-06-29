@@ -1,6 +1,6 @@
 #include "DeviceProperties.h"
 #include "Log.h"
-#include <string>
+#include "mkString.h"
 
 DeviceProperties gDeviceProperties;
 
@@ -9,7 +9,7 @@ DeviceProperties & GetDeviceProperties()
 	return gDeviceProperties;
 }
 
-std::string PhysicalDeviceTypeString(VkPhysicalDeviceType type)
+mkString PhysicalDeviceTypeString(VkPhysicalDeviceType type)
 {
 	switch (type)
 	{
@@ -69,7 +69,7 @@ void DeviceProperties::Print()
 	{
 		VkMemoryHeap& memoryHeap = deviceMemoryProperties.memoryHeaps[i];
 
-		std::string memoryHeapFlags;
+		mkString memoryHeapFlags;
 		if (memoryHeap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
 			memoryHeapFlags += " VK_MEMORY_HEAP_DEVICE_LOCAL_BIT";
 		if (memoryHeap.flags & VK_MEMORY_HEAP_MULTI_INSTANCE_BIT)
@@ -88,7 +88,7 @@ void DeviceProperties::Print()
 			if (memoryType.heapIndex != i)
 				continue;
 
-			std::string memoryPropertyFlags;
+			mkString memoryPropertyFlags;
 			if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 				memoryPropertyFlags += " VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT";
 			if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)

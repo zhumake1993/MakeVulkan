@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GfxTypes.h"
-#include <string>
+#include "mkString.h"
 #include <vector>
 
 class GfxBuffer;
@@ -10,7 +10,7 @@ class Mesh
 {
 public:
 
-	Mesh(const std::string& name);
+	Mesh(const mkString& name);
 	virtual ~Mesh();
 
 	void SetVertexChannels(const std::vector<VertexChannel>& channels);
@@ -18,7 +18,7 @@ public:
 
 	VertexDescription* GetVertexDescription();
 
-	void LoadFromFile(const std::string& filename);
+	void LoadFromFile(const mkString& filename);
 
 	void SetVertices(const std::vector<float>& vertices);
 	void SetIndices(const std::vector<uint32_t>& indices);
@@ -34,12 +34,12 @@ private:
 
 	bool HasVertexChannel(VertexChannel channel);
 
-	void LoadUseObj(const std::string& filename);
-	void LoadUseAssimp(const std::string& filename);
+	void LoadUseObj(const mkString& filename);
+	void LoadUseAssimp(const mkString& filename);
 
 private:
 
-	std::string m_Name;
+	mkString m_Name;
 
 	std::vector<VertexChannel> m_VertexChannels;
 

@@ -2,6 +2,7 @@
 
 #include "Log.h"
 #include <vector>
+#include "mkString.h"
 
 // pointer有可能是一个表达式，需要先转换成一个变量
 #define RELEASE(pointer)	\
@@ -19,7 +20,7 @@
 
 // 根据文件路径返回文件内容
 // 由于android上数据文件存放在apk中，并且是压缩的格式，因此需要做特殊处理
-std::vector<char> GetBinaryFileContents(std::string const &filename);
+std::vector<char> GetBinaryFileContents(mkString const &filename);
 
 // Wrapper functions for aligned memory allocation
 // There is currently no standard for this in C++ that works across all platforms and vendors, so we abstract this

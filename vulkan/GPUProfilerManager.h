@@ -3,7 +3,7 @@
 #include "VKIncludes.h"
 #include "NonCopyable.h"
 #include "GlobalSettings.h"
-#include <list>
+#include "mkList.h"
 
 class VKCommandBuffer;
 
@@ -12,11 +12,11 @@ class GPUProfilerManager : public NonCopyable
 
 	struct GPUTimeStampView
 	{
-		std::string name;
+		mkString name;
 		float time;
 		uint32_t depth;
 
-		GPUTimeStampView(std::string n, float t, uint32_t d) :name(n), time(t), depth(d) {}
+		GPUTimeStampView(mkString n, float t, uint32_t d) :name(n), time(t), depth(d) {}
 	};
 
 	struct FrameGPUTimeStampView
@@ -26,13 +26,13 @@ class GPUProfilerManager : public NonCopyable
 
 		FrameGPUTimeStampView(uint32_t index) :frameIndex(index) {}
 
-		std::string ToString();
+		mkString ToString();
 	};
 
 	struct QueryResource
 	{
 		uint32_t timeStampCount = 0;
-		std::vector<std::string> names;
+		std::vector<mkString> names;
 	};
 
 public:
@@ -41,7 +41,7 @@ public:
 	~GPUProfilerManager();
 
 	void Reset(VKCommandBuffer* cb);
-	void WriteTimeStamp(VKCommandBuffer* cb, std::string name);
+	void WriteTimeStamp(VKCommandBuffer* cb, mkString name);
 	void ResolveTimeStamp();
 	void Update();
 	FrameGPUTimeStampView& GetLastFrameView();
@@ -55,7 +55,7 @@ private:
 	uint32_t m_CurrFrameResourcesIndex = 0;
 	QueryResource m_QueryResource[FrameResourcesCount];
 
-	std::list<FrameGPUTimeStampView> m_FrameGPUTimeStampViews;
+	mkList<FrameGPUTimeStampView> m_FrameGPUTimeStampViews;
 
 	uint32_t m_FrameIndex = 0;
 

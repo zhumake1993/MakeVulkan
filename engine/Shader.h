@@ -2,7 +2,7 @@
 
 #include "GpuProgram.h"
 #include "GfxTypes.h"
-#include <string>
+#include "mkString.h"
 #include <vector>
 
 class GpuProgram;
@@ -13,10 +13,10 @@ class Shader
 
 public:
 
-	Shader(const std::string& name);
+	Shader(const mkString& name);
 	virtual ~Shader();
 
-	void LoadSPV(const std::string& vertFilename, const std::string& fragFilename);
+	void LoadSPV(const mkString& vertFilename, const mkString& fragFilename);
 
 	// 成熟的做法是使用反射，这里手动设置
 	// 假设数据是紧密pack的（满足对齐要求），这样方便处理
@@ -36,7 +36,7 @@ public:
 
 private:
 
-	std::string m_Name;
+	mkString m_Name;
 
 	std::vector<char> m_VertCode;
 	std::vector<char> m_FragCode;

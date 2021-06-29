@@ -2,15 +2,15 @@
 
 #include <assert.h>
 
+// mkArray：替代C数组，增加了对索引范围的检查
 // 参考自vkDOOM3
-// 替代C数组，增加了对索引范围的检查
-template<class T_, int numElements >
-class MkArray
+template<class T_, int numElements>
+class mkArray
 {
 public:
 
 	// 将ptr里的数据初始化为默认值
-	MkArray() :ptr() { assert(numElements >= 0); }
+	mkArray() :ptr() { assert(numElements >= 0); }
 
 	// returns number of elements in list
 	int				Num() const { return numElements; }

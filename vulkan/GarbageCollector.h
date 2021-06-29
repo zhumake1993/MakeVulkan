@@ -1,6 +1,6 @@
 #pragma once
 
-#include <list>
+#include "mkList.h"
 #include "NonCopyable.h"
 #include "VKIncludes.h"
 
@@ -20,6 +20,6 @@ namespace vk
 
 	private:
 
-		std::list<VKResource*> m_Resources;
+		mkList<VKResource*> m_Resources;
 	};
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include "mkString.h"
 #include "VKIncludes.h"
 #include "Log.h"
 
@@ -14,4 +14,4 @@
 	}																												\
 }
 
-std::string VulkanErrorToString(VkResult errorCode);
+mkString VulkanErrorToString(VkResult errorCode);

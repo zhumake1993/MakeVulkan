@@ -14,7 +14,7 @@
 //#include "assimp/postprocess.h"
 //#include "assimp/cimport.h"
 
-Mesh::Mesh(const std::string& name) :
+Mesh::Mesh(const mkString& name) :
 	m_Name(name)
 {
 	m_VertexChannels = {
@@ -70,7 +70,7 @@ VertexDescription* Mesh::GetVertexDescription()
 	return &m_VertexDescription;
 }
 
-void Mesh::LoadFromFile(const std::string & filename)
+void Mesh::LoadFromFile(const mkString & filename)
 {
 	LoadUseObj(filename);
 	//LoadUseAssimp(filename);
@@ -126,12 +126,12 @@ bool Mesh::HasVertexChannel(VertexChannel channel)
 	return std::find(m_VertexChannels.begin(), m_VertexChannels.end(), channel) != m_VertexChannels.end();
 }
 
-void Mesh::LoadUseObj(const std::string & filename)
+void Mesh::LoadUseObj(const mkString & filename)
 {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
-	std::string warn, err;
+	mkString warn, err;
 
 #if defined(_WIN32)
 
@@ -194,7 +194,7 @@ void Mesh::LoadUseObj(const std::string & filename)
 	}
 }
 
-void Mesh::LoadUseAssimp(const std::string & filename)
+void Mesh::LoadUseAssimp(const mkString & filename)
 {
 //	Assimp::Importer Importer;
 //	const aiScene* pScene;

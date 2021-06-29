@@ -680,7 +680,7 @@ void GfxDevice::ResetTimeStamp()
 	m_GPUProfilerManager->Reset(m_FrameResources[m_FrameResourceIndex].commandBuffer);
 }
 
-void GfxDevice::WriteTimeStamp(std::string name)
+void GfxDevice::WriteTimeStamp(mkString name)
 {
 	m_GPUProfilerManager->WriteTimeStamp(m_FrameResources[m_FrameResourceIndex].commandBuffer, name);
 }
@@ -690,7 +690,7 @@ void GfxDevice::ResolveTimeStamp()
 	m_GPUProfilerManager->ResolveTimeStamp();
 }
 
-std::string GfxDevice::GetLastGPUTimeStamp()
+mkString GfxDevice::GetLastGPUTimeStamp()
 {
 	return m_GPUProfilerManager->GetLastFrameView().ToString();
 }

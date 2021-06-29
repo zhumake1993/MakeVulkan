@@ -3,7 +3,7 @@
 #include "VKIncludes.h"
 #include "NonCopyable.h"
 #include "MkArray.h"
-#include <list>
+#include "mkList.h"
 
 namespace vk
 {
@@ -88,7 +88,7 @@ namespace vk
 		int m_MemoryTypeIndex;
 		VkDeviceSize m_BlockSize;
 		VkDeviceSize m_Alignment;
-		std::list<MemoryBlock*> m_MemoryBlocks;
+		mkList<MemoryBlock*> m_MemoryBlocks;
 
 		VkDevice m_Device;
 	};
@@ -113,7 +113,7 @@ namespace vk
 
 		VkDeviceSize m_BlockSize;
 		VkDeviceSize m_Alignment;
-		MkArray<MemoryTypeAllocator*, VK_MAX_MEMORY_TYPES> m_MemoryTypeAllocators;
+		mkArray<MemoryTypeAllocator*, VK_MAX_MEMORY_TYPES> m_MemoryTypeAllocators;
 
 		VkDevice m_Device;
 	};

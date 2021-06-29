@@ -2,7 +2,7 @@
 
 #include "GpuProgram.h"
 #include "GLMIncludes.h"
-#include <string>
+#include "mkString.h"
 
 class Shader;
 class TextureBase;
@@ -14,23 +14,23 @@ class Material
 
 public:
 
-	Material(const std::string& name);
+	Material(const mkString& name);
 	virtual ~Material();
 
-	std::string GetName();
+	mkString GetName();
 
 	void SetShader(Shader* shader);
 	Shader* GetShader();
 
-	void SetFloat(const std::string& name, float x);
-	void SetFloat2(const std::string& name, float x, float y);
-	void SetFloat3(const std::string& name, float x, float y, float z);
-	void SetFloat4(const std::string& name, float x, float y, float z, float w);
-	void SetFloat4x4(const std::string& name, glm::mat4& mat);
+	void SetFloat(const mkString& name, float x);
+	void SetFloat2(const mkString& name, float x, float y);
+	void SetFloat3(const mkString& name, float x, float y, float z);
+	void SetFloat4(const mkString& name, float x, float y, float z, float w);
+	void SetFloat4x4(const mkString& name, glm::mat4& mat);
 
-	void SetInt(const std::string& name, int x);
+	void SetInt(const mkString& name, int x);
 
-	void SetTexture(const std::string& name, TextureBase* texture);
+	void SetTexture(const mkString& name, TextureBase* texture);
 
 	ShaderData* GetShaderData();
 
@@ -46,7 +46,7 @@ public:
 
 private:
 
-	std::string m_Name;
+	mkString m_Name;
 
 	Shader* m_Shader = nullptr;
 

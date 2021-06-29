@@ -7,7 +7,7 @@
 #include "GfxDevice.h"
 #include "GfxBuffer.h"
 
-Material::Material(const std::string& name) :
+Material::Material(const mkString& name) :
 	m_Name(name)
 {
 }
@@ -22,7 +22,7 @@ Material::~Material()
 	}
 }
 
-std::string Material::GetName()
+mkString Material::GetName()
 {
 	return m_Name;
 }
@@ -60,49 +60,49 @@ Shader * Material::GetShader()
 	return m_Shader;
 }
 
-void Material::SetFloat(const std::string& name, float x)
+void Material::SetFloat(const mkString& name, float x)
 {
 	m_ShaderData->SetFloat(name, x);
 
 	m_Dirty = true;
 }
 
-void Material::SetFloat2(const std::string& name, float x, float y)
+void Material::SetFloat2(const mkString& name, float x, float y)
 {
 	m_ShaderData->SetFloat2(name, x, y);
 
 	m_Dirty = true;
 }
 
-void Material::SetFloat3(const std::string& name, float x, float y, float z)
+void Material::SetFloat3(const mkString& name, float x, float y, float z)
 {
 	m_ShaderData->SetFloat3(name, x, y, z);
 
 	m_Dirty = true;
 }
 
-void Material::SetFloat4(const std::string& name, float x, float y, float z, float w)
+void Material::SetFloat4(const mkString& name, float x, float y, float z, float w)
 {
 	m_ShaderData->SetFloat4(name, x, y, z, w);
 
 	m_Dirty = true;
 }
 
-void Material::SetFloat4x4(const std::string& name, glm::mat4 & mat)
+void Material::SetFloat4x4(const mkString& name, glm::mat4 & mat)
 {
 	m_ShaderData->SetFloat4x4(name, mat);
 
 	m_Dirty = true;
 }
 
-void Material::SetInt(const std::string & name, int x)
+void Material::SetInt(const mkString & name, int x)
 {
 	m_ShaderData->SetInt(name, x);
 
 	m_Dirty = true;
 }
 
-void Material::SetTexture(const std::string& name, TextureBase * texture)
+void Material::SetTexture(const mkString& name, TextureBase * texture)
 {
 	m_ShaderData->SetTexture(name, texture);
 }

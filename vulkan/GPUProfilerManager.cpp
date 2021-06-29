@@ -38,7 +38,7 @@ void GPUProfilerManager::Reset(VKCommandBuffer* cb)
 	vkCmdResetQueryPool(cb->commandBuffer, m_QueryPool, m_CurrFrameResourcesIndex * m_MaxQueryCount, m_MaxQueryCount);
 }
 
-void GPUProfilerManager::WriteTimeStamp(VKCommandBuffer* cb, std::string name)
+void GPUProfilerManager::WriteTimeStamp(VKCommandBuffer* cb, mkString name)
 {
 	QueryResource& queryResource = m_QueryResource[m_CurrFrameResourcesIndex];
 
@@ -87,7 +87,7 @@ void GPUProfilerManager::ResolveTimeStamp()
 
 	FrameGPUTimeStampView& view = m_FrameGPUTimeStampViews.back();
 
-	std::stack<std::pair<std::string, float>> stampStack;
+	std::stack<std::pair<mkString, float>> stampStack;
 	int depth = 0;
 
 	for (int i = static_cast<int>(queryResource.names.size()) - 1; i >= 0; i--)
@@ -134,9 +134,9 @@ GPUProfilerManager::FrameGPUTimeStampView & GPUProfilerManager::GetLastFrameView
 void GPUProfilerManager::WriteToFile()
 {
 #if defined(_WIN32)
-	std::string filePath = "GPUProfiler.txt";
+	mkString filePath = "GPUProfiler.txt";
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	std::string filePath = "/data/data/com.example.MakeVulkan/GPUProfiler.txt";
+	mkString filePath = "/data/data/com.example.MakeVulkan/GPUProfiler.txt";
 #endif
 
 	std::ofstream outfile;
@@ -149,13 +149,13 @@ void GPUProfilerManager::WriteToFile()
 	outfile.close();
 }
 
-std::string GPUProfilerManager::FrameGPUTimeStampView::ToString()
+mkString GPUProfilerManager::FrameGPUTimeStampView::ToString()
 {
 	std::ostringstream ostr;
 
 	ostr << "FrameIndex: " << frameIndex << std::endl;
 	for (auto& view : gpuTimeStampViews) {
-		ostr << std::string(view.depth, '\t') << view.name << "   " << view.time << std::endl;
+		ostr << mkString(view.depth, '\t') << view.name << "   " << view.time << std::endl;
 	}
 
 	return ostr.str();

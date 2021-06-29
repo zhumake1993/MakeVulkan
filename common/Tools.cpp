@@ -6,7 +6,7 @@
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
 #include <android/asset_manager.h>
 #endif
-std::vector<char> GetBinaryFileContents(std::string const &filename) {
+std::vector<char> GetBinaryFileContents(mkString const &filename) {
 
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
 	AAsset* asset = AAssetManager_open(platform::GetAndroidApp()->activity->assetManager, filename.c_str(), AASSET_MODE_STREAMING);

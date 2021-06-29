@@ -129,9 +129,9 @@ public:
 	void PushConstants(GpuProgram* gpuProgram, void* data, uint32_t offset, uint32_t size);
 
 	void ResetTimeStamp();
-	void WriteTimeStamp(std::string name);
+	void WriteTimeStamp(mkString name);
 	void ResolveTimeStamp();
-	std::string GetLastGPUTimeStamp();
+	mkString GetLastGPUTimeStamp();
 
 	// Debug
 	void PrintMemoryAllocatorInfo();

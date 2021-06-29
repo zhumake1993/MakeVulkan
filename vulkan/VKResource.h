@@ -29,8 +29,8 @@ namespace vk
 
 
 //todo
-#include <unordered_map>
-#include <list>
+#include "mkHashMap.h"
+#include "mkList.h"
 template <class Key, class Resource, class KeyHash>
 class ResourcePool
 {
@@ -68,7 +68,7 @@ class ResourcePool
 
 	private:
 
-		std::list<Resource*> resources;
+		mkList<Resource*> resources;
 	};
 
 public:
@@ -97,5 +97,5 @@ public:
 
 private:
 
-	std::unordered_map<Key, PoolEntry, KeyHash> m_Pool;
+	mkHashMap<Key, PoolEntry, KeyHash> m_Pool;
 };

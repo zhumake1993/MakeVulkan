@@ -3,8 +3,8 @@
 #include "VKIncludes.h"
 #include "NonCopyable.h"
 #include "VKResource.h"
-#include <list>
-#include <unordered_map>
+#include "mkList.h"
+#include "mkHashMap.h"
 
 class DescriptorSetManager : public NonCopyable
 {
@@ -32,8 +32,8 @@ private:
 
 private:
 
-	using SetList = std::list<DescriptorSet*>;
-	std::unordered_map<VkDescriptorSetLayout, SetList> m_SetCache;
+	using SetList = mkList<DescriptorSet*>;
+	mkHashMap<VkDescriptorSetLayout, SetList> m_SetCache;
 
 	uint32_t m_FrameIndex = 0;
 

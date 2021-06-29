@@ -4,30 +4,30 @@
 #include "NonCopyable.h"
 #include "GfxTypes.h"
 #include <vector>
-#include <string>
+#include "mkString.h"
 
 struct GpuParameters
 {
 	struct ValueParameter
 	{
-		ValueParameter(const std::string& _name, ShaderDataType _type) :
+		ValueParameter(const mkString& _name, ShaderDataType _type) :
 			name(_name), type(_type)
 		{
 		}
 
-		std::string name;
+		mkString name;
 		ShaderDataType type;
 	};
 
 	struct UniformParameter
 	{
 		UniformParameter() {}
-		UniformParameter(const std::string& _name, int _binding, VkShaderStageFlags _stageFlags) :
+		UniformParameter(const mkString& _name, int _binding, VkShaderStageFlags _stageFlags) :
 			name(_name), binding(_binding), stageFlags(_stageFlags)
 		{
 		}
 
-		std::string name;
+		mkString name;
 		int binding;
 		VkShaderStageFlags stageFlags;
 
@@ -37,24 +37,24 @@ struct GpuParameters
 	// 目前都是COMBINED_IMAGE_SAMPLER
 	struct TextureParameter
 	{
-		TextureParameter(const std::string& _name, int _binding, VkShaderStageFlags _stageFlags) :
+		TextureParameter(const mkString& _name, int _binding, VkShaderStageFlags _stageFlags) :
 			name(_name), binding(_binding), stageFlags(_stageFlags)
 		{
 		}
 
-		std::string name;
+		mkString name;
 		int binding;
 		VkShaderStageFlags stageFlags;
 	};
 
 	struct InputAttachmentParameter
 	{
-		InputAttachmentParameter(const std::string& _name, int _binding, VkShaderStageFlags _stageFlags) :
+		InputAttachmentParameter(const mkString& _name, int _binding, VkShaderStageFlags _stageFlags) :
 			name(_name), binding(_binding), stageFlags(_stageFlags)
 		{
 		}
 
-		std::string name;
+		mkString name;
 		int binding;
 		VkShaderStageFlags stageFlags;
 	};

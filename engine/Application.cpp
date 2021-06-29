@@ -207,15 +207,15 @@ void Application::SetupWindow()
 
 void Application::DisplayAndroidProduct()
 {
-	std::string androidProduct = "";
+	mkString androidProduct = "";
 	char prop[PROP_VALUE_MAX + 1];
 	int len = __system_property_get("ro.product.manufacturer", prop);
 	if (len > 0) {
-		androidProduct += std::string(prop) + " ";
+		androidProduct += mkString(prop) + " ";
 	};
 	len = __system_property_get("ro.product.model", prop);
 	if (len > 0) {
-		androidProduct += std::string(prop);
+		androidProduct += mkString(prop);
 	};
 	LOG("androidProduct = %s", androidProduct.c_str());
 }

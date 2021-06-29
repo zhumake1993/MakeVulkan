@@ -41,7 +41,7 @@ public:
 	bool m_NeedSubmit = false;
 
 	//// TimeStamp
-	//void WriteTimeStamp(std::string name);
+	//void WriteTimeStamp(mkString name);
 	
 
 	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;

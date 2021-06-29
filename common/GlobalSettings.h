@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include "mkString.h"
 #include <vector>
 #include "NonCopyable.h"
 #include "VKIncludes.h"
@@ -21,19 +21,19 @@ struct GlobalSettings : public NonCopyable
 	void Print();
 
 #if defined(_WIN32)
-	std::string consoleTitle;
-	std::string windowClassName;
-	std::string windowTitleName;
+	mkString consoleTitle;
+	mkString windowClassName;
+	mkString windowTitleName;
 	uint32_t	windowWidth;
 	uint32_t	windowHeight;
 #endif
 
-	std::string assetPath;
+	mkString assetPath;
 
 	// Instance
-	std::string								applicationName;
+	mkString								applicationName;
 	uint32_t								applicationVersion;
-	std::string								engineName;
+	mkString								engineName;
 	uint32_t								engineVersion;
 	uint32_t								apiVersion;
 	std::vector<const char*>				enabledInstanceLayers;

@@ -108,8 +108,8 @@ void MakeVulkan::Update()
 	ImGui::Text("%.2f ms/frame (%.2f fps)", (1000.0f / fps), fps);
 
 	static float acTime = 0;
-	static std::string cpuProfiler = "";
-	static std::string gpuProfiler = "";
+	static mkString cpuProfiler = "";
+	static mkString gpuProfiler = "";
 	acTime += deltaTime;
 	if (acTime > 1.0f)
 	{
@@ -228,7 +228,7 @@ void MakeVulkan::PrepareResources()
 
 		// Vulkan core supports three different compressed texture formats
 		// As the support differs between implemementations we need to check device features and select a proper format and file
-		std::string filename;
+		mkString filename;
 		VkFormat format;
 		if (dp.deviceFeatures.textureCompressionBC)
 		{

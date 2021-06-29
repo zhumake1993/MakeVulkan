@@ -1,6 +1,6 @@
 #include "VKTools.h"
 
-std::string VulkanErrorToString(VkResult errorCode)
+mkString VulkanErrorToString(VkResult errorCode)
 {
 	switch (errorCode)
 	{

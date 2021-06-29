@@ -2,7 +2,7 @@
 
 #include "GpuProgram.h"
 #include "GLMIncludes.h"
-#include <unordered_map>
+#include "mkHashMap.h"
 
 class TextureBase;
 
@@ -17,13 +17,13 @@ public:
 
 	void SetValueParameter(std::vector<GpuParameters::ValueParameter>& valueParameters);
 
-	void SetFloat(const std::string& name, float x);
-	void SetFloat2(const std::string& name, float x, float y);
-	void SetFloat3(const std::string& name, float x, float y, float z);
-	void SetFloat4(const std::string& name, float x, float y, float z, float w);
-	void SetFloat4x4(const std::string& name, glm::mat4& mat);
+	void SetFloat(const mkString& name, float x);
+	void SetFloat2(const mkString& name, float x, float y);
+	void SetFloat3(const mkString& name, float x, float y, float z);
+	void SetFloat4(const mkString& name, float x, float y, float z, float w);
+	void SetFloat4x4(const mkString& name, glm::mat4& mat);
 
-	void SetInt(const std::string& name, int x);
+	void SetInt(const mkString& name, int x);
 
 	void* GetValueData();
 	uint32_t GetValueDataSize();
@@ -32,9 +32,9 @@ public:
 
 	void SetTextureParameter(std::vector<GpuParameters::TextureParameter>& textureParameters);
 
-	void SetTexture(const std::string& name, TextureBase* texture);
+	void SetTexture(const mkString& name, TextureBase* texture);
 
-	TextureBase* GetTexture(const std::string& name);
+	TextureBase* GetTexture(const mkString& name);
 
 	// SpecializationConstant
 
@@ -50,13 +50,13 @@ private:
 	// ValueParameter
 	char* m_ValueData = nullptr;
 	uint32_t m_ValueDataSize = 0;
-	std::unordered_map<std::string, uint32_t> m_ValueOffsetMap;
+	mkHashMap<mkString, uint32_t> m_ValueOffsetMap;
 
 	// TextureParameter
-	std::unordered_map<std::string, TextureBase*> m_TextureMap;
+	mkHashMap<mkString, TextureBase*> m_TextureMap;
 
 	// SpecializationConstant
 	char* m_SCData = nullptr;
 	uint32_t m_SCDataSize = 0;
-	std::unordered_map<int, uint32_t> m_SCOffsetMap;
+	mkHashMap<int, uint32_t> m_SCOffsetMap;
 };

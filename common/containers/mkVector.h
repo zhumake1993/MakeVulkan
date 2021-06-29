@@ -2,13 +2,13 @@
 
 #include <vector>
 
-// 替代vector，增加了对索引范围的检查
+// mkVector：替代std::vector，增加了对索引范围的检查
 template<class T_>
-class MkVector
+class mkVector
 {
 public:
 
-	MkVector(size_t size) :vec(size) {}
+	mkVector(size_t size) :vec(size) {}
 
 	const T_ &		operator[](int index) const { assert(0 <= index && (size_t)index < vec.size()); return vec[index]; }
 	T_ &			operator[](int index) { assert(0 <= index && (size_t)index < vec.size()); return vec[index]; }

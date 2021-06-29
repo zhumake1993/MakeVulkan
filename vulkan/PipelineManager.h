@@ -4,7 +4,7 @@
 #include "NonCopyable.h"
 #include "VKResource.h"
 #include "GfxTypes.h"
-#include <unordered_map>
+#include "mkHashMap.h"
 
 class VKGpuProgram;
 
@@ -103,7 +103,7 @@ private:
 	// µ±Ç°µÄPipelineKey
 	PipelineKey m_PipelineKey;
 
-	std::unordered_map<PipelineKey, Pipeline*, PipelineHash> m_PSOCache;
+	mkHashMap<PipelineKey, Pipeline*, PipelineHash> m_PSOCache;
 
 	uint32_t m_FrameIndex = 0;
 

@@ -18,6 +18,11 @@ file(GLOB common_sources common/*.h common/*.cpp common/*.hpp)
 include_directories(common)
 source_group("common" FILES ${common_sources})
 
+# containers
+file(GLOB containers_sources common/containers/*.h common/containers/*.cpp common/containers/*.hpp)
+include_directories(common/containers)
+source_group("common/containers" FILES ${containers_sources})
+
 # vulkan
 file(GLOB vulkan_sources vulkan/*.h vulkan/*.cpp vulkan/*.hpp)
 include_directories(vulkan)
@@ -54,7 +59,7 @@ source_group("imgui" FILES ${imgui_sources})
 #include_directories(external/assimp)
 
 # 生成链接库
-add_library (base ${common_sources} ${vulkan_sources} ${engine_sources} ${imgui_sources})
+add_library (base ${common_sources} ${containers_sources} ${vulkan_sources} ${engine_sources} ${imgui_sources})
 
 # glslang需要额外链接
 #target_link_libraries(base glslang SPIRV)

@@ -25,7 +25,7 @@ namespace vk
 
 	void GarbageCollector::GarbageCollect()
 	{
-		std::list<VKResource*>::iterator itr;
+		mkList<VKResource*>::iterator itr;
 		for (itr = m_Resources.begin(); itr != m_Resources.end(); ++itr)
 		{
 			if (!(*itr)->InUse())
