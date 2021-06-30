@@ -26,7 +26,7 @@ uint32_t RenderPass::GetHeight()
 	return m_RenderPassKey.GetHeight();
 }
 
-void RenderPass::SetAttachments(const std::vector<Attachment*> actualAttachments)
+void RenderPass::SetAttachments(const mkVector<Attachment*> actualAttachments)
 {
 	auto& attachments = m_RenderPassKey.GetAttachments();
 

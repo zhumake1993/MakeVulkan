@@ -60,7 +60,7 @@ public:
 	{
 	}
 
-	std::vector<Image*>& GetImages();
+	mkVector<Image*>& GetImages();
 
 	// shaderÖÐµÄinput_attachment_index
 	VkImageView GetInputAttachmentImageView(uint32_t inputIndex);

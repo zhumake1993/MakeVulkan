@@ -39,7 +39,7 @@ Mesh::~Mesh()
 	RELEASE(m_IndexBuffer);
 }
 
-void Mesh::SetVertexChannels(const std::vector<VertexChannel>& channels)
+void Mesh::SetVertexChannels(const mkVector<VertexChannel>& channels)
 {
 	m_VertexChannels = channels;
 
@@ -60,7 +60,7 @@ void Mesh::SetVertexChannels(const std::vector<VertexChannel>& channels)
 	m_VertexDescription.stride = offset;
 }
 
-std::vector<VertexChannel>& Mesh::GetVertexChannels()
+mkVector<VertexChannel>& Mesh::GetVertexChannels()
 {
 	return m_VertexChannels;
 }
@@ -76,12 +76,12 @@ void Mesh::LoadFromFile(const mkString & filename)
 	//LoadUseAssimp(filename);
 }
 
-void Mesh::SetVertices(const std::vector<float>& vertices)
+void Mesh::SetVertices(const mkVector<float>& vertices)
 {
 	m_Vertices = vertices;
 }
 
-void Mesh::SetIndices(const std::vector<uint32_t>& indices)
+void Mesh::SetIndices(const mkVector<uint32_t>& indices)
 {
 	m_Indices = indices;
 }
@@ -129,13 +129,13 @@ bool Mesh::HasVertexChannel(VertexChannel channel)
 void Mesh::LoadUseObj(const mkString & filename)
 {
 	tinyobj::attrib_t attrib;
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
+	mkVector<tinyobj::shape_t> shapes;
+	mkVector<tinyobj::material_t> materials;
 	mkString warn, err;
 
 #if defined(_WIN32)
 
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str()))
+	if (!tinyobj::LoadObj(&attrib, &shapes.vector(), &materials.vector(), &warn, &err, filename.c_str()))
 	{
 		LOG("LoadObj failed: %s", (warn + err).c_str());
 		assert(false);
@@ -204,7 +204,7 @@ void Mesh::LoadUseAssimp(const mkString & filename)
 //#if defined(__ANDROID__)
 //
 //	// 手机上要先用专门的函数把数据读取出来
-//	std::vector<char> fileData = GetBinaryFileContents(filename);
+//	mkVector<char> fileData = GetBinaryFileContents(filename);
 //
 //	pScene = Importer.ReadFileFromMemory(fileData.data(), fileData.size(), defaultFlags);
 //

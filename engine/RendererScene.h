@@ -1,7 +1,7 @@
 #pragma once
 
 #include "NonCopyable.h"
-#include <vector>
+#include "mkVector.h"
 
 class Mesh;
 class Texture;
@@ -26,7 +26,7 @@ public:
 	void DrawRenderNode(RenderNode* node);
 
 	// 要求相同Material
-	void DrawBatch(std::vector<RenderNode*> nodes);
+	void DrawBatch(mkVector<RenderNode*> nodes);
 
 	// Instancing
 	void DrawInstanced(Mesh* mesh, Shader* shader, void* data, uint64_t size, uint32_t instanceCount);

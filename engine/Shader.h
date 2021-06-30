@@ -3,7 +3,7 @@
 #include "GpuProgram.h"
 #include "GfxTypes.h"
 #include "mkString.h"
-#include <vector>
+#include "mkVector.h"
 
 class GpuProgram;
 class ShaderData;
@@ -38,8 +38,8 @@ private:
 
 	mkString m_Name;
 
-	std::vector<char> m_VertCode;
-	std::vector<char> m_FragCode;
+	mkVector<char> m_VertCode;
+	mkVector<char> m_FragCode;
 
 	GpuProgram* m_GpuProgram;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include "mkVector.h"
 #include "VKIncludes.h"
 #include "NonCopyable.h"
 
@@ -12,21 +12,21 @@ struct DeviceProperties : public NonCopyable
 	void Print();
 
 	// Instance
-	std::vector<VkLayerProperties>			availableInstanceLayers;
-	std::vector<VkExtensionProperties>		availableInstanceExtensions;
+	mkVector<VkLayerProperties>			availableInstanceLayers;
+	mkVector<VkExtensionProperties>		availableInstanceExtensions;
 
 	// Device
-	std::vector<VkPhysicalDevice>			physicalDevices;
+	mkVector<VkPhysicalDevice>			physicalDevices;
 	VkPhysicalDeviceProperties				deviceProperties;
 	VkPhysicalDeviceFeatures				deviceFeatures;
 	VkPhysicalDeviceMemoryProperties		deviceMemoryProperties;
-	std::vector<VkExtensionProperties>		availableDeviceExtensions;
-	std::vector<VkQueueFamilyProperties>	queueFamilyProperties;
+	mkVector<VkExtensionProperties>		availableDeviceExtensions;
+	mkVector<VkQueueFamilyProperties>	queueFamilyProperties;
 
 	// SwapChain
 	VkSurfaceCapabilitiesKHR				surfaceCapabilities;
-	std::vector<VkSurfaceFormatKHR>			surfaceFormats;
-	std::vector<VkPresentModeKHR>			presentModes;
+	mkVector<VkSurfaceFormatKHR>			surfaceFormats;
+	mkVector<VkPresentModeKHR>			presentModes;
 };
 
 DeviceProperties& GetDeviceProperties();

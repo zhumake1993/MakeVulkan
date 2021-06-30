@@ -6,18 +6,18 @@
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
 #include <android/asset_manager.h>
 #endif
-std::vector<char> GetBinaryFileContents(mkString const &filename) {
+mkVector<char> GetBinaryFileContents(mkString const &filename) {
 
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
 	AAsset* asset = AAssetManager_open(platform::GetAndroidApp()->activity->assetManager, filename.c_str(), AASSET_MODE_STREAMING);
 	if (!asset)
 	{
 		LOG("Could not open file(%s)\n", filename.c_str());
-		return std::vector<char>();
+		return mkVector<char>();
 	}
 	size_t size = AAsset_getLength(asset);
 
-	std::vector<char> data(size);
+	mkVector<char> data(size);
 	AAsset_read(asset, data.data(), size);
 	AAsset_close(asset);
 #else
@@ -25,7 +25,7 @@ std::vector<char> GetBinaryFileContents(mkString const &filename) {
 	if (file.fail())
 	{
 		LOG("Could not open file(%s)\n", filename.c_str());
-		return std::vector<char>();
+		return mkVector<char>();
 	}
 
 	std::streampos begin, end;
@@ -33,7 +33,7 @@ std::vector<char> GetBinaryFileContents(mkString const &filename) {
 	file.seekg(0, std::ios::end);
 	end = file.tellg();
 
-	std::vector<char> data(static_cast<size_t>(end - begin));
+	mkVector<char> data(static_cast<size_t>(end - begin));
 	file.seekg(0, std::ios::beg);
 	file.read(&data[0], end - begin);
 	file.close();

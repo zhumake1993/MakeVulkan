@@ -93,7 +93,7 @@ void ProfilerManager::WriteToFile()
 
 ProfilerManager::FrameTimeView ProfilerManager::Resolve(FrameStamp& frameStamp)
 {
-	std::vector<Stamp>& stamps = frameStamp.stamps;
+	mkVector<Stamp>& stamps = frameStamp.stamps;
 
 	FrameTimeView frameTimeView(frameStamp.frameIndex);
 	std::stack<Stamp> stampStack;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "NonCopyable.h"
-#include <vector>
+#include "mkVector.h"
 #include "VKIncludes.h"//todo
 
 class Attachment;
@@ -20,7 +20,7 @@ public:
 
 private:
 
-	std::vector<Attachment*> m_TempAttachments;
+	mkVector<Attachment*> m_TempAttachments;
 };
 
 ResourceManager& GetResourceManager();

@@ -11,7 +11,7 @@ ShaderData::~ShaderData()
 	RELEASE(m_SCData);
 }
 
-void ShaderData::SetValueParameter(std::vector<GpuParameters::ValueParameter>& valueParameters)
+void ShaderData::SetValueParameter(mkVector<GpuParameters::ValueParameter>& valueParameters)
 {
 	uint32_t offset = 0;
 	for (auto& vp : valueParameters)
@@ -90,7 +90,7 @@ uint32_t ShaderData::GetValueDataSize()
 	return m_ValueDataSize;
 }
 
-void ShaderData::SetTextureParameter(std::vector<GpuParameters::TextureParameter>& textureParameters)
+void ShaderData::SetTextureParameter(mkVector<GpuParameters::TextureParameter>& textureParameters)
 {
 	for (auto& texture : textureParameters)
 	{
@@ -118,7 +118,7 @@ TextureBase * ShaderData::GetTexture(const mkString& name)
 	return m_TextureMap[name];
 }
 
-void ShaderData::SetSpecializationConstantParameter(std::vector<GpuParameters::SpecializationConstantParameter>& scParameters)
+void ShaderData::SetSpecializationConstantParameter(mkVector<GpuParameters::SpecializationConstantParameter>& scParameters)
 {
 	uint32_t offset = 0;
 	for (auto& sc : scParameters)

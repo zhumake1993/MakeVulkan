@@ -3,7 +3,7 @@
 #include "NonCopyable.h"
 #include <chrono>
 #include "mkList.h"
-#include <vector>
+#include "mkVector.h"
 #include "mkString.h"
 
 class ProfilerManager : public NonCopyable
@@ -20,7 +20,7 @@ class ProfilerManager : public NonCopyable
 	struct FrameStamp
 	{
 		uint32_t frameIndex;
-		std::vector<Stamp> stamps;
+		mkVector<Stamp> stamps;
 
 		FrameStamp() :frameIndex(-1) {}
 		FrameStamp(uint32_t index) :frameIndex(index) {}
@@ -39,7 +39,7 @@ class ProfilerManager : public NonCopyable
 	struct FrameTimeView
 	{
 		uint32_t frameIndex;
-		std::vector<TimeView> timeViews;
+		mkVector<TimeView> timeViews;
 
 		FrameTimeView(uint32_t index) :frameIndex(index) {}
 

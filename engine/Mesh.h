@@ -2,7 +2,7 @@
 
 #include "GfxTypes.h"
 #include "mkString.h"
-#include <vector>
+#include "mkVector.h"
 
 class GfxBuffer;
 
@@ -13,15 +13,15 @@ public:
 	Mesh(const mkString& name);
 	virtual ~Mesh();
 
-	void SetVertexChannels(const std::vector<VertexChannel>& channels);
-	std::vector<VertexChannel>& GetVertexChannels();
+	void SetVertexChannels(const mkVector<VertexChannel>& channels);
+	mkVector<VertexChannel>& GetVertexChannels();
 
 	VertexDescription* GetVertexDescription();
 
 	void LoadFromFile(const mkString& filename);
 
-	void SetVertices(const std::vector<float>& vertices);
-	void SetIndices(const std::vector<uint32_t>& indices);
+	void SetVertices(const mkVector<float>& vertices);
+	void SetIndices(const mkVector<uint32_t>& indices);
 
 	void UploadToGPU();
 
@@ -41,12 +41,12 @@ private:
 
 	mkString m_Name;
 
-	std::vector<VertexChannel> m_VertexChannels;
+	mkVector<VertexChannel> m_VertexChannels;
 
 	VertexDescription m_VertexDescription;
 
-	std::vector<float> m_Vertices;
-	std::vector<uint32_t> m_Indices;
+	mkVector<float> m_Vertices;
+	mkVector<uint32_t> m_Indices;
 
 	GfxBuffer* m_VertexBuffer = nullptr;
 	GfxBuffer* m_IndexBuffer = nullptr;

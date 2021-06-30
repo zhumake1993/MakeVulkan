@@ -25,7 +25,6 @@ mkString PhysicalDeviceTypeString(VkPhysicalDeviceType type)
 
 DeviceProperties::DeviceProperties()
 {
-	memset(this, 0, sizeof(*this));
 }
 
 DeviceProperties::~DeviceProperties()

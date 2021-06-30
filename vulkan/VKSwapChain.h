@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include "mkVector.h"
 #include "VKIncludes.h"
 #include "NonCopyable.h"
 
@@ -36,8 +36,8 @@ namespace vk
 		VkSurfaceTransformFlagBitsKHR			m_Transform;
 		VkPresentModeKHR						m_PresentMode;
 
-		std::vector<VkImage>					m_SwapChainImages;
-		std::vector<VkImageView>				m_SwapChainImageViews;
+		mkVector<VkImage>					m_SwapChainImages;
+		mkVector<VkImageView>				m_SwapChainImageViews;
 
 		VkInstance								m_Instance = VK_NULL_HANDLE;
 		VkDevice								m_Device = VK_NULL_HANDLE;

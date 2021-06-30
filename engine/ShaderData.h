@@ -15,7 +15,7 @@ public:
 
 	// ValueParameter
 
-	void SetValueParameter(std::vector<GpuParameters::ValueParameter>& valueParameters);
+	void SetValueParameter(mkVector<GpuParameters::ValueParameter>& valueParameters);
 
 	void SetFloat(const mkString& name, float x);
 	void SetFloat2(const mkString& name, float x, float y);
@@ -30,7 +30,7 @@ public:
 
 	// TextureParameter
 
-	void SetTextureParameter(std::vector<GpuParameters::TextureParameter>& textureParameters);
+	void SetTextureParameter(mkVector<GpuParameters::TextureParameter>& textureParameters);
 
 	void SetTexture(const mkString& name, TextureBase* texture);
 
@@ -38,7 +38,7 @@ public:
 
 	// SpecializationConstant
 
-	void SetSpecializationConstantParameter(std::vector<GpuParameters::SpecializationConstantParameter>& scParameters);
+	void SetSpecializationConstantParameter(mkVector<GpuParameters::SpecializationConstantParameter>& scParameters);
 
 	void SetSCFloat(int id, float x);
 	void SetSCInt(int id, int x);

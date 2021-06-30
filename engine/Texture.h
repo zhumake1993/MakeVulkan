@@ -2,7 +2,7 @@
 
 #include "VKIncludes.h" //todo
 #include "NamedObject.h"
-#include <vector>
+#include "mkVector.h"
 
 class Image;
 
@@ -55,8 +55,8 @@ private:
 
 private:
 
-	std::vector<char> m_ImageData;
-	std::vector<std::vector<std::vector<uint64_t>>> m_Offsets;
+	mkVector<char> m_ImageData;
+	mkVector<mkVector<mkVector<uint64_t>>> m_Offsets;
 };
 
 class Attachment : public TextureBase

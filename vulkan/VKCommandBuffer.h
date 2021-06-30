@@ -2,7 +2,7 @@
 
 #include "VKIncludes.h"
 #include "NonCopyable.h"
-#include <vector>
+#include "mkVector.h"
 
 class VKCommandBuffer : public NonCopyable
 {
@@ -14,7 +14,7 @@ public:
 	void Begin();
 	void End();
 
-	void BeginRenderPass(VkRenderPass vkRenderPass, VkFramebuffer vkFrameBuffer, VkRect2D& area, std::vector<VkClearValue>& clearValues);
+	void BeginRenderPass(VkRenderPass vkRenderPass, VkFramebuffer vkFrameBuffer, VkRect2D& area, mkVector<VkClearValue>& clearValues);
 	void NextSubpass();
 	void EndRenderPass();
 
@@ -22,12 +22,12 @@ public:
 	void SetScissor(VkRect2D& area);
 
 	void CopyBuffer(VkBuffer src, VkBuffer dst, VkBufferCopy& region);
-	void CopyBufferToImage(VkBuffer src, VkImage dst, uint32_t width, uint32_t height, const std::vector<std::vector<std::vector<uint64_t>>>& offsets);
+	void CopyBufferToImage(VkBuffer src, VkImage dst, uint32_t width, uint32_t height, const mkVector<mkVector<mkVector<uint64_t>>>& offsets);
 
 	void ImageMemoryBarrier(VkImage image, VkPipelineStageFlags srcPSF, VkPipelineStageFlags dstPSF, VkAccessFlags srcAF, VkAccessFlags dstAF, VkImageLayout oldIL, VkImageLayout newIL, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount);
 
 	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set);
-	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set, const std::vector<uint32_t>& offsets);
+	void BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set, const mkVector<uint32_t>& offsets);
 	void BindPipeline(VkPipelineBindPoint bindPoint, VkPipeline vkPipeline);
 	
 	void BindVertexBuffer(uint32_t bind, VkBuffer vkBuffer);

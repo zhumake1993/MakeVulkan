@@ -25,6 +25,8 @@
 
 #include "ProfilerManager.h"
 
+#include "mkVector.h"
+
 MakeVulkan::MakeVulkan()
 {
 }
@@ -173,7 +175,7 @@ void MakeVulkan::Draw()
 	Attachment* depthAttachmentOffscreen = GetResourceManager().CreateTempAttachment(kImageDepthAspectBit | kImageDepthAttachmentBit, device.GetDepthFormat(), 512, 512);
 	m_RenderPassOffscreen->SetAttachments({ colorAttachmentOffscreen, depthAttachmentOffscreen });
 
-	std::vector<VkClearValue> clearValues(2);
+	mkVector<VkClearValue> clearValues(2);
 	clearValues[0].color = { 0.0f, 0.0f, 0.0f, 0.0f };
 	clearValues[1].depthStencil = { 1.0f, 0 };
 

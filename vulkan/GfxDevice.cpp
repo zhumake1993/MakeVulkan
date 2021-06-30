@@ -413,7 +413,7 @@ Image * GfxDevice::GetSwapchainImage()
 	return imageVulkan;
 }
 
-void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size, const std::vector<std::vector<std::vector<uint64_t>>>& offsets)
+void GfxDevice::UpdateImage(Image * image, void * data, uint64_t size, const mkVector<mkVector<mkVector<uint64_t>>>& offsets)
 {
 	// 简单起见，假设当前该image的资源并没有被GPU使用中
 
@@ -464,7 +464,7 @@ RenderPass * GfxDevice::CreateRenderPass(RenderPassKey& renderPassKey)
 	return new RenderPassVulkan(renderPassKey);
 }
 
-void GfxDevice::BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, std::vector<VkClearValue>& clearValues)
+void GfxDevice::BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, mkVector<VkClearValue>& clearValues)
 {
 	PROFILER(GfxDevice_BeginRenderPass);
 
@@ -477,8 +477,8 @@ void GfxDevice::BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, std:
 
 	VKFramebuffer* framebuffer = new VKFramebuffer(m_VKContex->device);
 
-	std::vector<Image*>& images = m_CurrentRenderPass->GetImages();
-	std::vector<VkImageView> views(images.size());
+	mkVector<Image*>& images = m_CurrentRenderPass->GetImages();
+	mkVector<VkImageView> views(images.size());
 	for (size_t i = 0; i < images.size(); i++)
 	{
 		ImageVulkan* imageVulkan = static_cast<ImageVulkan*>(images[i]);
@@ -527,7 +527,7 @@ void GfxDevice::EndRenderPass()
 	m_FrameResources[m_FrameResourceIndex].commandBuffer->EndRenderPass();
 }
 
-GpuProgram * GfxDevice::CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode)
+GpuProgram * GfxDevice::CreateGpuProgram(GpuParameters& parameters, const mkVector<char>& vertCode, const mkVector<char>& fragCode)
 {
 	return new VKGpuProgram(m_VKContex->device, parameters, vertCode, fragCode);
 }
@@ -584,7 +584,7 @@ void GfxDevice::BindMaterial(GpuProgram * gpuProgram, MaterialBindData & data)
 
 	VkDescriptorSet descriptorSet = m_DescriptorSetManager->AllocateDescriptorSet(vkGpuProgram->GetDSLPerMaterial());
 
-	std::vector<uint32_t> offsets;
+	mkVector<uint32_t> offsets;
 	
 	for (auto& uniform : data.uniformBufferBindings)
 	{
@@ -709,7 +709,7 @@ VkFormat GfxDevice::GetSupportedDepthFormat()
 {
 	// Since all depth formats may be optional, we need to find a suitable depth format to use
 	// Start with the highest precision packed format
-	std::vector<VkFormat> depthFormats = {
+	mkVector<VkFormat> depthFormats = {
 		VK_FORMAT_D32_SFLOAT_S8_UINT,
 		VK_FORMAT_D32_SFLOAT,
 		VK_FORMAT_D24_UNORM_S8_UINT,

@@ -65,8 +65,8 @@ void GPUProfilerManager::ResolveTimeStamp()
 
 	QueryResource& queryResource = m_QueryResource[m_CurrFrameResourcesIndex];
 
-	std::vector<uint64_t> timeStamps(queryResource.timeStampCount);
-	std::vector<float> timeResults(queryResource.timeStampCount);
+	mkVector<uint64_t> timeStamps(queryResource.timeStampCount);
+	mkVector<float> timeResults(queryResource.timeStampCount);
 
 	// parameter dataSize must be greater than 0
 	if (queryResource.timeStampCount > 0)

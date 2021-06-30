@@ -7,7 +7,7 @@ class VKGpuProgram : public GpuProgram
 {
 public:
 
-	VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode);
+	VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const mkVector<char>& vertCode, const mkVector<char>& fragCode);
 	virtual ~VKGpuProgram();
 
 	VkShaderModule GetVertShaderModule();
@@ -38,7 +38,7 @@ private:
 	VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
 
 	// SpecializationConstant
-	std::vector<VkSpecializationMapEntry> m_SpecializationMapEntries;
+	mkVector<VkSpecializationMapEntry> m_SpecializationMapEntries;
 	VkSpecializationInfo m_SpecializationInfo;
 
 	VkDevice m_Device = VK_NULL_HANDLE;

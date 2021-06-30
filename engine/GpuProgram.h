@@ -3,7 +3,7 @@
 #include "VKIncludes.h"
 #include "NonCopyable.h"
 #include "GfxTypes.h"
-#include <vector>
+#include "mkVector.h"
 #include "mkString.h"
 
 struct GpuParameters
@@ -31,7 +31,7 @@ struct GpuParameters
 		int binding;
 		VkShaderStageFlags stageFlags;
 
-		std::vector<ValueParameter> valueParameters;
+		mkVector<ValueParameter> valueParameters;
 	};
 
 	// 目前都是COMBINED_IMAGE_SAMPLER
@@ -67,9 +67,9 @@ struct GpuParameters
 		ShaderDataType type;
 	};
 
-	std::vector<UniformParameter> uniformParameters;
-	std::vector<TextureParameter> textureParameters;
-	std::vector<InputAttachmentParameter> inputAttachmentParameters;
+	mkVector<UniformParameter> uniformParameters;
+	mkVector<TextureParameter> textureParameters;
+	mkVector<InputAttachmentParameter> inputAttachmentParameters;
 
 	// PushConstant
 	// 为了保证Pipeline Layout Compatibility，统一设置128的PushConstant
@@ -77,7 +77,7 @@ struct GpuParameters
 	const VkShaderStageFlags pushConstantStage = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
 	// SpecializationConstant
-	std::vector<SpecializationConstantParameter> SCParameters;
+	mkVector<SpecializationConstantParameter> SCParameters;
 };
 
 class GpuProgram : public NonCopyable

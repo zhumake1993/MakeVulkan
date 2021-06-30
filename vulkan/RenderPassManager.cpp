@@ -2,7 +2,7 @@
 #include "VKTools.h"
 #include "ImageManager.h"
 
-std::vector<Image*>& RenderPassVulkan::GetImages()
+mkVector<Image*>& RenderPassVulkan::GetImages()
 {
 	return m_Images;
 }
@@ -43,8 +43,8 @@ void RenderPassManager::ReleaseRenderPass(const RenderPassKey& key, VKRenderPass
 
 struct AttachmentReference
 {
-	std::vector<VkAttachmentReference> inputs;
-	std::vector<VkAttachmentReference> colors;
+	mkVector<VkAttachmentReference> inputs;
+	mkVector<VkAttachmentReference> colors;
 	VkAttachmentReference depthStencil;
 };
 
@@ -56,7 +56,7 @@ VKRenderPass * RenderPassManager::CreateRenderPass(const RenderPassKey & key)
 	auto& subpasses = key.GetSubpasses();
 
 	// Attachments
-	std::vector<VkAttachmentDescription> attachmentDescriptions(attachments.size());
+	mkVector<VkAttachmentDescription> attachmentDescriptions(attachments.size());
 	for (size_t i = 0; i < attachmentDescriptions.size(); i++)
 	{
 		attachmentDescriptions[i].flags = 0;
@@ -95,8 +95,8 @@ VKRenderPass * RenderPassManager::CreateRenderPass(const RenderPassKey & key)
 	}
 
 	// Subpasses
-	std::vector<AttachmentReference> attachmentReferences(subpasses.size());
-	std::vector<VkSubpassDescription> subpassDescriptions(subpasses.size());
+	mkVector<AttachmentReference> attachmentReferences(subpasses.size());
+	mkVector<VkSubpassDescription> subpassDescriptions(subpasses.size());
 	for (size_t pass = 0; pass < subpassDescriptions.size(); pass++)
 	{
 		auto& subpass = subpasses[pass];
@@ -134,7 +134,7 @@ VKRenderPass * RenderPassManager::CreateRenderPass(const RenderPassKey & key)
 	}
 
 	// Subpass dependencies
-	std::vector<VkSubpassDependency> dependencies(subpasses.size() + 1);
+	mkVector<VkSubpassDependency> dependencies(subpasses.size() + 1);
 
 	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
 	dependencies[0].dstSubpass = 0;

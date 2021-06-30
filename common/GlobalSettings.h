@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mkString.h"
-#include <vector>
+#include "mkVector.h"
 #include "NonCopyable.h"
 #include "VKIncludes.h"
 
@@ -36,12 +36,12 @@ struct GlobalSettings : public NonCopyable
 	mkString								engineName;
 	uint32_t								engineVersion;
 	uint32_t								apiVersion;
-	std::vector<const char*>				enabledInstanceLayers;
-	std::vector<const char*>				enabledInstanceExtensions;
+	mkVector<const char*>				enabledInstanceLayers;
+	mkVector<const char*>				enabledInstanceExtensions;
 
 	// Device
 	VkPhysicalDeviceFeatures				enabledDeviceFeatures;
-	std::vector<const char*>				enabledDeviceExtensions;
+	mkVector<const char*>				enabledDeviceExtensions;
 
 	// Memory
 	VkDeviceSize memoryAlignment = 256; // 256可以同时满足minTexelBufferOffsetAlignment, minUniformBufferOffsetAlignment, minStorageBufferOffsetAlignment的对齐要求

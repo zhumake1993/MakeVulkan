@@ -3,7 +3,7 @@
 #include "DeviceProperties.h"
 #include "VKTools.h"
 
-bool CheckLayerAvailability(const char *layerName, const std::vector<VkLayerProperties> &availableLayers)
+bool CheckLayerAvailability(const char *layerName, const mkVector<VkLayerProperties> &availableLayers)
 {
 	for (size_t i = 0; i < availableLayers.size(); ++i)
 	{
@@ -15,7 +15,7 @@ bool CheckLayerAvailability(const char *layerName, const std::vector<VkLayerProp
 	return false;
 }
 
-bool CheckExtensionAvailability(const char *extensionName, const std::vector<VkExtensionProperties> &availableExtensions)
+bool CheckExtensionAvailability(const char *extensionName, const mkVector<VkExtensionProperties> &availableExtensions)
 {
 	for (size_t i = 0; i < availableExtensions.size(); ++i)
 	{
@@ -188,8 +188,8 @@ vk::VKContex::VKContex()
 
 	selectedQueueFamilyIndex = SelectQueueFamilyIndex(physicalDevice);
 
-	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	std::vector<float> queuePriorities = { 1.0f };
+	mkVector<VkDeviceQueueCreateInfo> queueCreateInfos;
+	mkVector<float> queuePriorities = { 1.0f };
 
 	VkDeviceQueueCreateInfo queueInfo = {};
 	queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;

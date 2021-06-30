@@ -39,7 +39,7 @@ private:
 	Mesh* m_QuadMesh;
 	Shader* m_Shader;
 	Material* m_Mat;
-	std::vector<RenderNode*> m_Nodes;
+	mkVector<RenderNode*> m_Nodes;
 
 	Camera* m_Camera;
 

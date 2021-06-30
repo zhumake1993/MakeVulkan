@@ -22,7 +22,7 @@ class GPUProfilerManager : public NonCopyable
 	struct FrameGPUTimeStampView
 	{
 		uint32_t frameIndex;
-		std::vector<GPUTimeStampView> gpuTimeStampViews;
+		mkVector<GPUTimeStampView> gpuTimeStampViews;
 
 		FrameGPUTimeStampView(uint32_t index) :frameIndex(index) {}
 
@@ -32,7 +32,7 @@ class GPUProfilerManager : public NonCopyable
 	struct QueryResource
 	{
 		uint32_t timeStampCount = 0;
-		std::vector<mkString> names;
+		mkVector<mkString> names;
 	};
 
 public:

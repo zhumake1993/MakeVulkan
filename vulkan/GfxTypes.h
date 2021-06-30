@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VKIncludes.h"
-#include <vector>
+#include "mkVector.h"
 
 struct Extent2D
 {
@@ -73,8 +73,8 @@ uint32_t VkFormatToSize(VkFormat format);
 
 struct VertexDescription
 {
-	std::vector<VkFormat> formats;
-	std::vector<uint32_t> offsets;
+	mkVector<VkFormat> formats;
+	mkVector<uint32_t> offsets;
 	uint32_t stride;
 };
 
@@ -136,9 +136,9 @@ struct RenderState
 	{}
 
 	RasterizationState rasterizationState;
-	std::vector<BlendState> blendStates;
+	mkVector<BlendState> blendStates;
 	DepthStencilState depthStencilState;
-	std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT , VK_DYNAMIC_STATE_SCISSOR };
+	mkVector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT , VK_DYNAMIC_STATE_SCISSOR };
 };
 
 enum VKShaderType

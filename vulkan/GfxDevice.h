@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include "mkVector.h"
 #include "VKIncludes.h"
 #include "NonCopyable.h"
 
@@ -102,15 +102,15 @@ public:
 
 	Image* CreateImage(int imageTypeMask, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount, float maxAnisotropy = 1);
 	Image* GetSwapchainImage();
-	void UpdateImage(Image* image, void* data, uint64_t size, const std::vector<std::vector<std::vector<uint64_t>>>& offsets);
+	void UpdateImage(Image* image, void* data, uint64_t size, const mkVector<mkVector<mkVector<uint64_t>>>& offsets);
 	void ReleaseImage(Image* image);
 
 	RenderPass* CreateRenderPass(RenderPassKey& renderPassKey);
-	void BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, std::vector<VkClearValue>& clearValues);
+	void BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, mkVector<VkClearValue>& clearValues);
 	void NextSubpass();
 	void EndRenderPass();
 
-	GpuProgram* CreateGpuProgram(GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode);
+	GpuProgram* CreateGpuProgram(GpuParameters& parameters, const mkVector<char>& vertCode, const mkVector<char>& fragCode);
 
 	void SetPass(GpuProgram* gpuProgram, RenderState* renderState, void* scdata);
 
@@ -167,7 +167,7 @@ private:
 
 	// todo:±ä³É¶¯Ì¬
 	uint32_t m_FrameResourceIndex = 0;
-	std::vector<FrameResource> m_FrameResources;
+	mkVector<FrameResource> m_FrameResources;
 
 	// todo
 	DescriptorSetManager* m_DescriptorSetManager = nullptr;

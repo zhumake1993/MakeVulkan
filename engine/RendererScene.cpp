@@ -151,7 +151,7 @@ void RendererScene::DrawRenderNode(RenderNode * node)
 	device.DrawIndexed(mesh->GetIndexCount());
 }
 
-void RendererScene::DrawBatch(std::vector<RenderNode*> nodes)
+void RendererScene::DrawBatch(mkVector<RenderNode*> nodes)
 {
 	if (nodes.size() == 0)return;
 
