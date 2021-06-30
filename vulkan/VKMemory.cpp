@@ -1,5 +1,5 @@
 #include "VKMemory.h"
-#include "DeviceProperties.h"
+#include "VKDeviceProperties.h"
 #include "VKTools.h"
 #include "Tools.h"
 
@@ -7,7 +7,7 @@ namespace vk
 {
 	int FindMemoryTypeIndex(uint32_t memoryTypeBits, VkMemoryPropertyFlags memoryPropertyFlags)
 	{
-		VkPhysicalDeviceMemoryProperties & physicalDeviceMemoryProperties = GetDeviceProperties().deviceMemoryProperties;
+		VkPhysicalDeviceMemoryProperties & physicalDeviceMemoryProperties = vk::GetVKDeviceProperties().deviceMemoryProperties;
 
 		// Search memtypes to find first index with those properties
 		for (uint32_t memoryTypeIndex = 0; memoryTypeIndex < VK_MAX_MEMORY_TYPES; ++memoryTypeIndex)
@@ -38,7 +38,7 @@ namespace vk
 		memory.offset = 0;
 		memory.size = size;
 		memory.memoryTypeIndex = memoryTypeIndex;
-		memory.flags = GetDeviceProperties().deviceMemoryProperties.memoryTypes[memoryTypeIndex].propertyFlags;
+		memory.flags = vk::GetVKDeviceProperties().deviceMemoryProperties.memoryTypes[memoryTypeIndex].propertyFlags;
 
 		memory.mapped = nullptr;
 		if (memory.flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)

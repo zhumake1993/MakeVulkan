@@ -1,7 +1,7 @@
 #include "GPUProfilerManager.h"
 #include "VKTools.h"
 #include "VKCommandBuffer.h"
-#include "DeviceProperties.h"
+#include "VKDeviceProperties.h"
 #include <stack>
 #include <algorithm>
 #include <fstream>
@@ -61,7 +61,7 @@ void GPUProfilerManager::ResolveTimeStamp()
 
 	// 此时m_FrameIndex - FrameResourcesCount帧已经执行完gpu，可以获取gpu timestamp
 
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	QueryResource& queryResource = m_QueryResource[m_CurrFrameResourcesIndex];
 
@@ -78,7 +78,7 @@ void GPUProfilerManager::ResolveTimeStamp()
 
 	for (uint32_t i = 0; i < queryResource.timeStampCount; i++)
 	{
-		timeResults[i] = timeStamps[i] * dp.deviceProperties.limits.timestampPeriod / 1000000.0f;
+		timeResults[i] = timeStamps[i] * vdp.deviceProperties.limits.timestampPeriod / 1000000.0f;
 	}
 
 	// resolve

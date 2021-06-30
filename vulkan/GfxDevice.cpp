@@ -1,6 +1,6 @@
 #include "GfxDevice.h"
 #include "Tools.h"
-#include "DeviceProperties.h"
+#include "VKDeviceProperties.h"
 #include "GlobalSettings.h"
 #include "VKGlobalSettings.h"
 
@@ -54,12 +54,14 @@ GfxDevice::GfxDevice()
 	m_VKSwapChain = new vk::VKSwapChain(m_VKContex->instance, m_VKContex->physicalDevice, m_VKContex->device, m_VKContex->selectedQueueFamilyIndex);
 
 	auto& gs = GetGlobalSettings();
-	auto& dp = GetDeviceProperties();
 	auto& vgs = vk::GetVKGlobalSettings();
+
+	auto& vdp = vk::GetVKDeviceProperties();
+	vdp.Init(GetDeviceProperties());
 
 	gs.Print();
 	vgs.Print();
-	dp.Print();
+	vdp.Print();
 	m_VKContex->Print();
 	m_VKSwapChain->Print();
 
@@ -70,7 +72,7 @@ GfxDevice::GfxDevice()
 	// 当linear和optimal资源放在同一块memory中时，需要满足bufferImageGranularity的要求
 	// 如果bufferImageGranularity太大（例如，在Nvidia上可能会大于4k），那么会造成比较大的内部内存碎片
 	// 这种情况下使用多个MemoryAllocator是个好选择。这里选择相对简单的做法
-	VkDeviceSize bufferImageGranularity = dp.deviceProperties.limits.bufferImageGranularity;
+	VkDeviceSize bufferImageGranularity = vdp.deviceProperties.limits.bufferImageGranularity;
 	finalMemoryAlignment = ALIGN(finalMemoryAlignment, bufferImageGranularity);
 	m_MemoryAllocator = new vk::MemoryAllocator(m_VKContex->device, vgs.memoryBlockSize, finalMemoryAlignment);
 

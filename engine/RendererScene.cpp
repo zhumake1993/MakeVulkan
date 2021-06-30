@@ -191,7 +191,7 @@ void RendererScene::DrawBatch(mkVector<RenderNode*> nodes)
 
 	// offset必须是minUniformBufferOffsetAlignment的倍数
 	auto& dp = GetDeviceProperties();
-	uint64_t minUboAlignment = dp.deviceProperties.limits.minUniformBufferOffsetAlignment;
+	uint64_t minUboAlignment = dp.minUniformBufferOffsetAlignment;
 	drawBatchs.alignedUniformSize = (sizePerDraw + minUboAlignment - 1) & ~(minUboAlignment - 1);
 
 	// uniform buffer

@@ -1,7 +1,7 @@
 #include "VKBuffer.h"
 #include "VKTools.h"
 #include "Tools.h"
-#include "DeviceProperties.h"
+#include "VKDeviceProperties.h"
 #include "VKCommandBuffer.h"
 
 namespace vk
@@ -102,8 +102,8 @@ namespace vk
 		else
 			range.size = size;
 
-		ASSERT(range.offset % GetDeviceProperties().deviceProperties.limits.nonCoherentAtomSize == 0);
-		ASSERT(range.size % GetDeviceProperties().deviceProperties.limits.nonCoherentAtomSize == 0);
+		ASSERT(range.offset % vk::GetVKDeviceProperties().deviceProperties.limits.nonCoherentAtomSize == 0);
+		ASSERT(range.size % vk::GetVKDeviceProperties().deviceProperties.limits.nonCoherentAtomSize == 0);
 
 		return range;
 	}

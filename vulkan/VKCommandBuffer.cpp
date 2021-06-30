@@ -1,7 +1,7 @@
 #include "VKCommandBuffer.h"
 #include "VKTools.h"
 #include "Tools.h"
-#include "DeviceProperties.h"
+#include "VKDeviceProperties.h"
 
 VKCommandBuffer::VKCommandBuffer(VkDevice vkDevice, VkCommandPool vkCommandPool, VkCommandBufferLevel level) :
 	device(vkDevice),
@@ -148,11 +148,11 @@ void VKCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelin
 
 	if (offsets.size() > 0)
 	{
-		auto& dp = GetDeviceProperties();
+		auto& vdp = vk::GetVKDeviceProperties();
 
 		for (auto offset : offsets)
 		{
-			if (offset % dp.deviceProperties.limits.minUniformBufferOffsetAlignment != 0)
+			if (offset % vdp.deviceProperties.limits.minUniformBufferOffsetAlignment != 0)
 			{
 				LOGE("offset must be a multiple of VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment");
 			}

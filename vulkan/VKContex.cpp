@@ -1,6 +1,6 @@
 #include "VKContex.h"
 #include "VKGlobalSettings.h"
-#include "DeviceProperties.h"
+#include "VKDeviceProperties.h"
 #include "VKTools.h"
 
 bool CheckLayerAvailability(const char *layerName, const mkVector<VkLayerProperties> &availableLayers)
@@ -30,16 +30,16 @@ bool CheckExtensionAvailability(const char *extensionName, const mkVector<VkExte
 void CheckInstanceLayers()
 {
 	auto& vgs = vk::GetVKGlobalSettings();
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	uint32_t layersCount = 0;
 	VK_CHECK_RESULT(vkEnumerateInstanceLayerProperties(&layersCount, nullptr));
-	dp.availableInstanceLayers.resize(layersCount);
-	VK_CHECK_RESULT(vkEnumerateInstanceLayerProperties(&layersCount, dp.availableInstanceLayers.data()));
+	vdp.availableInstanceLayers.resize(layersCount);
+	VK_CHECK_RESULT(vkEnumerateInstanceLayerProperties(&layersCount, vdp.availableInstanceLayers.data()));
 
 	for (int i = 0; i < vgs.enabledInstanceLayers.size(); ++i)
 	{
-		if (!CheckLayerAvailability(vgs.enabledInstanceLayers[i], dp.availableInstanceLayers))
+		if (!CheckLayerAvailability(vgs.enabledInstanceLayers[i], vdp.availableInstanceLayers))
 		{
 			LOGE("instance layer %s not support!\n", vgs.enabledInstanceLayers[i]);
 		}
@@ -49,16 +49,16 @@ void CheckInstanceLayers()
 void CheckInstanceExtensions()
 {
 	auto& vgs = vk::GetVKGlobalSettings();
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	uint32_t extensionsCount = 0;
 	VK_CHECK_RESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, nullptr));
-	dp.availableInstanceExtensions.resize(extensionsCount);
-	VK_CHECK_RESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, dp.availableInstanceExtensions.data()));
+	vdp.availableInstanceExtensions.resize(extensionsCount);
+	VK_CHECK_RESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, vdp.availableInstanceExtensions.data()));
 
 	for (int i = 0; i < vgs.enabledInstanceExtensions.size(); ++i)
 	{
-		if (!CheckExtensionAvailability(vgs.enabledInstanceExtensions[i], dp.availableInstanceExtensions))
+		if (!CheckExtensionAvailability(vgs.enabledInstanceExtensions[i], vdp.availableInstanceExtensions))
 		{
 			LOGE("instance extension %s not support!\n", vgs.enabledInstanceExtensions[i]);
 		}
@@ -67,12 +67,12 @@ void CheckInstanceExtensions()
 
 int SelectPhysicalDevice(VkInstance instance)
 {
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	uint32_t deviceNum = 0;
 	VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &deviceNum, nullptr));
-	dp.physicalDevices.resize(deviceNum);
-	VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &deviceNum, dp.physicalDevices.data()));
+	vdp.physicalDevices.resize(deviceNum);
+	VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &deviceNum, vdp.physicalDevices.data()));
 
 	// 直接选择第一个物理设备
 	return 0;
@@ -81,11 +81,11 @@ int SelectPhysicalDevice(VkInstance instance)
 void CheckDeviceFeatures()
 {
 	auto& vgs = vk::GetVKGlobalSettings();
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
-	int num = sizeof(dp.deviceFeatures) / sizeof(VkBool32);
+	int num = sizeof(vdp.deviceFeatures) / sizeof(VkBool32);
 	auto enable = reinterpret_cast<VkBool32*>(&vgs.enabledDeviceFeatures);
-	auto available = reinterpret_cast<VkBool32*>(&dp.deviceFeatures);
+	auto available = reinterpret_cast<VkBool32*>(&vdp.deviceFeatures);
 	for (int i = 0; i < num; i++)
 	{
 		if (*(enable + i) == VK_TRUE)
@@ -101,16 +101,16 @@ void CheckDeviceFeatures()
 void CheckDeviceExtensions(VkPhysicalDevice physicalDevice)
 {
 	auto& vgs = vk::GetVKGlobalSettings();
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	uint32_t extensionsCount = 0;
 	VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionsCount, nullptr));
-	dp.availableDeviceExtensions.resize(extensionsCount);
-	VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionsCount, dp.availableDeviceExtensions.data()));
+	vdp.availableDeviceExtensions.resize(extensionsCount);
+	VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionsCount, vdp.availableDeviceExtensions.data()));
 
 	for (int i = 0; i < vgs.enabledDeviceExtensions.size(); ++i)
 	{
-		if (!CheckExtensionAvailability(vgs.enabledDeviceExtensions[i], dp.availableDeviceExtensions))
+		if (!CheckExtensionAvailability(vgs.enabledDeviceExtensions[i], vdp.availableDeviceExtensions))
 		{
 			LOGE("device extension %s not support!\n", vgs.enabledDeviceExtensions[i]);
 		}
@@ -119,18 +119,18 @@ void CheckDeviceExtensions(VkPhysicalDevice physicalDevice)
 
 int SelectQueueFamilyIndex(VkPhysicalDevice physicalDevice)
 {
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	uint32_t queueFamiliesCount;
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamiliesCount, nullptr);
-	dp.queueFamilyProperties.resize(queueFamiliesCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamiliesCount, dp.queueFamilyProperties.data());
+	vdp.queueFamilyProperties.resize(queueFamiliesCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamiliesCount, vdp.queueFamilyProperties.data());
 
 	// 找到一个支持VK_QUEUE_GRAPHICS_BIT操作的QueueFamily
 	// VK_QUEUE_COMPUTE_BIT和VK_QUEUE_TRANSFER_BIT先不管
-	for (int i = 0; i < dp.queueFamilyProperties.size(); i++)
+	for (int i = 0; i < vdp.queueFamilyProperties.size(); i++)
 	{
-		if ((dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+		if ((vdp.queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			//&& (dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) 
 			//&& (dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
 			)
@@ -148,7 +148,7 @@ vk::VKContex::VKContex()
 	// Instance
 
 	auto& vgs = vk::GetVKGlobalSettings();
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -177,11 +177,11 @@ vk::VKContex::VKContex()
 	// Device
 
 	selectedPhysicalDeviceIndex = SelectPhysicalDevice(instance);
-	physicalDevice = dp.physicalDevices[selectedPhysicalDeviceIndex];
+	physicalDevice = vdp.physicalDevices[selectedPhysicalDeviceIndex];
 
-	vkGetPhysicalDeviceProperties(physicalDevice, &dp.deviceProperties);
-	vkGetPhysicalDeviceFeatures(physicalDevice, &dp.deviceFeatures);
-	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &dp.deviceMemoryProperties);
+	vkGetPhysicalDeviceProperties(physicalDevice, &vdp.deviceProperties);
+	vkGetPhysicalDeviceFeatures(physicalDevice, &vdp.deviceFeatures);
+	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &vdp.deviceMemoryProperties);
 
 	CheckDeviceFeatures();
 	CheckDeviceExtensions(physicalDevice);
