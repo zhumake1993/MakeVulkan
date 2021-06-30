@@ -80,7 +80,7 @@ void MakeVulkan::Init()
 	m_RenderPass = device.CreateRenderPass(renderPassKey);
 
 	{
-		std::vector<glm::vec3> colors =
+		mkVector<glm::vec3> colors =
 		{
 			glm::vec3(1.0f, 0.0f, 0.0f),
 			glm::vec3(0.0f, 1.0f, 0.0f),
@@ -145,8 +145,8 @@ void MakeVulkan::Update()
 	ImGui::Text("%.2f ms/frame (%.2f fps)", (1000.0f / fps), fps);
 
 	static float acTime = 0;
-	static std::string cpuProfiler = "";
-	static std::string gpuProfiler = "";
+	static mkString cpuProfiler = "";
+	static mkString gpuProfiler = "";
 	acTime += deltaTime;
 	if (acTime > 1.0f)
 	{
@@ -195,7 +195,7 @@ void MakeVulkan::Draw()
 	Attachment* depthAttachment = CreateTempAttachment(kImageDepthAspectBit | kImageDepthAttachmentBit, dp.depthFormat, windowWidth, windowHeight);
 	m_RenderPass->SetAttachments({ colorAttachment, positionAttachment, normalAttachment, albedoAttachment, depthAttachment });
 
-	std::vector<VkClearValue> clearValues(5);
+	mkVector<VkClearValue> clearValues(5);
 	clearValues[0].color = { 0.0f, 0.0f, 0.0f, 0.0f };
 	clearValues[1].color = { 0.0f, 0.0f, 0.0f, 0.0f };
 	clearValues[2].color = { 0.0f, 0.0f, 0.0f, 0.0f };

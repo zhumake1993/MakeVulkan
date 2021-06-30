@@ -1,33 +1,25 @@
 #pragma once
 
-#include "Env.h"
+#include "mkList.h"
 #include "NonCopyable.h"
+#include "VKIncludes.h"
 
-class VKResource;
-
-class GarbageCollector : public NonCopyable
+namespace vk
 {
-public:
+	class VKResource;
 
-	GarbageCollector();
-	virtual ~GarbageCollector();
+	class GarbageCollector : public NonCopyable
+	{
+	public:
 
-	void Update();
+		GarbageCollector();
+		virtual ~GarbageCollector();
 
-	uint32_t GetFrameIndex();
+		void Add(VKResource* resource);
+		void GarbageCollect();
 
-	void AddResource(VKResource* resource);
+	private:
 
-private:
-
-	// 这一帧新加的Resource
-	std::list<VKResource*> m_NewResources;
-
-	// 可能还在使用中的Resource
-	std::list<VKResource*> m_PendingResources;
-
-	uint32_t m_FrameIndex = 0;
-
-	VkDevice m_Device = VK_NULL_HANDLE;
-	VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
-};
+		mkList<VKResource*> m_Resources;
+	};
+}

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Env.h"
+#include "VKIncludes.h"
 #include "NonCopyable.h"
 #include "VKResource.h"
 #include "RenderPass.h"
 
-class VKRenderPass : public VKResource
+class VKRenderPass : public vk::VKResource
 {
 public:
 
@@ -26,7 +26,7 @@ private:
 	VkDevice device = VK_NULL_HANDLE;
 };
 
-class VKFramebuffer : public VKResource
+class VKFramebuffer : public vk::VKResource
 {
 public:
 
@@ -60,7 +60,7 @@ public:
 	{
 	}
 
-	std::vector<Image*>& GetImages();
+	mkVector<Image*>& GetImages();
 
 	// shaderÖÐµÄinput_attachment_index
 	VkImageView GetInputAttachmentImageView(uint32_t inputIndex);

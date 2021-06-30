@@ -1,10 +1,11 @@
 #include "GfxTypes.h"
 #include "Tools.h"
+#include "Log.h"
 
 VkFormat VertexChannelToFormat(VertexChannel channel)
 {
 	// 要与VertexChannel保持一致
-	static std::vector<VkFormat> vertexChannelFormats = {
+	static mkVector<VkFormat> vertexChannelFormats = {
 		VK_FORMAT_R32G32B32_SFLOAT, // kVertexPosition
 		VK_FORMAT_R32G32B32_SFLOAT, // kVertexNormal
 		VK_FORMAT_R32G32B32_SFLOAT, // kVertexColor
@@ -57,8 +58,7 @@ uint32_t ShaderDataTypeToSize(ShaderDataType type)
 		return 1 * 4;
 		break;
 	default:
-		LOG("wrong UniformDataType");
-		EXIT;
+		LOGE("wrong UniformDataType");
 		return 0;
 	}
 }

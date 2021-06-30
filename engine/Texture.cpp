@@ -8,7 +8,7 @@
 
 #include <ktxvulkan.h>
 
-TextureBase::TextureBase(const std::string & name)
+TextureBase::TextureBase(const mkString & name)
 	: NamedObject(name)
 	, m_Format(VK_FORMAT_UNDEFINED)
 	, m_Width(0)
@@ -19,7 +19,7 @@ TextureBase::TextureBase(const std::string & name)
 {
 }
 
-TextureBase::TextureBase(const std::string & name, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount)
+TextureBase::TextureBase(const mkString & name, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount)
 	: NamedObject(name)
 	, m_Format(format)
 	, m_Width(width)
@@ -36,7 +36,7 @@ TextureBase::~TextureBase()
 	RELEASE(m_Image);
 }
 
-Texture::Texture(const std::string& name)
+Texture::Texture(const mkString& name)
 	: TextureBase(name)
 {
 }
@@ -45,7 +45,7 @@ Texture::~Texture()
 {
 }
 
-void Texture::LoadFromFile(const std::string& filename, VkFormat format, bool isCubemap)
+void Texture::LoadFromFile(const mkString& filename, VkFormat format, bool isCubemap)
 {
 	m_ImageData.clear();
 
@@ -53,7 +53,7 @@ void Texture::LoadFromFile(const std::string& filename, VkFormat format, bool is
 	m_FaceCount = isCubemap ? 6 : 1;
 
 	size_t last = filename.find_last_of('.');
-	std::string suffix = filename.substr(last + 1);
+	mkString suffix = filename.substr(last + 1);
 	if (suffix == "ktx")
 	{
 		ReadImageUsingKTX(filename);
@@ -69,9 +69,9 @@ void Texture::LoadFromFile(const std::string& filename, VkFormat format, bool is
 	device.UpdateImage(m_Image, m_ImageData.data(), m_ImageData.size(), m_Offsets);
 }
 
-void Texture::ReadImageUsingSTB(const std::string& filename)
+void Texture::ReadImageUsingSTB(const mkString& filename)
 {
-	std::vector<char> fileData = GetBinaryFileContents(filename);
+	mkVector<char> fileData = GetBinaryFileContents(filename);
 
 	int tmpWidth = 0, tmpHeight = 0, tmpComponents = 0, requestedComponents = 4;
 	unsigned char *imageData = stbi_load_from_memory(reinterpret_cast<unsigned char*>(&fileData[0]), static_cast<int>(fileData.size()), &tmpWidth, &tmpHeight, &tmpComponents, requestedComponents);
@@ -96,9 +96,9 @@ void Texture::ReadImageUsingSTB(const std::string& filename)
 	stbi_image_free(imageData);
 }
 
-void Texture::ReadImageUsingKTX(const std::string& filename)
+void Texture::ReadImageUsingKTX(const mkString& filename)
 {
-	std::vector<char> fileData = GetBinaryFileContents(filename);
+	mkVector<char> fileData = GetBinaryFileContents(filename);
 
 	ktxTexture* ktxTexture;
 	ktxResult result = KTX_SUCCESS;

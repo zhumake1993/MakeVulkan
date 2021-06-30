@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Env.h"
 #include "GfxDeviceObjects.h"
 
 class Image;
@@ -10,8 +9,8 @@ class RenderPass
 {
 	struct Subpass
 	{
-		std::vector<int> inputs;
-		std::vector<int> colors;
+		mkVector<int> inputs;
+		mkVector<int> colors;
 		int depth;
 	};
 
@@ -24,11 +23,11 @@ public:
 	uint32_t GetWidth();
 	uint32_t GetHeight();
 
-	void SetAttachments(const std::vector<Attachment*> actualAttachments);
+	void SetAttachments(const mkVector<Attachment*> actualAttachments);
 
 protected:
 
 	RenderPassKey m_RenderPassKey;
 
-	std::vector<Image*> m_Images;
+	mkVector<Image*> m_Images;
 };

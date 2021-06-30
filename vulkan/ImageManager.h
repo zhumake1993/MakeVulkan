@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Env.h"
+#include "VKIncludes.h"
 #include "NonCopyable.h"
 #include "Image.h"
 #include "VKResource.h"
+#include "mkHashMap.h"
 
-class VKImage : public VKResource
+class VKImage : public vk::VKResource
 {
 public:
 
@@ -179,7 +180,7 @@ private:
 
 	ResourcePool<ImageKey, VKImage, ImageKeyHash> m_ImagePool;
 
-	std::unordered_map<ImageSamplerKey, VKImageSampler*, ImageSamplerKeyHash> m_ImageSamplerPool;
+	mkHashMap<ImageSamplerKey, VKImageSampler*, ImageSamplerKeyHash> m_ImageSamplerPool;
 
 	VkDevice m_Device = VK_NULL_HANDLE;
 };

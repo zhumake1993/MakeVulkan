@@ -1,17 +1,17 @@
 #pragma once
 
-#include <string>
+#include "mkString.h"
 
 class NamedObject
 {
 public:
 
-	NamedObject(const std::string& name) :m_Name(name){}
+	NamedObject(const mkString& name) :m_Name(name){}
 	virtual ~NamedObject() {}
 
-	std::string GetName() { return m_Name; }
+	mkString GetName() { return m_Name; }
 
 protected:
 
-	std::string m_Name;
+	mkString m_Name;
 };

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Env.h"
 #include "GfxTypes.h"
+#include "mkVector.h"
 
 struct MaterialBindData
 {
@@ -25,9 +25,9 @@ struct MaterialBindData
 		int binding;
 	};
 
-	std::vector<UniformBufferBinding> uniformBufferBindings;
-	std::vector<ImageBinding> imageBindings;
-	std::vector<InputAttachmentBinding> inputAttachmentBindings;
+	mkVector<UniformBufferBinding> uniformBufferBindings;
+	mkVector<ImageBinding> imageBindings;
+	mkVector<InputAttachmentBinding> inputAttachmentBindings;
 };
 
 struct DrawBuffer
@@ -55,8 +55,8 @@ struct DrawBatchs
 	void* uniformData;
 	uint64_t uniformSize;
 
-	std::vector<DrawBuffer> drawBuffers;
-	std::vector<DrawItem> drawItems;
+	mkVector<DrawBuffer> drawBuffers;
+	mkVector<DrawItem> drawItems;
 };
 
 // Image
@@ -115,8 +115,8 @@ class RenderPassKey
 				&& colors == other.colors
 				&& depth == other.depth;
 		}
-		std::vector<int> inputs;
-		std::vector<int> colors;
+		mkVector<int> inputs;
+		mkVector<int> colors;
 		int depth;
 	};
 
@@ -138,19 +138,19 @@ public:
 		m_Attachments[index].storeOp = storeOp;
 	}
 
-	void SetSubpass(uint32_t index, const std::vector<int> inputs, const std::vector<int> colors, int depth = -1)  // -1表示不用depth，暂时不考虑preserve
+	void SetSubpass(uint32_t index, const mkVector<int> inputs, const mkVector<int> colors, int depth = -1)  // -1表示不用depth，暂时不考虑preserve
 	{
 		m_Subpasses[index].inputs = inputs;
 		m_Subpasses[index].colors = colors;
 		m_Subpasses[index].depth = depth;
 	}
 
-	const std::vector<AttachmentKey>& GetAttachments() const
+	const mkVector<AttachmentKey>& GetAttachments() const
 	{
 		return m_Attachments;
 	}
 
-	const std::vector<SubpassKey>& GetSubpasses() const
+	const mkVector<SubpassKey>& GetSubpasses() const
 	{
 		return m_Subpasses;
 	}
@@ -173,8 +173,8 @@ public:
 
 private:
 
-	std::vector<AttachmentKey> m_Attachments;
-	std::vector<SubpassKey> m_Subpasses;
+	mkVector<AttachmentKey> m_Attachments;
+	mkVector<SubpassKey> m_Subpasses;
 	uint32_t m_Width;
 	uint32_t m_Height;
 };

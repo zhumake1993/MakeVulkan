@@ -37,7 +37,7 @@ void ProfilerManager::Update()
 	m_FrameIndex++;
 }
 
-void ProfilerManager::RecordTime(std::string name)
+void ProfilerManager::RecordTime(mkString name)
 {
 	if (m_FrameStamps.empty() || m_FrameStamps.back().frameIndex != m_FrameIndex) {
 		m_FrameStamps.emplace_back(m_FrameIndex);
@@ -76,9 +76,9 @@ ProfilerManager::FrameTimeView ProfilerManager::Resolve(uint32_t frameIndex)
 void ProfilerManager::WriteToFile()
 {
 #if defined(_WIN32)
-	std::string filePath = "CPUProfiler.txt";
+	mkString filePath = "CPUProfiler.txt";
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	std::string filePath = "/data/data/com.example.MakeVulkan/CPUProfiler.txt";
+	mkString filePath = "/data/data/com.example.MakeVulkan/CPUProfiler.txt";
 #endif
 
 	std::ofstream outfile;
@@ -93,7 +93,7 @@ void ProfilerManager::WriteToFile()
 
 ProfilerManager::FrameTimeView ProfilerManager::Resolve(FrameStamp& frameStamp)
 {
-	std::vector<Stamp>& stamps = frameStamp.stamps;
+	mkVector<Stamp>& stamps = frameStamp.stamps;
 
 	FrameTimeView frameTimeView(frameStamp.frameIndex);
 	std::stack<Stamp> stampStack;
@@ -122,7 +122,7 @@ ProfilerManager::FrameTimeView ProfilerManager::Resolve(FrameStamp& frameStamp)
 	return frameTimeView;
 }
 
-ProfilerScope::ProfilerScope(std::string name):
+ProfilerScope::ProfilerScope(mkString name):
 	m_Name(name)
 {
 	gProfilerManager->RecordTime(m_Name);
@@ -133,13 +133,13 @@ ProfilerScope::~ProfilerScope()
 	gProfilerManager->RecordTime(m_Name);
 }
 
-std::string ProfilerManager::FrameTimeView::ToString()
+mkString ProfilerManager::FrameTimeView::ToString()
 {
 	std::ostringstream ostr;
 
 	ostr << "FrameIndex: " << frameIndex << std::endl;
 	for (auto& timeView : timeViews) {
-		ostr << std::string(timeView.depth, '\t') << timeView.name << "   " << timeView.time << std::endl;
+		ostr << mkString(timeView.depth, '\t') << timeView.name << "   " << timeView.time << std::endl;
 	}
 
 	return ostr.str();

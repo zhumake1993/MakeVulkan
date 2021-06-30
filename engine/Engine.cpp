@@ -1,13 +1,14 @@
 #include "Engine.h"
 #include "Tools.h"
-#include "Example.h"
 #include "GfxDevice.h"
-#include "DeviceProperties.h"
-#include "InputManager.h"
 #include "ProfilerManager.h"
+#include "InputManager.h"
+#include "TimeManager.h"
+#include "RendererScene.h"
+#include "Imgui.h"
+#include "ResourceManager.h"
 
-Engine::Engine(Example* example) :
-	m_Example(example)
+Engine::Engine()
 {
 }
 
@@ -15,11 +16,9 @@ Engine::~Engine()
 {
 }
 
-void Engine::Init()
+void Engine::InitEngine()
 {
-	// 设置DeviceProperties，初始化GfxDevice会用到
-	CreateDeviceProperties();
-	m_Example->ConfigDeviceProperties();
+	PreInit();
 
 	// 初始化GfxDevice
 	CreateGfxDevice();
@@ -27,44 +26,51 @@ void Engine::Init()
 	// 初始化Manager
 	CreateProfilerManager();
 
-	// 初始化Example
-	m_Example->Init();
+	m_TimeManager = new TimeManager();
+	m_RendererScene = new RendererScene();
+	m_Imgui = new Imgui();
+
+	// 初始化子类
+	Init();
 }
 
-void Engine::Release()
+void Engine::ReleaseEngine()
 {
 	// 等待GfxDevice
 	GetGfxDevice().DeviceWaitIdle();
 
-	// 清理Example
-	m_Example->Release();
-	RELEASE(m_Example);
+	// 清理子类
+	Release();
 
 	// 清理Manager
 	GetProfilerManager().WriteToFile();
 	ReleaseProfilerManager();
 
+	RELEASE(m_TimeManager);
+	RELEASE(m_RendererScene);
+	RELEASE(m_Imgui);
+
 	// 清理GfxDevice
 	ReleaseGfxDevice();
-
-	// 清理DeviceProperties
-	ReleaseDeviceProperties();
 }
 
-void Engine::Update()
+void Engine::UpdateEngine()
 {
 	auto& device = GetGfxDevice();
 
 	// 先更新ProfilerManager
 	GetProfilerManager().Update();
 
+	m_TimeManager->Update();
+	m_Imgui->Prepare(m_TimeManager->GetDeltaTime());
+
 	PROFILER(Engine_Update);
 
-	// 更新逻辑
-	m_Example->Update();
+	// 更新子类
+	Update();
 
 	// 必须在游戏逻辑更新完之后再更新输入
-	inputManager.Tick();
+	GetInputManager().Tick();
 
 	// 等待Fence
 	device.WaitForPresent();
@@ -74,13 +80,14 @@ void Engine::Update()
 	device.ResolveTimeStamp();
 
 	// 提交渲染指令
-	m_Example->Draw();
+	Draw();
 
 	// Present
 	device.QueueSubmit();
 	device.QueuePresent();
 
-	m_Example->UpdateAfterDraw();
+	// todo
+	GetResourceManager().ReleaseTempAttachment();
 
 	device.Update();
 }

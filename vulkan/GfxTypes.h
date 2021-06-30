@@ -1,7 +1,30 @@
 #pragma once
 
-#include "Env.h"
-#include "Log.h"
+#include "VKIncludes.h"
+#include "mkVector.h"
+
+struct Extent2D
+{
+	Extent2D(float _width, float _height) :width(_width), height(_height) {}
+	float width;
+	float height;
+};
+
+enum ImageFormat
+{
+	kImageFormat_UNDEFINED,
+
+	kImageFormat_R8G8B8A8_UNORM,
+
+	kImageFormat_D32_SFLOAT_S8_UINT,
+	kImageFormat_D32_SFLOAT,
+	kImageFormat_D24_UNORM_S8_UINT,
+	kImageFormat_D16_UNORM_S8_UINT,
+	kImageFormat_D16_UNORM
+};
+
+
+
 
 struct Color
 {
@@ -50,23 +73,22 @@ uint32_t VkFormatToSize(VkFormat format);
 
 struct VertexDescription
 {
-	std::vector<VkFormat> formats;
-	std::vector<uint32_t> offsets;
+	mkVector<VkFormat> formats;
+	mkVector<uint32_t> offsets;
 	uint32_t stride;
 };
 
-enum BufferUsageType
+enum GfxBufferUsage
 {
-	kBufferUsageVertex,
-	kBufferUsageIndex,
-	kBufferUsageUniform
+	kGfxBufferUsageVertex,
+	kGfxBufferUsageIndex,
+	kGfxBufferUsageUniform
 };
 
-enum MemoryPropertyType
+enum GfxBufferMode
 {
-	kMemoryPropertyDeviceLocal,
-	kMemoryPropertyHostVisible,
-	kMemoryPropertyHostCoherent
+	kGfxBufferModeDeviceLocal,
+	kGfxBufferModeHostVisible
 };
 
 enum ShaderDataType
@@ -114,9 +136,9 @@ struct RenderState
 	{}
 
 	RasterizationState rasterizationState;
-	std::vector<BlendState> blendStates;
+	mkVector<BlendState> blendStates;
 	DepthStencilState depthStencilState;
-	std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT , VK_DYNAMIC_STATE_SCISSOR };
+	mkVector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT , VK_DYNAMIC_STATE_SCISSOR };
 };
 
 enum VKShaderType

@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Env.h"
+#include "VKIncludes.h"
 #include "NonCopyable.h"
 #include "VKResource.h"
 #include "GfxTypes.h"
+#include "mkHashMap.h"
 
 class VKGpuProgram;
 
@@ -26,7 +27,7 @@ struct PipelineCI
 	VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo;
 	VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo;
 	VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo;
-	std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachmentStates;
+	mkVector<VkPipelineColorBlendAttachmentState> colorBlendAttachmentStates;
 	VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo;
 	VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo;
 };
@@ -74,7 +75,7 @@ struct PipelineHash
 class PipelineManager : public NonCopyable
 {
 
-	struct Pipeline : public VKResource
+	struct Pipeline : public vk::VKResource
 	{
 		Pipeline() {}
 		~Pipeline() {}
@@ -102,7 +103,7 @@ private:
 	// µ±Ç°µÄPipelineKey
 	PipelineKey m_PipelineKey;
 
-	std::unordered_map<PipelineKey, Pipeline*, PipelineHash> m_PSOCache;
+	mkHashMap<PipelineKey, Pipeline*, PipelineHash> m_PSOCache;
 
 	uint32_t m_FrameIndex = 0;
 

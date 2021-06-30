@@ -1,27 +1,36 @@
 #pragma once
 
-#include "Env.h"
 #include "NonCopyable.h"
-#include "Settings.h"
 
-class VKResource : public NonCopyable
+namespace vk
 {
-public:
+	class GarbageCollector;
 
-	VKResource();
-	virtual ~VKResource();
+	class VKResource : public NonCopyable
+	{
+	public:
 
-	bool InUse();
-	void Use();
+		VKResource();
+		virtual ~VKResource();
 
-	virtual size_t Hash();
+		bool InUse();
+		void Use();
 
-private:
+		void Release();
 
-	// 在该帧被使用
-	int m_FrameIndex = -FrameResourcesCount;
-};
+	private:
 
+		// 在该帧被使用
+		int m_FrameIndex = -999;
+
+		GarbageCollector* m_GarbageCollector;
+	};
+}
+
+
+//todo
+#include "mkHashMap.h"
+#include "mkList.h"
 template <class Key, class Resource, class KeyHash>
 class ResourcePool
 {
@@ -59,7 +68,7 @@ class ResourcePool
 
 	private:
 
-		std::list<Resource*> resources;
+		mkList<Resource*> resources;
 	};
 
 public:
@@ -88,5 +97,5 @@ public:
 
 private:
 
-	std::unordered_map<Key, PoolEntry, KeyHash> m_Pool;
+	mkHashMap<Key, PoolEntry, KeyHash> m_Pool;
 };

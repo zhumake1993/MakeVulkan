@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Env.h"
 #include "NonCopyable.h"
 #include "GfxTypes.h"
 

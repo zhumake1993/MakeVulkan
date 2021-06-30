@@ -26,18 +26,18 @@ uint32_t RenderPass::GetHeight()
 	return m_RenderPassKey.GetHeight();
 }
 
-void RenderPass::SetAttachments(const std::vector<Attachment*> actualAttachments)
+void RenderPass::SetAttachments(const mkVector<Attachment*> actualAttachments)
 {
 	auto& attachments = m_RenderPassKey.GetAttachments();
 
-	ASSERT(attachments.size() == actualAttachments.size(), "attachment num does not match.");
+	ASSERT(attachments.size() == actualAttachments.size());
 	m_Images.resize(attachments.size());
 
 	for (size_t i = 0; i < actualAttachments.size(); i++)
 	{
-		ASSERT(actualAttachments[i]->GetFormat() == attachments[i].format, "attachment format does not match.");
-		ASSERT(actualAttachments[i]->GetWidth() == m_RenderPassKey.GetWidth(), "attachment width does not match.");
-		ASSERT(actualAttachments[i]->GetHeight() == m_RenderPassKey.GetHeight(), "attachment height does not match.");
+		ASSERT(actualAttachments[i]->GetFormat() == attachments[i].format);
+		ASSERT(actualAttachments[i]->GetWidth() == m_RenderPassKey.GetWidth());
+		ASSERT(actualAttachments[i]->GetHeight() == m_RenderPassKey.GetHeight());
 
 		m_Images[i] = actualAttachments[i]->GetImage();
 	}

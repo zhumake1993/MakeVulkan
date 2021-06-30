@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Env.h"
+#include "VKIncludes.h" //todo
 #include "NamedObject.h"
+#include "mkVector.h"
 
 class Image;
 
@@ -9,8 +10,8 @@ class TextureBase : public NamedObject
 {
 public:
 
-	TextureBase(const std::string& name);
-	TextureBase(const std::string& name, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount);
+	TextureBase(const mkString& name);
+	TextureBase(const mkString& name, VkFormat format, uint32_t width, uint32_t height, uint32_t mipLevels, uint32_t layerCount, uint32_t faceCount);
 	virtual ~TextureBase();
 
 	VkFormat GetFormat() { return m_Format; }
@@ -39,23 +40,23 @@ class Texture : public TextureBase
 
 public:
 
-	Texture(const std::string& name);
+	Texture(const mkString& name);
 	virtual ~Texture();
 
-	void LoadFromFile(const std::string& filename, VkFormat format = VK_FORMAT_R8G8B8A8_UNORM, bool isCubemap = false);
+	void LoadFromFile(const mkString& filename, VkFormat format = VK_FORMAT_R8G8B8A8_UNORM, bool isCubemap = false);
 
 private:
 
 	// 使用stb_image库读取文件，不支持mipmap（懒得研究）
-	void ReadImageUsingSTB(const std::string& filename);
+	void ReadImageUsingSTB(const mkString& filename);
 
 	// 使用ktxvulkan库读取ktx文件，支持大部分特性
-	void ReadImageUsingKTX(const std::string& filename);
+	void ReadImageUsingKTX(const mkString& filename);
 
 private:
 
-	std::vector<char> m_ImageData;
-	std::vector<std::vector<std::vector<uint64_t>>> m_Offsets;
+	mkVector<char> m_ImageData;
+	mkVector<mkVector<mkVector<uint64_t>>> m_Offsets;
 };
 
 class Attachment : public TextureBase

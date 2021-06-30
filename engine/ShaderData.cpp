@@ -11,7 +11,7 @@ ShaderData::~ShaderData()
 	RELEASE(m_SCData);
 }
 
-void ShaderData::SetValueParameter(std::vector<GpuParameters::ValueParameter>& valueParameters)
+void ShaderData::SetValueParameter(mkVector<GpuParameters::ValueParameter>& valueParameters)
 {
 	uint32_t offset = 0;
 	for (auto& vp : valueParameters)
@@ -26,7 +26,7 @@ void ShaderData::SetValueParameter(std::vector<GpuParameters::ValueParameter>& v
 	m_ValueDataSize = offset;
 }
 
-void ShaderData::SetFloat(const std::string& name, float x)
+void ShaderData::SetFloat(const mkString& name, float x)
 {
 	uint32_t offset = m_ValueOffsetMap[name];
 
@@ -34,7 +34,7 @@ void ShaderData::SetFloat(const std::string& name, float x)
 	*(addr + 0) = x;
 }
 
-void ShaderData::SetFloat2(const std::string& name, float x, float y)
+void ShaderData::SetFloat2(const mkString& name, float x, float y)
 {
 	uint32_t offset = m_ValueOffsetMap[name];
 
@@ -43,7 +43,7 @@ void ShaderData::SetFloat2(const std::string& name, float x, float y)
 	*(addr + 1) = y;
 }
 
-void ShaderData::SetFloat3(const std::string& name, float x, float y, float z)
+void ShaderData::SetFloat3(const mkString& name, float x, float y, float z)
 {
 	uint32_t offset = m_ValueOffsetMap[name];
 
@@ -53,7 +53,7 @@ void ShaderData::SetFloat3(const std::string& name, float x, float y, float z)
 	*(addr + 2) = z;
 }
 
-void ShaderData::SetFloat4(const std::string& name, float x, float y, float z, float w)
+void ShaderData::SetFloat4(const mkString& name, float x, float y, float z, float w)
 {
 	uint32_t offset = m_ValueOffsetMap[name];
 
@@ -64,7 +64,7 @@ void ShaderData::SetFloat4(const std::string& name, float x, float y, float z, f
 	*(addr + 3) = w;
 }
 
-void ShaderData::SetFloat4x4(const std::string& name, glm::mat4 & mat)
+void ShaderData::SetFloat4x4(const mkString& name, glm::mat4 & mat)
 {
 	uint32_t offset = m_ValueOffsetMap[name];
 
@@ -72,7 +72,7 @@ void ShaderData::SetFloat4x4(const std::string& name, glm::mat4 & mat)
 	memcpy(addr, &mat, sizeof(glm::mat4));
 }
 
-void ShaderData::SetInt(const std::string & name, int x)
+void ShaderData::SetInt(const mkString & name, int x)
 {
 	uint32_t offset = m_ValueOffsetMap[name];
 
@@ -90,7 +90,7 @@ uint32_t ShaderData::GetValueDataSize()
 	return m_ValueDataSize;
 }
 
-void ShaderData::SetTextureParameter(std::vector<GpuParameters::TextureParameter>& textureParameters)
+void ShaderData::SetTextureParameter(mkVector<GpuParameters::TextureParameter>& textureParameters)
 {
 	for (auto& texture : textureParameters)
 	{
@@ -98,7 +98,7 @@ void ShaderData::SetTextureParameter(std::vector<GpuParameters::TextureParameter
 	}
 }
 
-void ShaderData::SetTexture(const std::string& name, TextureBase * texture)
+void ShaderData::SetTexture(const mkString& name, TextureBase * texture)
 {
 	if (m_TextureMap.find(name) == m_TextureMap.end())
 	{
@@ -108,7 +108,7 @@ void ShaderData::SetTexture(const std::string& name, TextureBase * texture)
 	m_TextureMap[name] = texture;
 }
 
-TextureBase * ShaderData::GetTexture(const std::string& name)
+TextureBase * ShaderData::GetTexture(const mkString& name)
 {
 	if (m_TextureMap.find(name) == m_TextureMap.end())
 	{
@@ -118,7 +118,7 @@ TextureBase * ShaderData::GetTexture(const std::string& name)
 	return m_TextureMap[name];
 }
 
-void ShaderData::SetSpecializationConstantParameter(std::vector<GpuParameters::SpecializationConstantParameter>& scParameters)
+void ShaderData::SetSpecializationConstantParameter(mkVector<GpuParameters::SpecializationConstantParameter>& scParameters)
 {
 	uint32_t offset = 0;
 	for (auto& sc : scParameters)

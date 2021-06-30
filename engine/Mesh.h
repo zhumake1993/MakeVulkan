@@ -1,31 +1,32 @@
 #pragma once
 
-#include "Env.h"
 #include "GfxTypes.h"
+#include "mkString.h"
+#include "mkVector.h"
 
-class Buffer;
+class GfxBuffer;
 
 class Mesh
 {
 public:
 
-	Mesh(const std::string& name);
+	Mesh(const mkString& name);
 	virtual ~Mesh();
 
-	void SetVertexChannels(const std::vector<VertexChannel>& channels);
-	std::vector<VertexChannel>& GetVertexChannels();
+	void SetVertexChannels(const mkVector<VertexChannel>& channels);
+	mkVector<VertexChannel>& GetVertexChannels();
 
 	VertexDescription* GetVertexDescription();
 
-	void LoadFromFile(const std::string& filename);
+	void LoadFromFile(const mkString& filename);
 
-	void SetVertices(const std::vector<float>& vertices);
-	void SetIndices(const std::vector<uint32_t>& indices);
+	void SetVertices(const mkVector<float>& vertices);
+	void SetIndices(const mkVector<uint32_t>& indices);
 
 	void UploadToGPU();
 
-	Buffer* GetVertexBuffer();
-	Buffer* GetIndexBuffer();
+	GfxBuffer* GetVertexBuffer();
+	GfxBuffer* GetIndexBuffer();
 	uint32_t GetIndexCount();
 	VkIndexType GetIndexType();
 
@@ -33,22 +34,22 @@ private:
 
 	bool HasVertexChannel(VertexChannel channel);
 
-	void LoadUseObj(const std::string& filename);
-	void LoadUseAssimp(const std::string& filename);
+	void LoadUseObj(const mkString& filename);
+	void LoadUseAssimp(const mkString& filename);
 
 private:
 
-	std::string m_Name;
+	mkString m_Name;
 
-	std::vector<VertexChannel> m_VertexChannels;
+	mkVector<VertexChannel> m_VertexChannels;
 
 	VertexDescription m_VertexDescription;
 
-	std::vector<float> m_Vertices;
-	std::vector<uint32_t> m_Indices;
+	mkVector<float> m_Vertices;
+	mkVector<uint32_t> m_Indices;
 
-	Buffer* m_VertexBuffer = nullptr;
-	Buffer* m_IndexBuffer = nullptr;
+	GfxBuffer* m_VertexBuffer = nullptr;
+	GfxBuffer* m_IndexBuffer = nullptr;
 
 	VkIndexType m_IndexType = VK_INDEX_TYPE_UINT32;
 };

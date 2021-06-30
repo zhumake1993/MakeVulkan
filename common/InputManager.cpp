@@ -1,6 +1,6 @@
 #include "InputManager.h"
 
-InputManager inputManager;
+InputManager gInputManager;
 
 void InputManager::Tick()
 {
@@ -10,4 +10,9 @@ void InputManager::Tick()
 	oldPos0 = pos0;
 	oldPos1 = pos1;
 #endif
+}
+
+InputManager & GetInputManager()
+{
+	return gInputManager;
 }

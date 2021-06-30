@@ -1,15 +1,17 @@
 #include "Application.h"
-#include "Settings.h"
+#include "Platforms.h"
+#include "GlobalSettings.h"
 #include "Log.h"
-#include "Engine.h"
 #include "Tools.h"
+#include "Engine.h"
 #include "InputManager.h"
+#include <stdio.h>
 
-Application* application;
+Application* gApplication = nullptr;
 
-Application::Application(Example* example)
+Application::Application(Engine* engine)
 {
-	m_Engine = new Engine(example);
+	m_Engine = engine;
 }
 
 Application::~Application()
@@ -34,13 +36,13 @@ void Application::Init()
 
 #endif
 
-	m_Engine->Init();
+	m_Engine->InitEngine();
 	m_CanRender = true;
 }
 
 void Application::Release()
 {
-	m_Engine->Release();
+	m_Engine->ReleaseEngine();
 	RELEASE(m_Engine);
 }
 
@@ -58,11 +60,12 @@ void Application::Run()
 				break;
 			}
 		}
-		if (m_CanRender && !IsIconic(windowHandle)) {
-			m_Engine->Update();
+		if (m_CanRender && !IsIconic(platform::GetWindowHandle())) {
+			m_Engine->UpdateEngine();
 		}
 	}
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+	android_app* androidApp = platform::GetAndroidApp();
 	while (1)
 	{
 		int events;
@@ -92,7 +95,7 @@ void Application::Run()
 		}
 
 		if (m_CanRender) {
-			m_Engine->Update();
+			m_Engine->UpdateEngine();
 		}
 	}
 #endif
@@ -125,23 +128,25 @@ void Application::SetupConsole()
 	FILE *stream;
 	freopen_s(&stream, "CONOUT$", "w+", stdout);
 	freopen_s(&stream, "CONOUT$", "w+", stderr);
-	SetConsoleTitle(TEXT(consoleTitle.c_str()));
+	SetConsoleTitle(TEXT(GetGlobalSettings().consoleTitle.c_str()));
 }
 
 void Application::SetupWindow()
 {
+	auto& gs = GetGlobalSettings();
+
 	WNDCLASSEX wndClass;
 	wndClass.cbSize = sizeof(WNDCLASSEX);
 	wndClass.style = CS_HREDRAW | CS_VREDRAW;
 	wndClass.lpfnWndProc = WndProc;
 	wndClass.cbClsExtra = 0;
 	wndClass.cbWndExtra = 0;
-	wndClass.hInstance = windowInstance;
+	wndClass.hInstance = platform::GetWindowInstance();
 	wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wndClass.lpszMenuName = NULL;
-	wndClass.lpszClassName = windowClassName.c_str();
+	wndClass.lpszClassName = gs.windowClassName.c_str();
 	wndClass.hIconSm = LoadIcon(NULL, IDI_WINLOGO);
 
 	if (!RegisterClassEx(&wndClass))
@@ -160,14 +165,14 @@ void Application::SetupWindow()
 	RECT windowRect;
 	windowRect.left = 0L;
 	windowRect.top = 0L;
-	windowRect.right = windowWidth;
-	windowRect.bottom = windowHeight;
+	windowRect.right = gs.windowWidth;
+	windowRect.bottom = gs.windowHeight;
 
 	AdjustWindowRectEx(&windowRect, dwStyle, FALSE, dwExStyle);
 
-	windowHandle = CreateWindowEx(0,
-		windowClassName.c_str(),
-		windowTitleName.c_str(),
+	HWND windowHandle = CreateWindowEx(0,
+		gs.windowClassName.c_str(),
+		gs.windowTitleName.c_str(),
 		dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 		0,
 		0,
@@ -175,8 +180,10 @@ void Application::SetupWindow()
 		windowRect.bottom - windowRect.top,
 		NULL,
 		NULL,
-		windowInstance,
+		platform::GetWindowInstance(),
 		NULL);
+
+	platform::SetWindowHandle(windowHandle);
 
 	if (!windowHandle)
 	{
@@ -194,23 +201,21 @@ void Application::SetupWindow()
 	ShowWindow(windowHandle, SW_SHOW);
 	SetForegroundWindow(windowHandle);
 	SetFocus(windowHandle);
-
-	LOG("SetupWindow success\n");
 }
 
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
 
 void Application::DisplayAndroidProduct()
 {
-	std::string androidProduct = "";
+	mkString androidProduct = "";
 	char prop[PROP_VALUE_MAX + 1];
 	int len = __system_property_get("ro.product.manufacturer", prop);
 	if (len > 0) {
-		androidProduct += std::string(prop) + " ";
+		androidProduct += mkString(prop) + " ";
 	};
 	len = __system_property_get("ro.product.model", prop);
 	if (len > 0) {
-		androidProduct += std::string(prop);
+		androidProduct += mkString(prop);
 	};
 	LOG("androidProduct = %s", androidProduct.c_str());
 }
@@ -219,8 +224,7 @@ void Application::LoadVulkan()
 {
 	if (!InitVulkan())
 	{
-		LOG("Vulkan is unavailable, install vulkan and re-start");
-		EXIT;
+		LOGE("Vulkan is unavailable, install vulkan and re-start");
 	}
 	LOG("Vulkan Ready");
 }
@@ -231,15 +235,17 @@ void Application::LoadVulkan()
 
 void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	auto& inputManager = GetInputManager();
+
 	switch (uMsg)
 	{
 	case WM_CLOSE:
-		application->DeActivate();
+		gApplication->DeActivate();
 		DestroyWindow(hWnd);
 		PostQuitMessage(0);
 		break;
 	case WM_PAINT:
-		ValidateRect(windowHandle, NULL);
+		ValidateRect(platform::GetWindowHandle(), NULL);
 		break;
 	case WM_KEYDOWN:
 		switch (wParam)
@@ -339,6 +345,8 @@ void HandleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void HandleTouchScreenEvent(int32_t action, AInputEvent* event)
 {
+	auto& inputManager = GetInputManager();
+
 	switch (action)
 	{
 	case AMOTION_EVENT_ACTION_UP:
@@ -445,21 +453,52 @@ void HandleAppCommand(android_app * app, int32_t cmd)
 		break;
 	case APP_CMD_INIT_WINDOW:
 		LOG("APP_CMD_INIT_WINDOW");
-		application->Init();
+		gApplication->Init();
 		break;
 	case APP_CMD_LOST_FOCUS:
 		LOG("APP_CMD_LOST_FOCUS");
-		application->DeActivate();
+		gApplication->DeActivate();
 		break;
 	case APP_CMD_GAINED_FOCUS:
 		LOG("APP_CMD_GAINED_FOCUS");
-		application->Activate();
+		gApplication->Activate();
 		break;
 	case APP_CMD_TERM_WINDOW:
 		LOG("APP_CMD_TERM_WINDOW");
-		application->Release();
+		gApplication->Release();
 		break;
 	}
 }
 
 #endif
+
+void RunApplication(Engine * engine)
+{
+#ifdef _WIN32
+
+	gApplication = new Application(engine);
+
+	gApplication->Init();
+	gApplication->Run();
+	gApplication->Release();
+	RELEASE(gApplication);
+
+	LOG("Application exits.");
+	system("PAUSE");
+
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+
+	gApplication = new Application(engine);
+
+	android_app* androidApp = platform::GetAndroidApp();
+	androidApp->userData = gApplication;
+	androidApp->onAppCmd = HandleAppCommand;
+	androidApp->onInputEvent = HandleAppInput;
+	gApplication->Run();
+	gApplication->Release();
+	RELEASE(gApplication);
+
+	LOG("Application exits.");
+
+#endif
+}

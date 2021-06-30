@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Env.h"
 #include "Transform.h"
+#include "mkString.h"
 
 class Mesh;
 class Material;
@@ -11,7 +11,7 @@ class RenderNode
 
 public:
 
-	RenderNode(const std::string& name);
+	RenderNode(const mkString& name);
 	virtual ~RenderNode();
 
 	Transform& GetTransform();
@@ -24,7 +24,7 @@ public:
 
 private:
 
-	std::string m_Name;
+	mkString m_Name;
 
 	Transform m_Transform;
 

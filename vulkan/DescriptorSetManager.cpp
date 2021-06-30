@@ -1,12 +1,13 @@
 #include "DescriptorSetManager.h"
-#include "VulkanTools.h"
+#include "VKTools.h"
+#include "Tools.h"
 
 DescriptorSetManager::DescriptorSetManager(VkDevice vkDevice) :
 	m_Device(vkDevice)
 {
 	// DescriptorPool
 
-	std::vector<VkDescriptorPoolSize> descriptorPoolSizes(11);
+	mkVector<VkDescriptorPoolSize> descriptorPoolSizes(11);
 	descriptorPoolSizes[0] = { VK_DESCRIPTOR_TYPE_SAMPLER , 1000 };
 	descriptorPoolSizes[1] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER , 1000 };
 	descriptorPoolSizes[2] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE , 1000 };

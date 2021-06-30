@@ -1,16 +1,17 @@
 #include "VKGpuProgram.h"
-#include "VulkanTools.h"
+#include "VKTools.h"
+#include "Tools.h"
 #include "DeviceProperties.h"
 
 VkDescriptorSetLayout VKGpuProgram::m_DSLGlobal = VK_NULL_HANDLE;
 VkDescriptorSetLayout VKGpuProgram::m_DSLPerView = VK_NULL_HANDLE;
 
-VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const std::vector<char>& vertCode, const std::vector<char>& fragCode) :
+VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const mkVector<char>& vertCode, const mkVector<char>& fragCode) :
 	GpuProgram(parameters),
 	m_Device(vkDevice)
 {
-	std::vector<VkDescriptorSetLayoutBinding> bindingsPerMaterial;
-	std::vector<VkDescriptorSetLayoutBinding> bindingsPerDraw;
+	mkVector<VkDescriptorSetLayoutBinding> bindingsPerMaterial;
+	mkVector<VkDescriptorSetLayoutBinding> bindingsPerDraw;
 
 	for (auto& uniform : parameters.uniformParameters)
 	{
@@ -123,7 +124,7 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 
 	// PipelineLayout
 
-	std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+	mkVector<VkDescriptorSetLayout> descriptorSetLayouts;
 	descriptorSetLayouts.push_back(m_DSLGlobal);
 	descriptorSetLayouts.push_back(m_DSLPerView);
 	descriptorSetLayouts.push_back(m_DSLPerMaterial);
@@ -141,7 +142,7 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const s
 	if (parameters.pushConstantSize > 0)
 	{
 		auto& dp = GetDeviceProperties();
-		ASSERT(parameters.pushConstantSize <= dp.deviceProperties.limits.maxPushConstantsSize, "exceed maxPushConstantsSize.");
+		ASSERT(parameters.pushConstantSize <= dp.deviceProperties.limits.maxPushConstantsSize);
 
 		VkPushConstantRange pushConstantRange = {};
 		pushConstantRange.stageFlags = parameters.pushConstantStage;

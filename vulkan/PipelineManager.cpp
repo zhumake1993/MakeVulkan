@@ -1,5 +1,6 @@
 #include "PipelineManager.h"
-#include "VulkanTools.h"
+#include "VKTools.h"
+#include "Tools.h"
 #include "GarbageCollector.h"
 #include "VKGpuProgram.h"
 #include "ProfilerManager.h"

@@ -2,7 +2,7 @@
 #include "Mesh.h"
 #include "Material.h"
 
-RenderNode::RenderNode(const std::string& name):
+RenderNode::RenderNode(const mkString& name):
 	m_Name(name)
 {
 }

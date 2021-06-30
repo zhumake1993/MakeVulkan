@@ -1,7 +1,7 @@
 #include "ImageManager.h"
 #include "DeviceProperties.h"
-#include "VulkanTools.h"
-#include "GfxDevice.h"
+#include "VKTools.h"
+#include "VKMemory.h"
 
 ImageKey ImageVulkan::GetKey()
 {
@@ -105,7 +105,7 @@ VKImage * ImageManager::CreateImage(const ImageKey& key)
 	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	memoryAllocateInfo.pNext = nullptr;
 	memoryAllocateInfo.allocationSize = memReqs.size;
-	memoryAllocateInfo.memoryTypeIndex = dp.GetMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	memoryAllocateInfo.memoryTypeIndex = vk::FindMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	VK_CHECK_RESULT(vkAllocateMemory(m_Device, &memoryAllocateInfo, nullptr, &image->memory));
 
 	// Bind
@@ -155,7 +155,7 @@ VKImageSampler * ImageManager::CreateImageSampler(const ImageSamplerKey& key)
 	samplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 	samplerCI.mipLodBias = 0.0f;
 
-	auto& dp = GetDeviceProperties();
+	/*auto& dp = GetDeviceProperties();
 	if (key.maxAnisotropy > 1 && dp.enabledDeviceFeatures.samplerAnisotropy)
 	{
 		samplerCI.anisotropyEnable = VK_TRUE;
@@ -172,7 +172,9 @@ VKImageSampler * ImageManager::CreateImageSampler(const ImageSamplerKey& key)
 	{
 		samplerCI.anisotropyEnable = VK_FALSE;
 		samplerCI.maxAnisotropy = 1.0f;
-	}
+	}*/
+	samplerCI.anisotropyEnable = VK_FALSE;
+	samplerCI.maxAnisotropy = 1.0f;
 
 	samplerCI.compareEnable = VK_FALSE;
 	samplerCI.compareOp = VK_COMPARE_OP_NEVER;

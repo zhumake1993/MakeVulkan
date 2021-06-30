@@ -84,7 +84,7 @@ void MakeVulkan::Init()
 	//{
 	//	// Attachments
 	//	m_RenderPassDesc.attachmentDescs.resize(2);
-	//	std::vector<AttachmentDesc>& attachmentDescs = m_RenderPassDesc.attachmentDescs;
+	//	mkVector<AttachmentDesc>& attachmentDescs = m_RenderPassDesc.attachmentDescs;
 
 	//	attachmentDescs[0].format = dp.ScFormat.format;
 	//	attachmentDescs[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -96,7 +96,7 @@ void MakeVulkan::Init()
 
 	//	// Subpasses
 	//	m_RenderPassDesc.subPassDescs.resize(1);
-	//	std::vector<SubPassDesc>& subPassDescs = m_RenderPassDesc.subPassDescs;
+	//	mkVector<SubPassDesc>& subPassDescs = m_RenderPassDesc.subPassDescs;
 
 	//	subPassDescs[0].colors = { 0 };
 	//	subPassDescs[0].useDepthStencil = true;
@@ -140,8 +140,8 @@ void MakeVulkan::Update()
 	ImGui::Text("%.2f ms/frame (%.2f fps)", (1000.0f / fps), fps);
 
 	static float acTime = 0;
-	static std::string cpuProfiler = "";
-	static std::string gpuProfiler = "";
+	static mkString cpuProfiler = "";
+	static mkString gpuProfiler = "";
 	acTime += deltaTime;
 	if (acTime > 1.0f)
 	{
@@ -212,7 +212,7 @@ void MakeVulkan::PrepareResources()
 		// 自定义顶点buffer的结构和数据
 		m_Mesh = CreateMesh("Mesh");
 		m_Mesh->SetVertexChannels({ kVertexPosition, kVertexColor });
-		std::vector<float> vertices = {
+		mkVector<float> vertices = {
 			-1.0f, -1.0f,  1.0f , 1.0f, 0.0f, 0.0f  ,
 			1.0f, -1.0f,  1.0f , 0.0f, 1.0f, 0.0f  ,
 			1.0f,  1.0f,  1.0f , 0.0f, 0.0f, 1.0f  ,
@@ -222,7 +222,7 @@ void MakeVulkan::PrepareResources()
 			1.0f,  1.0f, -1.0f , 0.0f, 0.0f, 1.0f  ,
 			-1.0f,  1.0f, -1.0f , 0.0f, 0.0f, 0.0f  ,
 		};
-		std::vector<uint32_t> indices = {
+		mkVector<uint32_t> indices = {
 			0,1,2, 2,3,0, 1,5,6, 6,2,1, 7,6,5, 5,4,7, 4,0,3, 3,7,4, 4,5,1, 1,0,4, 3,2,6, 6,7,3,
 		};
 		m_Mesh->SetVertices(vertices);

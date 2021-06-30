@@ -49,7 +49,7 @@ private:
 	Material* m_ReflectMat;
 	Material* m_SkyboxMat;
 
-	std::vector<RenderNode*> m_Nodes;
+	mkVector<RenderNode*> m_Nodes;
 
 	Camera* m_Camera;
 

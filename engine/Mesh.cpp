@@ -1,7 +1,7 @@
 #include "Mesh.h"
 #include "Tools.h"
 #include "GfxDevice.h"
-#include "Buffer.h"
+#include "GfxBuffer.h"
 #include <sstream>
 #include <algorithm>
 
@@ -14,7 +14,7 @@
 //#include "assimp/postprocess.h"
 //#include "assimp/cimport.h"
 
-Mesh::Mesh(const std::string& name) :
+Mesh::Mesh(const mkString& name) :
 	m_Name(name)
 {
 	m_VertexChannels = {
@@ -39,7 +39,7 @@ Mesh::~Mesh()
 	RELEASE(m_IndexBuffer);
 }
 
-void Mesh::SetVertexChannels(const std::vector<VertexChannel>& channels)
+void Mesh::SetVertexChannels(const mkVector<VertexChannel>& channels)
 {
 	m_VertexChannels = channels;
 
@@ -60,7 +60,7 @@ void Mesh::SetVertexChannels(const std::vector<VertexChannel>& channels)
 	m_VertexDescription.stride = offset;
 }
 
-std::vector<VertexChannel>& Mesh::GetVertexChannels()
+mkVector<VertexChannel>& Mesh::GetVertexChannels()
 {
 	return m_VertexChannels;
 }
@@ -70,18 +70,18 @@ VertexDescription* Mesh::GetVertexDescription()
 	return &m_VertexDescription;
 }
 
-void Mesh::LoadFromFile(const std::string & filename)
+void Mesh::LoadFromFile(const mkString & filename)
 {
 	LoadUseObj(filename);
 	//LoadUseAssimp(filename);
 }
 
-void Mesh::SetVertices(const std::vector<float>& vertices)
+void Mesh::SetVertices(const mkVector<float>& vertices)
 {
 	m_Vertices = vertices;
 }
 
-void Mesh::SetIndices(const std::vector<uint32_t>& indices)
+void Mesh::SetIndices(const mkVector<uint32_t>& indices)
 {
 	m_Indices = indices;
 }
@@ -92,21 +92,21 @@ void Mesh::UploadToGPU()
 
 	// Vertex buffer
 	uint64_t vertexBufferSize = static_cast<uint64_t>(m_Vertices.size()) * sizeof(m_Vertices[0]);
-	m_VertexBuffer = device.CreateBuffer(kBufferUsageVertex, kMemoryPropertyDeviceLocal, vertexBufferSize);
+	m_VertexBuffer = device.CreateBuffer(kGfxBufferUsageVertex, kGfxBufferModeDeviceLocal, vertexBufferSize);
 	device.UpdateBuffer(m_VertexBuffer, m_Vertices.data(), 0, vertexBufferSize);
 
 	// Index buffer
 	uint64_t indexBufferSize = static_cast<uint64_t>(m_Indices.size()) * sizeof(uint32_t);
-	m_IndexBuffer = device.CreateBuffer(kBufferUsageIndex, kMemoryPropertyDeviceLocal, indexBufferSize);
+	m_IndexBuffer = device.CreateBuffer(kGfxBufferUsageIndex, kGfxBufferModeDeviceLocal, indexBufferSize);
 	device.UpdateBuffer(m_IndexBuffer, m_Indices.data(), 0, indexBufferSize);
 }
 
-Buffer * Mesh::GetVertexBuffer()
+GfxBuffer * Mesh::GetVertexBuffer()
 {
 	return m_VertexBuffer;
 }
 
-Buffer * Mesh::GetIndexBuffer()
+GfxBuffer * Mesh::GetIndexBuffer()
 {
 	return m_IndexBuffer;
 }
@@ -126,16 +126,16 @@ bool Mesh::HasVertexChannel(VertexChannel channel)
 	return std::find(m_VertexChannels.begin(), m_VertexChannels.end(), channel) != m_VertexChannels.end();
 }
 
-void Mesh::LoadUseObj(const std::string & filename)
+void Mesh::LoadUseObj(const mkString & filename)
 {
 	tinyobj::attrib_t attrib;
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
-	std::string warn, err;
+	mkVector<tinyobj::shape_t> shapes;
+	mkVector<tinyobj::material_t> materials;
+	mkString warn, err;
 
 #if defined(_WIN32)
 
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str()))
+	if (!tinyobj::LoadObj(&attrib, &shapes.vector(), &materials.vector(), &warn, &err, filename.c_str()))
 	{
 		LOG("LoadObj failed: %s", (warn + err).c_str());
 		assert(false);
@@ -194,7 +194,7 @@ void Mesh::LoadUseObj(const std::string & filename)
 	}
 }
 
-void Mesh::LoadUseAssimp(const std::string & filename)
+void Mesh::LoadUseAssimp(const mkString & filename)
 {
 //	Assimp::Importer Importer;
 //	const aiScene* pScene;
@@ -204,7 +204,7 @@ void Mesh::LoadUseAssimp(const std::string & filename)
 //#if defined(__ANDROID__)
 //
 //	// 手机上要先用专门的函数把数据读取出来
-//	std::vector<char> fileData = GetBinaryFileContents(filename);
+//	mkVector<char> fileData = GetBinaryFileContents(filename);
 //
 //	pScene = Importer.ReadFileFromMemory(fileData.data(), fileData.size(), defaultFlags);
 //

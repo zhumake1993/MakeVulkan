@@ -1,58 +1,60 @@
 #pragma once
 
-#include "Env.h"
+#include "VKIncludes.h"
 #include "NonCopyable.h"
 #include "GfxTypes.h"
+#include "mkVector.h"
+#include "mkString.h"
 
 struct GpuParameters
 {
 	struct ValueParameter
 	{
-		ValueParameter(const std::string& _name, ShaderDataType _type) :
+		ValueParameter(const mkString& _name, ShaderDataType _type) :
 			name(_name), type(_type)
 		{
 		}
 
-		std::string name;
+		mkString name;
 		ShaderDataType type;
 	};
 
 	struct UniformParameter
 	{
 		UniformParameter() {}
-		UniformParameter(const std::string& _name, int _binding, VkShaderStageFlags _stageFlags) :
+		UniformParameter(const mkString& _name, int _binding, VkShaderStageFlags _stageFlags) :
 			name(_name), binding(_binding), stageFlags(_stageFlags)
 		{
 		}
 
-		std::string name;
+		mkString name;
 		int binding;
 		VkShaderStageFlags stageFlags;
 
-		std::vector<ValueParameter> valueParameters;
+		mkVector<ValueParameter> valueParameters;
 	};
 
 	// 目前都是COMBINED_IMAGE_SAMPLER
 	struct TextureParameter
 	{
-		TextureParameter(const std::string& _name, int _binding, VkShaderStageFlags _stageFlags) :
+		TextureParameter(const mkString& _name, int _binding, VkShaderStageFlags _stageFlags) :
 			name(_name), binding(_binding), stageFlags(_stageFlags)
 		{
 		}
 
-		std::string name;
+		mkString name;
 		int binding;
 		VkShaderStageFlags stageFlags;
 	};
 
 	struct InputAttachmentParameter
 	{
-		InputAttachmentParameter(const std::string& _name, int _binding, VkShaderStageFlags _stageFlags) :
+		InputAttachmentParameter(const mkString& _name, int _binding, VkShaderStageFlags _stageFlags) :
 			name(_name), binding(_binding), stageFlags(_stageFlags)
 		{
 		}
 
-		std::string name;
+		mkString name;
 		int binding;
 		VkShaderStageFlags stageFlags;
 	};
@@ -65,9 +67,9 @@ struct GpuParameters
 		ShaderDataType type;
 	};
 
-	std::vector<UniformParameter> uniformParameters;
-	std::vector<TextureParameter> textureParameters;
-	std::vector<InputAttachmentParameter> inputAttachmentParameters;
+	mkVector<UniformParameter> uniformParameters;
+	mkVector<TextureParameter> textureParameters;
+	mkVector<InputAttachmentParameter> inputAttachmentParameters;
 
 	// PushConstant
 	// 为了保证Pipeline Layout Compatibility，统一设置128的PushConstant
@@ -75,7 +77,7 @@ struct GpuParameters
 	const VkShaderStageFlags pushConstantStage = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
 	// SpecializationConstant
-	std::vector<SpecializationConstantParameter> SCParameters;
+	mkVector<SpecializationConstantParameter> SCParameters;
 };
 
 class GpuProgram : public NonCopyable

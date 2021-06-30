@@ -1,5 +1,6 @@
 #include "VKCommandBuffer.h"
-#include "VulkanTools.h"
+#include "VKTools.h"
+#include "Tools.h"
 #include "DeviceProperties.h"
 
 VKCommandBuffer::VKCommandBuffer(VkDevice vkDevice, VkCommandPool vkCommandPool, VkCommandBufferLevel level) :
@@ -41,7 +42,7 @@ void VKCommandBuffer::End()
 	VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 }
 
-void VKCommandBuffer::BeginRenderPass(VkRenderPass vkRenderPass, VkFramebuffer vkFrameBuffer, VkRect2D& area, std::vector<VkClearValue>& clearValues)
+void VKCommandBuffer::BeginRenderPass(VkRenderPass vkRenderPass, VkFramebuffer vkFrameBuffer, VkRect2D& area, mkVector<VkClearValue>& clearValues)
 {
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -79,12 +80,12 @@ void VKCommandBuffer::CopyBuffer(VkBuffer src, VkBuffer dst, VkBufferCopy & regi
 	vkCmdCopyBuffer(commandBuffer, src, dst, 1, &region);
 }
 
-void VKCommandBuffer::CopyBufferToImage(VkBuffer src, VkImage dst, uint32_t width, uint32_t height, const std::vector<std::vector<std::vector<uint64_t>>>& offsets)
+void VKCommandBuffer::CopyBufferToImage(VkBuffer src, VkImage dst, uint32_t width, uint32_t height, const mkVector<mkVector<mkVector<uint64_t>>>& offsets)
 {
 	size_t faceCount = offsets.size();
-	ASSERT(faceCount == 1 || faceCount == 6, "wrong faceCount.");
+	ASSERT(faceCount == 1 || faceCount == 6);
 
-	std::vector<VkBufferImageCopy> bufferCopyRegions;
+	mkVector<VkBufferImageCopy> bufferCopyRegions;
 	for (uint32_t face = 0; face < offsets.size(); face++)
 	{
 		for (uint32_t layer = 0; layer < offsets[face].size(); layer++)
@@ -140,7 +141,7 @@ void VKCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelin
 	BindDescriptorSet(bindPoint, pipelineLayout, index, set, {});
 }
 
-void VKCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set, const std::vector<uint32_t>& offsets)
+void VKCommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, VkPipelineLayout pipelineLayout, uint32_t index, VkDescriptorSet set, const mkVector<uint32_t>& offsets)
 {
 	// Each element of pDynamicOffsets which corresponds to a descriptor binding with type VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
 	// must be a multiple of VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment

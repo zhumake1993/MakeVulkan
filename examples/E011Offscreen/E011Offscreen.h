@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Example.h"
-#include "GfxDeviceObjects.h"
+#include "Engine.h"
 
+#include "GLMIncludes.h"
 struct UniformDataGlobal
 {
 };
@@ -18,7 +18,17 @@ struct UniformDataPerView
 	alignas(16) glm::vec4 direction;
 };
 
-class MakeVulkan : public Example
+class Mesh;
+class Texture;
+class Attachment;
+class Shader;
+class Material;
+class RenderNode;
+class Camera;
+class Buffer;
+class RenderPass;
+
+class MakeVulkan : public Engine
 {
 
 public:
@@ -26,11 +36,11 @@ public:
 	MakeVulkan();
 	virtual ~MakeVulkan();
 
-	void ConfigDeviceProperties() override;
-	void Init() override;
-	void Release() override;
-	void Update() override;
-	void Draw() override;
+	virtual void PreInit() override;
+	virtual void Init() override;
+	virtual void Release() override;
+	virtual void Update() override;
+	virtual void Draw() override;
 
 private:
 
@@ -41,15 +51,14 @@ private:
 	UniformDataGlobal m_UniformDataGlobal;
 	UniformDataPerView m_UniformDataPerView;
 
-	Mesh* m_DragonMesh;
+	// Resources
 
-	Shader* m_PhongShader;
-	Shader* m_MiniMapShader;
-
-	Material* m_PhongMat;
-	Material* m_MiniMapMat;
-
-	RenderNode* m_DragonNode;
+	Mesh*		m_DragonMesh;
+	Shader*		m_PhongShader;
+	Shader*		m_MiniMapShader;
+	Material*	m_PhongMat;
+	Material*	m_MiniMapMat;
+	RenderNode*	m_DragonNode;
 
 	RenderPass* m_RenderPassOffscreen;
 	RenderPass* m_RenderPass;

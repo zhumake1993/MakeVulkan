@@ -4,7 +4,7 @@
 #include "GpuProgram.h"
 #include "ShaderData.h"
 
-Shader::Shader(const std::string& name) :
+Shader::Shader(const mkString& name) :
 	m_Name(name)
 {
 }
@@ -17,7 +17,7 @@ Shader::~Shader()
 	RELEASE(m_SpecializationShaderData);
 }
 
-void Shader::LoadSPV(const std::string & vertFilename, const std::string & fragFilename)
+void Shader::LoadSPV(const mkString & vertFilename, const mkString & fragFilename)
 {
 	m_VertCode = GetBinaryFileContents(vertFilename);
 	assert(m_VertCode.size() > 0);
