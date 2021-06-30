@@ -3,7 +3,7 @@
 #include "Material.h"
 
 RenderNode::RenderNode(const mkString& name):
-	m_Name(name)
+	NamedObject(name)
 {
 }
 

@@ -1,14 +1,14 @@
 #pragma once
 
+#include "NamedObject.h"
 #include "GpuProgram.h"
 #include "GfxTypes.h"
-#include "mkString.h"
 #include "mkVector.h"
 
 class GpuProgram;
 class ShaderData;
 
-class Shader
+class Shader : public NamedObject
 {
 
 public:
@@ -35,8 +35,6 @@ public:
 	//
 
 private:
-
-	mkString m_Name;
 
 	mkVector<char> m_VertCode;
 	mkVector<char> m_FragCode;

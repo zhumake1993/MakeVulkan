@@ -1,12 +1,12 @@
 #pragma once
 
+#include "NamedObject.h"
 #include "GfxTypes.h"
-#include "mkString.h"
 #include "mkVector.h"
 
 class GfxBuffer;
 
-class Mesh
+class Mesh : public NamedObject
 {
 public:
 
@@ -38,8 +38,6 @@ private:
 	void LoadUseAssimp(const mkString& filename);
 
 private:
-
-	mkString m_Name;
 
 	mkVector<VertexChannel> m_VertexChannels;
 

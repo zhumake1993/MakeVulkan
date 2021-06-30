@@ -1,12 +1,12 @@
 #pragma once
 
+#include "NamedObject.h"
 #include "Transform.h"
-#include "mkString.h"
 
 class Mesh;
 class Material;
 
-class RenderNode 
+class RenderNode : public NamedObject
 {
 
 public:
@@ -23,8 +23,6 @@ public:
 	Material* GetMaterial();
 
 private:
-
-	mkString m_Name;
 
 	Transform m_Transform;
 

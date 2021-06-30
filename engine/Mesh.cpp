@@ -15,7 +15,7 @@
 //#include "assimp/cimport.h"
 
 Mesh::Mesh(const mkString& name) :
-	m_Name(name)
+	NamedObject(name)
 {
 	m_VertexChannels = {
 		kVertexPosition,

@@ -1,15 +1,15 @@
 #pragma once
 
+#include "NamedObject.h"
 #include "GpuProgram.h"
 #include "GLMIncludes.h"
-#include "mkString.h"
 
 class Shader;
 class TextureBase;
 class ShaderData;
 class GfxBuffer;
 
-class Material
+class Material : public NamedObject
 {
 
 public:
@@ -45,8 +45,6 @@ public:
 	//
 
 private:
-
-	mkString m_Name;
 
 	Shader* m_Shader = nullptr;
 
