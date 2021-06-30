@@ -1,5 +1,5 @@
 #include "VKContex.h"
-#include "GlobalSettings.h"
+#include "VKGlobalSettings.h"
 #include "DeviceProperties.h"
 #include "VKTools.h"
 
@@ -29,7 +29,7 @@ bool CheckExtensionAvailability(const char *extensionName, const mkVector<VkExte
 
 void CheckInstanceLayers()
 {
-	auto& gs = GetGlobalSettings();
+	auto& vgs = vk::GetVKGlobalSettings();
 	auto& dp = GetDeviceProperties();
 
 	uint32_t layersCount = 0;
@@ -37,18 +37,18 @@ void CheckInstanceLayers()
 	dp.availableInstanceLayers.resize(layersCount);
 	VK_CHECK_RESULT(vkEnumerateInstanceLayerProperties(&layersCount, dp.availableInstanceLayers.data()));
 
-	for (int i = 0; i < gs.enabledInstanceLayers.size(); ++i)
+	for (int i = 0; i < vgs.enabledInstanceLayers.size(); ++i)
 	{
-		if (!CheckLayerAvailability(gs.enabledInstanceLayers[i], dp.availableInstanceLayers))
+		if (!CheckLayerAvailability(vgs.enabledInstanceLayers[i], dp.availableInstanceLayers))
 		{
-			LOGE("instance layer %s not support!\n", gs.enabledInstanceLayers[i]);
+			LOGE("instance layer %s not support!\n", vgs.enabledInstanceLayers[i]);
 		}
 	}
 }
 
 void CheckInstanceExtensions()
 {
-	auto& gs = GetGlobalSettings();
+	auto& vgs = vk::GetVKGlobalSettings();
 	auto& dp = GetDeviceProperties();
 
 	uint32_t extensionsCount = 0;
@@ -56,11 +56,11 @@ void CheckInstanceExtensions()
 	dp.availableInstanceExtensions.resize(extensionsCount);
 	VK_CHECK_RESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, dp.availableInstanceExtensions.data()));
 
-	for (int i = 0; i < gs.enabledInstanceExtensions.size(); ++i)
+	for (int i = 0; i < vgs.enabledInstanceExtensions.size(); ++i)
 	{
-		if (!CheckExtensionAvailability(gs.enabledInstanceExtensions[i], dp.availableInstanceExtensions))
+		if (!CheckExtensionAvailability(vgs.enabledInstanceExtensions[i], dp.availableInstanceExtensions))
 		{
-			LOGE("instance extension %s not support!\n", gs.enabledInstanceExtensions[i]);
+			LOGE("instance extension %s not support!\n", vgs.enabledInstanceExtensions[i]);
 		}
 	}
 }
@@ -80,11 +80,11 @@ int SelectPhysicalDevice(VkInstance instance)
 
 void CheckDeviceFeatures()
 {
-	auto& gs = GetGlobalSettings();
+	auto& vgs = vk::GetVKGlobalSettings();
 	auto& dp = GetDeviceProperties();
 
 	int num = sizeof(dp.deviceFeatures) / sizeof(VkBool32);
-	auto enable = reinterpret_cast<VkBool32*>(&gs.enabledDeviceFeatures);
+	auto enable = reinterpret_cast<VkBool32*>(&vgs.enabledDeviceFeatures);
 	auto available = reinterpret_cast<VkBool32*>(&dp.deviceFeatures);
 	for (int i = 0; i < num; i++)
 	{
@@ -100,7 +100,7 @@ void CheckDeviceFeatures()
 
 void CheckDeviceExtensions(VkPhysicalDevice physicalDevice)
 {
-	auto& gs = GetGlobalSettings();
+	auto& vgs = vk::GetVKGlobalSettings();
 	auto& dp = GetDeviceProperties();
 
 	uint32_t extensionsCount = 0;
@@ -108,11 +108,11 @@ void CheckDeviceExtensions(VkPhysicalDevice physicalDevice)
 	dp.availableDeviceExtensions.resize(extensionsCount);
 	VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionsCount, dp.availableDeviceExtensions.data()));
 
-	for (int i = 0; i < gs.enabledDeviceExtensions.size(); ++i)
+	for (int i = 0; i < vgs.enabledDeviceExtensions.size(); ++i)
 	{
-		if (!CheckExtensionAvailability(gs.enabledDeviceExtensions[i], dp.availableDeviceExtensions))
+		if (!CheckExtensionAvailability(vgs.enabledDeviceExtensions[i], dp.availableDeviceExtensions))
 		{
-			LOGE("device extension %s not support!\n", gs.enabledDeviceExtensions[i]);
+			LOGE("device extension %s not support!\n", vgs.enabledDeviceExtensions[i]);
 		}
 	}
 }
@@ -147,17 +147,17 @@ vk::VKContex::VKContex()
 {
 	// Instance
 
-	auto& gs = GetGlobalSettings();
+	auto& vgs = vk::GetVKGlobalSettings();
 	auto& dp = GetDeviceProperties();
 
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pNext = nullptr;
-	appInfo.pApplicationName = gs.applicationName.c_str();
-	appInfo.applicationVersion = gs.applicationVersion;
-	appInfo.pEngineName = gs.engineName.c_str();
-	appInfo.engineVersion = gs.engineVersion;
-	appInfo.apiVersion = gs.apiVersion;
+	appInfo.pApplicationName = vgs.applicationName.c_str();
+	appInfo.applicationVersion = vgs.applicationVersion;
+	appInfo.pEngineName = vgs.engineName.c_str();
+	appInfo.engineVersion = vgs.engineVersion;
+	appInfo.apiVersion = vgs.apiVersion;
 
 	CheckInstanceLayers();
 	CheckInstanceExtensions();
@@ -167,10 +167,10 @@ vk::VKContex::VKContex()
 	instanceCreateInfo.pNext = nullptr;
 	instanceCreateInfo.flags = 0;
 	instanceCreateInfo.pApplicationInfo = &appInfo;
-	instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(gs.enabledInstanceLayers.size());
-	instanceCreateInfo.ppEnabledLayerNames = gs.enabledInstanceLayers.data();
-	instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(gs.enabledInstanceExtensions.size());
-	instanceCreateInfo.ppEnabledExtensionNames = gs.enabledInstanceExtensions.data();
+	instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(vgs.enabledInstanceLayers.size());
+	instanceCreateInfo.ppEnabledLayerNames = vgs.enabledInstanceLayers.data();
+	instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(vgs.enabledInstanceExtensions.size());
+	instanceCreateInfo.ppEnabledExtensionNames = vgs.enabledInstanceExtensions.data();
 
 	VK_CHECK_RESULT(vkCreateInstance(&instanceCreateInfo, nullptr, &instance));
 
@@ -208,9 +208,9 @@ vk::VKContex::VKContex()
 	deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
 	deviceCreateInfo.enabledLayerCount = 0;
 	deviceCreateInfo.ppEnabledLayerNames = nullptr;
-	deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(gs.enabledDeviceExtensions.size());
-	deviceCreateInfo.ppEnabledExtensionNames = gs.enabledDeviceExtensions.data();
-	deviceCreateInfo.pEnabledFeatures = &gs.enabledDeviceFeatures;
+	deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(vgs.enabledDeviceExtensions.size());
+	deviceCreateInfo.ppEnabledExtensionNames = vgs.enabledDeviceExtensions.data();
+	deviceCreateInfo.pEnabledFeatures = &vgs.enabledDeviceFeatures;
 
 	VK_CHECK_RESULT(vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device));
 

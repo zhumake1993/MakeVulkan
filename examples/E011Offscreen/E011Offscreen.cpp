@@ -39,9 +39,9 @@ void MakeVulkan::PreInit()
 {
 	auto& gs = GetGlobalSettings();
 
-#if defined(_WIN32)
-	gs.enabledDeviceFeatures.shaderClipDistance = VK_TRUE; // 我的手机不支持
-#endif
+//#if defined(_WIN32)
+//	gs.enabledDeviceFeatures.shaderClipDistance = VK_TRUE; // 我的手机不支持
+//#endif
 }
 
 void MakeVulkan::Init()

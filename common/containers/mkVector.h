@@ -30,7 +30,7 @@ public:
 
 	// Ö±½Ó³­µÄstd::vector
 	template<class... _Valty>
-	decltype(auto) emplace_back(_Valty&&... val) { return vec.emplace_back(std::forward<_Valty>(val)...); }
+	void emplace_back(_Valty&&... val) { return vec.emplace_back(std::forward<_Valty>(val)...); }
 
 	const _Ty &		operator[](int index) const { assert(0 <= index && index < static_cast<int>(vec.size())); return vec[index]; }
 	_Ty &			operator[](int index) { assert(0 <= index && index < static_cast<int>(vec.size())); return vec[index]; }

@@ -146,7 +146,7 @@ void Mesh::LoadUseObj(const mkString & filename)
 	// 手机上要先用专门的函数把数据读取出来
 	std::istringstream ss(GetBinaryFileContents(filename).data());
 
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, &ss))
+	if (!tinyobj::LoadObj(&attrib, &shapes.vector(), &materials.vector(), &warn, &err, &ss))
 	{
 		LOG("LoadObj failed: %s", (warn + err).c_str());
 		assert(false);

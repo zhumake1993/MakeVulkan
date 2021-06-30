@@ -63,6 +63,7 @@ VkSurfaceFormatKHR GetSwapChainSurfaceFormat()
 
 VkExtent2D GetSwapChainExtent()
 {
+	auto& gs = GetGlobalSettings();
 	auto& dp = GetDeviceProperties();
 
 	// Special value of surface extent is width == height == -1
@@ -70,7 +71,7 @@ VkExtent2D GetSwapChainExtent()
 	if (dp.surfaceCapabilities.currentExtent.width == -1)
 	{
 #ifdef _WIN32
-		VkExtent2D swap_chain_extent = { GetGlobalSettings().windowWidth, GetGlobalSettings().windowHeight };
+		VkExtent2D swap_chain_extent = { gs.windowWidth, gs.windowHeight };
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
 		VkExtent2D swap_chain_extent = { 0, 0 };
 #endif

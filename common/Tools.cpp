@@ -2,9 +2,8 @@
 #include "Log.h"
 #include <fstream>
 
-#include "Platforms.h"
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
-#include <android/asset_manager.h>
+#include "Platforms.h"
 #endif
 mkVector<char> GetBinaryFileContents(mkString const &filename) {
 
