@@ -37,22 +37,22 @@ void DeviceProperties::Print()
 
 	// Instance
 
-	LOG("available instance layers ( %d ):", static_cast<int>(availableInstanceLayers.size()));
-	for (size_t i = 0; i < availableInstanceLayers.size(); i++)
+	LOG("available instance layers ( %d ):", availableInstanceLayers.size());
+	for (int i = 0; i < availableInstanceLayers.size(); i++)
 	{
 		LOG(" %s", availableInstanceLayers[i].layerName);
 	}
 	LOG("\n");
 
-	LOG("available instance extensions ( %d ):", static_cast<int>(availableInstanceExtensions.size()));
-	for (size_t i = 0; i < availableInstanceExtensions.size(); i++) {
+	LOG("available instance extensions ( %d ):", availableInstanceExtensions.size());
+	for (int i = 0; i < availableInstanceExtensions.size(); i++) {
 		LOG(" %s", availableInstanceExtensions[i].extensionName);
 	}
 	LOG("\n");
 
 	// Device
 
-	LOG("available physical device num: %d\n", static_cast<int>(physicalDevices.size()));
+	LOG("available physical device num: %d\n", physicalDevices.size());
 	LOG("selected device : %s, Type : %s\n", deviceProperties.deviceName, PhysicalDeviceTypeString(deviceProperties.deviceType).c_str());
 	
 	LOG("VkPhysicalDeviceLimits:\n");
@@ -111,14 +111,14 @@ void DeviceProperties::Print()
 		}
 	}
 
-	LOG("available device extensions ( %d ):", static_cast<int>(availableDeviceExtensions.size()));
-	for (size_t i = 0; i < availableDeviceExtensions.size(); i++) {
+	LOG("available device extensions ( %d ):", availableDeviceExtensions.size());
+	for (int i = 0; i < availableDeviceExtensions.size(); i++) {
 		LOG(" %s(%d)", availableDeviceExtensions[i].extensionName, availableDeviceExtensions[i].specVersion);
 	}
 	LOG("\n");
 
-	LOG("available queue families ( %d ):\n", static_cast<int>(queueFamilyProperties.size()));
-	for (size_t i = 0; i < queueFamilyProperties.size(); i++) {
+	LOG("available queue families ( %d ):\n", queueFamilyProperties.size());
+	for (int i = 0; i < queueFamilyProperties.size(); i++) {
 		LOG("\tqueueFlags: %d, queueCount: %d, timestampValidBits: %d\n", queueFamilyProperties[i].queueFlags, queueFamilyProperties[i].queueCount, queueFamilyProperties[i].timestampValidBits);
 	}
 

@@ -290,7 +290,7 @@ vk::VKSwapChain::VKSwapChain(VkInstance instance, VkPhysicalDevice physicalDevic
 
 vk::VKSwapChain::~VKSwapChain()
 {
-	for (size_t i = 0; i < m_SwapChainImageViews.size(); ++i) {
+	for (int i = 0; i < m_SwapChainImageViews.size(); ++i) {
 		vkDestroyImageView(m_Device, m_SwapChainImageViews[i], nullptr);
 	}
 	m_SwapChainImageViews.clear();

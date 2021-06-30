@@ -81,7 +81,7 @@ GfxDevice::GfxDevice()
 
 	// FrameResource
 	m_FrameResources.resize(FrameResourcesCount);
-	for (size_t i = 0; i < FrameResourcesCount; ++i)
+	for (int i = 0; i < FrameResourcesCount; ++i)
 	{
 		m_FrameResources[i].commandBuffer = new VKCommandBuffer(m_VKContex->device, m_VKCommandPool->commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 		m_FrameResources[i].imageAvailableSemaphore = CreateVKSemaphore();
@@ -121,7 +121,7 @@ GfxDevice::~GfxDevice()
 	RELEASE(m_BufferManager);
 	RELEASE(m_MemoryAllocator);
 
-	for (size_t i = 0; i < FrameResourcesCount; ++i)
+	for (int i = 0; i < FrameResourcesCount; ++i)
 	{
 		RELEASE(m_FrameResources[i].commandBuffer);
 
@@ -479,7 +479,7 @@ void GfxDevice::BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, mkVe
 
 	mkVector<Image*>& images = m_CurrentRenderPass->GetImages();
 	mkVector<VkImageView> views(images.size());
-	for (size_t i = 0; i < images.size(); i++)
+	for (int i = 0; i < images.size(); i++)
 	{
 		ImageVulkan* imageVulkan = static_cast<ImageVulkan*>(images[i]);
 		views[i] = imageVulkan->m_Image->view;
@@ -646,7 +646,7 @@ void GfxDevice::DrawBatch(DrawBatchs & drawBatchs)
 
 	// Draw
 	uint32_t uniformOffset = 0;
-	for (size_t i = 0; i < drawBatchs.drawItems.size(); i++)
+	for (int i = 0; i < drawBatchs.drawItems.size(); i++)
 	{
 		DrawItem& drawItem = drawBatchs.drawItems[i];
 		DrawBuffer& drawBuffer = drawBatchs.drawBuffers[drawItem.drawBufferIndex];

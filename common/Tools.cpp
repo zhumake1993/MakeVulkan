@@ -33,7 +33,7 @@ mkVector<char> GetBinaryFileContents(mkString const &filename) {
 	file.seekg(0, std::ios::end);
 	end = file.tellg();
 
-	mkVector<char> data(static_cast<size_t>(end - begin));
+	mkVector<char> data(static_cast<int>(end - begin));
 	file.seekg(0, std::ios::beg);
 	file.read(&data[0], end - begin);
 	file.close();

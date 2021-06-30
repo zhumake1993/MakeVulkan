@@ -55,22 +55,22 @@ void GlobalSettings::Print()
 	LOG("window extent: %d x %d\n", static_cast<int>(windowWidth), static_cast<int>(windowHeight));
 #endif
 
-	LOG("enabled instance layer ( %d ):", static_cast<int>(enabledInstanceLayers.size()));
-	for (size_t i = 0; i < enabledInstanceLayers.size(); i++)
+	LOG("enabled instance layer ( %d ):", enabledInstanceLayers.size());
+	for (int i = 0; i < enabledInstanceLayers.size(); i++)
 	{
 		LOG(" %s", enabledInstanceLayers[i]);
 	}
 	LOG("\n");
 
-	LOG("enabled instance extensions ( %d ):", static_cast<int>(enabledInstanceExtensions.size()));
-	for (size_t i = 0; i < enabledInstanceExtensions.size(); i++)
+	LOG("enabled instance extensions ( %d ):", enabledInstanceExtensions.size());
+	for (int i = 0; i < enabledInstanceExtensions.size(); i++)
 	{
 		LOG(" %s", enabledInstanceExtensions[i]);
 	}
 	LOG("\n");
 
-	LOG("enabled device extensions ( %d ):", static_cast<int>(enabledDeviceExtensions.size()));
-	for (size_t i = 0; i < enabledDeviceExtensions.size(); i++)
+	LOG("enabled device extensions ( %d ):", enabledDeviceExtensions.size());
+	for (int i = 0; i < enabledDeviceExtensions.size(); i++)
 	{
 		LOG(" %s", enabledDeviceExtensions[i]);
 	}

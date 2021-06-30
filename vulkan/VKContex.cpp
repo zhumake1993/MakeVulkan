@@ -5,7 +5,7 @@
 
 bool CheckLayerAvailability(const char *layerName, const mkVector<VkLayerProperties> &availableLayers)
 {
-	for (size_t i = 0; i < availableLayers.size(); ++i)
+	for (int i = 0; i < availableLayers.size(); ++i)
 	{
 		if (strcmp(availableLayers[i].layerName, layerName) == 0)
 		{
@@ -17,7 +17,7 @@ bool CheckLayerAvailability(const char *layerName, const mkVector<VkLayerPropert
 
 bool CheckExtensionAvailability(const char *extensionName, const mkVector<VkExtensionProperties> &availableExtensions)
 {
-	for (size_t i = 0; i < availableExtensions.size(); ++i)
+	for (int i = 0; i < availableExtensions.size(); ++i)
 	{
 		if (strcmp(availableExtensions[i].extensionName, extensionName) == 0)
 		{
@@ -37,7 +37,7 @@ void CheckInstanceLayers()
 	dp.availableInstanceLayers.resize(layersCount);
 	VK_CHECK_RESULT(vkEnumerateInstanceLayerProperties(&layersCount, dp.availableInstanceLayers.data()));
 
-	for (size_t i = 0; i < gs.enabledInstanceLayers.size(); ++i)
+	for (int i = 0; i < gs.enabledInstanceLayers.size(); ++i)
 	{
 		if (!CheckLayerAvailability(gs.enabledInstanceLayers[i], dp.availableInstanceLayers))
 		{
@@ -56,7 +56,7 @@ void CheckInstanceExtensions()
 	dp.availableInstanceExtensions.resize(extensionsCount);
 	VK_CHECK_RESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, dp.availableInstanceExtensions.data()));
 
-	for (size_t i = 0; i < gs.enabledInstanceExtensions.size(); ++i)
+	for (int i = 0; i < gs.enabledInstanceExtensions.size(); ++i)
 	{
 		if (!CheckExtensionAvailability(gs.enabledInstanceExtensions[i], dp.availableInstanceExtensions))
 		{
@@ -108,7 +108,7 @@ void CheckDeviceExtensions(VkPhysicalDevice physicalDevice)
 	dp.availableDeviceExtensions.resize(extensionsCount);
 	VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionsCount, dp.availableDeviceExtensions.data()));
 
-	for (size_t i = 0; i < gs.enabledDeviceExtensions.size(); ++i)
+	for (int i = 0; i < gs.enabledDeviceExtensions.size(); ++i)
 	{
 		if (!CheckExtensionAvailability(gs.enabledDeviceExtensions[i], dp.availableDeviceExtensions))
 		{
@@ -128,7 +128,7 @@ int SelectQueueFamilyIndex(VkPhysicalDevice physicalDevice)
 
 	// 找到一个支持VK_QUEUE_GRAPHICS_BIT操作的QueueFamily
 	// VK_QUEUE_COMPUTE_BIT和VK_QUEUE_TRANSFER_BIT先不管
-	for (uint32_t i = 0; i < static_cast<uint32_t>(dp.queueFamilyProperties.size()); i++)
+	for (int i = 0; i < dp.queueFamilyProperties.size(); i++)
 	{
 		if ((dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			//&& (dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) 

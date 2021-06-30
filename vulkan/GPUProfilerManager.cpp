@@ -90,7 +90,7 @@ void GPUProfilerManager::ResolveTimeStamp()
 	std::stack<std::pair<mkString, float>> stampStack;
 	int depth = 0;
 
-	for (int i = static_cast<int>(queryResource.names.size()) - 1; i >= 0; i--)
+	for (int i = queryResource.names.size() - 1; i >= 0; i--)
 	{
 		if (stampStack.empty() || stampStack.top().first != queryResource.names[i])
 		{

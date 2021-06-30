@@ -86,11 +86,11 @@ void VKCommandBuffer::CopyBufferToImage(VkBuffer src, VkImage dst, uint32_t widt
 	ASSERT(faceCount == 1 || faceCount == 6);
 
 	mkVector<VkBufferImageCopy> bufferCopyRegions;
-	for (uint32_t face = 0; face < offsets.size(); face++)
+	for (int face = 0; face < offsets.size(); face++)
 	{
-		for (uint32_t layer = 0; layer < offsets[face].size(); layer++)
+		for (int layer = 0; layer < offsets[face].size(); layer++)
 		{
-			for (uint32_t level = 0; level < offsets[face][layer].size(); level++)
+			for (int level = 0; level < offsets[face][layer].size(); level++)
 			{
 				VkBufferImageCopy bufferCopyRegion = {};
 				bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
