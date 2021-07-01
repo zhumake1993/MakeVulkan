@@ -1,6 +1,6 @@
 #include "VKDeviceProperties.h"
 #include "Log.h"
-#include "mkString.h"
+#include "VKTools.h"
 
 namespace vk
 {
@@ -9,20 +9,6 @@ namespace vk
 	VKDeviceProperties & GetVKDeviceProperties()
 	{
 		return gVKDeviceProperties;
-	}
-
-	mkString PhysicalDeviceTypeString(VkPhysicalDeviceType type)
-	{
-		switch (type)
-		{
-#define STR(r) case VK_PHYSICAL_DEVICE_TYPE_##r: return #r
-			STR(OTHER);
-			STR(INTEGRATED_GPU);
-			STR(DISCRETE_GPU);
-			STR(VIRTUAL_GPU);
-#undef STR
-		default: return "UNKNOWN_DEVICE_TYPE";
-		}
 	}
 
 	VKDeviceProperties::VKDeviceProperties()
@@ -63,7 +49,7 @@ namespace vk
 		// Device
 
 		LOG("available physical device num: %d\n", physicalDevices.size());
-		LOG("selected device : %s, Type : %s\n", deviceProperties.deviceName, PhysicalDeviceTypeString(deviceProperties.deviceType).c_str());
+		LOG("selected device : %s, Type : %s\n", deviceProperties.deviceName, VkPhysicalDeviceTypeToString(deviceProperties.deviceType).c_str());
 
 		LOG("VkPhysicalDeviceLimits:\n");
 		LOG("\tminUniformBufferOffsetAlignment : %d\n", static_cast<int>(deviceProperties.limits.minUniformBufferOffsetAlignment));
@@ -78,17 +64,7 @@ namespace vk
 		{
 			VkMemoryHeap& memoryHeap = deviceMemoryProperties.memoryHeaps[i];
 
-			mkString memoryHeapFlags;
-			if (memoryHeap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
-				memoryHeapFlags += " VK_MEMORY_HEAP_DEVICE_LOCAL_BIT";
-			if (memoryHeap.flags & VK_MEMORY_HEAP_MULTI_INSTANCE_BIT)
-				memoryHeapFlags += " VK_MEMORY_HEAP_MULTI_INSTANCE_BIT";
-			if (memoryHeap.flags & VK_MEMORY_HEAP_MULTI_INSTANCE_BIT_KHR)
-				memoryHeapFlags += " VK_MEMORY_HEAP_MULTI_INSTANCE_BIT_KHR";
-			if (memoryHeapFlags == "")
-				memoryHeapFlags = " None";
-
-			LOG("\tMemory heap %u, size = %llu(%lluMB), flags =%s\n", i, memoryHeap.size, memoryHeap.size / 1048576, memoryHeapFlags.c_str());
+			LOG("\tMemory heap %u, size = %llu(%lluMB), flags = %s\n", i, memoryHeap.size, memoryHeap.size / 1048576, VkMemoryHeapFlagsToString(memoryHeap.flags).c_str());
 
 			for (uint32_t j = 0; j < deviceMemoryProperties.memoryTypeCount; j++)
 			{
@@ -97,27 +73,7 @@ namespace vk
 				if (memoryType.heapIndex != i)
 					continue;
 
-				mkString memoryPropertyFlags;
-				if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-					memoryPropertyFlags += " VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT";
-				if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
-					memoryPropertyFlags += " VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT";
-				if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
-					memoryPropertyFlags += " VK_MEMORY_PROPERTY_HOST_COHERENT_BIT";
-				if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT)
-					memoryPropertyFlags += " VK_MEMORY_PROPERTY_HOST_CACHED_BIT";
-				if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT)
-					memoryPropertyFlags += " VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT";
-				if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_PROTECTED_BIT)
-					memoryPropertyFlags += " VK_MEMORY_PROPERTY_PROTECTED_BIT";
-				if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD)
-					memoryPropertyFlags += " VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD";
-				if (memoryType.propertyFlags & VK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD)
-					memoryPropertyFlags += " VK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD";
-				if (memoryPropertyFlags == "")
-					memoryPropertyFlags = " None";
-
-				LOG("\t\tMemory type %u, flags =%s\n", j, memoryPropertyFlags.c_str());
+				LOG("\t\tMemory type %u, flags = %s\n", j, VkMemoryPropertyFlagsToString(memoryType.propertyFlags).c_str());
 			}
 		}
 
@@ -131,7 +87,7 @@ namespace vk
 		LOG("available queue families ( %d ):\n", queueFamilyProperties.size());
 		for (int i = 0; i < queueFamilyProperties.size(); i++)
 		{
-			LOG("\tqueueFlags: %d, queueCount: %d, timestampValidBits: %d\n", queueFamilyProperties[i].queueFlags, queueFamilyProperties[i].queueCount, queueFamilyProperties[i].timestampValidBits);
+			LOG("\tqueueFlags: %s, queueCount: %d, timestampValidBits: %d\n", VkQueueFlagsToString(queueFamilyProperties[i].queueFlags).c_str(), queueFamilyProperties[i].queueCount, queueFamilyProperties[i].timestampValidBits);
 		}
 
 		LOG("\n");

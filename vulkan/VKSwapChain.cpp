@@ -308,12 +308,12 @@ void vk::VKSwapChain::Print()
 {
 	LOG("[VKSwapChain]\n");
 
-	LOG("image num: %d\n", m_ImageNum);
-	LOG("surface format: %d %d\n", m_SurfaceFormat.format, m_SurfaceFormat.colorSpace);
-	LOG("extent: %d %d\n", m_Extent.width, m_Extent.height);
-	LOG("usage: %d\n", m_Usage);
-	LOG("transform: %d\n", m_Transform);
-	LOG("presentMode: %d\n", m_PresentMode);
+	LOG("image num: %u\n", m_ImageNum);
+	LOG("surface format: %s %s\n", VkFormatToString(m_SurfaceFormat.format).c_str(), VkColorSpaceKHRToString(m_SurfaceFormat.colorSpace).c_str());
+	LOG("extent: %u %u\n", m_Extent.width, m_Extent.height);
+	LOG("usage: %s\n", VkImageUsageFlagsToString(m_Usage).c_str());
+	LOG("transform: %s\n", VkFlagBitToString(m_Transform).c_str());
+	LOG("presentMode: %s\n", VkPresentModeKHRToString(m_PresentMode).c_str());
 
 	LOG("\n");
 }
