@@ -6,6 +6,7 @@
 #include "Engine.h"
 #include "InputManager.h"
 #include <stdio.h>
+#include "VKIncludes.h"
 
 Application* gApplication = nullptr;
 

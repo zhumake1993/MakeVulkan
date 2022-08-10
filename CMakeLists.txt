@@ -1,5 +1,5 @@
 # CMake 最低版本号要求
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.23)
 
 # 项目信息
 project (MakeVulkan)
@@ -9,8 +9,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_WIN32_KHR")
 
 # 设置vulkan的lib和include
 # 链接vulkan-1.lib可以省去繁琐的vulkan函数载入步骤
-set(vulkan_lib C:/VulkanSDK/1.2.131.2/Lib/vulkan-1.lib)
-set(vulkan_lib_include C:/VulkanSDK/1.2.131.2/Include)
+set(vulkan_lib C:/VulkanSDK/1.3.216.0/Lib/vulkan-1.lib)
+set(vulkan_lib_include C:/VulkanSDK/1.3.216.0/Include)
 include_directories(${vulkan_lib_include})
 
 # common
