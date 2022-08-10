@@ -33,7 +33,7 @@ void RenderPass::SetAttachments(const mkVector<Attachment*> actualAttachments)
 	ASSERT(attachments.size() == actualAttachments.size());
 	m_Images.resize(attachments.size());
 
-	for (size_t i = 0; i < actualAttachments.size(); i++)
+	for (int i = 0; i < actualAttachments.size(); i++)
 	{
 		ASSERT(actualAttachments[i]->GetFormat() == attachments[i].format);
 		ASSERT(actualAttachments[i]->GetWidth() == m_RenderPassKey.GetWidth());

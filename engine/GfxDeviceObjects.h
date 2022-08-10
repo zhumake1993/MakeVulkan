@@ -41,14 +41,14 @@ struct DrawBuffer
 
 struct DrawItem
 {
-	size_t drawBufferIndex;
+	int drawBufferIndex;
 };
 
 struct DrawBatchs
 {
 	void* gpuProgram;
 
-	size_t alignedUniformSize;
+	uint64_t alignedUniformSize;
 
 	// uniform
 	int uniformBinding;

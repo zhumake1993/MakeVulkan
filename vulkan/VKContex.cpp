@@ -1,11 +1,11 @@
 #include "VKContex.h"
-#include "GlobalSettings.h"
-#include "DeviceProperties.h"
+#include "VKGlobalSettings.h"
+#include "VKDeviceProperties.h"
 #include "VKTools.h"
 
 bool CheckLayerAvailability(const char *layerName, const mkVector<VkLayerProperties> &availableLayers)
 {
-	for (size_t i = 0; i < availableLayers.size(); ++i)
+	for (int i = 0; i < availableLayers.size(); ++i)
 	{
 		if (strcmp(availableLayers[i].layerName, layerName) == 0)
 		{
@@ -17,7 +17,7 @@ bool CheckLayerAvailability(const char *layerName, const mkVector<VkLayerPropert
 
 bool CheckExtensionAvailability(const char *extensionName, const mkVector<VkExtensionProperties> &availableExtensions)
 {
-	for (size_t i = 0; i < availableExtensions.size(); ++i)
+	for (int i = 0; i < availableExtensions.size(); ++i)
 	{
 		if (strcmp(availableExtensions[i].extensionName, extensionName) == 0)
 		{
@@ -29,50 +29,50 @@ bool CheckExtensionAvailability(const char *extensionName, const mkVector<VkExte
 
 void CheckInstanceLayers()
 {
-	auto& gs = GetGlobalSettings();
-	auto& dp = GetDeviceProperties();
+	auto& vgs = vk::GetVKGlobalSettings();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	uint32_t layersCount = 0;
 	VK_CHECK_RESULT(vkEnumerateInstanceLayerProperties(&layersCount, nullptr));
-	dp.availableInstanceLayers.resize(layersCount);
-	VK_CHECK_RESULT(vkEnumerateInstanceLayerProperties(&layersCount, dp.availableInstanceLayers.data()));
+	vdp.availableInstanceLayers.resize(layersCount);
+	VK_CHECK_RESULT(vkEnumerateInstanceLayerProperties(&layersCount, vdp.availableInstanceLayers.data()));
 
-	for (size_t i = 0; i < gs.enabledInstanceLayers.size(); ++i)
+	for (int i = 0; i < vgs.enabledInstanceLayers.size(); ++i)
 	{
-		if (!CheckLayerAvailability(gs.enabledInstanceLayers[i], dp.availableInstanceLayers))
+		if (!CheckLayerAvailability(vgs.enabledInstanceLayers[i], vdp.availableInstanceLayers))
 		{
-			LOGE("instance layer %s not support!\n", gs.enabledInstanceLayers[i]);
+			LOGE("instance layer %s not support!\n", vgs.enabledInstanceLayers[i]);
 		}
 	}
 }
 
 void CheckInstanceExtensions()
 {
-	auto& gs = GetGlobalSettings();
-	auto& dp = GetDeviceProperties();
+	auto& vgs = vk::GetVKGlobalSettings();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	uint32_t extensionsCount = 0;
 	VK_CHECK_RESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, nullptr));
-	dp.availableInstanceExtensions.resize(extensionsCount);
-	VK_CHECK_RESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, dp.availableInstanceExtensions.data()));
+	vdp.availableInstanceExtensions.resize(extensionsCount);
+	VK_CHECK_RESULT(vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, vdp.availableInstanceExtensions.data()));
 
-	for (size_t i = 0; i < gs.enabledInstanceExtensions.size(); ++i)
+	for (int i = 0; i < vgs.enabledInstanceExtensions.size(); ++i)
 	{
-		if (!CheckExtensionAvailability(gs.enabledInstanceExtensions[i], dp.availableInstanceExtensions))
+		if (!CheckExtensionAvailability(vgs.enabledInstanceExtensions[i], vdp.availableInstanceExtensions))
 		{
-			LOGE("instance extension %s not support!\n", gs.enabledInstanceExtensions[i]);
+			LOGE("instance extension %s not support!\n", vgs.enabledInstanceExtensions[i]);
 		}
 	}
 }
 
 int SelectPhysicalDevice(VkInstance instance)
 {
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	uint32_t deviceNum = 0;
 	VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &deviceNum, nullptr));
-	dp.physicalDevices.resize(deviceNum);
-	VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &deviceNum, dp.physicalDevices.data()));
+	vdp.physicalDevices.resize(deviceNum);
+	VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &deviceNum, vdp.physicalDevices.data()));
 
 	// 直接选择第一个物理设备
 	return 0;
@@ -80,12 +80,12 @@ int SelectPhysicalDevice(VkInstance instance)
 
 void CheckDeviceFeatures()
 {
-	auto& gs = GetGlobalSettings();
-	auto& dp = GetDeviceProperties();
+	auto& vgs = vk::GetVKGlobalSettings();
+	auto& vdp = vk::GetVKDeviceProperties();
 
-	int num = sizeof(dp.deviceFeatures) / sizeof(VkBool32);
-	auto enable = reinterpret_cast<VkBool32*>(&gs.enabledDeviceFeatures);
-	auto available = reinterpret_cast<VkBool32*>(&dp.deviceFeatures);
+	int num = sizeof(vdp.deviceFeatures) / sizeof(VkBool32);
+	auto enable = reinterpret_cast<VkBool32*>(&vgs.enabledDeviceFeatures);
+	auto available = reinterpret_cast<VkBool32*>(&vdp.deviceFeatures);
 	for (int i = 0; i < num; i++)
 	{
 		if (*(enable + i) == VK_TRUE)
@@ -100,37 +100,37 @@ void CheckDeviceFeatures()
 
 void CheckDeviceExtensions(VkPhysicalDevice physicalDevice)
 {
-	auto& gs = GetGlobalSettings();
-	auto& dp = GetDeviceProperties();
+	auto& vgs = vk::GetVKGlobalSettings();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	uint32_t extensionsCount = 0;
 	VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionsCount, nullptr));
-	dp.availableDeviceExtensions.resize(extensionsCount);
-	VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionsCount, dp.availableDeviceExtensions.data()));
+	vdp.availableDeviceExtensions.resize(extensionsCount);
+	VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionsCount, vdp.availableDeviceExtensions.data()));
 
-	for (size_t i = 0; i < gs.enabledDeviceExtensions.size(); ++i)
+	for (int i = 0; i < vgs.enabledDeviceExtensions.size(); ++i)
 	{
-		if (!CheckExtensionAvailability(gs.enabledDeviceExtensions[i], dp.availableDeviceExtensions))
+		if (!CheckExtensionAvailability(vgs.enabledDeviceExtensions[i], vdp.availableDeviceExtensions))
 		{
-			LOGE("device extension %s not support!\n", gs.enabledDeviceExtensions[i]);
+			LOGE("device extension %s not support!\n", vgs.enabledDeviceExtensions[i]);
 		}
 	}
 }
 
 int SelectQueueFamilyIndex(VkPhysicalDevice physicalDevice)
 {
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	uint32_t queueFamiliesCount;
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamiliesCount, nullptr);
-	dp.queueFamilyProperties.resize(queueFamiliesCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamiliesCount, dp.queueFamilyProperties.data());
+	vdp.queueFamilyProperties.resize(queueFamiliesCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamiliesCount, vdp.queueFamilyProperties.data());
 
 	// 找到一个支持VK_QUEUE_GRAPHICS_BIT操作的QueueFamily
 	// VK_QUEUE_COMPUTE_BIT和VK_QUEUE_TRANSFER_BIT先不管
-	for (uint32_t i = 0; i < static_cast<uint32_t>(dp.queueFamilyProperties.size()); i++)
+	for (int i = 0; i < vdp.queueFamilyProperties.size(); i++)
 	{
-		if ((dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+		if ((vdp.queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			//&& (dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) 
 			//&& (dp.queueFamilyProperties[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
 			)
@@ -147,17 +147,17 @@ vk::VKContex::VKContex()
 {
 	// Instance
 
-	auto& gs = GetGlobalSettings();
-	auto& dp = GetDeviceProperties();
+	auto& vgs = vk::GetVKGlobalSettings();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pNext = nullptr;
-	appInfo.pApplicationName = gs.applicationName.c_str();
-	appInfo.applicationVersion = gs.applicationVersion;
-	appInfo.pEngineName = gs.engineName.c_str();
-	appInfo.engineVersion = gs.engineVersion;
-	appInfo.apiVersion = gs.apiVersion;
+	appInfo.pApplicationName = vgs.applicationName.c_str();
+	appInfo.applicationVersion = vgs.applicationVersion;
+	appInfo.pEngineName = vgs.engineName.c_str();
+	appInfo.engineVersion = vgs.engineVersion;
+	appInfo.apiVersion = vgs.apiVersion;
 
 	CheckInstanceLayers();
 	CheckInstanceExtensions();
@@ -167,21 +167,21 @@ vk::VKContex::VKContex()
 	instanceCreateInfo.pNext = nullptr;
 	instanceCreateInfo.flags = 0;
 	instanceCreateInfo.pApplicationInfo = &appInfo;
-	instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(gs.enabledInstanceLayers.size());
-	instanceCreateInfo.ppEnabledLayerNames = gs.enabledInstanceLayers.data();
-	instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(gs.enabledInstanceExtensions.size());
-	instanceCreateInfo.ppEnabledExtensionNames = gs.enabledInstanceExtensions.data();
+	instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(vgs.enabledInstanceLayers.size());
+	instanceCreateInfo.ppEnabledLayerNames = vgs.enabledInstanceLayers.data();
+	instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(vgs.enabledInstanceExtensions.size());
+	instanceCreateInfo.ppEnabledExtensionNames = vgs.enabledInstanceExtensions.data();
 
 	VK_CHECK_RESULT(vkCreateInstance(&instanceCreateInfo, nullptr, &instance));
 
 	// Device
 
 	selectedPhysicalDeviceIndex = SelectPhysicalDevice(instance);
-	physicalDevice = dp.physicalDevices[selectedPhysicalDeviceIndex];
+	physicalDevice = vdp.physicalDevices[selectedPhysicalDeviceIndex];
 
-	vkGetPhysicalDeviceProperties(physicalDevice, &dp.deviceProperties);
-	vkGetPhysicalDeviceFeatures(physicalDevice, &dp.deviceFeatures);
-	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &dp.deviceMemoryProperties);
+	vkGetPhysicalDeviceProperties(physicalDevice, &vdp.deviceProperties);
+	vkGetPhysicalDeviceFeatures(physicalDevice, &vdp.deviceFeatures);
+	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &vdp.deviceMemoryProperties);
 
 	CheckDeviceFeatures();
 	CheckDeviceExtensions(physicalDevice);
@@ -208,9 +208,9 @@ vk::VKContex::VKContex()
 	deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
 	deviceCreateInfo.enabledLayerCount = 0;
 	deviceCreateInfo.ppEnabledLayerNames = nullptr;
-	deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(gs.enabledDeviceExtensions.size());
-	deviceCreateInfo.ppEnabledExtensionNames = gs.enabledDeviceExtensions.data();
-	deviceCreateInfo.pEnabledFeatures = &gs.enabledDeviceFeatures;
+	deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(vgs.enabledDeviceExtensions.size());
+	deviceCreateInfo.ppEnabledExtensionNames = vgs.enabledDeviceExtensions.data();
+	deviceCreateInfo.pEnabledFeatures = &vgs.enabledDeviceFeatures;
 
 	VK_CHECK_RESULT(vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device));
 

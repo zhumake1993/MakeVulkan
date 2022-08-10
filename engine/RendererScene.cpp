@@ -176,7 +176,7 @@ void RendererScene::DrawBatch(mkVector<RenderNode*> nodes)
 	}
 
 	// 计算PerDraw的size
-	size_t sizePerDraw = 0;
+	uint32_t sizePerDraw = 0;
 	for (auto& vp : uniformPerDraw.valueParameters)
 	{
 		if (vp.name == "ObjectToWorld")
@@ -191,7 +191,7 @@ void RendererScene::DrawBatch(mkVector<RenderNode*> nodes)
 
 	// offset必须是minUniformBufferOffsetAlignment的倍数
 	auto& dp = GetDeviceProperties();
-	size_t minUboAlignment = dp.deviceProperties.limits.minUniformBufferOffsetAlignment;
+	uint64_t minUboAlignment = dp.minUniformBufferOffsetAlignment;
 	drawBatchs.alignedUniformSize = (sizePerDraw + minUboAlignment - 1) & ~(minUboAlignment - 1);
 
 	// uniform buffer
@@ -201,7 +201,7 @@ void RendererScene::DrawBatch(mkVector<RenderNode*> nodes)
 
 	// 收集数据
 	char* dst = reinterpret_cast<char*>(drawBatchs.uniformData);
-	for (size_t i = 0; i < nodes.size(); i++)
+	for (int i = 0; i < nodes.size(); i++)
 	{
 		char* currDst = dst;
 		for (auto& vp : uniformPerDraw.valueParameters)
@@ -222,7 +222,7 @@ void RendererScene::DrawBatch(mkVector<RenderNode*> nodes)
 	}
 
 	// DrawItem
-	for (size_t i = 0; i < nodes.size(); i++)
+	for (int i = 0; i < nodes.size(); i++)
 	{
 		drawBatchs.drawItems.emplace_back();
 		DrawItem& drawItem = drawBatchs.drawItems.back();
@@ -230,7 +230,7 @@ void RendererScene::DrawBatch(mkVector<RenderNode*> nodes)
 		// mesh buffer
 		Mesh* mesh = nodes[i]->GetMesh();
 
-		size_t drawBufferIndex = 0;
+		int drawBufferIndex = 0;
 		for (; drawBufferIndex < drawBatchs.drawBuffers.size(); drawBufferIndex++)
 		{
 			if (drawBatchs.drawBuffers[drawBufferIndex].vertexBuffer == mesh->GetVertexBuffer())

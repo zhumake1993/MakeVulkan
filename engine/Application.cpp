@@ -6,6 +6,7 @@
 #include "Engine.h"
 #include "InputManager.h"
 #include <stdio.h>
+#include "VKIncludes.h"
 
 Application* gApplication = nullptr;
 
@@ -483,7 +484,7 @@ void RunApplication(Engine * engine)
 	gApplication->Release();
 	RELEASE(gApplication);
 
-	LOG("Application exits.");
+	LOG("Application exits.\n");
 	system("PAUSE");
 
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
@@ -498,7 +499,7 @@ void RunApplication(Engine * engine)
 	gApplication->Release();
 	RELEASE(gApplication);
 
-	LOG("Application exits.");
+	LOG("Application exits.\n");
 
 #endif
 }

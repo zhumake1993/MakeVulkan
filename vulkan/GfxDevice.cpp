@@ -1,7 +1,8 @@
 #include "GfxDevice.h"
 #include "Tools.h"
-#include "DeviceProperties.h"
+#include "VKDeviceProperties.h"
 #include "GlobalSettings.h"
+#include "VKGlobalSettings.h"
 
 #include "VKTools.h"
 #include "VKFence.h"
@@ -52,24 +53,28 @@ GfxDevice::GfxDevice()
 
 	m_VKSwapChain = new vk::VKSwapChain(m_VKContex->instance, m_VKContex->physicalDevice, m_VKContex->device, m_VKContex->selectedQueueFamilyIndex);
 
-	auto& dp = GetDeviceProperties();
 	auto& gs = GetGlobalSettings();
+	auto& vgs = vk::GetVKGlobalSettings();
 
-	dp.Print();
+	auto& vdp = vk::GetVKDeviceProperties();
+	vdp.Init(GetDeviceProperties());
+
 	gs.Print();
+	vgs.Print();
+	vdp.Print();
 	m_VKContex->Print();
 	m_VKSwapChain->Print();
 
 	m_GarbageCollector = new vk::GarbageCollector();
 
 	// Memory
-	VkDeviceSize finalMemoryAlignment = gs.memoryAlignment;
+	VkDeviceSize finalMemoryAlignment = vgs.memoryAlignment;
 	// 当linear和optimal资源放在同一块memory中时，需要满足bufferImageGranularity的要求
 	// 如果bufferImageGranularity太大（例如，在Nvidia上可能会大于4k），那么会造成比较大的内部内存碎片
 	// 这种情况下使用多个MemoryAllocator是个好选择。这里选择相对简单的做法
-	VkDeviceSize bufferImageGranularity = dp.deviceProperties.limits.bufferImageGranularity;
+	VkDeviceSize bufferImageGranularity = vdp.deviceProperties.limits.bufferImageGranularity;
 	finalMemoryAlignment = ALIGN(finalMemoryAlignment, bufferImageGranularity);
-	m_MemoryAllocator = new vk::MemoryAllocator(m_VKContex->device, gs.memoryBlockSize, finalMemoryAlignment);
+	m_MemoryAllocator = new vk::MemoryAllocator(m_VKContex->device, vgs.memoryBlockSize, finalMemoryAlignment);
 
 	// buffer
 	m_BufferManager = new vk::BufferManager(m_VKContex->device, *m_MemoryAllocator);
@@ -81,7 +86,7 @@ GfxDevice::GfxDevice()
 
 	// FrameResource
 	m_FrameResources.resize(FrameResourcesCount);
-	for (size_t i = 0; i < FrameResourcesCount; ++i)
+	for (int i = 0; i < FrameResourcesCount; ++i)
 	{
 		m_FrameResources[i].commandBuffer = new VKCommandBuffer(m_VKContex->device, m_VKCommandPool->commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 		m_FrameResources[i].imageAvailableSemaphore = CreateVKSemaphore();
@@ -121,7 +126,7 @@ GfxDevice::~GfxDevice()
 	RELEASE(m_BufferManager);
 	RELEASE(m_MemoryAllocator);
 
-	for (size_t i = 0; i < FrameResourcesCount; ++i)
+	for (int i = 0; i < FrameResourcesCount; ++i)
 	{
 		RELEASE(m_FrameResources[i].commandBuffer);
 
@@ -479,7 +484,7 @@ void GfxDevice::BeginRenderPass(RenderPass* renderPass, Rect2D& renderArea, mkVe
 
 	mkVector<Image*>& images = m_CurrentRenderPass->GetImages();
 	mkVector<VkImageView> views(images.size());
-	for (size_t i = 0; i < images.size(); i++)
+	for (int i = 0; i < images.size(); i++)
 	{
 		ImageVulkan* imageVulkan = static_cast<ImageVulkan*>(images[i]);
 		views[i] = imageVulkan->m_Image->view;
@@ -646,7 +651,7 @@ void GfxDevice::DrawBatch(DrawBatchs & drawBatchs)
 
 	// Draw
 	uint32_t uniformOffset = 0;
-	for (size_t i = 0; i < drawBatchs.drawItems.size(); i++)
+	for (int i = 0; i < drawBatchs.drawItems.size(); i++)
 	{
 		DrawItem& drawItem = drawBatchs.drawItems[i];
 		DrawBuffer& drawBuffer = drawBatchs.drawBuffers[drawItem.drawBufferIndex];

@@ -74,7 +74,7 @@ void Texture::ReadImageUsingSTB(const mkString& filename)
 	mkVector<char> fileData = GetBinaryFileContents(filename);
 
 	int tmpWidth = 0, tmpHeight = 0, tmpComponents = 0, requestedComponents = 4;
-	unsigned char *imageData = stbi_load_from_memory(reinterpret_cast<unsigned char*>(&fileData[0]), static_cast<int>(fileData.size()), &tmpWidth, &tmpHeight, &tmpComponents, requestedComponents);
+	unsigned char *imageData = stbi_load_from_memory(reinterpret_cast<unsigned char*>(&fileData[0]), fileData.size(), &tmpWidth, &tmpHeight, &tmpComponents, requestedComponents);
 	if ((imageData == nullptr) ||
 		(tmpWidth <= 0) ||
 		(tmpHeight <= 0) ||

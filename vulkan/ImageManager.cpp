@@ -1,5 +1,5 @@
 #include "ImageManager.h"
-#include "DeviceProperties.h"
+#include "VKDeviceProperties.h"
 #include "VKTools.h"
 #include "VKMemory.h"
 
@@ -96,8 +96,6 @@ VKImage * ImageManager::CreateImage(const ImageKey& key)
 
 	// Memory
 
-	auto& dp = GetDeviceProperties();
-
 	VkMemoryRequirements memReqs;
 	vkGetImageMemoryRequirements(m_Device, image->image, &memReqs);
 
@@ -155,7 +153,7 @@ VKImageSampler * ImageManager::CreateImageSampler(const ImageSamplerKey& key)
 	samplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 	samplerCI.mipLodBias = 0.0f;
 
-	/*auto& dp = GetDeviceProperties();
+	/*auto& dp = GetVKDeviceProperties();
 	if (key.maxAnisotropy > 1 && dp.enabledDeviceFeatures.samplerAnisotropy)
 	{
 		samplerCI.anisotropyEnable = VK_TRUE;

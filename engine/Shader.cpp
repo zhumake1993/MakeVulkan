@@ -5,7 +5,7 @@
 #include "ShaderData.h"
 
 Shader::Shader(const mkString& name) :
-	m_Name(name)
+	NamedObject(name)
 {
 }
 

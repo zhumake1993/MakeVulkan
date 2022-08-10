@@ -3,20 +3,17 @@
 #include <vector>
 #include <assert.h>
 
-//test
-#include "Log.h"
-
-// mkVector：替代std::vector，增加了对索引范围的检查
-// 1. 边界
-// 2. int
+// mkVector：替代std::vector
+// 1. 增加对越界的检查。std::vector的operator[]操作没有越界检查，一旦越界，根本不知道越界的具体地方
+// 2. 全部用int，这样上层可以省掉许多强制类型转换
 template<class _Ty>
 class mkVector
 {
 public:
 
-	mkVector() :vec() {}
-	mkVector(size_t size) :vec(size) {}
-	mkVector(size_t size, const _Ty& val) :vec(size, val) {}
+	mkVector() {}
+	mkVector(int size) :vec(size) { assert(size >= 0); }
+	mkVector(int size, const _Ty& val) :vec(size, val) { assert(size >= 0); }
 
 	// std::vector也没有使用引用
 	// 拷贝或赋值一个initializer_list对象不会拷贝列表中的元素，只是引用，原始列表和副本共享元素
@@ -33,22 +30,22 @@ public:
 
 	// 直接抄的std::vector
 	template<class... _Valty>
-	decltype(auto) emplace_back(_Valty&&... val) { return vec.emplace_back(std::forward<_Valty>(val)...); }
+	void emplace_back(_Valty&&... val) { return vec.emplace_back(std::forward<_Valty>(val)...); }
 
-	const _Ty &		operator[](int index) const { assert(0 <= index && (size_t)index < vec.size()); return vec[index]; }
-	_Ty &			operator[](int index) { assert(0 <= index && (size_t)index < vec.size()); return vec[index]; }
+	const _Ty &		operator[](int index) const { assert(0 <= index && index < static_cast<int>(vec.size())); return vec[index]; }
+	_Ty &			operator[](int index) { assert(0 <= index && index < static_cast<int>(vec.size())); return vec[index]; }
 
 	_Ty& back() { return vec.back(); }
 	const _Ty& back() const { return vec.back(); }
 
-	size_t size() const { return vec.size(); }
+	int size() const { return static_cast<int>(vec.size()); }
 
 	_Ty * data() { return vec.data(); }
 	const _Ty * data() const{ return vec.data(); }
 
 	void clear() { vec.clear(); }
 
-	void resize(size_t size) { vec.resize(size); }
+	void resize(int size) { vec.resize(size); }
 
 	// 需要typename前缀
 	typename std::vector<_Ty>::iterator begin() { return vec.begin(); }

@@ -1,7 +1,7 @@
 #include "VKBuffer.h"
 #include "VKTools.h"
 #include "Tools.h"
-#include "DeviceProperties.h"
+#include "VKDeviceProperties.h"
 #include "VKCommandBuffer.h"
 
 namespace vk
@@ -58,8 +58,8 @@ namespace vk
 			cmdBuffer->CopyBuffer(stagingBuffer->GetBuffer(), m_Buffer, bufferCopyInfo);
 
 			// todo
-			// ç»æµ‹è¯•å‘ç°æ²¡æœ‰è¿™ä¸€æ­¥ä¹Ÿæ²¡é—®é¢˜ï¼ˆè®¸å¤šæ•™ç¨‹ä¹Ÿçš„ç¡®æ²¡æœ‰è¿™ä¸€æ­¥ï¼‰
-			// ä¸ªäººè®¤ä¸ºæ˜¯å› ä¸ºè°ƒç”¨äº†DeviceWaitIdle
+			// ¾­²âÊÔ·¢ÏÖÃ»ÓĞÕâÒ»²½Ò²Ã»ÎÊÌâ£¨Ğí¶à½Ì³ÌÒ²µÄÈ·Ã»ÓĞÕâÒ»²½£©
+			// ¸öÈËÈÏÎªÊÇÒòÎªµ÷ÓÃÁËDeviceWaitIdle
 			//vkCmdPipelineBarrier
 
 			cmdBuffer->End();
@@ -102,8 +102,8 @@ namespace vk
 		else
 			range.size = size;
 
-		ASSERT(range.offset % GetDeviceProperties().deviceProperties.limits.nonCoherentAtomSize == 0);
-		ASSERT(range.size % GetDeviceProperties().deviceProperties.limits.nonCoherentAtomSize == 0);
+		ASSERT(range.offset % vk::GetVKDeviceProperties().deviceProperties.limits.nonCoherentAtomSize == 0);
+		ASSERT(range.size % vk::GetVKDeviceProperties().deviceProperties.limits.nonCoherentAtomSize == 0);
 
 		return range;
 	}
@@ -195,7 +195,7 @@ namespace vk
 
 	}
 
-	BufferResource * BufferManager::CreateBufferResource(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memFlags)
+	BufferResource * BufferManager::CreateBufferResource(uint64_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memFlags)
 	{
 		VkBuffer buffer = VK_NULL_HANDLE;
 		VkBufferCreateInfo bufferCreateInfo = {};
@@ -209,8 +209,8 @@ namespace vk
 		bufferCreateInfo.pQueueFamilyIndices = nullptr;
 		VK_CHECK_RESULT(vkCreateBuffer(m_Device, &bufferCreateInfo, nullptr, &buffer));
 
-		// todoï¼šVK_KHR_dedicated_allocationï¼Œ VK_KHR_get_memory_requirements2
-		// ä¸€äº›èµ„æºä½¿ç”¨å•ç‹¬åˆ†é…çš„å†…å­˜ï¼Œæ•ˆç‡å¯èƒ½æ›´é«˜
+		// todo£ºVK_KHR_dedicated_allocation£¬ VK_KHR_get_memory_requirements2
+		// Ò»Ğ©×ÊÔ´Ê¹ÓÃµ¥¶À·ÖÅäµÄÄÚ´æ£¬Ğ§ÂÊ¿ÉÄÜ¸ü¸ß
 
 		VkMemoryRequirements memoryRequirements;
 		vkGetBufferMemoryRequirements(m_Device, buffer, &memoryRequirements);
@@ -223,13 +223,13 @@ namespace vk
 
 		vkBindBufferMemory(m_Device, buffer, memory.memory, memory.offset);
 
-		// todoï¼šBufferView
-		// ç”¨äºcomputer buffer
+		// todo£ºBufferView
+		// ÓÃÓÚcomputer buffer
 
 		return new BufferResource(m_Device, m_Allocator, buffer, memory);
 	}
 
-	BufferResource * BufferManager::CreateTransientStagingBufferResource(size_t size)
+	BufferResource * BufferManager::CreateTransientStagingBufferResource(uint64_t size)
 	{
 		BufferResource* stagingBuffer = CreateBufferResource(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
@@ -238,7 +238,7 @@ namespace vk
 
 		return stagingBuffer;
 	}
-	BufferResource * BufferManager::CreateTransientUniformBufferResource(size_t size)
+	BufferResource * BufferManager::CreateTransientUniformBufferResource(uint64_t size)
 	{
 		BufferResource* stagingBuffer = CreateBufferResource(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 

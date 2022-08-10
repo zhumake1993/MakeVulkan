@@ -2,7 +2,7 @@
 
 #include "VKIncludes.h"
 #include "NonCopyable.h"
-#include "MkArray.h"
+#include "mkArray.h"
 #include "mkList.h"
 
 namespace vk

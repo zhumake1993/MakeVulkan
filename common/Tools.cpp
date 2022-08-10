@@ -2,9 +2,8 @@
 #include "Log.h"
 #include <fstream>
 
-#include "Platforms.h"
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
-#include <android/asset_manager.h>
+#include "Platforms.h"
 #endif
 mkVector<char> GetBinaryFileContents(mkString const &filename) {
 
@@ -33,7 +32,7 @@ mkVector<char> GetBinaryFileContents(mkString const &filename) {
 	file.seekg(0, std::ios::end);
 	end = file.tellg();
 
-	mkVector<char> data(static_cast<size_t>(end - begin));
+	mkVector<char> data(static_cast<int>(end - begin));
 	file.seekg(0, std::ios::beg);
 	file.read(&data[0], end - begin);
 	file.close();

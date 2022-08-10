@@ -40,28 +40,26 @@ dependencies {
 
 // 拷贝资源
 task copyTask {
+
+	// Shader
     copy {
         from '../../../data/shaders/E011Offscreen'
         into 'assets/shaders/E011Offscreen'
         include '*.spv'
     }
-
     copy {
         from '../../../data/shaders/imgui'
         into 'assets/shaders/imgui'
         include '*.spv'
     }
 
-    copy {
-        from '../../../data/textures'
-        into 'assets/textures'
-        include '*.*'
-    }
+	// Texture
 
+	// Model
     copy {
         from '../../../data/models'
         into 'assets/models'
-        include '*.*'
+        include 'chinesedragon.obj'
     }
 }
 preBuild.dependsOn copyTask

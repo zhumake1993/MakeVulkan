@@ -72,9 +72,9 @@ namespace vk
 		BufferManager(VkDevice device, MemoryAllocator& allocator);
 		virtual ~BufferManager();
 
-		BufferResource * CreateBufferResource(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memFlags);
-		BufferResource * CreateTransientStagingBufferResource(size_t size);
-		BufferResource * CreateTransientUniformBufferResource(size_t size);
+		BufferResource * CreateBufferResource(uint64_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memFlags);
+		BufferResource * CreateTransientStagingBufferResource(uint64_t size);
+		BufferResource * CreateTransientUniformBufferResource(uint64_t size);
 
 	private:
 

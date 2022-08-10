@@ -1,7 +1,7 @@
 #include "VKGpuProgram.h"
 #include "VKTools.h"
 #include "Tools.h"
-#include "DeviceProperties.h"
+#include "VKDeviceProperties.h"
 
 VkDescriptorSetLayout VKGpuProgram::m_DSLGlobal = VK_NULL_HANDLE;
 VkDescriptorSetLayout VKGpuProgram::m_DSLPerView = VK_NULL_HANDLE;
@@ -141,8 +141,8 @@ VKGpuProgram::VKGpuProgram(VkDevice vkDevice, GpuParameters& parameters, const m
 
 	if (parameters.pushConstantSize > 0)
 	{
-		auto& dp = GetDeviceProperties();
-		ASSERT(parameters.pushConstantSize <= dp.deviceProperties.limits.maxPushConstantsSize);
+		auto& vdp = vk::GetVKDeviceProperties();
+		ASSERT(parameters.pushConstantSize <= vdp.deviceProperties.limits.maxPushConstantsSize);
 
 		VkPushConstantRange pushConstantRange = {};
 		pushConstantRange.stageFlags = parameters.pushConstantStage;

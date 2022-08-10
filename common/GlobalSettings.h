@@ -3,7 +3,6 @@
 #include "mkString.h"
 #include "mkVector.h"
 #include "NonCopyable.h"
-#include "VKIncludes.h"
 
 // 使用Visual Leak Detector（仅限PC）
 // 为了方便，我把vld的包含路径直接加到系统的path里去了
@@ -21,31 +20,18 @@ struct GlobalSettings : public NonCopyable
 	void Print();
 
 #if defined(_WIN32)
-	mkString consoleTitle;
-	mkString windowClassName;
-	mkString windowTitleName;
-	uint32_t	windowWidth;
-	uint32_t	windowHeight;
+	mkString consoleTitle{ "Console Title" };
+	mkString windowClassName{ "Window Class Name" };
+	mkString windowTitleName{ "Window Title Name" };
+	uint32_t windowWidth = 1280;
+	uint32_t windowHeight = 720;
 #endif
 
-	mkString assetPath;
-
-	// Instance
-	mkString								applicationName;
-	uint32_t								applicationVersion;
-	mkString								engineName;
-	uint32_t								engineVersion;
-	uint32_t								apiVersion;
-	mkVector<const char*>				enabledInstanceLayers;
-	mkVector<const char*>				enabledInstanceExtensions;
-
-	// Device
-	VkPhysicalDeviceFeatures				enabledDeviceFeatures;
-	mkVector<const char*>				enabledDeviceExtensions;
-
-	// Memory
-	VkDeviceSize memoryAlignment = 256; // 256可以同时满足minTexelBufferOffsetAlignment, minUniformBufferOffsetAlignment, minStorageBufferOffsetAlignment的对齐要求
-	VkDeviceSize memoryBlockSize = 8 * 1024 * 1024;
+#if defined(_WIN32)
+	mkString assetPath{ "D:/Vulkan/MakeVulkan/data/" };
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+	mkString assetPath{ "" };
+#endif
 };
 
 GlobalSettings& GetGlobalSettings();

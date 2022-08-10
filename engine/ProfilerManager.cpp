@@ -99,7 +99,7 @@ ProfilerManager::FrameTimeView ProfilerManager::Resolve(FrameStamp& frameStamp)
 	std::stack<Stamp> stampStack;
 	int depth = 0;
 
-	for (int i = static_cast<int>(stamps.size()) - 1; i >= 0; i--) {
+	for (int i = stamps.size() - 1; i >= 0; i--) {
 		if (stampStack.empty() || stampStack.top().name != stamps[i].name) {
 			depth++;
 			stampStack.push(stamps[i]);

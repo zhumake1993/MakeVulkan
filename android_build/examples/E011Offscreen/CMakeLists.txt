@@ -20,6 +20,10 @@ add_library( vulkan_lib STATIC ${vulkan_wrapper_dir}/vulkan_wrapper.cpp)
 file(GLOB common_sources ${top_dir}/common/*.h ${top_dir}/common/*.cpp)
 include_directories(${top_dir}/common)
 
+# containers
+file(GLOB containers_sources ${top_dir}/common/containers/*.h ${top_dir}/common/containers/*.cpp ${top_dir}/common/containers/*.hpp)
+include_directories(${top_dir}/common/containers)
+
 # vulkan
 file(GLOB vulkan_sources ${top_dir}/vulkan/*.h ${top_dir}/vulkan/*.cpp)
 include_directories(${top_dir}/vulkan)
@@ -39,7 +43,7 @@ include_directories(${top_dir}/external/ktx/include)
 file(GLOB imgui_sources ${top_dir}/external/imgui/*.h ${top_dir}/external/imgui/*.cpp)
 
 # 生成链接库
-add_library (base STATIC ${common_sources} ${vulkan_sources} ${engine_sources} ${imgui_sources})
+add_library (base STATIC ${common_sources} ${containers_sources} ${vulkan_sources} ${engine_sources} ${imgui_sources})
 target_link_libraries(base vulkan_lib)
 
 # Khronos texture format (https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/)

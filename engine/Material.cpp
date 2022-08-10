@@ -8,7 +8,7 @@
 #include "GfxBuffer.h"
 
 Material::Material(const mkString& name) :
-	m_Name(name)
+	NamedObject(name)
 {
 }
 

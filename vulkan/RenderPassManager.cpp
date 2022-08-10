@@ -57,7 +57,7 @@ VKRenderPass * RenderPassManager::CreateRenderPass(const RenderPassKey & key)
 
 	// Attachments
 	mkVector<VkAttachmentDescription> attachmentDescriptions(attachments.size());
-	for (size_t i = 0; i < attachmentDescriptions.size(); i++)
+	for (int i = 0; i < attachmentDescriptions.size(); i++)
 	{
 		attachmentDescriptions[i].flags = 0;
 		attachmentDescriptions[i].format = attachments[i].format;
@@ -97,20 +97,20 @@ VKRenderPass * RenderPassManager::CreateRenderPass(const RenderPassKey & key)
 	// Subpasses
 	mkVector<AttachmentReference> attachmentReferences(subpasses.size());
 	mkVector<VkSubpassDescription> subpassDescriptions(subpasses.size());
-	for (size_t pass = 0; pass < subpassDescriptions.size(); pass++)
+	for (int pass = 0; pass < subpassDescriptions.size(); pass++)
 	{
 		auto& subpass = subpasses[pass];
 		AttachmentReference& reference = attachmentReferences[pass];
 
 		reference.inputs.resize(subpass.inputs.size());
-		for (size_t i = 0; i < subpass.inputs.size(); i++)
+		for (int i = 0; i < subpass.inputs.size(); i++)
 		{
 			reference.inputs[i].attachment = subpass.inputs[i];
 			reference.inputs[i].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		}
 
 		reference.colors.resize(subpass.colors.size());
-		for (size_t i = 0; i < subpass.colors.size(); i++)
+		for (int i = 0; i < subpass.colors.size(); i++)
 		{
 			reference.colors[i].attachment = subpass.colors[i];
 			reference.colors[i].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -152,7 +152,7 @@ VKRenderPass * RenderPassManager::CreateRenderPass(const RenderPassKey & key)
 	dependencies[dependencies.size() - 1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
 	dependencies[dependencies.size() - 1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-	for (size_t i = 1; i <= dependencies.size() - 2; i++)
+	for (int i = 1; i <= dependencies.size() - 2; i++)
 	{
 		dependencies[i].srcSubpass = static_cast<uint32_t>(i - 1);
 		dependencies[i].dstSubpass = static_cast<uint32_t>(i);

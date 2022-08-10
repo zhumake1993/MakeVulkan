@@ -39,9 +39,9 @@ void MakeVulkan::PreInit()
 {
 	auto& gs = GetGlobalSettings();
 
-#if defined(_WIN32)
-	gs.enabledDeviceFeatures.shaderClipDistance = VK_TRUE; // 我的手机不支持
-#endif
+//#if defined(_WIN32)
+//	gs.enabledDeviceFeatures.shaderClipDistance = VK_TRUE; // 我的手机不支持
+//#endif
 }
 
 void MakeVulkan::Init()
@@ -114,7 +114,7 @@ void MakeVulkan::Update()
 
 	ImGui::SetNextWindowPos(ImVec2(10, 10));
 	ImGui::Begin("MakeVulkan", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-	ImGui::TextUnformatted(dp.deviceProperties.deviceName);
+	ImGui::TextUnformatted(dp.deviceName.c_str());
 	ImGui::Text("%.2f ms/frame (%.2f fps)", (1000.0f / fps), fps);
 
 	static float acTime = 0;

@@ -1,36 +1,36 @@
 #include "VKSwapChain.h"
 #include "Platforms.h"
 #include "VKTools.h"
-#include "DeviceProperties.h"
+#include "VKDeviceProperties.h"
 #include "GlobalSettings.h"
 #include "Tools.h"
 #include "Log.h"
 
 void CheckSurfaceStats(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
 {
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
-	VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &dp.surfaceCapabilities));
+	VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &vdp.surfaceCapabilities));
 
 	uint32_t formatsCount;
 	VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatsCount, nullptr));
-	dp.surfaceFormats.resize(formatsCount);
-	VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatsCount, dp.surfaceFormats.data()));
+	vdp.surfaceFormats.resize(formatsCount);
+	VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatsCount, vdp.surfaceFormats.data()));
 
 	uint32_t presentModesCount;
 	VK_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModesCount, nullptr));
-	dp.presentModes.resize(presentModesCount);
-	VK_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModesCount, dp.presentModes.data()));
+	vdp.presentModes.resize(presentModesCount);
+	VK_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModesCount, vdp.presentModes.data()));
 }
 
 uint32_t GetSwapChainImageNum()
 {
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
-	uint32_t imageCount = dp.surfaceCapabilities.minImageCount + 1;
-	if (dp.surfaceCapabilities.maxImageCount > 0 && imageCount > dp.surfaceCapabilities.maxImageCount)
+	uint32_t imageCount = vdp.surfaceCapabilities.minImageCount + 1;
+	if (vdp.surfaceCapabilities.maxImageCount > 0 && imageCount > vdp.surfaceCapabilities.maxImageCount)
 	{
-		imageCount = dp.surfaceCapabilities.maxImageCount;
+		imageCount = vdp.surfaceCapabilities.maxImageCount;
 	}
 
 	return imageCount;
@@ -38,18 +38,18 @@ uint32_t GetSwapChainImageNum()
 
 VkSurfaceFormatKHR GetSwapChainSurfaceFormat()
 {
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	// If the list contains only one entry with undefined format
 	// it means that there are no preferred surface formats and any can be chosen
-	if (dp.surfaceFormats.size() == 1 && dp.surfaceFormats[0].format == VK_FORMAT_UNDEFINED)
+	if (vdp.surfaceFormats.size() == 1 && vdp.surfaceFormats[0].format == VK_FORMAT_UNDEFINED)
 	{
 		return{ VK_FORMAT_R8G8B8A8_UNORM, VK_COLORSPACE_SRGB_NONLINEAR_KHR };
 	}
 
 	// Check if list contains most widely used R8 G8 B8 A8 format
 	// with nonlinear color space
-	for (VkSurfaceFormatKHR &surfaceformat : dp.surfaceFormats)
+	for (VkSurfaceFormatKHR &surfaceformat : vdp.surfaceFormats)
 	{
 		if (surfaceformat.format == VK_FORMAT_R8G8B8A8_UNORM)
 		{
@@ -58,45 +58,46 @@ VkSurfaceFormatKHR GetSwapChainSurfaceFormat()
 	}
 
 	// Return the first format from the list
-	return dp.surfaceFormats[0];
+	return vdp.surfaceFormats[0];
 }
 
 VkExtent2D GetSwapChainExtent()
 {
-	auto& dp = GetDeviceProperties();
+	auto& gs = GetGlobalSettings();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	// Special value of surface extent is width == height == -1
 	// If this is so we define the size by ourselves but it must fit within defined confines
-	if (dp.surfaceCapabilities.currentExtent.width == -1)
+	if (vdp.surfaceCapabilities.currentExtent.width == -1)
 	{
 #ifdef _WIN32
-		VkExtent2D swap_chain_extent = { GetGlobalSettings().windowWidth, GetGlobalSettings().windowHeight };
+		VkExtent2D swap_chain_extent = { gs.windowWidth, gs.windowHeight };
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
 		VkExtent2D swap_chain_extent = { 0, 0 };
 #endif
 
-		if (swap_chain_extent.width < dp.surfaceCapabilities.minImageExtent.width)
-			swap_chain_extent.width = dp.surfaceCapabilities.minImageExtent.width;
+		if (swap_chain_extent.width < vdp.surfaceCapabilities.minImageExtent.width)
+			swap_chain_extent.width = vdp.surfaceCapabilities.minImageExtent.width;
 
-		if (swap_chain_extent.height < dp.surfaceCapabilities.minImageExtent.height)
-			swap_chain_extent.height = dp.surfaceCapabilities.minImageExtent.height;
+		if (swap_chain_extent.height < vdp.surfaceCapabilities.minImageExtent.height)
+			swap_chain_extent.height = vdp.surfaceCapabilities.minImageExtent.height;
 
-		if (swap_chain_extent.width > dp.surfaceCapabilities.maxImageExtent.width)
-			swap_chain_extent.width = dp.surfaceCapabilities.maxImageExtent.width;
+		if (swap_chain_extent.width > vdp.surfaceCapabilities.maxImageExtent.width)
+			swap_chain_extent.width = vdp.surfaceCapabilities.maxImageExtent.width;
 
-		if (swap_chain_extent.height > dp.surfaceCapabilities.maxImageExtent.height)
-			swap_chain_extent.height = dp.surfaceCapabilities.maxImageExtent.height;
+		if (swap_chain_extent.height > vdp.surfaceCapabilities.maxImageExtent.height)
+			swap_chain_extent.height = vdp.surfaceCapabilities.maxImageExtent.height;
 
 		return swap_chain_extent;
 	}
 
 	// Most of the cases we define size of the swap_chain images equal to current window's size
-	return dp.surfaceCapabilities.currentExtent;
+	return vdp.surfaceCapabilities.currentExtent;
 }
 
 VkImageUsageFlags GetSwapChainUsageFlags()
 {
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	// todo：swap chain image的内容可能是直接copy上去的
 	//// Enable transfer source on swap chain images if supported
@@ -111,7 +112,7 @@ VkImageUsageFlags GetSwapChainUsageFlags()
 
 	// Color attachment flag must always be supported
 	// We can define other usage flags but we always need to check if they are supported
-	if (dp.surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+	if (vdp.surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
 		return VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	LOGE("VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT image usage is not supported by the swap chain!");
@@ -120,7 +121,7 @@ VkImageUsageFlags GetSwapChainUsageFlags()
 
 VkSurfaceTransformFlagBitsKHR GetSwapChainTransform()
 {
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	// Sometimes images must be transformed before they are presented (i.e. due to device's orienation
 	// being other than default orientation)
@@ -128,18 +129,18 @@ VkSurfaceTransformFlagBitsKHR GetSwapChainTransform()
 	// during presentation operation; this operation may hit performance on some platforms
 	// Here we don't want any transformations to occur so if the identity transform is supported use it
 	// otherwise just use the same transform as current transform
-	if (dp.surfaceCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
+	if (vdp.surfaceCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
 		return VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 	else
-		return dp.surfaceCapabilities.currentTransform;
+		return vdp.surfaceCapabilities.currentTransform;
 }
 
 VkPresentModeKHR GetSwapChainPresentMode()
 {
-	auto& dp = GetDeviceProperties();
+	auto& vdp = vk::GetVKDeviceProperties();
 
 	// MAILBOX is the lowest latency V-Sync enabled mode (something like triple-buffering) so use it if available
-	for (VkPresentModeKHR &presentMode : dp.presentModes)
+	for (VkPresentModeKHR &presentMode : vdp.presentModes)
 	{
 		if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR)
 			return presentMode;
@@ -147,14 +148,14 @@ VkPresentModeKHR GetSwapChainPresentMode()
 
 	// IMMEDIATE mode allows us to display frames in a V-Sync independent manner so it can introduce screen tearing
 	// But this mode is the best for benchmarking purposes if we want to check the real number of FPS
-	for (VkPresentModeKHR &presentMode : dp.presentModes)
+	for (VkPresentModeKHR &presentMode : vdp.presentModes)
 	{
 		if (presentMode == VK_PRESENT_MODE_IMMEDIATE_KHR)
 			return presentMode;
 	}
 
 	// FIFO present mode is always available
-	for (VkPresentModeKHR &presentMode : dp.presentModes)
+	for (VkPresentModeKHR &presentMode : vdp.presentModes)
 	{
 		if (presentMode == VK_PRESENT_MODE_FIFO_KHR)
 			return presentMode;
@@ -290,7 +291,7 @@ vk::VKSwapChain::VKSwapChain(VkInstance instance, VkPhysicalDevice physicalDevic
 
 vk::VKSwapChain::~VKSwapChain()
 {
-	for (size_t i = 0; i < m_SwapChainImageViews.size(); ++i) {
+	for (int i = 0; i < m_SwapChainImageViews.size(); ++i) {
 		vkDestroyImageView(m_Device, m_SwapChainImageViews[i], nullptr);
 	}
 	m_SwapChainImageViews.clear();
@@ -307,12 +308,12 @@ void vk::VKSwapChain::Print()
 {
 	LOG("[VKSwapChain]\n");
 
-	LOG("image num: %d\n", m_ImageNum);
-	LOG("surface format: %d %d\n", m_SurfaceFormat.format, m_SurfaceFormat.colorSpace);
-	LOG("extent: %d %d\n", m_Extent.width, m_Extent.height);
-	LOG("usage: %d\n", m_Usage);
-	LOG("transform: %d\n", m_Transform);
-	LOG("presentMode: %d\n", m_PresentMode);
+	LOG("image num: %u\n", m_ImageNum);
+	LOG("surface format: %s %s\n", VkFormatToString(m_SurfaceFormat.format).c_str(), VkColorSpaceKHRToString(m_SurfaceFormat.colorSpace).c_str());
+	LOG("extent: %u %u\n", m_Extent.width, m_Extent.height);
+	LOG("usage: %s\n", VkImageUsageFlagsToString(m_Usage).c_str());
+	LOG("transform: %s\n", VkFlagBitToString(m_Transform).c_str());
+	LOG("presentMode: %s\n", VkPresentModeKHRToString(m_PresentMode).c_str());
 
 	LOG("\n");
 }

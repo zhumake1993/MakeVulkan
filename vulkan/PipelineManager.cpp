@@ -146,7 +146,7 @@ void PipelineCI::Reset(VKGpuProgram* vkGpuProgram, RenderState* renderState, voi
 		// Color blend state describes how blend factors are calculated (if used)
 		// We need one blend attachment state per color attachment (even if blending is not used)
 		colorBlendAttachmentStates.resize(renderState->blendStates.size());
-		for (size_t i = 0; i < renderState->blendStates.size(); i++)
+		for (int i = 0; i < renderState->blendStates.size(); i++)
 		{
 			colorBlendAttachmentStates[i].blendEnable = renderState->blendStates[i].blendEnable;
 			colorBlendAttachmentStates[i].srcColorBlendFactor = renderState->blendStates[i].srcColorBlendFactor;
